@@ -19,7 +19,7 @@ SDStatementStepDescriptor class >> currentNodeOf: aContext [
 ]
 
 { #category : #'instance creation' }
-SDStatementStepDescriptor class >> newFromNode: aRBNode inContext: aContext withInstanceDictionary: aSeekerInstanceDictionary [
+SDStatementStepDescriptor class >> newFromNode: aRBNode inContext: aContext [
 
 	"returns a SDStatementStepDescriptor with all the statement static IDs which lead to the nodenode"
 
@@ -35,8 +35,7 @@ SDStatementStepDescriptor class >> newFromNode: aRBNode inContext: aContext with
 		iterationNode := self currentNodeOf: iterationContext. "iterationNode might be constant. need to check"
 		statementID := SDStatementStaticID
 			               newFromAstNode: iterationNode
-			               inContext: iterationContext
-			               withInstanceDictionary: aSeekerInstanceDictionary.
+			               inContext: iterationContext.
 		stepDescriptor addFirst: statementID.
 		iterationContext := iterationContext sender ].
 

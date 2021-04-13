@@ -1,5 +1,5 @@
 Class {
-	#name : #SeekerInstancesDictionary,
+	#name : #DeprecatedSeekerInstancesDictionary,
 	#superclass : #Object,
 	#instVars : [
 		'blocks',
@@ -12,7 +12,7 @@ Class {
 }
 
 { #category : #adding }
-SeekerInstancesDictionary >> addBlock: aBlock toStep: aNumber [
+DeprecatedSeekerInstancesDictionary >> addBlock: aBlock toStep: aNumber [
 
 	| blocksInStepList |
 	(blocksPerStep keys anySatisfy: [ :each| each = aNumber]) ifFalse: [ 
@@ -22,18 +22,18 @@ SeekerInstancesDictionary >> addBlock: aBlock toStep: aNumber [
 ]
 
 { #category : #'as yet unclassified' }
-SeekerInstancesDictionary >> blockCount [
+DeprecatedSeekerInstancesDictionary >> blockCount [
 	^blocks size.
 ]
 
 { #category : #accessing }
-SeekerInstancesDictionary >> clear [
+DeprecatedSeekerInstancesDictionary >> clear [
 	blocks removeAll.
 	blockStepPath removeAll.
 ]
 
 { #category : #'as yet unclassified' }
-SeekerInstancesDictionary >> containsBlock: aBlock [
+DeprecatedSeekerInstancesDictionary >> containsBlock: aBlock [
 ^blocks keys anySatisfy: [:each| each = aBlock].
 "|contained|
 	contained := blocks keys anySatisfy: [ 
@@ -45,50 +45,50 @@ SeekerInstancesDictionary >> containsBlock: aBlock [
 ]
 
 { #category : #'as yet unclassified' }
-SeekerInstancesDictionary >> containsBlocksInStep: aNumber [
+DeprecatedSeekerInstancesDictionary >> containsBlocksInStep: aNumber [
 	^blocksPerStep keys anySatisfy: [:each| each = aNumber].
 ]
 
 { #category : #'as yet unclassified' }
-SeekerInstancesDictionary >> getBlockLabel: aBlock [
+DeprecatedSeekerInstancesDictionary >> getBlockLabel: aBlock [
 	^blocks at: aBlock ifAbsent: [ '{blockLabelNotFound}' ]
 ]
 
 { #category : #'as yet unclassified' }
-SeekerInstancesDictionary >> getBlockStepPath: aBlock [
+DeprecatedSeekerInstancesDictionary >> getBlockStepPath: aBlock [
 	^blockStepPath at: aBlock ifAbsent: [ nil ]
 ]
 
 { #category : #'as yet unclassified' }
-SeekerInstancesDictionary >> getBlocksInStep: aNumber [
+DeprecatedSeekerInstancesDictionary >> getBlocksInStep: aNumber [
 	^blocksPerStep at: aNumber.
 ]
 
 { #category : #initialization }
-SeekerInstancesDictionary >> initialize [
+DeprecatedSeekerInstancesDictionary >> initialize [
    blocks := IdentityDictionary new.
 	blockStepPath := IdentityDictionary new.
 	blocksPerStep := Dictionary new.
 ]
 
 { #category : #'as yet unclassified' }
-SeekerInstancesDictionary >> putBlock: aBlock withLabel: aString [
+DeprecatedSeekerInstancesDictionary >> putBlock: aBlock withLabel: aString [
 	blocks at: aBlock put: aString
 ]
 
 { #category : #accessing }
-SeekerInstancesDictionary >> seeker [
+DeprecatedSeekerInstancesDictionary >> seeker [
 
 	^ seeker
 ]
 
 { #category : #accessing }
-SeekerInstancesDictionary >> seeker: anObject [
+DeprecatedSeekerInstancesDictionary >> seeker: anObject [
 
 	seeker := anObject
 ]
 
 { #category : #'as yet unclassified' }
-SeekerInstancesDictionary >> setStepPath: aSDStatementStepDescriptor forBlock: aBlock [
+DeprecatedSeekerInstancesDictionary >> setStepPath: aSDStatementStepDescriptor forBlock: aBlock [
 	blockStepPath at: aBlock put: aSDStatementStepDescriptor
 ]

@@ -27,7 +27,20 @@ SDSequenceStaticID class >> getBlockNodeOfStatementNode: aRBNode [
 ]
 
 { #category : #'instance creation' }
-SDSequenceStaticID class >> newFromAstNode: aRBNode inContext: aContext withInstanceDictionary: aSeekerInstanceDictionary [
+SDSequenceStaticID class >> newFromAstNode: aRBNode inContext: aContext [
+
+	| sequenceID |
+	sequenceID := self new.
+	"Possible block issues here. Check later"
+	sequenceID receiverClassName: aContext receiver class name asString.
+	
+	sequenceID methodName: aContext selector asString.
+	^ sequenceID
+]
+
+{ #category : #'instance creation' }
+SDSequenceStaticID class >> oldImplementationForBlocksAliasesNewFromAstNode: aRBNode inContext: aContext withInstanceDictionary: aSeekerInstanceDictionary [
+"This method is not supposed to be used. It is only here to keep the block handling related code until it is incorporated in the proper StepInfoRegistry"
 
 	| sequenceID containerBlockNode |
 	sequenceID := self new.
@@ -44,8 +57,7 @@ containerBlockNode ifNotNil: [
 			              containerBlockNode.
 		blockStepDescriptor := aSeekerInstanceDictionary getBlockStepPath:
 			                       containerBlockNode.
-		sequenceID receiverClassName:
-			"sequenceID receiverClassName , ' ' , " blockLabel ].
+		sequenceID receiverClassName: blockLabel ].
  ].
 	sequenceID methodName: aContext selector asString.
 	^ sequenceID

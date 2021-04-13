@@ -1,6 +1,6 @@
 Class {
 	#name : #FakeSeekerInstanceDictionary,
-	#superclass : #SeekerInstancesDictionary,
+	#superclass : #DeprecatedSeekerInstancesDictionary,
 	#category : #'Seeker-Core'
 }
 

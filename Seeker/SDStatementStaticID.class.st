@@ -25,10 +25,10 @@ SDStatementStaticID class >> countNodeStatementIndexInOwningSequence: aRBNode [
 ]
 
 { #category : #'instance creation' }
-SDStatementStaticID class >> newFromAstNode: aRBNode inContext: aContext withInstanceDictionary: aSeekerInstanceDictionary [
+SDStatementStaticID class >> newFromAstNode: aRBNode inContext: aContext [
 |statementID sequenceID nodeIndex|
 statementID := self new.
-	sequenceID := SDSequenceStaticID newFromAstNode: aRBNode inContext: aContext withInstanceDictionary: aSeekerInstanceDictionary.
+	sequenceID := SDSequenceStaticID newFromAstNode: aRBNode inContext: aContext .
 	
 	nodeIndex := self countNodeStatementIndexInOwningSequence: aRBNode.
 

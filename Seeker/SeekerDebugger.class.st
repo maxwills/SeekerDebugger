@@ -38,8 +38,7 @@ Class {
 		'stepper',
 		'stDebugger',
 		'sindarin',
-		'startingContextForRecord',
-		'instancesDictionary'
+		'startingContextForRecord'
 	],
 	#category : #'Seeker-Core'
 }
@@ -65,8 +64,7 @@ SeekerDebugger class >> newWithStatementGranularity: aStDebugger sindarin: aSind
 	debugger stDebugger: aStDebugger.
 	debugger sindarin: aSindarinDebugger.
 	debugger debuggerUpdateCoordinator: updateCoordinator.
-	
-	stepper instancesDictionary: debugger instancesDictionary.
+
 	^ debugger
 ]
 
@@ -106,25 +104,12 @@ SeekerDebugger >> getContextOfStep: aNumber [
 
 { #category : #initialization }
 SeekerDebugger >> initialize [
-	instancesDictionary := FakeSeekerInstanceDictionary new.
-	instancesDictionary seeker: self.
+^super initialize 
 ]
 
 { #category : #initialization }
 SeekerDebugger >> initializeWithStepper: aDebuggerStepper [
 	stepper := aDebuggerStepper
-]
-
-{ #category : #accessing }
-SeekerDebugger >> instancesDictionary [
-
-	^ instancesDictionary
-]
-
-{ #category : #accessing }
-SeekerDebugger >> instancesDictionary: anObject [
-
-	instancesDictionary := anObject
 ]
 
 { #category : #testing }
@@ -135,7 +120,6 @@ SeekerDebugger >> isExecutionFinished [
 
 { #category : #printing }
 SeekerDebugger >> printTrace [
-	stepper updateTrace.
 	Transcript show: stepper trace asString
 ]
 

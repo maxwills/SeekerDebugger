@@ -45,7 +45,6 @@ Class {
 		'trace',
 		'currentStepIndex',
 		'startingContextForRecord',
-		'instancesDictionary',
 		'endStatementDescriptor'
 	],
 	#category : #'Seeker-Components'
@@ -60,6 +59,20 @@ DSStatementTracer >> currentContext [
 	^ context
 ]
 
+{ #category : #accessing }
+DSStatementTracer >> currentIndexlessStepDescriptor [
+
+	"Returns the full path to the statement, with its execution index set to 0"
+
+	| currentStatementDescriptor |
+	currentStatementDescriptor := SDStatementStepDescriptor
+		                              newFromNode: self currentNode
+		                              inContext: self currentContext.
+	currentStatementDescriptor executionIndex: 0.
+	currentStatementDescriptor context: self currentContext.
+	^ currentStatementDescriptor
+]
+
 { #category : #'as yet unclassified' }
 DSStatementTracer >> currentNode [
 
@@ -71,16 +84,11 @@ DSStatementTracer >> currentNode [
 { #category : #accessing }
 DSStatementTracer >> currentStepDescriptor [
 
-	"Returns the full path to the statement"
+	"Returns the full path to the statement, including the execution index"
 
 	| currentStatementDescriptor |
-	currentStatementDescriptor := SDStatementStepDescriptor
-		                              newFromNode: self currentNode
-		                              inContext: self currentContext
-		                              withInstanceDictionary:
-		                              instancesDictionary.
+	currentStatementDescriptor := self currentIndexlessStepDescriptor.
 	currentStatementDescriptor executionIndex: currentStepIndex.
-	currentStatementDescriptor context: self currentContext.
 	^ currentStatementDescriptor
 ]
 
@@ -101,23 +109,60 @@ DSStatementTracer >> initialize [
 	currentStepIndex := 1
 ]
 
-{ #category : #accessing }
-DSStatementTracer >> instancesDictionary [
-
-	^ instancesDictionary
-]
-
-{ #category : #accessing }
-DSStatementTracer >> instancesDictionary: anObject [
-
-	instancesDictionary := anObject
-]
-
 { #category : #testing }
 DSStatementTracer >> isExecutionFinished [
 	"Returns whether the debugged execution is finished"
 
 	^ stDebugger interruptedContext sender isNil or: [stDebugger interruptedProcess isTerminating].
+]
+
+{ #category : #'as yet unclassified' }
+DSStatementTracer >> oldBlockAliasImplementationUpdateTrace [
+"This method was called immediately before printing the trace. It puts the information in strings. Otherwise, they will not be shown correctly"
+	"Updates Trace with instances information"
+ 1 to: trace size do: [ :index|
+	|stepDescriptor|
+	stepDescriptor := trace at: index.
+	"Reset the extra info field"
+	stepDescriptor extraInfo: ''.
+	(instancesDictionary containsBlocksInStep: index) ifTrue: [ 
+		|blocksInStep|
+		blocksInStep := instancesDictionary getBlocksInStep: index.
+		blocksInStep do: [ :eachBlock| |blockLabel|
+			blockLabel := instancesDictionary getBlockLabel: eachBlock .
+			stepDescriptor extraInfo: (stepDescriptor extraInfo , ' ', blockLabel,':Created')]
+		 ]
+	 ]
+]
+
+{ #category : #'debug - stepping' }
+DSStatementTracer >> oldBlockAliasImplementationstepAstWithoutSkipping [
+<skBlockLegacy>
+"This code is here until the proper block handling happens in a StepInfoRegistry"
+
+	"Steps the debugger. No skipping. No recording. No updates (rememeber to force update after)"
+   "You must ensure that execution is not finished before callig this method."
+
+	| debuggerActionModel context |
+	
+	self signalExceptionIfDebuggedExecutionHasSignalledUnhandledException.
+	
+	debuggerActionModel := stDebugger debuggerActionModel.
+	"InterruptedContext can be a CompiledBlock"
+	context := debuggerActionModel session interruptedContext.
+	context compiledCode class = CompiledBlock ifFalse: [ 
+		"I think there is an error in the first call of context stepIntoQuickMethod. My suspicious is that the message isBlock doesn't do what the developer thought it did. This ifFalse prevent reaching that case."
+		context stepIntoQuickMethod: true ].
+	"Before stepping. Track instance creations"
+	(self currentNode class = RBBlockNode) ifTrue: [ 
+     | blockNode blockIndex|
+      blockIndex := (instancesDictionary blockCount) +1.
+		blockNode := self currentNode.
+		instancesDictionary putBlock: blockNode withLabel: '{B',blockIndex asString,' in step: ',currentStepIndex asString,'}'.
+		instancesDictionary setStepPath: self currentStepDescriptor forBlock: blockNode.
+		instancesDictionary addBlock: blockNode toStep: currentStepIndex.
+		 ].
+	debuggerActionModel session updateContextTo: context step
 ]
 
 { #category : #'debug - stepping' }
@@ -152,7 +197,6 @@ DSStatementTracer >> restart [
 
 	startingContextForRecord ifNil: [ self error ].
 	trace removeAll.
-	instancesDictionary clear.
 	currentStepIndex := 0.
 	"Placing stDebugger relaed code at the end, so the triggered update include the step index changes"
 	stDebugger session restart: startingContextForRecord.
@@ -268,15 +312,7 @@ DSStatementTracer >> stepAstWithoutSkipping [
 	context compiledCode class = CompiledBlock ifFalse: [ 
 		"I think there is an error in the first call of context stepIntoQuickMethod. My suspicious is that the message isBlock doesn't do what the developer thought it did. This ifFalse prevent reaching that case."
 		context stepIntoQuickMethod: true ].
-	"Before stepping. Track instance creations"
-	(self currentNode class = RBBlockNode) ifTrue: [ 
-     | blockNode blockIndex|
-      blockIndex := (instancesDictionary blockCount) +1.
-		blockNode := self currentNode.
-		instancesDictionary putBlock: blockNode withLabel: '{B',blockIndex asString,' in step: ',currentStepIndex asString,'}'.
-		instancesDictionary setStepPath: self currentStepDescriptor forBlock: blockNode.
-		instancesDictionary addBlock: blockNode toStep: currentStepIndex.
-		 ].
+	
 	debuggerActionModel session updateContextTo: context step
 ]
 
@@ -360,22 +396,4 @@ debuggerActionModel session updateContextTo: context step.
 DSStatementTracer >> trace [
 	"Returns the collection of steps signatures"
 	^trace
-]
-
-{ #category : #'as yet unclassified' }
-DSStatementTracer >> updateTrace [
-	"Updates Trace with instances information"
- 1 to: trace size do: [ :index|
-	|stepDescriptor|
-	stepDescriptor := trace at: index.
-	"Reset the extra info field"
-	stepDescriptor extraInfo: ''.
-	(instancesDictionary containsBlocksInStep: index) ifTrue: [ 
-		|blocksInStep|
-		blocksInStep := instancesDictionary getBlocksInStep: index.
-		blocksInStep do: [ :eachBlock| |blockLabel|
-			blockLabel := instancesDictionary getBlockLabel: eachBlock .
-			stepDescriptor extraInfo: (stepDescriptor extraInfo , ' ', blockLabel,':Created')]
-		 ]
-	 ]
 ]
