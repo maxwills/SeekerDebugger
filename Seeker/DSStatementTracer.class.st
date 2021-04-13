@@ -397,6 +397,19 @@ debuggerActionModel session updateContextTo: context step.
 
 ]
 
+{ #category : #'as yet unclassified' }
+DSStatementTracer >> testReplayToCurrentStep [
+|currentStep|
+	Transcript show: 'testReplayToCurrentStep started'.
+	Transcript cr.
+	
+	currentStep := self currentIndexlessStepDescriptor.
+	
+	
+	Transcript show: 'testReplayToCurrentStep finished'.
+	Transcript cr.
+]
+
 { #category : #accessing }
 DSStatementTracer >> trace [
 	"Returns the collection of steps signatures"
