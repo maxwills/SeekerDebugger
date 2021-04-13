@@ -29,6 +29,11 @@ DebuggerStepperBase >> restartRecordFromContext: aContext [
 	
 ]
 
+{ #category : #initialization }
+DebuggerStepperBase >> setSelectedContextAsStartingPoint: aContext [
+	^self subclassResponsibility 
+]
+
 { #category : #'debug - stepping' }
 DebuggerStepperBase >> stepBackInto [
 

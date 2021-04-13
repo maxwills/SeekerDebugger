@@ -219,6 +219,11 @@ DSStatementTracer >> setEndFromCurrentStep [
 	endStatementDescriptor := self currentStepDescriptor 
 ]
 
+{ #category : #initialization }
+DSStatementTracer >> setSelectedContextAsStartingPoint: aContext [
+	startingContextForRecord:= aContext.
+]
+
 { #category : #signalling }
 DSStatementTracer >> signalExceptionIfDebuggedExecutionHasSignalledUnhandledException [
 	| unhandledException |

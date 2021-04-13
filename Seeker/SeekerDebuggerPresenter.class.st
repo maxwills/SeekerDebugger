@@ -167,6 +167,11 @@ SeekerDebuggerPresenter >> initializeToolbar [
 				            action: [self startRecordFromContextHandler ];
 				            yourself);
 				addItem: (self newToolbarButton
+				            label: 'Set Selected as Starting Point';
+				            icon: (self application iconNamed: #glamorousRestart);
+				            action: [self setSelectedContexAsStartingPointHandler  ];
+				            yourself);
+				addItem: (self newToolbarButton
 				            label: 'Mark end statement';
 				            icon: (self application iconNamed: #protocolPrivate);
 				            action: [self setEndHandler ];
@@ -227,6 +232,12 @@ SeekerDebuggerPresenter >> setModelBeforeInitialization: aStDebugger [
    evaluatorDebugger stDebugger: aStDebugger.
 debuggerUpdateCoordinator := seekerDebugger debuggerUpdateCoordinator.
    
+]
+
+{ #category : #'event handling' }
+SeekerDebuggerPresenter >> setSelectedContexAsStartingPointHandler [
+"Called when pressing the icon in the toolbar"
+	self seekerDebugger setSelectedContextAsStartingPoint: stDebugger selectedContext
 ]
 
 { #category : #'event handling' }

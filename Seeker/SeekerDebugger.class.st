@@ -37,8 +37,7 @@ Class {
 	#instVars : [
 		'stepper',
 		'stDebugger',
-		'sindarin',
-		'startingContextForRecord'
+		'sindarin'
 	],
 	#category : #'Seeker-Core'
 }
@@ -140,6 +139,11 @@ SeekerDebugger >> setEndFromCurrentStep [
 stepper setEndFromCurrentStep
 ]
 
+{ #category : #initialization }
+SeekerDebugger >> setSelectedContextAsStartingPoint: aContext [
+	stepper setSelectedContextAsStartingPoint: aContext
+]
+
 { #category : #accessing }
 SeekerDebugger >> sindarin [
 
@@ -201,4 +205,10 @@ SeekerDebugger >> stepOver [
 { #category : #'as yet unclassified' }
 SeekerDebugger >> stepUntilConditionIsTrue: aBlock [
 	stepper stepUntilConditionIsTrue: aBlock
+]
+
+{ #category : #accessing }
+SeekerDebugger >> stepper [
+
+	^ stepper
 ]
