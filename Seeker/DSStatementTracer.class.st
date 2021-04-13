@@ -399,12 +399,14 @@ debuggerActionModel session updateContextTo: context step.
 
 { #category : #'as yet unclassified' }
 DSStatementTracer >> testReplayToCurrentStep [
+"THIS WOULD IDEALLY BE ADDED AS AN EXTENSION TO BE REMOVED AFTER. BUT YOU CANT MAKE EXTENSION OF CLASSES IN THE SAME PACKAGE. WILL DO A DIFFERENT PACKAGE IN THE FUTURE"
 |currentStep|
 	Transcript show: 'testReplayToCurrentStep started'.
 	Transcript cr.
 	
-	currentStep := self currentIndexlessStepDescriptor.
-	
+	currentStep := self currentStepDescriptor.
+	self restart.
+	self stepUntilConditionIsTrue: [currentStep hasSameIndexlessSignatureAs: self currentIndexlessStepDescriptor ].
 	
 	Transcript show: 'testReplayToCurrentStep finished'.
 	Transcript cr.

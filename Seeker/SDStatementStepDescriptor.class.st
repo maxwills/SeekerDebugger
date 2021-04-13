@@ -92,6 +92,12 @@ SDStatementStepDescriptor >> extraInfo: anObject [
 	extraInfo := anObject
 ]
 
+{ #category : #testing }
+SDStatementStepDescriptor >> hasSameIndexlessSignatureAs: aStepDescriptor [
+"Need to reaftor this, since it does the same as hasSamePathAs:"
+^self hasSamePathAs: aStepDescriptor
+]
+
 { #category : #'as yet unclassified' }
 SDStatementStepDescriptor >> hasSamePathAs: anSDStatementStepDescriptor [
 
