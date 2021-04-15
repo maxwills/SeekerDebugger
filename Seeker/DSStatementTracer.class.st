@@ -65,7 +65,7 @@ DSStatementTracer >> currentIndexlessStepDescriptor [
 	"Returns the full path to the statement, with its execution index set to 0"
 
 	| currentStatementDescriptor |
-	currentStatementDescriptor := SDStatementStepDescriptor
+	currentStatementDescriptor := SkStepDescriptor
 		                              newFromNode: self currentNode
 		                              inContext: self currentContext.
 	currentStatementDescriptor executionIndex: 0.
@@ -92,6 +92,18 @@ DSStatementTracer >> currentStepDescriptor [
 	^ currentStatementDescriptor
 ]
 
+{ #category : #'as yet unclassified' }
+DSStatementTracer >> doStepClosingProcess [ 
+"subclasses shoudl reimplement this" "Note that the current step is the next than the one that has been closed."
+	^self
+]
+
+{ #category : #'as yet unclassified' }
+DSStatementTracer >> doStepOpeningProcess [ 
+"subclasses shoudl reimplement this"
+	^self halt
+]
+
 { #category : #testing }
 DSStatementTracer >> hasSignalledUnhandledException [
 	"Returns true if the debugged execution has signalled an exception that has not been handled by any on:do: (i.e. the #defaultAction of the exception is about to be executed. This default action typically leads to opening a debugger on the process that signalled the exception)"
@@ -105,7 +117,7 @@ DSStatementTracer >> initialize [
 	"comment stating purpose of instance-side method"
 	"scope: class-variables  &  instance-variables"	
 			
-	trace := SDStatementExecutionTrace new.
+	trace := SkTrace new.
 	currentStepIndex := 1
 ]
 
@@ -203,7 +215,8 @@ DSStatementTracer >> restart [
 	self doAndUpdateSessionAfter: [ 
 		currentStepIndex := 1.
 		self pushCurrentStepDescriptor.
-		]
+		].
+	self doStepOpeningProcess.
 ]
 
 { #category : #'as yet unclassified' }
@@ -348,10 +361,12 @@ DSStatementTracer >> stepBackOver [
 
 { #category : #'debug - stepping' }
 DSStatementTracer >> stepInto [
+"This is the basic stepping at statement abstraction."
 self doAndUpdateSessionAfter: [ 
 	self stepAstIntoStatement.
 	currentStepIndex := currentStepIndex +1.
-	self pushCurrentStepDescriptor]
+	self pushCurrentStepDescriptor]. 
+self doStepOpeningProcess 
 
 ]
 
@@ -409,6 +424,21 @@ DSStatementTracer >> testReplayToCurrentStep [
 	self stepUntilConditionIsTrue: [currentStep hasSameIndexlessSignatureAs: self currentIndexlessStepDescriptor ].
 	
 	Transcript show: 'testReplayToCurrentStep finished'.
+	Transcript cr.
+]
+
+{ #category : #'as yet unclassified' }
+DSStatementTracer >> testStepUntilEndlessCase [
+"THIS WOULD IDEALLY BE ADDED AS AN EXTENSION TO BE REMOVED AFTER. BUT YOU CANT MAKE EXTENSION OF CLASSES IN THE SAME PACKAGE. WILL DO A DIFFERENT PACKAGE IN THE FUTURE"
+|currentStep|
+	Transcript show: 'testStepUntilEndlessCase started'.
+	Transcript cr.
+	
+	currentStep := self currentStepDescriptor.
+	self restart.
+	self stepUntilConditionIsTrue: [false].
+	
+	Transcript show: 'testStepUntilEndlessCase finished'.
 	Transcript cr.
 ]
 

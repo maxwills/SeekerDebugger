@@ -53,7 +53,7 @@ SeekerDebugger class >> newWithStatementGranularity: aStDebugger sindarin: aSind
 	updateCoordinator stDebugger: aStDebugger.
 	
 	"Initialize the DebuggerStepperBase subclass to be injected in the seeker debugger"
-	stepper := DSStatementTracer new.
+	stepper := TracerVariableChanges new.
 	stepper stDebugger: aStDebugger.
 	stepper sindarin: aSindarinDebugger.
 	stepper debuggerUpdateCoordinator: updateCoordinator.
@@ -119,7 +119,7 @@ SeekerDebugger >> isExecutionFinished [
 
 { #category : #printing }
 SeekerDebugger >> printTrace [
-	Transcript show: stepper trace asString
+	"Transcript show: stepper trace asString"
 ]
 
 { #category : #starting }
@@ -191,15 +191,15 @@ SeekerDebugger >> stepBackOver [
 SeekerDebugger >> stepInto [
 
 	stepper stepInto.
-	Transcript clear.
+	"Transcript clear."
 	self printTrace
 ]
 
 { #category : #'debug - stepping' }
 SeekerDebugger >> stepOver [
 	stepper stepOver.
-	Transcript clear.
-	self printTrace
+	"Transcript clear.
+	self printTrace"
 ]
 
 { #category : #'as yet unclassified' }

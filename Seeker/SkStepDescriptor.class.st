@@ -2,7 +2,7 @@
 Basically a collection of Statements Static ID.
 "
 Class {
-	#name : #SDStatementStepDescriptor,
+	#name : #SkStepDescriptor,
 	#superclass : #OrderedCollection,
 	#instVars : [
 		'executionIndex',
@@ -14,12 +14,12 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
-SDStatementStepDescriptor class >> currentNodeOf: aContext [
+SkStepDescriptor class >> currentNodeOf: aContext [
 	^ aContext method sourceNodeForPC: aContext pc
 ]
 
 { #category : #'instance creation' }
-SDStatementStepDescriptor class >> newFromNode: aRBNode inContext: aContext [
+SkStepDescriptor class >> newFromNode: aRBNode inContext: aContext [
 
 	"returns a SDStatementStepDescriptor with all the statement static IDs which lead to the nodenode"
 
@@ -47,7 +47,7 @@ SDStatementStepDescriptor class >> newFromNode: aRBNode inContext: aContext [
 ]
 
 { #category : #converting }
-SDStatementStepDescriptor >> asString [
+SkStepDescriptor >> asString [
 
 	| str |
 	str := $> join: (self collect: [ :aEsnToken | ' ', aEsnToken asString ]).
@@ -57,49 +57,49 @@ SDStatementStepDescriptor >> asString [
 ]
 
 { #category : #accessing }
-SDStatementStepDescriptor >> context [
+SkStepDescriptor >> context [
 
 	^ context
 ]
 
 { #category : #accessing }
-SDStatementStepDescriptor >> context: anObject [
+SkStepDescriptor >> context: anObject [
 
 	context := anObject
 ]
 
 { #category : #accessing }
-SDStatementStepDescriptor >> executionIndex [
+SkStepDescriptor >> executionIndex [
 
 	^ executionIndex
 ]
 
 { #category : #accessing }
-SDStatementStepDescriptor >> executionIndex: anObject [
+SkStepDescriptor >> executionIndex: anObject [
 
 	executionIndex := anObject
 ]
 
 { #category : #accessing }
-SDStatementStepDescriptor >> extraInfo [
+SkStepDescriptor >> extraInfo [
 
 	^ extraInfo
 ]
 
 { #category : #accessing }
-SDStatementStepDescriptor >> extraInfo: anObject [
+SkStepDescriptor >> extraInfo: anObject [
 
 	extraInfo := anObject
 ]
 
 { #category : #testing }
-SDStatementStepDescriptor >> hasSameIndexlessSignatureAs: aStepDescriptor [
+SkStepDescriptor >> hasSameIndexlessSignatureAs: aStepDescriptor [
 "Need to reaftor this, since it does the same as hasSamePathAs:"
 ^self hasSamePathAs: aStepDescriptor
 ]
 
 { #category : #'as yet unclassified' }
-SDStatementStepDescriptor >> hasSamePathAs: anSDStatementStepDescriptor [
+SkStepDescriptor >> hasSamePathAs: anSDStatementStepDescriptor [
 
 	(self size == anSDStatementStepDescriptor size) ifFalse: [ ^ false ].
 	1 to: self size do: [ :index | 
@@ -111,7 +111,7 @@ SDStatementStepDescriptor >> hasSamePathAs: anSDStatementStepDescriptor [
 ]
 
 { #category : #initialization }
-SDStatementStepDescriptor >> initialize [
+SkStepDescriptor >> initialize [
 	super initialize.
 	executionIndex := 0.
 	sourceCode := ''.
@@ -119,33 +119,33 @@ SDStatementStepDescriptor >> initialize [
 ]
 
 { #category : #accessing }
-SDStatementStepDescriptor >> methodName [ 
+SkStepDescriptor >> methodName [ 
 	^ self last sequenceStaticID methodName
 ]
 
 { #category : #'as yet unclassified' }
-SDStatementStepDescriptor >> pathDepth [
+SkStepDescriptor >> pathDepth [
 	^ self size
 ]
 
 { #category : #accessing }
-SDStatementStepDescriptor >> receiverClassName [ 
+SkStepDescriptor >> receiverClassName [ 
 	^ self last sequenceStaticID receiverClassName
 ]
 
 { #category : #accessing }
-SDStatementStepDescriptor >> sourceCode [
+SkStepDescriptor >> sourceCode [
 
 	^ sourceCode
 ]
 
 { #category : #accessing }
-SDStatementStepDescriptor >> sourceCode: anObject [
+SkStepDescriptor >> sourceCode: anObject [
 
 	sourceCode := anObject
 ]
 
 { #category : #converting }
-SDStatementStepDescriptor >> topStatementName [
+SkStepDescriptor >> topStatementName [
 ^ self last
 ]
