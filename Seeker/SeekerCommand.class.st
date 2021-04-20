@@ -17,7 +17,31 @@ SeekerCommand class >> forSpecContext: anObject [
 		yourself
 ]
 
+{ #category : #'as yet unclassified' }
+SeekerCommand >> codeSelectedSelector [
+	^context code selectedSelector
+]
+
+{ #category : #'as yet unclassified' }
+SeekerCommand >> codeSelectedText [
+	^context code selectedText
+]
+
 { #category : #accessing }
 SeekerCommand >> debuggerPresenter [
+"returns the StPresenter"
 	^self context
+]
+
+{ #category : #accessing }
+SeekerCommand >> seeker [
+"context is the ui (SeekerDebuggerPresenter). This method returns the actual debugger object"
+	^self seekerDebuggerPresenter seekerDebugger
+]
+
+{ #category : #'as yet unclassified' }
+SeekerCommand >> seekerDebuggerPresenter [
+	context extensionTools do: [ :each|  (each class = SeekerDebuggerPresenter) ifTrue: [
+		^each
+		]].^nil
 ]

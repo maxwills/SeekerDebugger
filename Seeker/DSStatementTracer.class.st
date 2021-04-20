@@ -50,6 +50,21 @@ Class {
 	#category : #'Seeker-Components'
 }
 
+{ #category : #accessing }
+DSStatementTracer >> createIndexlessStepDescriptorForContext: aContext [
+
+	"Returns the full path to the statement, with its execution index set to 0"
+   "this is supposed to be an interrupted context (so the PC makes sense)"
+	| node currentStatementDescriptor |
+	node := aContext method sourceNodeForPC: aContext pc.
+	currentStatementDescriptor := SkStepDescriptor
+		                              newFromNode: node
+		                              inContext: aContext.
+	currentStatementDescriptor executionIndex: 0.
+	currentStatementDescriptor context: aContext.
+	^ currentStatementDescriptor
+]
+
 { #category : #'as yet unclassified' }
 DSStatementTracer >> currentContext [
 
@@ -64,13 +79,7 @@ DSStatementTracer >> currentIndexlessStepDescriptor [
 
 	"Returns the full path to the statement, with its execution index set to 0"
 
-	| currentStatementDescriptor |
-	currentStatementDescriptor := SkStepDescriptor
-		                              newFromNode: self currentNode
-		                              inContext: self currentContext.
-	currentStatementDescriptor executionIndex: 0.
-	currentStatementDescriptor context: self currentContext.
-	^ currentStatementDescriptor
+	^ self createIndexlessStepDescriptorForContext: self currentContext.
 ]
 
 { #category : #'as yet unclassified' }
@@ -202,6 +211,15 @@ DSStatementTracer >> pushCurrentStepDescriptor [
 	trace add: currentStepDescriptor
 ]
 
+{ #category : #'as yet unclassified' }
+DSStatementTracer >> replayAndBuildExecutionMap [
+"Should have an initial context set first"
+|currentStep|
+   currentStep := self currentStepDescriptor.
+	self restart.
+	self stepUntilConditionIsTrue: [currentStep hasSameIndexlessSignatureAs: self currentIndexlessStepDescriptor ].
+]
+
 { #category : #starting }
 DSStatementTracer >> restart [
 
@@ -278,10 +296,10 @@ DSStatementTracer >> stepAstIntoStatement [
 "No recording, no updates"
 |currentStatementNode|
 self isExecutionFinished ifTrue: [ ^self ].
-currentStatementNode:=self sindarin node statementNode .
+currentStatementNode := self currentNode statementNode .
 
 	self stepAstUntilConditionIsTrue: [ 
-		(self sindarin node statementNode ~= currentStatementNode) "and: [self currentEsn isUnwinding =false]" "Code commented because I dont have esn yet here" 
+		(self currentNode statementNode ~= currentStatementNode) "and: [self currentEsn isUnwinding =false]" "Code commented because I dont have esn yet here" 
 		 ]
 ]
 
@@ -330,8 +348,12 @@ DSStatementTracer >> stepAstWithoutSkipping [
 	context compiledCode class = CompiledBlock ifFalse: [ 
 		"I think there is an error in the first call of context stepIntoQuickMethod. My suspicious is that the message isBlock doesn't do what the developer thought it did. This ifFalse prevent reaching that case."
 		context stepIntoQuickMethod: true ].
-	
-	debuggerActionModel session updateContextTo: context step
+	"Next line comes from the stdebugger"
+   debuggerActionModel stepInto: self currentContext.
+"next line was a patch"
+"debuggerActionModel session updateContextTo: context step.
+debuggerActionModel updateTopContext" 
+
 ]
 
 { #category : #'debug - stepping' }

@@ -6,8 +6,8 @@ Class {
 	#name : #SDSequenceStaticID,
 	#superclass : #Object,
 	#instVars : [
-		'receiverClassName',
-		'methodName'
+		'receiverClass',
+		'methodSelector'
 	],
 	#category : #'Seeker-Components'
 }
@@ -32,9 +32,9 @@ SDSequenceStaticID class >> newFromAstNode: aRBNode inContext: aContext [
 	| sequenceID |
 	sequenceID := self new.
 	"Possible block issues here. Check later"
-	sequenceID receiverClassName: aContext receiver class name asString.
+	sequenceID receiverClass: aContext receiver class.
 	
-	sequenceID methodName: aContext selector asString.
+	sequenceID methodSelector: aContext selector.
 	^ sequenceID
 ]
 
@@ -45,7 +45,7 @@ SDSequenceStaticID class >> oldImplementationForBlocksAliasesNewFromAstNode: aRB
 	| sequenceID containerBlockNode |
 	sequenceID := self new.
 	"Possible block issues here. Check later"
-	sequenceID receiverClassName: aContext receiver class name asString.
+	sequenceID receiverClass: aContext receiver class.
 	"Must check if statement is in a node. And if it is, then put the block name in the label"
 
 	containerBlockNode := self getBlockNodeOfStatementNode: aRBNode.
@@ -57,15 +57,15 @@ containerBlockNode ifNotNil: [
 			              containerBlockNode.
 		blockStepDescriptor := aSeekerInstanceDictionary getBlockStepPath:
 			                       containerBlockNode.
-		sequenceID receiverClassName: blockLabel ].
+		"sequenceID receiverClass: blockLabel " self error: 'This is deprecated code'].
  ].
-	sequenceID methodName: aContext selector asString.
+	sequenceID methodSelector: aContext selector.
 	^ sequenceID
 ]
 
 { #category : #converting }
 SDSequenceStaticID >> asString [
-	^ receiverClassName, '[',methodName,']'
+	^ self receiverClassName, '[',self methodName,']'
 ]
 
 { #category : #'as yet unclassified' }
@@ -76,23 +76,35 @@ SDSequenceStaticID >> equalTo: aSequenceStaticID [
 { #category : #accessing }
 SDSequenceStaticID >> methodName [
 
-	^ methodName
+	^ self methodSelector asString
 ]
 
 { #category : #accessing }
-SDSequenceStaticID >> methodName: anObject [
+SDSequenceStaticID >> methodSelector [
 
-	methodName := anObject
+	^ methodSelector
+]
+
+{ #category : #accessing }
+SDSequenceStaticID >> methodSelector: anObject [
+
+	methodSelector := anObject
+]
+
+{ #category : #accessing }
+SDSequenceStaticID >> receiverClass [
+
+	^ receiverClass
+]
+
+{ #category : #accessing }
+SDSequenceStaticID >> receiverClass: anObject [
+
+	receiverClass := anObject
 ]
 
 { #category : #accessing }
 SDSequenceStaticID >> receiverClassName [
 
-	^ receiverClassName
-]
-
-{ #category : #accessing }
-SDSequenceStaticID >> receiverClassName: anObject [
-
-	receiverClassName := anObject
+	^ self receiverClass name asString.
 ]

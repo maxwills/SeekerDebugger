@@ -82,7 +82,7 @@ SeekerDebuggerPresenter >> initializeCode [
 
 	code interactionModel: StSindarinContextInteractionModel  new.
 	code syntaxHighlight: true.
-	code text: '"Put your debugger scripts here..."'.
+	code text: ('"Put your debugger scripts here..."', String cr).
 	
 ]
 
@@ -179,6 +179,11 @@ SeekerDebuggerPresenter >> initializeToolbar [
 		           yourself .
 ]
 
+{ #category : #initialization }
+SeekerDebuggerPresenter >> insertCodeText: aString [
+code text: (code text, aString)
+]
+
 { #category : #'event handling' }
 SeekerDebuggerPresenter >> restartHandler [
 "Called when pressing the icon in the toolbar"
@@ -200,6 +205,11 @@ SeekerDebuggerPresenter >> seekerDebugger: anObject [
 { #category : #'as yet unclassified' }
 SeekerDebuggerPresenter >> seekerStepUntilSelectedExpressionFails [
 ^nil
+]
+
+{ #category : #initialization }
+SeekerDebuggerPresenter >> setCodeText: aString [
+code text: aString
 ]
 
 { #category : #initialization }

@@ -118,14 +118,43 @@ SkStepDescriptor >> initialize [
 	extraInfo := ''
 ]
 
+{ #category : #testing }
+SkStepDescriptor >> isSiblingOf: aStepDescriptor [
+
+	"Returns true if this stepDescriptor belongs to the same sequence as the parameter. As in instanced sequence, dynamic, not static (Same node in the execution graph)"
+
+	(self size == aStepDescriptor size) ifFalse: [ ^ false ].
+	1 to: self size do: [ :index | 
+		| lhsStatement rhsStatement |
+		lhsStatement := self at: index.
+		rhsStatement := aStepDescriptor at: index.
+		(index = self size)
+			ifFalse: [ "not the last path token. Compare consider also the index in sequence" 
+				(lhsStatement equalTo: rhsStatement) ifFalse: [ ^ false ] ]
+			ifTrue: [ "The last token of the path. We ignore the index in the sequence for the comparison"
+				(lhsStatement sequenceStaticID equalTo:
+					 rhsStatement sequenceStaticID) ifFalse: [ ^ false ] ] ].
+	^ true
+]
+
 { #category : #accessing }
 SkStepDescriptor >> methodName [ 
 	^ self last sequenceStaticID methodName
 ]
 
+{ #category : #accessing }
+SkStepDescriptor >> methodSelector [
+	^ self last sequenceStaticID methodSelector
+]
+
 { #category : #'as yet unclassified' }
 SkStepDescriptor >> pathDepth [
 	^ self size
+]
+
+{ #category : #accessing }
+SkStepDescriptor >> receiverClass [
+	^ self last sequenceStaticID receiverClass
 ]
 
 { #category : #accessing }
@@ -143,6 +172,11 @@ SkStepDescriptor >> sourceCode [
 SkStepDescriptor >> sourceCode: anObject [
 
 	sourceCode := anObject
+]
+
+{ #category : #converting }
+SkStepDescriptor >> topStatementID [
+^ self last
 ]
 
 { #category : #converting }
