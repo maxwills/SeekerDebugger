@@ -47,3 +47,26 @@ GeneralSeekerTests >> testFindTestContextInStack [
 	
 	self assert: false
 ]
+
+{ #category : #tests }
+GeneralSeekerTests >> testVariableTracking [
+
+	"Do this once the window opens:
+	seeker stepper trackedVariableName: 'aNumber'
+	then remap the test
+	"
+
+	| aCol aNumber |
+	aNumber := -1.
+	aNumber := 0.
+	aCol := OrderedCollection new.
+	aCol add: 1.
+	aCol add: 1.
+	aNumber := aCol size.
+	aCol := OrderedCollection new.
+	aCol add: 1.
+	aCol add: 1.
+	aNumber := aCol size.
+
+	self assert: false
+]

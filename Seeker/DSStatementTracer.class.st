@@ -90,6 +90,11 @@ DSStatementTracer >> currentNode [
 	^ context method sourceNodeForPC: context pc
 ]
 
+{ #category : #'as yet unclassified' }
+DSStatementTracer >> currentStatementNode [
+^self currentNode statementNode
+]
+
 { #category : #accessing }
 DSStatementTracer >> currentStepDescriptor [
 
@@ -99,6 +104,18 @@ DSStatementTracer >> currentStepDescriptor [
 	currentStatementDescriptor := self currentIndexlessStepDescriptor.
 	currentStatementDescriptor executionIndex: currentStepIndex.
 	^ currentStatementDescriptor
+]
+
+{ #category : #'as yet unclassified' }
+DSStatementTracer >> doAstStepPostProcess [ 
+"subclasses should reimplement this"
+	
+]
+
+{ #category : #'as yet unclassified' }
+DSStatementTracer >> doAstStepPreProcess [ 
+"subclasses shoudl reimplement this"
+	
 ]
 
 { #category : #'as yet unclassified' }
@@ -296,10 +313,10 @@ DSStatementTracer >> stepAstIntoStatement [
 "No recording, no updates"
 |currentStatementNode|
 self isExecutionFinished ifTrue: [ ^self ].
-currentStatementNode := self currentNode statementNode .
+currentStatementNode := self currentStatementNode .
 
 	self stepAstUntilConditionIsTrue: [ 
-		(self currentNode statementNode ~= currentStatementNode) "and: [self currentEsn isUnwinding =false]" "Code commented because I dont have esn yet here" 
+		(self currentStatementNode ~= currentStatementNode) "and: [self currentEsn isUnwinding =false]" "Code commented because I dont have esn yet here" 
 		 ]
 ]
 
@@ -314,7 +331,7 @@ TODO: Add error management. There are two kind, one from the executed code, and 
 		conditionValue := (self isExecutionFinished) or: [aBlock value].
 		conditionValue ifFalse: [ 
 			self stepAstWithoutSkipping.
-			"self recordStep" ].
+			"post ast stepping happens here?"].
 
 		conditionValue ].
 
@@ -341,7 +358,7 @@ DSStatementTracer >> stepAstWithoutSkipping [
 	| debuggerActionModel context |
 	
 	self signalExceptionIfDebuggedExecutionHasSignalledUnhandledException.
-	
+	self doAstStepPreProcess.
 	debuggerActionModel := stDebugger debuggerActionModel.
 	"InterruptedContext can be a CompiledBlock"
 	context := debuggerActionModel session interruptedContext.
@@ -350,6 +367,7 @@ DSStatementTracer >> stepAstWithoutSkipping [
 		context stepIntoQuickMethod: true ].
 	"Next line comes from the stdebugger"
    debuggerActionModel stepInto: self currentContext.
+	self doAstStepPostProcess.
 "next line was a patch"
 "debuggerActionModel session updateContextTo: context step.
 debuggerActionModel updateTopContext" 

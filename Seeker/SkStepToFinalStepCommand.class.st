@@ -17,7 +17,7 @@ SkStepToFinalStepCommand class >> defaultIconName [
 { #category : #default }
 SkStepToFinalStepCommand class >> defaultName [
 	<seekerDebuggerCodeExtensionCommand: 50>
-	^'Steps forward the execution to the last step'
+	^'Steps forward the execution to the final step'
 ]
 
 { #category : #executing }

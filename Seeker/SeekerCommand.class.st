@@ -33,6 +33,16 @@ SeekerCommand >> debuggerPresenter [
 	^self context
 ]
 
+{ #category : #'as yet unclassified' }
+SeekerCommand >> execute [
+	self inform: ('Command execution time: ', (([self executeCommand] timeToRun) asString))
+]
+
+{ #category : #'as yet unclassified' }
+SeekerCommand >> performCommand [
+	self subclassResponsibility 
+]
+
 { #category : #accessing }
 SeekerCommand >> seeker [
 "context is the ui (SeekerDebuggerPresenter). This method returns the actual debugger object"

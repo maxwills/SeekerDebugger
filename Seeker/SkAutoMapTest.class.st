@@ -21,6 +21,6 @@ SkAutoMapTest class >> defaultName [
 ]
 
 { #category : #executing }
-SkAutoMapTest >> execute [
+SkAutoMapTest >> executeCommand [
 self seeker stepper autoSetupForTest
 ]

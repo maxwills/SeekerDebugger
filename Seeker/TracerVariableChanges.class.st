@@ -3,10 +3,26 @@ Class {
 	#superclass : #DSStatementTracer,
 	#instVars : [
 		'trackedVariableName',
-		'stepInfoStore'
+		'trackedVariableValues'
 	],
 	#category : #'Seeker-Components'
 }
+
+{ #category : #stackAccessHelpers }
+TracerVariableChanges >> astReadAssignmentNewValue [
+"Returns the value about to be assigned for the current ast node, if the current node is an assignment node. Otherwise, returns nil"
+|node context|
+node := self currentNode.
+	node isAssignment
+		ifFalse: [ ^ nil	"Error signal: 'Not about to perform a assignment'" ].
+			context := self currentContext.
+	^ context at: context basicSize
+]
+
+{ #category : #stackAccessHelpers }
+TracerVariableChanges >> astReadAssignmentOldValue [
+^self currentNode variable variable readInContext: (self currentContext)
+]
 
 { #category : #'as yet unclassified' }
 TracerVariableChanges >> autoSetupForTest [
@@ -20,6 +36,23 @@ TracerVariableChanges >> autoSetupForTest [
 ]
 
 { #category : #'as yet unclassified' }
+TracerVariableChanges >> doAstStepPostProcess [
+
+	| node |
+	node := self currentNode.
+	node isAssignment ifTrue: [ 
+		| variableName |
+		variableName := node variable name.
+		variableName = trackedVariableName ifTrue: [ 
+			|oldValue newValue actualCurrentStepIndex|
+			actualCurrentStepIndex := currentStepIndex +1 "This correction is needed at the moment, because the stepIndex is updated after stepping the ast".
+			oldValue := self astReadAssignmentOldValue.
+			newValue := self astReadAssignmentNewValue.
+			 trackedVariableValues at: actualCurrentStepIndex put: { oldValue . newValue }
+			 ] ].
+]
+
+{ #category : #'as yet unclassified' }
 TracerVariableChanges >> doStepClosingProcess [
 	^self
 ]
@@ -27,6 +60,7 @@ TracerVariableChanges >> doStepClosingProcess [
 { #category : #'as yet unclassified' }
 TracerVariableChanges >> doStepOpeningProcess [
 "We are standing in the statement(current) after the execution of a statement (previous). The current statement hasn't been executed yet. And it is in the execution record at the top (last)"
+"
 Transcript clear.
 self isCurrentStepAssignment ifTrue:[|index|
 	Transcript show: 'this is an assignment'. Transcript cr.
@@ -35,7 +69,7 @@ self isCurrentStepAssignment ifTrue:[|index|
 	].
 
 	Transcript show: self trace asString.
-	Transcript cr.
+	Transcript cr."
 ]
 
 { #category : #'as yet unclassified' }
@@ -75,6 +109,12 @@ targetContext := self findContextInStack: [ :aContext| aContext sender methodSel
 { #category : #'as yet unclassified' }
 TracerVariableChanges >> findStepsWhereMethodSelectorIs: aSymbol [
 ^ trace select: [ :eachStepDescriptor| eachStepDescriptor methodSelector = aSymbol ].
+	
+]
+
+{ #category : #'as yet unclassified' }
+TracerVariableChanges >> findStepsWhereMethodSelectorIs: aSymbol ofClass: aClass [
+^ trace select: [ :eachStepDescriptor| (eachStepDescriptor methodSelector = aSymbol) and:[eachStepDescriptor receiverClass = aClass] ].
 	
 ]
 
@@ -127,6 +167,27 @@ TracerVariableChanges >> goBackToTheBeginningOfLastMethodWithSelector: aSymbol [
    self restartAndStepToIndex: firstStatementIndex
 ]
 
+{ #category : #'as yet unclassified' }
+TracerVariableChanges >> goBackToTheBeginningOfLastMethodWithSelector: aSymbol ofClass: aClass [
+
+	| stepsWithTheMethod lastStepIndex firstStatementIndex startingStep |
+	startingStep := self currentStepDescriptor.
+	stepsWithTheMethod := self
+		                      findStepsWhereMethodSelectorIs: aSymbol
+		                      ofClass: aClass.
+	stepsWithTheMethod isEmpty ifTrue: [ "Not found... should I throw an error?" 
+		^ self ].
+	stepsWithTheMethod := stepsWithTheMethod reject: [ :eachStep | 
+		                      eachStep isSiblingOf: startingStep ].
+	lastStepIndex := stepsWithTheMethod last executionIndex.
+	firstStatementIndex := self 
+		                       findStepIndexOfFirstStatementInSameSequenceOfStep:
+		                       lastStepIndex.
+	firstStatementIndex <= 0 ifTrue: [ 
+		self error: 'Error while finding target step' ].
+	self restartAndStepToIndex: firstStatementIndex
+]
+
 { #category : #accessing }
 TracerVariableChanges >> indexOfAssignmentStatementOpeningStepFor: aStepDescriptor [
 	|index|
@@ -142,7 +203,7 @@ TracerVariableChanges >> indexOfAssignmentStatementOpeningStepFor: aStepDescript
 
 { #category : #'as yet unclassified' }
 TracerVariableChanges >> initialize [ 
-   stepInfoStore := Dictionary new."keys are numbers that represent step index, values should have an object that olds the before and the after (A collection of two items is enough"
+   self reinitializeSupportFeatures.
 	^super initialize
 ]
 
@@ -154,6 +215,24 @@ TracerVariableChanges >> isAStepAssignment: aNumber [
 { #category : #testing }
 TracerVariableChanges >> isCurrentStepAssignment [ 
 	^self currentNode statementNode isAssignment 
+]
+
+{ #category : #'as yet unclassified' }
+TracerVariableChanges >> isCurrentStepMappedFinalStep [
+"This requires an execution to be mapped"
+ ^(currentStepIndex = endStatementDescriptor executionIndex) or: [self currentStepDescriptor hasSamePathAs: endStatementDescriptor].
+]
+
+{ #category : #'as yet unclassified' }
+TracerVariableChanges >> reinitializeSupportFeatures [
+   trackedVariableValues := Dictionary new.
+]
+
+{ #category : #'as yet unclassified' }
+TracerVariableChanges >> restart [
+
+	self reinitializeSupportFeatures.
+	^ super restart
 ]
 
 { #category : #'as yet unclassified' }
@@ -197,22 +276,32 @@ TracerVariableChanges >> reverseFindStep: aBlock startingIndex: aNumber [
 	^self reverseFindStep: aBlock startingIndex: aNumber -1.
 ]
 
-{ #category : #accessing }
-TracerVariableChanges >> stepInfoStore [
-
-	^ stepInfoStore
-]
-
-{ #category : #accessing }
-TracerVariableChanges >> stepInfoStore: anObject [
-
-	stepInfoStore := anObject
+{ #category : #'as yet unclassified' }
+TracerVariableChanges >> stepForwardToNextCallOfAMethodWithSelector: aSymbol ofClass: aClass [
+|startingStep foundStep|
+foundStep := false.
+startingStep := self currentStepDescriptor.
+self stepUntilConditionIsTrue: [ 
+	self isCurrentStepMappedFinalStep ifTrue: [ true ] ifFalse:[
+		|aStep sequence isMatchingMethod|
+		aStep := self currentStepDescriptor .
+	(aStep isSiblingOf: startingStep) ifFalse:[
+	sequence := aStep topStatementName sequenceStaticID.
+	isMatchingMethod := ((sequence receiverClass = aClass ) and: [ sequence methodSelector = aSymbol  ]).
+	isMatchingMethod ifTrue: [ foundStep := true ].
+   isMatchingMethod.
+	] ifTrue: [ false "it is a sibling step in the same sequence, so dont stop here"].
+		]
+	
+].
+ foundStep ifFalse: [ self inform: 'No new method call was found.' ]
+	
 ]
 
 { #category : #'as yet unclassified' }
 TracerVariableChanges >> stepToFinalStep [
 "This requires an execution to be mapped"
-self stepUntilConditionIsTrue: [(currentStepIndex = endStatementDescriptor executionIndex) or: [self currentStepDescriptor hasSamePathAs: endStatementDescriptor]].
+self stepUntilConditionIsTrue: [self isCurrentStepMappedFinalStep].
 ]
 
 { #category : #accessing }
@@ -225,4 +314,16 @@ TracerVariableChanges >> trackedVariableName [
 TracerVariableChanges >> trackedVariableName: anObject [
 
 	trackedVariableName := anObject
+]
+
+{ #category : #accessing }
+TracerVariableChanges >> trackedVariableValues [
+
+	^ trackedVariableValues
+]
+
+{ #category : #accessing }
+TracerVariableChanges >> trackedVariableValues: anObject [
+
+	trackedVariableValues := anObject
 ]

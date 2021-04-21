@@ -21,6 +21,6 @@ SeekerCreateCommandFromSelection class >> defaultName [
 ]
 
 { #category : #executing }
-SeekerCreateCommandFromSelection >> execute [
+SeekerCreateCommandFromSelection >> executeCommand [
 	self context seekerSetExpresionFromSelection
 ]

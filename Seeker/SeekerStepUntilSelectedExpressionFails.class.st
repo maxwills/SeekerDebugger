@@ -21,6 +21,6 @@ SeekerStepUntilSelectedExpressionFails class >> defaultName [
 ]
 
 { #category : #executing }
-SeekerStepUntilSelectedExpressionFails >> execute [
+SeekerStepUntilSelectedExpressionFails >> executeCommand [
 	self context seekerStepUntilSelectedExpressionFails
 ]
