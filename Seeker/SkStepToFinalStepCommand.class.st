@@ -21,6 +21,6 @@ SkStepToFinalStepCommand class >> defaultName [
 ]
 
 { #category : #executing }
-SkStepToFinalStepCommand >> execute [
+SkStepToFinalStepCommand >> executeCommand [
 self seeker stepper stepToFinalStep
 ]

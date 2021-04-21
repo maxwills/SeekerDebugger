@@ -21,8 +21,12 @@ SkStepToNextCallOfCurrentMethodCommand class >> defaultName [
 ]
 
 { #category : #executing }
-SkStepToNextCallOfCurrentMethodCommand >> execute [ 
-|currentContext|
-currentContext := self seeker stepper currentContext.
-self seeker stepper stepForwardToNextCallOfAMethodWithSelector: currentContext methodSelector ofClass: (self seeker stepper currentContext receiver class)
+SkStepToNextCallOfCurrentMethodCommand >> executeCommand [
+
+	| currentContext |
+	currentContext := self seeker stepper currentContext.
+	self seeker stepper
+		stepForwardToNextCallOfAMethodWithSelector:
+		currentContext methodSelector
+		ofClass: self seeker stepper currentContext receiver class
 ]

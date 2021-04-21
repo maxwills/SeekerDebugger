@@ -21,6 +21,6 @@ SkRestartTestFromFirstLineCommand class >> defaultName [
 ]
 
 { #category : #executing }
-SkRestartTestFromFirstLineCommand >> execute [
+SkRestartTestFromFirstLineCommand >> executeCommand [
 self seeker stepper restartTestAndStopAtFirstLine
 ]

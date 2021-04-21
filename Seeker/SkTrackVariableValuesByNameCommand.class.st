@@ -6,7 +6,7 @@ Class {
 
 { #category : #default }
 SkTrackVariableValuesByNameCommand class >> defaultDescription [
-	^'Tracks variable values by its name'
+	^'Track variable values by its name'
 ]
 
 { #category : #initialization }
@@ -17,18 +17,21 @@ SkTrackVariableValuesByNameCommand class >> defaultIconName [
 { #category : #default }
 SkTrackVariableValuesByNameCommand class >> defaultName [
 	<seekerDebuggerCodeExtensionCommand: 50>
-	^'Tracks variable values changes by name'
+	^'Track variable values changes by name'
 ]
 
 { #category : #executing }
 SkTrackVariableValuesByNameCommand >> executeCommand [
-"Needs a mapped execution"
-|variableName currentStepIndex|
-variableName := self codeSelectedText.
-    
+
+	"Needs a mapped execution"
+
+	| variableName currentStepIndex |
+	variableName := self codeSelectedText.
+
 	self seeker stepper trackedVariableName: variableName.
-	currentStepIndex := self seeker stepper currentStepDescriptor executionIndex.
+	currentStepIndex := self seeker stepper currentStepDescriptor
+		                    executionIndex.
 	self seeker stepper restartAndStepToIndex: currentStepIndex.
-	self inform: 'Tracking variables named: ', variableName.
-	self seeker stepper trackedVariableValues inspect.
+	self inform: 'Tracking variables named: ' , variableName.
+	self seeker stepper trackedVariableValues inspect
 ]

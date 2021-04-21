@@ -3,7 +3,9 @@ Class {
 	#superclass : #DSStatementTracer,
 	#instVars : [
 		'trackedVariableName',
-		'trackedVariableValues'
+		'trackedVariableValues',
+		'navigationHistory',
+		'navigationForward'
 	],
 	#category : #'Seeker-Components'
 }
@@ -32,6 +34,17 @@ TracerVariableChanges >> autoSetupForTest [
 	testInitialContext ifNil:[^self error: 'Could not detect the initial context for the test.'].
 	startingContextForRecord := testInitialContext.
 	self restartTestAndStopAtCurrentStep.
+	self setEndFromCurrentStep.
+]
+
+{ #category : #'as yet unclassified' }
+TracerVariableChanges >> autoSetupForTestForUnhandledException [
+"If a debugger is opened automatically in a failing test, this method helps to map the execution by automatically detect the starting and ending point for the recording." "This handles a debugger oppened by an unhandled exception within a test"
+	|testInitialContext|
+	testInitialContext := self findContextInStack: [:aContext| aContext methodSelector = #runCase ].
+	testInitialContext ifNil:[^self error: 'Could not detect the initial context for the test.'].
+	startingContextForRecord := testInitialContext.
+	self restartTestAndStopAtCurrentStepForUnhandledExceptionCase.
 	self setEndFromCurrentStep.
 ]
 
@@ -202,9 +215,12 @@ TracerVariableChanges >> indexOfAssignmentStatementOpeningStepFor: aStepDescript
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> initialize [ 
-   self reinitializeSupportFeatures.
-	^super initialize
+TracerVariableChanges >> initialize [
+
+	self reinitializeSupportFeatures.
+	navigationHistory := OrderedCollection new.
+	navigationForward := OrderedCollection new.
+	^ super initialize
 ]
 
 { #category : #testing }
@@ -224,6 +240,32 @@ TracerVariableChanges >> isCurrentStepMappedFinalStep [
 ]
 
 { #category : #'as yet unclassified' }
+TracerVariableChanges >> navigateBack [
+|previousStep|
+navigationHistory isEmpty ifTrue: [^self inform: 'No more previous states in history.'].
+previousStep := navigationHistory last.
+navigationHistory removeLast.
+navigationForward add: currentStepIndex.
+self restartAndStepToIndex: previousStep.
+	
+]
+
+{ #category : #'as yet unclassified' }
+TracerVariableChanges >> navigateForward [
+	|forwardStep|
+navigationForward isEmpty ifTrue: [^self inform:'No more forward states'].
+forwardStep := navigationForward last.
+navigationForward removeLast.
+navigationHistory add: currentStepIndex.
+self restartAndStepToIndex: forwardStep.
+]
+
+{ #category : #'as yet unclassified' }
+TracerVariableChanges >> pushNavigationHistory [
+(currentStepIndex > 0 ) ifTrue:[	navigationHistory add: currentStepIndex. navigationForward removeAll] 
+]
+
+{ #category : #'as yet unclassified' }
 TracerVariableChanges >> reinitializeSupportFeatures [
    trackedVariableValues := Dictionary new.
 ]
@@ -232,6 +274,7 @@ TracerVariableChanges >> reinitializeSupportFeatures [
 TracerVariableChanges >> restart [
 
 	self reinitializeSupportFeatures.
+
 	^ super restart
 ]
 
@@ -250,8 +293,19 @@ TracerVariableChanges >> restartAndStepToIndex: aNumber [
 { #category : #'as yet unclassified' }
 TracerVariableChanges >> restartTestAndStopAtCurrentStep [
 "This is only used when neet to automap and return to the current step."
+"This case is only valid for the situation when the tests fails an assertion in the main test method. If there is an unhandled exception, this is invalid."
 |targetContext indexlessStepDescriptor|
 targetContext := self findContextInStack: [ :aContext| aContext sender methodSelector = #performTest  ].
+indexlessStepDescriptor := self createIndexlessStepDescriptorForContext: targetContext.
+self restartAndStepToCondition: [ self currentStepDescriptor hasSamePathAs: indexlessStepDescriptor ].
+]
+
+{ #category : #'as yet unclassified' }
+TracerVariableChanges >> restartTestAndStopAtCurrentStepForUnhandledExceptionCase [
+"This is only used when neet to automap and return to the current step."
+
+|targetContext indexlessStepDescriptor|
+targetContext := self currentContext.
 indexlessStepDescriptor := self createIndexlessStepDescriptorForContext: targetContext.
 self restartAndStepToCondition: [ self currentStepDescriptor hasSamePathAs: indexlessStepDescriptor ].
 ]

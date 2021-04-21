@@ -1,26 +1,26 @@
 Class {
-	#name : #SkAutoMapTest,
+	#name : #SkAutoMapTestExecutionCommand,
 	#superclass : #SeekerCommand,
 	#category : #'Seeker-Commands'
 }
 
 { #category : #default }
-SkAutoMapTest class >> defaultDescription [
+SkAutoMapTestExecutionCommand class >> defaultDescription [
 	^'Maps a test execution, by replaying it to the last point.'
 ]
 
 { #category : #initialization }
-SkAutoMapTest class >> defaultIconName [
+SkAutoMapTestExecutionCommand class >> defaultIconName [
 	^#smallAdd 
 ]
 
 { #category : #default }
-SkAutoMapTest class >> defaultName [
+SkAutoMapTestExecutionCommand class >> defaultName [
 	<seekerDebuggerCodeExtensionCommand: 50>
 	^'Auto Map Test Execution'
 ]
 
 { #category : #executing }
-SkAutoMapTest >> executeCommand [
+SkAutoMapTestExecutionCommand >> executeCommand [
 self seeker stepper autoSetupForTest
 ]

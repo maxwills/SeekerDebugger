@@ -18,6 +18,11 @@ SeekerCommand class >> forSpecContext: anObject [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerCommand >> codeCaretPosition [
+	^context code selectionInterval first 
+]
+
+{ #category : #'as yet unclassified' }
 SeekerCommand >> codeSelectedSelector [
 	^context code selectedSelector
 ]
@@ -35,6 +40,7 @@ SeekerCommand >> debuggerPresenter [
 
 { #category : #'as yet unclassified' }
 SeekerCommand >> execute [
+  self seeker stepper pushNavigationHistory.
 	self inform: ('Command execution time: ', (([self executeCommand] timeToRun) asString))
 ]
 

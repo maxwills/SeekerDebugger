@@ -187,7 +187,8 @@ code text: (code text, aString)
 { #category : #'event handling' }
 SeekerDebuggerPresenter >> restartHandler [
 "Called when pressing the icon in the toolbar"
-	self seekerDebugger restart
+self doAndUpdateSessionAfter: [ self seekerDebugger stepper pushNavigationHistory .	self seekerDebugger restart ]
+	
 ]
 
 { #category : #accessing }
@@ -259,26 +260,29 @@ SeekerDebuggerPresenter >> startRecordFromContextHandler [
 { #category : #'event handling' }
 SeekerDebuggerPresenter >> stepBackIntoHandler [
 "Called when pressing the icon in the toolbar"
-	self seekerDebugger stepBackInto
+self doAndUpdateSessionAfter: [ self seekerDebugger stepper pushNavigationHistory .	self seekerDebugger stepBackInto ]
+	
 ]
 
 { #category : #'event handling' }
 SeekerDebuggerPresenter >> stepBackOverHandler [
 "Called when pressing the icon in the toolbar"
-     self seekerDebugger stepBackOver
+self doAndUpdateSessionAfter: [ self seekerDebugger stepper pushNavigationHistory .	self seekerDebugger stepBackOver ]
+     
 ]
 
 { #category : #'event handling' }
 SeekerDebuggerPresenter >> stepIntoHandler [
 "Called when pressing the icon in the toolbar"
-self doAndUpdateSessionAfter: [ 	self seekerDebugger stepInto ]
+self doAndUpdateSessionAfter: [ self seekerDebugger stepper pushNavigationHistory .	self seekerDebugger stepInto ]
 
 ]
 
 { #category : #'event handling' }
 SeekerDebuggerPresenter >> stepOverHandler [
 "Called when pressing the icon in the toolbar"
-	self seekerDebugger stepOver
+self doAndUpdateSessionAfter: [ self seekerDebugger stepper pushNavigationHistory .	self seekerDebugger stepOver ]
+	
 ]
 
 { #category : #'as yet unclassified' }
