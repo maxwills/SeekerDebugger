@@ -67,16 +67,21 @@ SeekerDebugger class >> newWithStatementGranularity: aStDebugger sindarin: aSind
 	^ debugger
 ]
 
+{ #category : #'accessing context' }
+SeekerDebugger >> currentContext [
+^stepper currentContext
+]
+
 { #category : #accessing }
 SeekerDebugger >> currentStepDescriptor [
 	^ stepper currentStepDescriptor
 ]
 
 { #category : #'as yet unclassified' }
-SeekerDebugger >> evaluateExpression: aString inContext: aContext [
+SeekerDebugger >> evaluateExpression: aStream inContext: aContext [
    "Evaluates the expression coming from a stream. Uses the current context of the StDebugger"
    ^ aContext receiver class compiler
-        source: aString;
+        source: aStream;
         context: aContext;
         receiver: aContext receiver;
         requestor: self;
@@ -86,7 +91,7 @@ SeekerDebugger >> evaluateExpression: aString inContext: aContext [
 
 { #category : #'as yet unclassified' }
 SeekerDebugger >> evaluateExpression: aString inContext: aContext throws: anError [
-   "Evaluates the expression coming from a stream. Uses the current context of the StDebugger"
+   "Evaluates the expression coming from a stream. Returns true or false if the given error was thrown on evaluation"
    [  aContext receiver class compiler
         source: aString;
         context: aContext;

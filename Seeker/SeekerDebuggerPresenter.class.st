@@ -162,11 +162,6 @@ SeekerDebuggerPresenter >> initializeToolbar [
 				            action: [self restartHandler ];
 				            yourself);
 				addItem: (self newToolbarButton
-				            label: 'Start Record from Context';
-				            icon: (self application iconNamed: #glamorousRestart);
-				            action: [self startRecordFromContextHandler ];
-				            yourself);
-				addItem: (self newToolbarButton
 				            label: 'Set Selected as Starting Point';
 				            icon: (self application iconNamed: #glamorousRestart);
 				            action: [self setSelectedContexAsStartingPointHandler  ];
@@ -216,20 +211,6 @@ code text: aString
 { #category : #initialization }
 SeekerDebuggerPresenter >> setEndHandler [
 seekerDebugger setEndFromCurrentStep
-]
-
-{ #category : #initialization }
-SeekerDebuggerPresenter >> setExpressionToTestInCurrentContext: aString [
-	"Sets a code presenter epression that autoatically steps the execution"
-	"For the oment it ust copy the text. In the future, I need to know the current context and actually make the query for the seeker debugger"
-	code text: aString
-]
-
-{ #category : #initialization }
-SeekerDebuggerPresenter >> setExpressionToTestInCurrentContextFromSelection [
-	"Sets a code presenter epression that autoatically steps the execution"
-	"For the oment it ust copy the text. In the future, I need to know the current context and actually make the query for the seeker debugger"
-	code text: 'SHOULD PUT THE SELECTION HERE'
 ]
 
 { #category : #'accessing model' }

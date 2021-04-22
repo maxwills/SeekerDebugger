@@ -21,6 +21,16 @@ GeneralSeekerTests >> testCreateIndexlessStepDescriptorForConditionInStack [
 ]
 
 { #category : #tests }
+GeneralSeekerTests >> testFamixJavaclass [
+
+"This reproduces the recursion in Anne's bug case. But first need to deploy the debugger to that image."
+
+	|result|
+	result := FamixJavaClass rootAccordingTo: Object.
+	self assert: false
+]
+
+{ #category : #tests }
 GeneralSeekerTests >> testFindInStack [
 	"launche the test and when the debugger opens with the failing assertion, evaluate 
 	seeker stepper findContextInStack: [:aContext| aContext selector = #testFindInStack]

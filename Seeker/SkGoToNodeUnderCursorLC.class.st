@@ -1,27 +1,16 @@
 Class {
-	#name : #SkGoToNodeAtPositionCommand,
-	#superclass : #SeekerCommand,
+	#name : #SkGoToNodeUnderCursorLC,
+	#superclass : #SeekerLiteCommand,
 	#category : #'Seeker-Commands'
 }
 
-{ #category : #default }
-SkGoToNodeAtPositionCommand class >> defaultDescription [
+{ #category : #accessing }
+SkGoToNodeUnderCursorLC >> description [
 	^'Restarts the execution and replays it until the execution is at the node located under the cursor.'
 ]
 
-{ #category : #initialization }
-SkGoToNodeAtPositionCommand class >> defaultIconName [
-	^#smallAdd 
-]
-
-{ #category : #default }
-SkGoToNodeAtPositionCommand class >> defaultName [
-	<seekerDebuggerCodeExtensionCommand: 50>
-	^'Replay to node under cursor'
-]
-
-{ #category : #'as yet unclassified' }
-SkGoToNodeAtPositionCommand >> executeCommand [
+{ #category : #executing }
+SkGoToNodeUnderCursorLC >> executeCommand [
 
 	| nodeUnderCursor ast caretPosition descriptor selectedContext targetStatementNumber |
 	caretPosition := self codeCaretPosition.
@@ -45,7 +34,30 @@ SkGoToNodeAtPositionCommand >> executeCommand [
 ]
 
 { #category : #'as yet unclassified' }
-SkGoToNodeAtPositionCommand >> getRootAstNode: node [
+SkGoToNodeUnderCursorLC >> getRootAstNode: node [
 	node parent ifNil: [ ^node ].
 	^ self getRootAstNode: node parent.
+]
+
+{ #category : #accessing }
+SkGoToNodeUnderCursorLC >> icon [
+
+"Inspect the following line and choose an icon for the command
+
+(Smalltalk ui icons)
+
+"
+
+	^ #add
+]
+
+{ #category : #accessing }
+SkGoToNodeUnderCursorLC >> name [
+	^'Go to node under cursor'
+]
+
+{ #category : #'as yet unclassified' }
+SkGoToNodeUnderCursorLC >> pushesNavigation [
+
+	^ true
 ]

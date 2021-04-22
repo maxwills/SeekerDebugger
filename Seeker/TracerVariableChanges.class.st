@@ -27,6 +27,14 @@ TracerVariableChanges >> astReadAssignmentOldValue [
 ]
 
 { #category : #'as yet unclassified' }
+TracerVariableChanges >> autoMapFromStartingPoint [
+"Starting point needs to be set first!"
+	|currentStep|
+	currentStep := self currentIndexlessStepDescriptor.
+	self restartAndStepToCondition: [ self currentStepDescriptor hasSamePathAs: currentStep ]
+]
+
+{ #category : #'as yet unclassified' }
 TracerVariableChanges >> autoSetupForTest [
 "If a debugger is opened automatically in a failing test, this method helps to map the execution by automatically detect the starting and ending point for the recording."
 	|testInitialContext|
@@ -328,6 +336,12 @@ TracerVariableChanges >> reverseFindStep: aBlock startingIndex: aNumber [
 	stepDescriptor := trace at: aNumber.
 	(aBlock value: stepDescriptor) ifTrue: [ ^aNumber ].
 	^self reverseFindStep: aBlock startingIndex: aNumber -1.
+]
+
+{ #category : #initialization }
+TracerVariableChanges >> setStartingPointAndMap: aContext [
+	self setSelectedContextAsStartingPoint: aContext.
+	self autoMapFromStartingPoint.
 ]
 
 { #category : #'as yet unclassified' }
