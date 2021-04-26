@@ -5,7 +5,8 @@ Class {
 		'trackedVariableName',
 		'trackedVariableValues',
 		'navigationHistory',
-		'navigationForward'
+		'navigationForward',
+		'blocksCollection'
 	],
 	#category : #'Seeker-Components'
 }
@@ -56,6 +57,37 @@ TracerVariableChanges >> autoSetupForTestForUnhandledException [
 	self setEndFromCurrentStep.
 ]
 
+{ #category : #accessing }
+TracerVariableChanges >> blocksCollection [
+
+	^ blocksCollection
+]
+
+{ #category : #accessing }
+TracerVariableChanges >> blocksCollection: anObject [
+
+	blocksCollection := anObject
+]
+
+{ #category : #accessing }
+TracerVariableChanges >> currentStepDescriptor [ 
+	|stepDescriptor containerBlockNode|
+	stepDescriptor := super currentStepDescriptor.
+	"Check II: Executing code inside blocks"
+	containerBlockNode := SkObjectHelpers getBlockNodeOfStatementNode: self currentStatementNode .
+containerBlockNode ifNotNil: [ 
+	
+		 (blocksCollection containsBlock: containerBlockNode) ifTrue: [ 
+		| blockLabel |
+		blockLabel := blocksCollection createLabelForBlock: containerBlockNode.
+		stepDescriptor topStatementID sequenceStaticID belongsToBlock: true.
+		stepDescriptor topStatementID sequenceStaticID ownerBlockLabel: blockLabel
+		"Must store this info for the stepdescriptor somehow. Maybe just do this when creating the descriptor"
+		 ].
+ ].
+^stepDescriptor
+]
+
 { #category : #'as yet unclassified' }
 TracerVariableChanges >> doAstStepPostProcess [
 
@@ -71,6 +103,30 @@ TracerVariableChanges >> doAstStepPostProcess [
 			newValue := self astReadAssignmentNewValue.
 			 trackedVariableValues at: actualCurrentStepIndex put: { oldValue . newValue }
 			 ] ].
+]
+
+{ #category : #'as yet unclassified' }
+TracerVariableChanges >> doAstStepPreProcess [
+|containerBlockNode|
+"Check I: Blocks definition"
+	self currentNode class = RBBlockNode ifTrue: [ 
+		| blockNode |
+		blockNode := self currentNode.
+		"Need to check if it has already been added. The reason for this is that the ast may step more than once in the same block node"
+		(blocksCollection containsBlock: blockNode) ifFalse: [ 
+			blocksCollection
+				addBlock: blockNode
+				toStepIndex: currentStepIndex ] ].
+		"Check II: Executing code inside blocks"
+	"containerBlockNode := SkObjectHelpers getBlockNodeOfStatementNode: self currentStatementNode .
+containerBlockNode ifNotNil: [ 
+	
+		 (blocksCollection containsBlock: containerBlockNode) ifTrue: [ 
+		| blockLabel blockStepDescriptor |
+		blockLabel := blocksCollection createLabelForBlock: containerBlockNode.
+		""Must store this info for the stepdescriptor somehow. Maybe just do this when creating the descriptor""
+		 ].
+ ]."
 ]
 
 { #category : #'as yet unclassified' }
@@ -157,6 +213,18 @@ TracerVariableChanges >> getNewValueForStep: aNumber [
 TracerVariableChanges >> getOldValueForStep: aNumber [
 ^self
 	
+]
+
+{ #category : #'as yet unclassified' }
+TracerVariableChanges >> getTraceAsStringWithBlocksAliases [
+| str |
+	str := Character cr join: (trace collect: [ :eachStepDescriptor | 
+		|stepIndex|
+		
+		eachStepDescriptor asString ]).
+	"self isUnwinding isNotNil and: [ 
+		self isUnwinding ifTrue: [ str := str , '+u' ] ]."
+	^ str
 ]
 
 { #category : #'as yet unclassified' }
@@ -275,7 +343,9 @@ TracerVariableChanges >> pushNavigationHistory [
 
 { #category : #'as yet unclassified' }
 TracerVariableChanges >> reinitializeSupportFeatures [
-   trackedVariableValues := Dictionary new.
+
+	trackedVariableValues := Dictionary new.
+	blocksCollection := BlockRegistry new
 ]
 
 { #category : #'as yet unclassified' }
@@ -342,6 +412,13 @@ TracerVariableChanges >> reverseFindStep: aBlock startingIndex: aNumber [
 TracerVariableChanges >> setStartingPointAndMap: aContext [
 	self setSelectedContextAsStartingPoint: aContext.
 	self autoMapFromStartingPoint.
+]
+
+{ #category : #accessing }
+TracerVariableChanges >> stepContainsBlock: aNumber [
+
+	blocksCollection select: [ :each | ((each at: 2) = aNumber) ifTrue:[^true ]].
+	^false
 ]
 
 { #category : #'as yet unclassified' }

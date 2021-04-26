@@ -366,6 +366,7 @@ DSStatementTracer >> stepAstWithoutSkipping [
 		"I think there is an error in the first call of context stepIntoQuickMethod. My suspicious is that the message isBlock doesn't do what the developer thought it did. This ifFalse prevent reaching that case."
 		context stepIntoQuickMethod: true ].
 	"Next line comes from the stdebugger"
+	self doAstStepPreProcess.
    debuggerActionModel stepInto: self currentContext.
 	self doAstStepPostProcess.
 "next line was a patch"

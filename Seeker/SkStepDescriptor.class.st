@@ -56,6 +56,18 @@ SkStepDescriptor >> asString [
 	^ self executionIndex asString, '.- ', str, ' - ', (self sourceCode), ' ', (extraInfo ifNil:[''] ifNotNil: [extraInfo])
 ]
 
+{ #category : #converting }
+SkStepDescriptor >> asStringIgnoringLeadingStatements: aNumber [
+
+	| str |
+	(self size <= aNumber) ifTrue: [ ^'' ].
+	
+	str := $> join: ((self allButFirst: aNumber) collect: [ :aEsnToken | ' ', aEsnToken asString ]).
+	"self isUnwinding isNotNil and: [ 
+		self isUnwinding ifTrue: [ str := str , '+u' ] ]."
+	^ self executionIndex asString, '.- ', str, ' - ', (self sourceCode), ' ', (extraInfo ifNil:[''] ifNotNil: [extraInfo])
+]
+
 { #category : #accessing }
 SkStepDescriptor >> context [
 

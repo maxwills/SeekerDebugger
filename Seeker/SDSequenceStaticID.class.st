@@ -7,7 +7,9 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'receiverClass',
-		'methodSelector'
+		'methodSelector',
+		'belongsToBlock',
+		'ownerBlockLabel'
 	],
 	#category : #'Seeker-Components'
 }
@@ -65,12 +67,31 @@ containerBlockNode ifNotNil: [
 
 { #category : #converting }
 SDSequenceStaticID >> asString [
-	^ self receiverClassName, '[',self methodName,']'
+^ self belongsToBlock ifTrue: [ self ownerBlockLabel,' - ',self receiverClassName, '[',self methodName,']'  ] ifFalse: [ self receiverClassName, '[',self methodName,']' ]
+	
+]
+
+{ #category : #accessing }
+SDSequenceStaticID >> belongsToBlock [
+
+	^ belongsToBlock
+]
+
+{ #category : #accessing }
+SDSequenceStaticID >> belongsToBlock: anObject [
+
+	belongsToBlock := anObject
 ]
 
 { #category : #'as yet unclassified' }
 SDSequenceStaticID >> equalTo: aSequenceStaticID [
 	^ (self receiverClassName = aSequenceStaticID receiverClassName) and: [self methodName = aSequenceStaticID methodName]
+]
+
+{ #category : #initialization }
+SDSequenceStaticID >> initialize [
+	belongsToBlock := false.
+	ownerBlockLabel := 'unnamedblock'
 ]
 
 { #category : #accessing }
@@ -89,6 +110,18 @@ SDSequenceStaticID >> methodSelector [
 SDSequenceStaticID >> methodSelector: anObject [
 
 	methodSelector := anObject
+]
+
+{ #category : #accessing }
+SDSequenceStaticID >> ownerBlockLabel [
+
+	^ ownerBlockLabel
+]
+
+{ #category : #accessing }
+SDSequenceStaticID >> ownerBlockLabel: anObject [
+
+	ownerBlockLabel := anObject
 ]
 
 { #category : #accessing }

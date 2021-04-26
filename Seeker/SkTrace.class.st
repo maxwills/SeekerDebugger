@@ -20,3 +20,12 @@ SkTrace >> asString [
 		self isUnwinding ifTrue: [ str := str , '+u' ] ]."
 	^ str
 ]
+
+{ #category : #converting }
+SkTrace >> asStringIgnoringLeadingStatements: aNumber [
+	| str |
+	str := Character cr join: (self collect: [ :eachStepDescriptor | eachStepDescriptor asStringIgnoringLeadingStatements: aNumber ]).
+	"self isUnwinding isNotNil and: [ 
+		self isUnwinding ifTrue: [ str := str , '+u' ] ]."
+	^ str
+]
