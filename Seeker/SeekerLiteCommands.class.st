@@ -95,7 +95,8 @@ SeekerLiteCommands >> stCodeCommandsTree [
 			  'Insert Script'.
 			  { 
 				  SkInsertScriptGoToStepNumberLC.
-				  SkInsertScriptGoToLastMethodCallLC } }.
+				  SkInsertScriptGoToLastMethodCallLC.
+				  SkInsertScriptEvaluateExpressionAndCollectLC } }.
 		  { 
 			  'Misc.'.
 			  { 

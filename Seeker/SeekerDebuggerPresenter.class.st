@@ -78,11 +78,14 @@ SeekerDebuggerPresenter >> debuggerExtensionToolName [
 SeekerDebuggerPresenter >> initializeCode [
 	"comment stating purpose of instance-side method"
 	"scope: class-variables  &  instance-variables"	
+		|codeText|
 	code := self newCode.
-
 	code interactionModel: StSindarinContextInteractionModel  new.
 	code syntaxHighlight: true.
-	code text: ('"Put your debugger scripts here..."', String cr).
+	codeText := SeekerGlobals instance seekerCodePresenterText.
+	((codeText isKindOf: String) or: [codeText isKindOf: Text]) ifTrue: [ code text: codeText  ] ifFalse: [ code text: ('"Put your debugger scripts here..."', String cr) ].
+	code whenTextChangedDo: [ self onCodeTextChanged ].
+
 	
 ]
 
@@ -177,6 +180,11 @@ SeekerDebuggerPresenter >> initializeToolbar [
 { #category : #initialization }
 SeekerDebuggerPresenter >> insertCodeText: aString [
 code text: (code text, aString)
+]
+
+{ #category : #'as yet unclassified' }
+SeekerDebuggerPresenter >> onCodeTextChanged [
+	SeekerGlobals instance seekerCodePresenterText: code text.
 ]
 
 { #category : #'event handling' }

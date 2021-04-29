@@ -74,7 +74,7 @@ TracerVariableChanges >> currentStepDescriptor [
 	|stepDescriptor containerBlockNode|
 	stepDescriptor := super currentStepDescriptor.
 	"Check II: Executing code inside blocks"
-	containerBlockNode := SkObjectHelpers getBlockNodeOfStatementNode: self currentStatementNode .
+	containerBlockNode := SkNodeHelpers getBlockNodeOfStatementNode: self currentStatementNode .
 containerBlockNode ifNotNil: [ 
 	
 		 (blocksCollection containsBlock: containerBlockNode) ifTrue: [ 
@@ -147,6 +147,25 @@ self isCurrentStepAssignment ifTrue:[|index|
 
 	Transcript show: self trace asString.
 	Transcript cr."
+]
+
+{ #category : #'as yet unclassified' }
+TracerVariableChanges >> evaluateWithoutErrorsExpression: aString inContext: aContext [
+
+	"Evaluates the expression coming from a stream. Uses the current context of the StDebugger"
+
+	| evaluationBlock |
+	evaluationBlock := [ 
+	                   aContext receiver class compiler
+		                   source: aString;
+		                   context: aContext;
+		                   receiver: aContext receiver;
+		                   requestor: self;
+		                   failBlock: [ nil ];
+		                   evaluate ].
+	^ evaluationBlock
+		  on: Exception
+		  do: [ :e | e ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -312,7 +331,38 @@ TracerVariableChanges >> isCurrentStepAssignment [
 { #category : #'as yet unclassified' }
 TracerVariableChanges >> isCurrentStepMappedFinalStep [
 "This requires an execution to be mapped"
+endStatementDescriptor ifNil: [ ^ false].
  ^(currentStepIndex = endStatementDescriptor executionIndex) or: [self currentStepDescriptor hasSamePathAs: endStatementDescriptor].
+]
+
+{ #category : #'as yet unclassified' }
+TracerVariableChanges >> isCurrentStepTheFirstStatementOfAMethod [
+
+	| statementNode sequenceNode currentStatementIndex |
+	currentStatementIndex := self currentIndexlessStepDescriptor
+		                         topStatementID indexInSequence.
+	statementNode := self currentStatementNode.
+	sequenceNode := SkNodeHelpers sequenceNodeOf: statementNode.
+	sequenceNode ifNil: [ ^false "this case happens when there is a sort of primitive and the method doesnt contain any source (an empty method)" ].
+	sequenceNode parent class = RBMethodNode ifTrue: [ 
+		^(currentStatementIndex = 1) ].
+	^ false
+]
+
+{ #category : #'as yet unclassified' }
+TracerVariableChanges >> isCurrentStepTheLastStatementOfAMethod [
+
+	| statementNode sequenceNode currentStatementIndex |
+	currentStatementIndex := self currentIndexlessStepDescriptor
+		                         topStatementID indexInSequence.
+	statementNode := self currentStatementNode.
+	sequenceNode := SkNodeHelpers sequenceNodeOf: statementNode.
+	sequenceNode parent class = RBMethodNode ifTrue: [ 
+		| currentSequenceStatementCount |
+		currentSequenceStatementCount := sequenceNode statements size.
+		(currentStatementIndex = currentSequenceStatementCount) ifTrue: [ 
+			^ true ] ].
+	^ false
 ]
 
 { #category : #'as yet unclassified' }
@@ -346,6 +396,30 @@ TracerVariableChanges >> reinitializeSupportFeatures [
 
 	trackedVariableValues := Dictionary new.
 	blocksCollection := BlockRegistry new
+]
+
+{ #category : #'as yet unclassified' }
+TracerVariableChanges >> replayWhileEvaluatingExpressionInTheFirstStepOfEveryContextAndCollectResult: aString [
+
+	"Needs a mapped execution"
+
+	| stepIndex expressionResults |
+	stepIndex := self currentStepDescriptor executionIndex.
+	expressionResults := OrderedCollection new.
+	self restart.
+	self stepUntilConditionIsTrue: [ 
+		| shouldStop currentIndex|
+		currentIndex := self currentStepDescriptor executionIndex.
+		shouldStop := currentIndex= stepIndex.
+		(shouldStop not and: [ self isCurrentStepTheFirstStatementOfAMethod ]) 
+			ifTrue: [ 
+				| expressionResult |
+				expressionResult := self
+					                    evaluateWithoutErrorsExpression: aString
+					                    inContext: self currentContext.
+				expressionResults add: {currentIndex . expressionResult}].
+		shouldStop ].
+	^ expressionResults
 ]
 
 { #category : #'as yet unclassified' }
