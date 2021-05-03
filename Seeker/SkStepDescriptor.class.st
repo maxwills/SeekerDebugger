@@ -8,7 +8,8 @@ Class {
 		'executionIndex',
 		'sourceCode',
 		'extraInfo',
-		'context'
+		'context',
+		'astSteps'
 	],
 	#category : #'Seeker-Components'
 }
@@ -66,6 +67,18 @@ SkStepDescriptor >> asStringIgnoringLeadingStatements: aNumber [
 	"self isUnwinding isNotNil and: [ 
 		self isUnwinding ifTrue: [ str := str , '+u' ] ]."
 	^ self executionIndex asString, '.- ', str, ' - ', (self sourceCode), ' ', (extraInfo ifNil:[''] ifNotNil: [extraInfo])
+]
+
+{ #category : #accessing }
+SkStepDescriptor >> astSteps [
+
+	^ astSteps
+]
+
+{ #category : #accessing }
+SkStepDescriptor >> astSteps: anObject [
+
+	astSteps := anObject
 ]
 
 { #category : #accessing }
@@ -127,6 +140,7 @@ SkStepDescriptor >> initialize [
 	super initialize.
 	executionIndex := 0.
 	sourceCode := ''.
+	astSteps := 0.
 	extraInfo := ''
 ]
 
@@ -172,6 +186,17 @@ SkStepDescriptor >> receiverClass [
 { #category : #accessing }
 SkStepDescriptor >> receiverClassName [ 
 	^ self last sequenceStaticID receiverClassName
+]
+
+{ #category : #accessing }
+SkStepDescriptor >> reverseFindStatement: aBlock startingIndex: aNumber [
+"aBlock is predicate for a StatementStaticID. If it evaluates to true, the index of such statement is returned"
+	|statementStaticID|
+	(aNumber > self size) ifTrue: [ ^ 0 ].
+	(aNumber <= 0) ifTrue: [ ^0 ].
+	statementStaticID := self at: aNumber.
+	(aBlock value: statementStaticID) ifTrue: [ ^aNumber ].
+	^self reverseFindStatement: aBlock startingIndex: aNumber -1.
 ]
 
 { #category : #accessing }

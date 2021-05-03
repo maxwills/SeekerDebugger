@@ -53,7 +53,7 @@ SeekerDebugger class >> newWithStatementGranularity: aStDebugger sindarin: aSind
 	updateCoordinator stDebugger: aStDebugger.
 	
 	"Initialize the DebuggerStepperBase subclass to be injected in the seeker debugger"
-	stepper := TracerVariableChanges new.
+	stepper := QueriesStepTracer new.
 	stepper stDebugger: aStDebugger.
 	stepper sindarin: aSindarinDebugger.
 	stepper debuggerUpdateCoordinator: updateCoordinator.

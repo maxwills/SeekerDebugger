@@ -45,10 +45,18 @@ Class {
 		'trace',
 		'currentStepIndex',
 		'startingContextForRecord',
-		'endStatementDescriptor'
+		'endStatementDescriptor',
+		'astStepCounter'
 	],
 	#category : #'Seeker-Components'
 }
+
+{ #category : #'as yet unclassified' }
+DSStatementTracer >> clearStepBuffers [
+	self subclassResponsibility
+	"This is a bad design implmenetation. Ideally, the current working step descriptor should be 'open' for modifications... it should be in the trace as a reference, from when the control enters it, and while the execution continues its ASTs, it is modified until we enter the next step"
+	"For the moment, I have no option but to update the previous step if a flag or condition is met. For the moment, such condition is the presence of seomthing in step buffers"
+]
 
 { #category : #accessing }
 DSStatementTracer >> createIndexlessStepDescriptorForContext: aContext [
@@ -103,6 +111,7 @@ DSStatementTracer >> currentStepDescriptor [
 	| currentStatementDescriptor |
 	currentStatementDescriptor := self currentIndexlessStepDescriptor.
 	currentStatementDescriptor executionIndex: currentStepIndex.
+	currentStatementDescriptor astSteps: astStepCounter.
 	^ currentStatementDescriptor
 ]
 
@@ -225,7 +234,8 @@ DSStatementTracer >> pushCurrentStepDescriptor [
 
 	| currentStepDescriptor |
 	currentStepDescriptor := self currentStepDescriptor.
-	trace add: currentStepDescriptor
+	trace add: currentStepDescriptor.
+	self updatePreviousStepFromBuffers.
 ]
 
 { #category : #'as yet unclassified' }
@@ -356,9 +366,9 @@ DSStatementTracer >> stepAstWithoutSkipping [
    "You must ensure that execution is not finished before callig this method."
 
 	| debuggerActionModel context |
-	
+
 	self signalExceptionIfDebuggedExecutionHasSignalledUnhandledException.
-	self doAstStepPreProcess.
+	astStepCounter := astStepCounter +1. "Note that the counter increases just before actually executing the AST. So Ast nodes pre and post process takes place for the same current ast"
 	debuggerActionModel := stDebugger debuggerActionModel.
 	"InterruptedContext can be a CompiledBlock"
 	context := debuggerActionModel session interruptedContext.
@@ -404,6 +414,7 @@ DSStatementTracer >> stepBackOver [
 DSStatementTracer >> stepInto [
 "This is the basic stepping at statement abstraction."
 self doAndUpdateSessionAfter: [ 
+	astStepCounter := 0.
 	self stepAstIntoStatement.
 	currentStepIndex := currentStepIndex +1.
 	self pushCurrentStepDescriptor]. 
@@ -442,17 +453,6 @@ DSStatementTracer >> stepUntilConditionIsTrue: aBlock [
 			conditionValue ] ]
 ]
 
-{ #category : #'debug - stepping' }
-DSStatementTracer >> stepWithoutSkipping [
-   "Steps the debugger. No skipping. No updates (rememeber to force update after)"
-   |debuggerActionModel context|
-	
-	debuggerActionModel := stDebugger debuggerActionModel.
-context := debuggerActionModel session interruptedContext.
-debuggerActionModel session updateContextTo: context step.
-
-]
-
 { #category : #'as yet unclassified' }
 DSStatementTracer >> testReplayToCurrentStep [
 "THIS WOULD IDEALLY BE ADDED AS AN EXTENSION TO BE REMOVED AFTER. BUT YOU CANT MAKE EXTENSION OF CLASSES IN THE SAME PACKAGE. WILL DO A DIFFERENT PACKAGE IN THE FUTURE"
@@ -487,4 +487,11 @@ DSStatementTracer >> testStepUntilEndlessCase [
 DSStatementTracer >> trace [
 	"Returns the collection of steps signatures"
 	^trace
+]
+
+{ #category : #'as yet unclassified' }
+DSStatementTracer >> updatePreviousStepFromBuffers [
+	self subclassResponsibility
+	"This is a bad design implmenetation. Ideally, the current working step descriptor should be 'open' for modifications... it should be in the trace as a reference, from when the control enters it, and while the execution continues its ASTs, it is modified until we enter the next step"
+	"For the moment, I have no option but to update the previous step if a flag or condition is met. For the moment, such condition is the presence of seomthing in step buffers"
 ]

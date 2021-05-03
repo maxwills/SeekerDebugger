@@ -6,7 +6,12 @@ Class {
 		'trackedVariableValues',
 		'navigationHistory',
 		'navigationForward',
-		'blocksCollection'
+		'blocksCollection',
+		'returnDetectionLog',
+		'returnDectectionStepDescriptors',
+		'returnsDictionary',
+		'stepReturnBuffer',
+		'stepReturnBufferAvailableFlag'
 	],
 	#category : #'Seeker-Components'
 }
@@ -69,6 +74,12 @@ TracerVariableChanges >> blocksCollection: anObject [
 	blocksCollection := anObject
 ]
 
+{ #category : #'as yet unclassified' }
+TracerVariableChanges >> clearStepBuffers [ 
+	stepReturnBuffer := nil.
+	stepReturnBufferAvailableFlag := false.
+]
+
 { #category : #accessing }
 TracerVariableChanges >> currentStepDescriptor [ 
 	|stepDescriptor containerBlockNode|
@@ -103,11 +114,20 @@ TracerVariableChanges >> doAstStepPostProcess [
 			newValue := self astReadAssignmentNewValue.
 			 trackedVariableValues at: actualCurrentStepIndex put: { oldValue . newValue }
 			 ] ].
+	node isReturn ifTrue: [ 
+	|stepDescriptor|
+	stepDescriptor  := self currentStepDescriptor.
+	returnDectectionStepDescriptors add: stepDescriptor.
+	returnDetectionLog := returnDetectionLog ,'IndexInLog: ', returnDectectionStepDescriptors size asString, ' PostAST Step: ', (currentStepIndex asString), ' atAstCounter: ', astStepCounter asString , ' SD: ', stepDescriptor asString ,' topOfStack: ', (self currentContext top asString),String cr.
+	stepReturnBuffer :=(self currentContext top ).
+	stepReturnBufferAvailableFlag := true.
+	 ].
+
 ]
 
 { #category : #'as yet unclassified' }
 TracerVariableChanges >> doAstStepPreProcess [
-|containerBlockNode|
+|containerBlockNode node|
 "Check I: Blocks definition"
 	self currentNode class = RBBlockNode ifTrue: [ 
 		| blockNode |
@@ -127,6 +147,12 @@ containerBlockNode ifNotNil: [
 		""Must store this info for the stepdescriptor somehow. Maybe just do this when creating the descriptor""
 		 ].
  ]."
+node := self currentNode.
+node isReturn ifTrue: [ 
+	|stepDescriptor|
+	stepDescriptor  := self currentStepDescriptor.
+	returnDectectionStepDescriptors add: stepDescriptor.
+	returnDetectionLog := returnDetectionLog ,'IndexInLog: ', returnDectectionStepDescriptors size asString, 'PreAST Step: ', (currentStepIndex asString), ' atAstCounter: ',astStepCounter asString , ' SD: ', stepDescriptor asString ,' topOfStack: ', (self currentContext top asString),String cr  ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -200,6 +226,50 @@ step := trace at: aNumber.
 TracerVariableChanges >> findStepIndexOfLastStepOfTest [
 |targetContext|
 targetContext := self findContextInStack: [ :aContext| aContext sender methodSelector = #performTest  ] 
+]
+
+{ #category : #'as yet unclassified' }
+TracerVariableChanges >> findStepOfFirstRecursionCallFor: aNumber [
+
+	"First analize the stack path to search the original call, and its path"
+
+	| startingStep startingReceiversClass startingMethodSelector indexOfStatementNotInRecursion |
+	startingStep := trace at: aNumber.
+	startingReceiversClass := startingStep receiverClass.
+	startingMethodSelector := startingStep methodSelector.
+	indexOfStatementNotInRecursion := 0.
+	indexOfStatementNotInRecursion := startingStep
+		                                  reverseFindStatement: [ 
+			                                  :aStatement | 
+			                                  | seqId |
+			                                  seqId := aStatement
+				                                           sequenceStaticID.
+			                                  seqId receiverClass
+			                                  ~= startingReceiversClass or: [ 
+				                                  seqId methodSelector
+				                                  ~= startingMethodSelector ] ]
+		                                  startingIndex:
+		                                  startingStep size - 1.
+	indexOfStatementNotInRecursion = 0
+		ifTrue: [ "It was not a recursive(direct recursion) call, so the step of first call is the current step" 
+			^ startingStep executionIndex ]
+		ifFalse: [ 
+			| targetDescriptor |
+			"Must create an indexless descriptor of the target path"
+			targetDescriptor := SkStepDescriptor new.
+			"Note that we have indexOfStatementNotInRecursion, so the first statement inside the recursion is the next one"
+			1 to: (indexOfStatementNotInRecursion +1) do: [ :index | 
+				| statement |
+				statement := startingStep at: index.
+				targetDescriptor add: statement ].
+			"Now, we want to actually stop at the first statement, so we enforce that in the targetDescriptor"
+			targetDescriptor topStatementID indexInSequence: 1.
+			"Got the target descriptor path. Now I need the execution index of a step with the same path"
+			trace do: [ :eachStep | 
+				(eachStep hasSamePathAs: targetDescriptor) ifTrue: [ 
+					^ eachStep executionIndex ] ] ].
+	"This is an error, and in practice this should be unreachable"
+	^ 0
 ]
 
 { #category : #'as yet unclassified' }
@@ -365,6 +435,16 @@ TracerVariableChanges >> isCurrentStepTheLastStatementOfAMethod [
 	^ false
 ]
 
+{ #category : #testing }
+TracerVariableChanges >> isQuickMapAvailable [
+	"returns true or false if a quick map can be performed"
+	"Mapping an execution enables trace analisys"
+	"Quick Map automatically creates the mapping. Creates indices for each step of the execution for the cases of test cases, and handles also 'Debug it' scenarios"	
+	"First check if this is a case of test run using the run test button".
+	
+
+]
+
 { #category : #'as yet unclassified' }
 TracerVariableChanges >> navigateBack [
 |previousStep|
@@ -395,7 +475,12 @@ TracerVariableChanges >> pushNavigationHistory [
 TracerVariableChanges >> reinitializeSupportFeatures [
 
 	trackedVariableValues := Dictionary new.
-	blocksCollection := BlockRegistry new
+	returnsDictionary := Dictionary new "keys are stepIndices, and values is the return object (Note that the developer might need a frozen-in-time version of that object though".
+	blocksCollection := BlockRegistry new.
+	self clearStepBuffers.
+	returnDetectionLog := ''.
+	returnDectectionStepDescriptors := OrderedCollection new.
+
 ]
 
 { #category : #'as yet unclassified' }
@@ -545,4 +630,22 @@ TracerVariableChanges >> trackedVariableValues [
 TracerVariableChanges >> trackedVariableValues: anObject [
 
 	trackedVariableValues := anObject
+]
+
+{ #category : #'as yet unclassified' }
+TracerVariableChanges >> updatePreviousStepFromBuffers [
+
+	"See comment on super implementation"
+
+	trace size <= 1 ifTrue: [ "No previous step" ^ self ].
+
+	stepReturnBufferAvailableFlag ifTrue: [ 
+		| previousStepDescriptor |
+		previousStepDescriptor := trace at: trace size - 1.
+		"Could update the descriptor itself or modify the dicitonary.. I am doing the dictionary option for now (closer to SPU design)"
+		returnsDictionary
+			at: previousStepDescriptor executionIndex
+			put: stepReturnBuffer.
+		stepReturnBuffer := nil.
+		stepReturnBufferAvailableFlag := false ]
 ]
