@@ -139,5 +139,5 @@ SDSequenceStaticID >> receiverClass: anObject [
 { #category : #accessing }
 SDSequenceStaticID >> receiverClassName [
 
-	^ self receiverClass name asString.
+	^ self receiverClass ifNil: [ 'nil' ] ifNotNil:[self receiverClass name asString].
 ]

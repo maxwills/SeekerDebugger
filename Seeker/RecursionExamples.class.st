@@ -32,11 +32,50 @@ RecursionExamples >> directFibonacci: aNumber [
 	^ (self directFibonacci: (aNumber - 1) ) + (self directFibonacci: (aNumber - 2))
 ]
 
+{ #category : #'as yet unclassified' }
+RecursionExamples >> directForwardConcatenation: aStringCollection separator: aString [
+ aStringCollection ifEmpty: [ ^'' ].
+ ^aStringCollection first , aString , ' ' , (self directForwardConcatenation: (aStringCollection copyFrom: 2 to: aStringCollection size) separator: aString )
+]
+
+{ #category : #'as yet unclassified' }
+RecursionExamples >> directForwardCount: aCollection startingAt: aNumber [
+
+	aNumber > aCollection size ifTrue: [ ^ 0 ].
+	^ 1+ (self directForwardCount: aCollection startingAt: aNumber + 1)
+]
+
 { #category : #tests }
 RecursionExamples >> testDirectRecursion [
 	|result|
 	result := self directFibonacci: 5.
 	self assert: result equals: -8
+]
+
+{ #category : #tests }
+RecursionExamples >> testDirectRecursionConcatenationExample [
+	|	stringCollection separator	result|
+	stringCollection := { 'One' . 'Two' . 'Three' . 'Four'}.
+	separator := ','.
+	result := self directForwardConcatenation: stringCollection  separator:  separator .
+	self assert: result equals: 'One,Two,Three,Four'
+]
+
+{ #category : #tests }
+RecursionExamples >> testDirectRecursionConcatenationShortExample [
+	|	stringCollection separator	result|
+	stringCollection := { 'One'}.
+	separator := ','.
+	result := self directForwardConcatenation: stringCollection  separator:  separator .
+	self assert: result equals: 'One '
+]
+
+{ #category : #tests }
+RecursionExamples >> testDirectRecursionConcatenationShorterExample [
+	|	collection	result|
+	collection := { #one }.
+	result := self directForwardCount: collection startingAt:  1.
+	self assert: result equals: 0
 ]
 
 { #category : #tests }

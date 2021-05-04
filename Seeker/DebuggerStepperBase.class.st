@@ -8,6 +8,9 @@ Class {
 	#superclass : #Object,
 	#traits : 'TDebuggerUpdateCoordinatorClient',
 	#classTraits : 'TDebuggerUpdateCoordinatorClient classTrait',
+	#instVars : [
+		'seeker'
+	],
 	#category : #'Seeker-Components'
 }
 
@@ -27,6 +30,18 @@ DebuggerStepperBase >> restart [
 DebuggerStepperBase >> restartRecordFromContext: aContext [
    self subclassResponsibility
 	
+]
+
+{ #category : #accessing }
+DebuggerStepperBase >> seeker [
+
+	^ seeker
+]
+
+{ #category : #accessing }
+DebuggerStepperBase >> seeker: anObject [
+
+	seeker := anObject
 ]
 
 { #category : #initialization }

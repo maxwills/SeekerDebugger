@@ -51,7 +51,7 @@ SeekerDebugger class >> newWithStatementGranularity: aStDebugger sindarin: aSind
 	| debugger stepper updateCoordinator |
 	updateCoordinator := DebuggerUpdateCoordinator new. "The coordinator is owned by the presenter"
 	updateCoordinator stDebugger: aStDebugger.
-	
+
 	"Initialize the DebuggerStepperBase subclass to be injected in the seeker debugger"
 	stepper := QueriesStepTracer new.
 	stepper stDebugger: aStDebugger.
@@ -63,7 +63,7 @@ SeekerDebugger class >> newWithStatementGranularity: aStDebugger sindarin: aSind
 	debugger stDebugger: aStDebugger.
 	debugger sindarin: aSindarinDebugger.
 	debugger debuggerUpdateCoordinator: updateCoordinator.
-
+	stepper seeker: debugger.
 	^ debugger
 ]
 

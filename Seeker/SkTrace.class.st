@@ -22,6 +22,15 @@ SkTrace >> asString [
 ]
 
 { #category : #converting }
+SkTrace >> asStringForCsv [
+	| str |
+	str := Character cr join: (self collect: [ :eachStepDescriptor | eachStepDescriptor asStringForCsv ]).
+	"self isUnwinding isNotNil and: [ 
+		self isUnwinding ifTrue: [ str := str , '+u' ] ]."
+	^ str
+]
+
+{ #category : #converting }
 SkTrace >> asStringIgnoringLeadingStatements: aNumber [
 	| str |
 	str := Character cr join: (self collect: [ :eachStepDescriptor | eachStepDescriptor asStringIgnoringLeadingStatements: aNumber ]).

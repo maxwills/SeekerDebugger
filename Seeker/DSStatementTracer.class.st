@@ -116,7 +116,7 @@ DSStatementTracer >> currentStepDescriptor [
 ]
 
 { #category : #'as yet unclassified' }
-DSStatementTracer >> doAstStepPostProcess [ 
+DSStatementTracer >> doAstStepPostProcess: preProcessAstNode [
 "subclasses should reimplement this"
 	
 ]
@@ -365,7 +365,7 @@ DSStatementTracer >> stepAstWithoutSkipping [
 	"Steps the debugger. No skipping. No recording. No updates (rememeber to force update after)"
    "You must ensure that execution is not finished before callig this method."
 
-	| debuggerActionModel context |
+	| debuggerActionModel context startingNode|
 
 	self signalExceptionIfDebuggedExecutionHasSignalledUnhandledException.
 	astStepCounter := astStepCounter +1. "Note that the counter increases just before actually executing the AST. So Ast nodes pre and post process takes place for the same current ast"
@@ -376,9 +376,10 @@ DSStatementTracer >> stepAstWithoutSkipping [
 		"I think there is an error in the first call of context stepIntoQuickMethod. My suspicious is that the message isBlock doesn't do what the developer thought it did. This ifFalse prevent reaching that case."
 		context stepIntoQuickMethod: true ].
 	"Next line comes from the stdebugger"
+	startingNode := self currentNode. 
 	self doAstStepPreProcess.
    debuggerActionModel stepInto: self currentContext.
-	self doAstStepPostProcess.
+	self doAstStepPostProcess: startingNode.
 "next line was a patch"
 "debuggerActionModel session updateContextTo: context step.
 debuggerActionModel updateTopContext" 

@@ -50,11 +50,22 @@ SkStepDescriptor class >> newFromNode: aRBNode inContext: aContext [
 { #category : #converting }
 SkStepDescriptor >> asString [
 
-	| str |
+	| str source|
 	str := $> join: (self collect: [ :aEsnToken | ' ', aEsnToken asString ]).
 	"self isUnwinding isNotNil and: [ 
 		self isUnwinding ifTrue: [ str := str , '+u' ] ]."
-	^ self executionIndex asString, '.- ', str, ' - ', (self sourceCode), ' ', (extraInfo ifNil:[''] ifNotNil: [extraInfo])
+	source := self sourceCode ifNil: [ '' ] ifNotNil: [ self sourceCode ].
+	^ self executionIndex asString, '.- ', str, ' - ', source, ' ', (extraInfo ifNil:[''] ifNotNil: [extraInfo])
+]
+
+{ #category : #converting }
+SkStepDescriptor >> asStringForCsv [
+
+	| str |
+	str := $> join: (self collect: [ :aEsnToken | ';', aEsnToken asString ]).
+	"self isUnwinding isNotNil and: [ 
+		self isUnwinding ifTrue: [ str := str , '+u' ] ]."
+	^ self executionIndex asString, ';', str, '; ', (self sourceCode), ' ', (extraInfo ifNil:[''] ifNotNil: [extraInfo])
 ]
 
 { #category : #converting }
@@ -93,6 +104,29 @@ SkStepDescriptor >> context: anObject [
 	context := anObject
 ]
 
+{ #category : #'as yet unclassified' }
+SkStepDescriptor >> directRecursionDepth [
+
+	"1 means there was no recursion (just a single call). 2 means that this the method was called once inside the same method, etc"
+
+	| startingReceiversClass startingMethodSelector indexOfStatementNotInRecursion |
+	startingReceiversClass := self receiverClass.
+	startingMethodSelector := self methodSelector.
+	indexOfStatementNotInRecursion := 0.
+	indexOfStatementNotInRecursion := self
+		                                  reverseFindStatement: [ 
+			                                  :aStatement | 
+			                                  | seqId |
+			                                  seqId := aStatement
+				                                           sequenceStaticID.
+			                                  seqId receiverClass
+			                                  ~= startingReceiversClass or: [ 
+				                                  seqId methodSelector
+				                                  ~= startingMethodSelector ] ]
+		                                  startingIndex: self size - 1.
+	^ self size - indexOfStatementNotInRecursion
+]
+
 { #category : #accessing }
 SkStepDescriptor >> executionIndex [
 
@@ -128,6 +162,18 @@ SkStepDescriptor >> hasSamePathAs: anSDStatementStepDescriptor [
 
 	(self size == anSDStatementStepDescriptor size) ifFalse: [ ^ false ].
 	1 to: self size do: [ :index | 
+		| lhsStatement rhsStatement |
+		lhsStatement := self at: index.
+		rhsStatement := anSDStatementStepDescriptor at: index.
+		(lhsStatement equalTo: rhsStatement) ifFalse: [ ^ false ] ].
+	^ true
+]
+
+{ #category : #'as yet unclassified' }
+SkStepDescriptor >> hasSamePathAs: anSDStatementStepDescriptor upToLevel: aNumber [
+self size < aNumber ifTrue: [ ^false ].
+anSDStatementStepDescriptor size < aNumber ifTrue: [ ^false ].
+	1 to: aNumber do: [ :index | 
 		| lhsStatement rhsStatement |
 		lhsStatement := self at: index.
 		rhsStatement := anSDStatementStepDescriptor at: index.

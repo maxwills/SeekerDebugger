@@ -100,29 +100,44 @@ containerBlockNode ifNotNil: [
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> doAstStepPostProcess [
+TracerVariableChanges >> doAstStepPostProcess: preProcessAstNode [
 
-	| node |
+	| node actualCurrentStepIndex |
+	actualCurrentStepIndex := currentStepIndex + 1. "This correction is needed at the moment, because the stepIndex is updated after stepping the ast NOTE THAT  ADDED CHANGEDSTATEMENT. MAYBE USE IT CALCULATE THE OFFSET"
 	node := self currentNode.
 	node isAssignment ifTrue: [ 
 		| variableName |
 		variableName := node variable name.
 		variableName = trackedVariableName ifTrue: [ 
-			|oldValue newValue actualCurrentStepIndex|
-			actualCurrentStepIndex := currentStepIndex +1 "This correction is needed at the moment, because the stepIndex is updated after stepping the ast".
+			| oldValue newValue |
 			oldValue := self astReadAssignmentOldValue.
 			newValue := self astReadAssignmentNewValue.
-			 trackedVariableValues at: actualCurrentStepIndex put: { oldValue . newValue }
-			 ] ].
-	node isReturn ifTrue: [ 
-	|stepDescriptor|
-	stepDescriptor  := self currentStepDescriptor.
-	returnDectectionStepDescriptors add: stepDescriptor.
-	returnDetectionLog := returnDetectionLog ,'IndexInLog: ', returnDectectionStepDescriptors size asString, ' PostAST Step: ', (currentStepIndex asString), ' atAstCounter: ', astStepCounter asString , ' SD: ', stepDescriptor asString ,' topOfStack: ', (self currentContext top asString),String cr.
-	stepReturnBuffer :=(self currentContext top ).
-	stepReturnBufferAvailableFlag := true.
-	 ].
+			trackedVariableValues at: actualCurrentStepIndex put: { 
+					oldValue.
+					newValue } ] ].
 
+	preProcessAstNode isReturn ifTrue: [ 
+		| stepDescriptor stackTop actualStepIndex |
+		actualStepIndex := preProcessAstNode statementNode
+		                   = self currentStatementNode
+			                   ifTrue: [ currentStepIndex ]
+			                   ifFalse: [ currentStepIndex - 1 ].
+		stepDescriptor := self currentStepDescriptor "Note that it might be necessary to correct the execution index".
+		stackTop := self currentContext stackPtr > 0
+			            ifTrue: [ self currentContext top ]
+			            ifFalse: [ #emptyStackTop ].
+		returnDectectionStepDescriptors add: stepDescriptor.
+		returnDetectionLog := returnDetectionLog , 'IndexInLog: '
+		                      ,
+		                      returnDectectionStepDescriptors size asString
+		                      , ' PostAST Step: '
+		                      , actualStepIndex asString
+		                      , ' atAstCounter: ' , astStepCounter asString
+		                      , ' SD: ;' , stepDescriptor asStringForCsv
+		                      , '; topOfStack: ' , stackTop asString
+		                      , String cr.
+		stepReturnBuffer := stackTop.
+		stepReturnBufferAvailableFlag := true ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -149,10 +164,14 @@ containerBlockNode ifNotNil: [
  ]."
 node := self currentNode.
 node isReturn ifTrue: [ 
-	|stepDescriptor|
+	|stepDescriptor stackTop|
+	stackTop := (self currentContext stackPtr > 0) ifTrue: [ self currentContext top ] ifFalse: [ #emptyStackTop ].
 	stepDescriptor  := self currentStepDescriptor.
 	returnDectectionStepDescriptors add: stepDescriptor.
-	returnDetectionLog := returnDetectionLog ,'IndexInLog: ', returnDectectionStepDescriptors size asString, 'PreAST Step: ', (currentStepIndex asString), ' atAstCounter: ',astStepCounter asString , ' SD: ', stepDescriptor asString ,' topOfStack: ', (self currentContext top asString),String cr  ]
+	returnDetectionLog := returnDetectionLog ,'IndexInLog: ', returnDectectionStepDescriptors size asString, 'PreAST Step: ', (currentStepIndex asString), ' atAstCounter: ',astStepCounter asString , ' SD: ;', stepDescriptor asStringForCsv ,'; topOfStack: ', (stackTop asString),String cr  .
+	stepReturnBuffer :=(stackTop ).
+	stepReturnBufferAvailableFlag := true.
+	]
 ]
 
 { #category : #'as yet unclassified' }
@@ -233,7 +252,7 @@ TracerVariableChanges >> findStepOfFirstRecursionCallFor: aNumber [
 
 	"First analize the stack path to search the original call, and its path"
 
-	| startingStep startingReceiversClass startingMethodSelector indexOfStatementNotInRecursion |
+	| startingStep startingReceiversClass startingMethodSelector indexOfStatementNotInRecursion targetDescriptor |
 	startingStep := trace at: aNumber.
 	startingReceiversClass := startingStep receiverClass.
 	startingMethodSelector := startingStep methodSelector.
@@ -250,24 +269,20 @@ TracerVariableChanges >> findStepOfFirstRecursionCallFor: aNumber [
 				                                  ~= startingMethodSelector ] ]
 		                                  startingIndex:
 		                                  startingStep size - 1.
-	indexOfStatementNotInRecursion = 0
-		ifTrue: [ "It was not a recursive(direct recursion) call, so the step of first call is the current step" 
-			^ startingStep executionIndex ]
-		ifFalse: [ 
-			| targetDescriptor |
-			"Must create an indexless descriptor of the target path"
-			targetDescriptor := SkStepDescriptor new.
-			"Note that we have indexOfStatementNotInRecursion, so the first statement inside the recursion is the next one"
-			1 to: (indexOfStatementNotInRecursion +1) do: [ :index | 
-				| statement |
-				statement := startingStep at: index.
-				targetDescriptor add: statement ].
-			"Now, we want to actually stop at the first statement, so we enforce that in the targetDescriptor"
-			targetDescriptor topStatementID indexInSequence: 1.
-			"Got the target descriptor path. Now I need the execution index of a step with the same path"
-			trace do: [ :eachStep | 
-				(eachStep hasSamePathAs: targetDescriptor) ifTrue: [ 
-					^ eachStep executionIndex ] ] ].
+
+	"Must create an indexless descriptor of the target path"
+	targetDescriptor := SkStepDescriptor new.
+	"Note that we have indexOfStatementNotInRecursion, so the first statement inside the recursion is the next one"
+	1 to: indexOfStatementNotInRecursion + 1 do: [ :index | 
+		| statement |
+		statement := startingStep at: index.
+		targetDescriptor add: statement ].
+	"Now, we want to actually stop at the first statement, so we enforce that in the targetDescriptor"
+	targetDescriptor topStatementID indexInSequence: 1.
+	"Got the target descriptor path. Now I need the execution index of a step with the same path"
+	trace do: [ :eachStep | 
+		(eachStep hasSamePathAs: targetDescriptor) ifTrue: [ 
+			^ eachStep executionIndex ] ].
 	"This is an error, and in practice this should be unreachable"
 	^ 0
 ]
@@ -600,6 +615,62 @@ self stepUntilConditionIsTrue: [
 ].
  foundStep ifFalse: [ self inform: 'No new method call was found.' ]
 	
+]
+
+{ #category : #'as yet unclassified' }
+TracerVariableChanges >> stepForwardToStatementImmediatelyAfter: anIndexlessStepDescriptor [
+"Should first move forward until reachine the descriptor"
+|foundTheStep|
+foundTheStep := false.
+self stepUntilConditionIsTrue: [ 
+	self isCurrentStepMappedFinalStep ifTrue: [ true ] ifFalse:[
+		foundTheStep := (self currentStepDescriptor hasSamePathAs: anIndexlessStepDescriptor) .
+		foundTheStep
+		]
+	
+].
+foundTheStep ifFalse: [ ^self inform: 'SeekerDebuger: Could not find the requested step' ].
+"Then keep moving forward until we exit it"
+self stepUntilConditionIsTrue: [ 
+	self isCurrentStepMappedFinalStep ifTrue: [ true ] ifFalse:[
+		(self currentStepDescriptor hasSamePathAs: anIndexlessStepDescriptor upToLevel: anIndexlessStepDescriptor size) not 
+		]
+	
+].
+
+]
+
+{ #category : #'as yet unclassified' }
+TracerVariableChanges >> stepForwardToStatementImmediatelyAfterMethodReturn: aCompiledMethod [
+
+"Returns true if the method was detected and control stops just after. If the the method could not be detected, returns false"
+
+"Should first move forward until reaching the descriptor"
+|foundTheStep startingStepDescriptor receiverClass methodSelector|
+receiverClass := aCompiledMethod methodClass.
+methodSelector := aCompiledMethod selector.
+
+foundTheStep := false.
+self stepUntilConditionIsTrue: [ 
+	self isCurrentStepMappedFinalStep ifTrue: [ true ] ifFalse:[
+		|stepDescriptor|
+		stepDescriptor := self currentStepDescriptor.
+		foundTheStep := (( stepDescriptor receiverClass = receiverClass) and: [ stepDescriptor methodSelector = methodSelector ] ) .
+		foundTheStep
+		]
+	
+].
+foundTheStep ifFalse: [ self inform: 'SeekerDebuger: Could not find the requested step'.^false ].
+startingStepDescriptor := self currentStepDescriptor.
+"Then keep moving forward until we exit it"
+self stepUntilConditionIsTrue: [ 
+	self isCurrentStepMappedFinalStep ifTrue: [ true ] ifFalse:[
+		(self currentStepDescriptor hasSamePathAs: startingStepDescriptor upToLevel: (startingStepDescriptor size-1)) not 
+		]
+	
+].
+^true
+
 ]
 
 { #category : #'as yet unclassified' }
