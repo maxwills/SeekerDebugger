@@ -62,6 +62,26 @@ TracerVariableChanges >> autoSetupForTestForUnhandledException [
 	self setEndFromCurrentStep.
 ]
 
+{ #category : #'as yet unclassified' }
+TracerVariableChanges >> automapForDoItScenario [
+		|initialContext originalStep|
+	initialContext := self findContextInStack: [:aContext| aContext methodSelector = #DoIt ].
+	initialContext ifNil:[^self error: 'Could not detect the initial context for the DoIt Scenario.'].
+	startingContextForRecord := initialContext.
+	self replayAndBuildExecutionMap 
+	"Ideally I would mark the end statement"
+]
+
+{ #category : #'as yet unclassified' }
+TracerVariableChanges >> automapForTestCaseScenario [
+		|testInitialContext|
+	testInitialContext := self findContextInStack: [:aContext| aContext methodSelector = #runCase ].
+	testInitialContext ifNil:[^self error: 'Could not detect the initial context for the test.'].
+	startingContextForRecord := testInitialContext.
+	self replayAndBuildExecutionMap .
+	"Ideally I would mark the end statement"
+]
+
 { #category : #accessing }
 TracerVariableChanges >> blocksCollection [
 
@@ -195,9 +215,14 @@ self isCurrentStepAssignment ifTrue:[|index|
 ]
 
 { #category : #'as yet unclassified' }
+TracerVariableChanges >> evaluateExpressionInCurrentContext: aString [
+^self evaluateWithoutErrorsExpression: aString inContext: self currentContext.
+]
+
+{ #category : #'as yet unclassified' }
 TracerVariableChanges >> evaluateWithoutErrorsExpression: aString inContext: aContext [
 
-	"Evaluates the expression coming from a stream. Uses the current context of the StDebugger"
+	"Evaluates the expression coming from a stream."
 
 	| evaluationBlock |
 	evaluationBlock := [ 
@@ -463,11 +488,27 @@ TracerVariableChanges >> isCurrentStepTheLastStatementOfAMethod [
 ]
 
 { #category : #testing }
+TracerVariableChanges >> isDoItScenario [
+	
+		|stepDescriptor|
+		"Check if this is a DoIt scenario"
+		stepDescriptor := self currentStepDescriptor.
+		(SkStepDescriptorHelpers descriptor: stepDescriptor containsSequenceByMethodSelector: #DoIt startingAt: 1) ifTrue: [ ^true ].
+		^false
+	
+
+]
+
+{ #category : #testing }
 TracerVariableChanges >> isQuickMapAvailable [
 	"returns true or false if a quick map can be performed"
 	"Mapping an execution enables trace analisys"
 	"Quick Map automatically creates the mapping. Creates indices for each step of the execution for the cases of test cases, and handles also 'Debug it' scenarios"	
-	"First check if this is a case of test run using the run test button".
+		|stepDescriptor|
+		"Check if this is a DoIt (Debug it) scenario"
+		stepDescriptor := self currentStepDescriptor.
+		(SkStepDescriptorHelpers descriptor: stepDescriptor containsSequenceByMethod: (UndefinedObject>>#DoIt) startingAt: 1) ifTrue: [ ^true ].
+	"Check if this is a case of test run using the run test button".
 	
 
 ]
@@ -477,6 +518,23 @@ TracerVariableChanges >> isStepTheFinalStep: aStepDescriptor [
 "This requires an execution to be mapped, and the descriptor mut be indexed"
 endStatementDescriptor ifNil: [ ^ false].
  ^(aStepDescriptor executionIndex = endStatementDescriptor executionIndex) or: [aStepDescriptor hasSamePathAs: endStatementDescriptor].
+]
+
+{ #category : #testing }
+TracerVariableChanges >> isTestCaseScenario [
+
+	"To solve this, we analyze the stack"
+
+	| safelyMatchLiterals |
+	safelyMatchLiterals := [ :compiledBlock | 
+	                       [ 
+	                       (compiledBlock literals at: 1) = #setUp and: [ 
+		                       (compiledBlock literals at: 2) = #performTest ] ]
+		                       on: Exception
+		                       do: [ false ] ].
+	^self doesAnyContextsInTheStackStatisfies: [ :context | 
+		context method class = CompiledBlock and: [ 
+			safelyMatchLiterals value: context method ] ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -503,6 +561,15 @@ self restartAndStepToIndex: forwardStep.
 { #category : #'as yet unclassified' }
 TracerVariableChanges >> pushNavigationHistory [
 (currentStepIndex > 0 ) ifTrue:[	navigationHistory add: currentStepIndex. navigationForward removeAll] 
+]
+
+{ #category : #'as yet unclassified' }
+TracerVariableChanges >> quickMap [
+"TODO: Move out the inform calls"
+	(self isDoItScenario) ifTrue: [ self automapForDoItScenario .^self inform: 'Time Traveling enabled' ].
+	(self isTestCaseScenario ) ifTrue: [ self automapForTestCaseScenario.^self inform: 'Time Traveling enabled' ].
+^	self inform: 'Could not enable Time Traveling automatically. The session needs a manual set up' .
+	
 ]
 
 { #category : #'as yet unclassified' }

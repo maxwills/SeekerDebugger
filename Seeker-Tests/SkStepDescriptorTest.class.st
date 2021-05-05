@@ -10,10 +10,10 @@ Class {
 { #category : #'as yet unclassified' }
 SkStepDescriptorTest >> createStatementFor: aMethod withIndexInSequence: aNumber [
 	|statement sequence|
-	sequence := SDSequenceStaticID new.
+	sequence := SkSequenceStaticID new.
 	sequence receiverClass: aMethod methodClass.
 	sequence methodSelector: aMethod selector.
-	statement := SDStatementStaticID new.
+	statement := SkStatementStaticID new.
 	statement sequenceStaticID: sequence.
 	statement indexInSequence: aNumber.
 	^statement

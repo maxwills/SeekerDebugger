@@ -27,7 +27,7 @@ SkGoToNodeUnderCursorLC >> executeCommand [
 	"Just need to replace the statement number and put the one under the cursor instead"
 	"Note that the source code part will not be updated, but it is unnecessary for the path comparison"
 	"THIS FAILS FOR NESTED SEQUENCES IN THE SAME AST (if that makes sense)"
-	targetStatementNumber := SDStatementStaticID 
+	targetStatementNumber := SkStatementStaticID 
 		                         countNodeStatementIndexInOwningSequence:
 		                         nodeUnderCursor.
 	descriptor topStatementID indexInSequence: targetStatementNumber.

@@ -70,6 +70,7 @@ SeekerLiteCommands >> registerCommands:stDebuggerInstance forRoot: rootCommandGr
 SeekerLiteCommands >> stCodeCommandsTree [
 
 	^ { 
+		  SkQuickMapLC.
 		  { 
 			  'Map Session'.
 			  { 

@@ -139,6 +139,21 @@ DSStatementTracer >> doStepOpeningProcess [
 	^self halt
 ]
 
+{ #category : #'as yet unclassified' }
+DSStatementTracer >> doesAnyContextsInTheStackStatisfies: aPredicateBlock [
+
+	"the predicate block receives a context as parameter"
+
+	"Searches iteratively"
+
+	| context |
+	context := self currentContext.
+	[ aPredicateBlock value: context ] whileFalse: [ 
+		context := context sender.
+		context ifNil: [ ^ false ] ].
+	^ true
+]
+
 { #category : #testing }
 DSStatementTracer >> hasSignalledUnhandledException [
 	"Returns true if the debugged execution has signalled an exception that has not been handled by any on:do: (i.e. the #defaultAction of the exception is about to be executed. This default action typically leads to opening a debugger on the process that signalled the exception)"

@@ -34,7 +34,7 @@ SkStepDescriptor class >> newFromNode: aRBNode inContext: aContext [
 	[ iterationContext isNotNil ] whileTrue: [ 
 		| statementID iterationNode |
 		iterationNode := self currentNodeOf: iterationContext. "iterationNode might be constant. need to check"
-		statementID := SDStatementStaticID
+		statementID := SkStatementStaticID
 			               newFromAstNode: iterationNode
 			               inContext: iterationContext.
 		stepDescriptor addFirst: statementID.

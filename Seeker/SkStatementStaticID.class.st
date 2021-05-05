@@ -3,7 +3,7 @@ Describes ""horizontally"" and locally a statement.
 It is seuqenceID plus a child index.
 "
 Class {
-	#name : #SDStatementStaticID,
+	#name : #SkStatementStaticID,
 	#superclass : #Object,
 	#instVars : [
 		'sequenceStaticID',
@@ -13,7 +13,7 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
-SDStatementStaticID class >> countNodeStatementIndexInOwningSequence: aRBNode [
+SkStatementStaticID class >> countNodeStatementIndexInOwningSequence: aRBNode [
    "Count the position of the statement node in respect to the upper sequence. If the parent node is not a sequence, it searches recursively until it finds it."
 	aRBNode parent ifNil: [ ^ 0 ].
 	aRBNode parent class == RBSequenceNode ifTrue: [ 
@@ -25,10 +25,10 @@ SDStatementStaticID class >> countNodeStatementIndexInOwningSequence: aRBNode [
 ]
 
 { #category : #'instance creation' }
-SDStatementStaticID class >> newFromAstNode: aRBNode inContext: aContext [
+SkStatementStaticID class >> newFromAstNode: aRBNode inContext: aContext [
 |statementID sequenceID nodeIndex|
 statementID := self new.
-	sequenceID := SDSequenceStaticID newFromAstNode: aRBNode inContext: aContext .
+	sequenceID := SkSequenceStaticID newFromAstNode: aRBNode inContext: aContext .
 	
 	nodeIndex := self countNodeStatementIndexInOwningSequence: aRBNode.
 
@@ -41,7 +41,7 @@ statementID := self new.
 ]
 
 { #category : #accessing }
-SDStatementStaticID class >> statementIndexOfNode: anRBNode inSequence: aSequenceNode [
+SkStatementStaticID class >> statementIndexOfNode: anRBNode inSequence: aSequenceNode [
    "Returns the index of the node in the given sequence. The node must be an immedate child of the sequence. This method replaces the collection method 'indexOf' because of a bug."
 	"Next comment is a copy paste of the prototype. Need to check it"
 	"This is because the indexof fails if the source code of the nodes is the same. I think the prblem is that indexOf compares with hashes, and the hashes are the same for different nodes with the same source"	
@@ -52,35 +52,35 @@ SDStatementStaticID class >> statementIndexOfNode: anRBNode inSequence: aSequenc
 ]
 
 { #category : #converting }
-SDStatementStaticID >> asString [
+SkStatementStaticID >> asString [
 	^ sequenceStaticID asString , ' (', indexInSequence asString,') '
 ]
 
 { #category : #'as yet unclassified' }
-SDStatementStaticID >> equalTo: aStatementStaticID [
+SkStatementStaticID >> equalTo: aStatementStaticID [
 	^ (self indexInSequence = aStatementStaticID indexInSequence) and: [ self sequenceStaticID equalTo: aStatementStaticID sequenceStaticID ]
 ]
 
 { #category : #accessing }
-SDStatementStaticID >> indexInSequence [
+SkStatementStaticID >> indexInSequence [
 
 	^ indexInSequence
 ]
 
 { #category : #accessing }
-SDStatementStaticID >> indexInSequence: anObject [
+SkStatementStaticID >> indexInSequence: anObject [
 
 	indexInSequence := anObject
 ]
 
 { #category : #accessing }
-SDStatementStaticID >> sequenceStaticID [
+SkStatementStaticID >> sequenceStaticID [
 
 	^ sequenceStaticID
 ]
 
 { #category : #accessing }
-SDStatementStaticID >> sequenceStaticID: anObject [
+SkStatementStaticID >> sequenceStaticID: anObject [
 
 	sequenceStaticID := anObject
 ]

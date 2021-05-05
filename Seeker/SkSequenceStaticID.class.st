@@ -3,7 +3,7 @@ This ideally should be immutable.
 a styructure with a classname and a method.
 "
 Class {
-	#name : #SDSequenceStaticID,
+	#name : #SkSequenceStaticID,
 	#superclass : #Object,
 	#instVars : [
 		'receiverClass',
@@ -15,7 +15,7 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
-SDSequenceStaticID class >> getBlockNodeOfStatementNode: aRBNode [
+SkSequenceStaticID class >> getBlockNodeOfStatementNode: aRBNode [
 "Returns the Block Node that contains the statement"
 	| statementNode sequenceNode blockNode |
 	statementNode := aRBNode statementNode.
@@ -29,7 +29,7 @@ SDSequenceStaticID class >> getBlockNodeOfStatementNode: aRBNode [
 ]
 
 { #category : #'instance creation' }
-SDSequenceStaticID class >> newFromAstNode: aRBNode inContext: aContext [
+SkSequenceStaticID class >> newFromAstNode: aRBNode inContext: aContext [
 
 	| sequenceID |
 	sequenceID := self new.
@@ -41,7 +41,7 @@ SDSequenceStaticID class >> newFromAstNode: aRBNode inContext: aContext [
 ]
 
 { #category : #'instance creation' }
-SDSequenceStaticID class >> oldImplementationForBlocksAliasesNewFromAstNode: aRBNode inContext: aContext withInstanceDictionary: aSeekerInstanceDictionary [
+SkSequenceStaticID class >> oldImplementationForBlocksAliasesNewFromAstNode: aRBNode inContext: aContext withInstanceDictionary: aSeekerInstanceDictionary [
 "This method is not supposed to be used. It is only here to keep the block handling related code until it is incorporated in the proper StepInfoRegistry"
 
 	| sequenceID containerBlockNode |
@@ -66,78 +66,78 @@ containerBlockNode ifNotNil: [
 ]
 
 { #category : #converting }
-SDSequenceStaticID >> asString [
+SkSequenceStaticID >> asString [
 ^ self belongsToBlock ifTrue: [ self ownerBlockLabel,' - ',self receiverClassName, '[',self methodName,']'  ] ifFalse: [ self receiverClassName, '[',self methodName,']' ]
 	
 ]
 
 { #category : #accessing }
-SDSequenceStaticID >> belongsToBlock [
+SkSequenceStaticID >> belongsToBlock [
 
 	^ belongsToBlock
 ]
 
 { #category : #accessing }
-SDSequenceStaticID >> belongsToBlock: anObject [
+SkSequenceStaticID >> belongsToBlock: anObject [
 
 	belongsToBlock := anObject
 ]
 
 { #category : #'as yet unclassified' }
-SDSequenceStaticID >> equalTo: aSequenceStaticID [
+SkSequenceStaticID >> equalTo: aSequenceStaticID [
 	^ (self receiverClassName = aSequenceStaticID receiverClassName) and: [self methodName = aSequenceStaticID methodName]
 ]
 
 { #category : #initialization }
-SDSequenceStaticID >> initialize [
+SkSequenceStaticID >> initialize [
 	belongsToBlock := false.
 	ownerBlockLabel := 'unnamedblock'
 ]
 
 { #category : #accessing }
-SDSequenceStaticID >> methodName [
+SkSequenceStaticID >> methodName [
 
 	^ self methodSelector asString
 ]
 
 { #category : #accessing }
-SDSequenceStaticID >> methodSelector [
+SkSequenceStaticID >> methodSelector [
 
 	^ methodSelector
 ]
 
 { #category : #accessing }
-SDSequenceStaticID >> methodSelector: anObject [
+SkSequenceStaticID >> methodSelector: anObject [
 
 	methodSelector := anObject
 ]
 
 { #category : #accessing }
-SDSequenceStaticID >> ownerBlockLabel [
+SkSequenceStaticID >> ownerBlockLabel [
 
 	^ ownerBlockLabel
 ]
 
 { #category : #accessing }
-SDSequenceStaticID >> ownerBlockLabel: anObject [
+SkSequenceStaticID >> ownerBlockLabel: anObject [
 
 	ownerBlockLabel := anObject
 ]
 
 { #category : #accessing }
-SDSequenceStaticID >> receiverClass [
+SkSequenceStaticID >> receiverClass [
 
 	^ receiverClass
 ]
 
 { #category : #accessing }
-SDSequenceStaticID >> receiverClass: anObject [
+SkSequenceStaticID >> receiverClass: anObject [
 
 	receiverClass := anObject
 ]
 
 { #category : #accessing }
-SDSequenceStaticID >> receiverClassName [
+SkSequenceStaticID >> receiverClassName [
 
 	^ self receiverClass ifNil: [ 'nil' ] ifNotNil:[self receiverClass name asString].
 ]
