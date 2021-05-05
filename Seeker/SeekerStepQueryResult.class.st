@@ -59,6 +59,19 @@ SeekerStepQueryResult >> printOn: aStream [
 ]
 
 { #category : #accessing }
+SeekerStepQueryResult >> result [
+
+	^ stepResult
+]
+
+{ #category : #accessing }
+SeekerStepQueryResult >> result: anObject [
+
+	stepResult := anObject.
+	hasResult := true.
+]
+
+{ #category : #accessing }
 SeekerStepQueryResult >> seeker [
 
 	^ seeker
@@ -80,19 +93,6 @@ SeekerStepQueryResult >> stepIndex [
 SeekerStepQueryResult >> stepIndex: anObject [
 
 	stepIndex := anObject
-]
-
-{ #category : #accessing }
-SeekerStepQueryResult >> stepResult [
-
-	^ stepResult
-]
-
-{ #category : #accessing }
-SeekerStepQueryResult >> stepResult: anObject [
-
-	stepResult := anObject.
-	hasResult := true.
 ]
 
 { #category : #'as yet unclassified' }

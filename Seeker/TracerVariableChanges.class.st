@@ -308,6 +308,18 @@ isTestContext := [:aContext| SkObjectHelpers isObject: aContext receiver subclas
 ]
 
 { #category : #'as yet unclassified' }
+TracerVariableChanges >> getIndexlessDescriptorOfLastStatementInCurrentSequence [
+
+	| stepDescriptor currentStatementNode statementsCount |
+	stepDescriptor := self currentStepDescriptor.
+	currentStatementNode := self currentStatementNode.
+	statementsCount := SkNodeHelpers statementCountOfOwningSequenceFor:
+		                   currentStatementNode.
+	stepDescriptor executionIndex: 0. "make it indexless, although this is not necessary"
+	stepDescriptor topStatementID indexInSequence: statementsCount
+]
+
+{ #category : #'as yet unclassified' }
 TracerVariableChanges >> getNewValueForStep: aNumber [
 ^self
 	
@@ -458,6 +470,13 @@ TracerVariableChanges >> isQuickMapAvailable [
 	"First check if this is a case of test run using the run test button".
 	
 
+]
+
+{ #category : #'as yet unclassified' }
+TracerVariableChanges >> isStepTheFinalStep: aStepDescriptor [
+"This requires an execution to be mapped, and the descriptor mut be indexed"
+endStatementDescriptor ifNil: [ ^ false].
+ ^(aStepDescriptor executionIndex = endStatementDescriptor executionIndex) or: [aStepDescriptor hasSamePathAs: endStatementDescriptor].
 ]
 
 { #category : #'as yet unclassified' }
@@ -618,6 +637,23 @@ self stepUntilConditionIsTrue: [
 ]
 
 { #category : #'as yet unclassified' }
+TracerVariableChanges >> stepForwardToStatement: anIndexlessStepDescriptor [
+
+	| foundTheStep |
+	foundTheStep := false.
+	self stepUntilConditionIsTrue: [ 
+		| step |
+		step := self currentStepDescriptor.
+		(self isStepTheFinalStep: step)
+			ifTrue: [ true ]
+			ifFalse: [ 
+				foundTheStep := self currentStepDescriptor hasSamePathAs:
+					                anIndexlessStepDescriptor.
+				foundTheStep ] ].
+	^ foundTheStep
+]
+
+{ #category : #'as yet unclassified' }
 TracerVariableChanges >> stepForwardToStatementImmediatelyAfter: anIndexlessStepDescriptor [
 "Should first move forward until reachine the descriptor"
 |foundTheStep|
@@ -655,6 +691,40 @@ self stepUntilConditionIsTrue: [
 	self isCurrentStepMappedFinalStep ifTrue: [ true ] ifFalse:[
 		|stepDescriptor|
 		stepDescriptor := self currentStepDescriptor.
+		foundTheStep := (( stepDescriptor receiverClass = receiverClass) and: [ stepDescriptor methodSelector = methodSelector ] ) .
+		foundTheStep
+		]
+	
+].
+foundTheStep ifFalse: [ self inform: 'SeekerDebuger: Could not find the requested step'.^false ].
+startingStepDescriptor := self currentStepDescriptor.
+"Then keep moving forward until we exit it"
+self stepUntilConditionIsTrue: [ 
+	self isCurrentStepMappedFinalStep ifTrue: [ true ] ifFalse:[
+		(self currentStepDescriptor hasSamePathAs: startingStepDescriptor upToLevel: (startingStepDescriptor size-1)) not 
+		]
+	
+].
+^true
+
+]
+
+{ #category : #'as yet unclassified' }
+TracerVariableChanges >> stepForwardToStatementImmediatelyAfterMethodReturn: aCompiledMethod orMatchingPath: aStepDescriptorOfTheEnd [
+
+"Returns true if the method was detected and control stops just after. If the the method could not be detected, returns false"
+
+"Should first move forward until reaching the descriptor"
+|foundTheStep startingStepDescriptor receiverClass methodSelector executionEndChecker|
+receiverClass := aCompiledMethod methodClass.
+methodSelector := aCompiledMethod selector.
+executionEndChecker := [ :step| (step hasSamePathAs: aStepDescriptorOfTheEnd ) or: [self isCurrentStepMappedFinalStep ]].
+foundTheStep := false.
+self stepUntilConditionIsTrue: [ 
+	|stepDescriptor|
+		stepDescriptor := self currentStepDescriptor.
+	(executionEndChecker value: stepDescriptor) ifTrue: [ true ] ifFalse:[
+		
 		foundTheStep := (( stepDescriptor receiverClass = receiverClass) and: [ stepDescriptor methodSelector = methodSelector ] ) .
 		foundTheStep
 		]

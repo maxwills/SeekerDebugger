@@ -22,7 +22,7 @@ SeekerStepCollectionQueryResult class >> newFromStepDictionary: aDictionary seek
 	| resultCollection sortedKeys |
 	resultCollection := self new.
 	resultCollection seeker: aSeekerDebugger.
-	resultCollection rawStepDictionary: aDictionary.
+	resultCollection rawResult: aDictionary.
 	"keys need to be ordered chronologically"
 	sortedKeys := aDictionary keysSortedSafely.
 	sortedKeys do: [ :stepIndex | 
@@ -30,7 +30,7 @@ SeekerStepCollectionQueryResult class >> newFromStepDictionary: aDictionary seek
 		item := SeekerStepCollectionItem new.
 		item stepIndex: stepIndex.
 		item seeker: aSeekerDebugger.
-		item stepResult: (aDictionary at: stepIndex).
+		item result: (aDictionary at: stepIndex).
 		aBlock ifNotNil: [ item info: (aBlock value: stepIndex)].
 		resultCollection add: item ].
 	^resultCollection 
@@ -45,13 +45,13 @@ SeekerStepCollectionQueryResult >> printOn: aStream [
 ]
 
 { #category : #accessing }
-SeekerStepCollectionQueryResult >> rawStepDictionary [
+SeekerStepCollectionQueryResult >> rawResult [
 
 	^ rawStepDictionary
 ]
 
 { #category : #accessing }
-SeekerStepCollectionQueryResult >> rawStepDictionary: anObject [
+SeekerStepCollectionQueryResult >> rawResult: anObject [
 
 	rawStepDictionary := anObject
 ]

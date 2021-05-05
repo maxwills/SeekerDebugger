@@ -70,7 +70,7 @@ QueriesStepTracer >> doesPreviousReturnOfMethod: aMethod satisfiesPredicate: aPr
 		^ SeekerStepQueryResult noResult ].
 	methodReturnValue := returnsDictionary at: stepOfReturnNode.
 	result := SeekerStepQueryResult new.
-	result stepResult: (aPredicateBlock value: methodReturnValue).
+	result result: (aPredicateBlock value: methodReturnValue).
 	result stepIndex: stepOfReturnNode.
 	result info: { #returnOfTheMethodIs: . methodReturnValue }.
 	result seeker: self seeker.
@@ -101,7 +101,8 @@ QueriesStepTracer >> getNextValuesAtEachRecursionOf: aMethod [
 			  seeker: self seeker
 			  infoMaker: nil ].
 	result := self getPastValuesAtEachRecursionOf: aMethod.
-	self restartAndStepToIndex: originalStepIndex
+	self restartAndStepToIndex: originalStepIndex.
+	^result
 ]
 
 { #category : #'as yet unclassified' }
@@ -142,5 +143,19 @@ QueriesStepTracer >> getPastValuesAtEachRecursionOf: aMethod [
 				put: (returnsDictionary at: stepIndex) ] ].
 	^ SeekerStepCollectionQueryResult
 		  newFromStepDictionary: recursionReturnsDictionary
+		  seeker: self seeker
+]
+
+{ #category : #'as yet unclassified' }
+QueriesStepTracer >> getPreviousValueChangesOfVariableNamed: aString [
+
+	"Needs a mapped execution"
+
+	| originalStep |
+	originalStep := self currentStepDescriptor.
+	self trackedVariableName: aString.
+	self restartAndStepToIndex: originalStep executionIndex.
+	^ SeekerStepCollectionQueryResult
+		  newFromStepDictionary: trackedVariableValues
 		  seeker: self seeker
 ]

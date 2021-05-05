@@ -25,7 +25,13 @@ SkNodeHelpers class >> sequenceNodeOf: aStatementNode [
 
 { #category : #'as yet unclassified' }
 SkNodeHelpers class >> statementCountOfOwningSequenceFor: aStatementNode [
-^aStatementNode parent statements size."Is this always the case?"
+^self statementCountOfSequenceNode: (self sequenceNodeOf: aStatementNode)."Is this always the case?"
+]
+
+{ #category : #'as yet unclassified' }
+SkNodeHelpers class >> statementCountOfSequenceNode: aSequenceNode [
+	aSequenceNode isSequence ifFalse: [ ^self error: 'not a sequence node'].
+	^aSequenceNode statements size.
 ]
 
 { #category : #'as yet unclassified' }

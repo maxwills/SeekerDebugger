@@ -310,18 +310,23 @@ SeekerDebuggerPresenter >> updateExpressionValueDisplayed [
 
 { #category : #'accessing model' }
 SeekerDebuggerPresenter >> updatePresenter [
-|stepLabel|
-   "Called automatically when the debugger updates its state after stepping"
-   "Your widgets should be updated here."
+
+	| stepLabel |
+	"Called automatically when the debugger updates its state after stepping""Your widgets should be updated here."
 	code interactionModel context: stDebugger currentContext.
 	code interactionModel bindings
 		at: #seeker
 		put: (WorkspaceVariable key: #seeker value: self seekerDebugger).
-		stepLabel := 'Current Step: '.
-   self seekerDebugger isExecutionFinished ifTrue: [ stepLabel := '(Finished) ', stepLabel  ].
-	currentStepLabel label: stepLabel, seekerDebugger currentStepDescriptor asString.
-	
+	code interactionModel bindings
+		at: #executeQuery
+		put: (WorkspaceVariable key: #executeQuery value: self seekerDebugger stepper).
+	stepLabel := 'Current Step: '.
+	self seekerDebugger isExecutionFinished ifTrue: [ 
+		stepLabel := '(Finished) ' , stepLabel ].
+	currentStepLabel label:
+		stepLabel , seekerDebugger currentStepDescriptor asString.
+
 	self updateEvaluatorCode.
-   self updateExpressionValueDisplayed.
-   super updatePresenter
+	self updateExpressionValueDisplayed.
+	super updatePresenter
 ]

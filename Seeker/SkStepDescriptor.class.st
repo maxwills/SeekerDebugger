@@ -92,6 +92,45 @@ SkStepDescriptor >> astSteps: anObject [
 	astSteps := anObject
 ]
 
+{ #category : #'as yet unclassified' }
+SkStepDescriptor >> comparePathTo: anIndexlessStepDescriptor [
+
+	"Returns -1 if self happens before the paramenter.  0 if they are the same, and 1 if self happens after the parameter. If the root statement sequence is different, then it returns nil (There is no chonologial order if they come from totally different executions.
+	Return nil in any other error case."
+
+	| shortestLength |
+	"Take care immediately of a border cases."
+	anIndexlessStepDescriptor ifNil: [ ^ nil ].
+	shortestLength := self size < anIndexlessStepDescriptor size
+		                  ifTrue: [ self size ]
+		                  ifFalse: [ anIndexlessStepDescriptor size ].
+	shortestLength = 0 ifTrue: [ ^ nil ].
+	(shortestLength = 1 and: [ 
+		 ((self at: 1) sequenceStaticID equalTo: (anIndexlessStepDescriptor at: 1) sequenceStaticID ) not ]) 
+		ifTrue: [ ^ nil ].
+	1 to: shortestLength do: [ :pathIndex | 
+		| thisPathStatement othersPathStatement |
+		thisPathStatement := self at: pathIndex.
+		othersPathStatement := anIndexlessStepDescriptor at: pathIndex.
+		(thisPathStatement equalTo: othersPathStatement)
+			ifTrue: [ "keep advancing the index" ]
+			ifFalse: [ "There is something different: the sequence or index""See if we are in the same sequence"
+				(thisPathStatement sequenceStaticID equalTo:
+					 othersPathStatement sequenceStaticID)
+					ifTrue: [ 
+						^ thisPathStatement indexInSequence
+						  < othersPathStatement indexInSequence
+							  ifTrue: [ ^ -1 ]
+							  ifFalse: [ 
+								  ^ 1 "Not that we are skipping the equal case, because it should have been filtered before entering here" ] ]
+					ifFalse: [ 
+						^ 0 "This is an error case? The index may or maynot be the same, and the sequence is different. I think this will happen in the current state of the project when parameters solve their own inner statements. However, it would be interesting to recocer the common statement in the path. not for now" ] ] ].
+			"At this point both paths have in common the shortest path. Then the longest describes what happens after".
+	self size = anIndexlessStepDescriptor size ifTrue: [ ^ 0 ].
+	self size < anIndexlessStepDescriptor size ifTrue: [ ^ -1 ].
+	^ 1
+]
+
 { #category : #accessing }
 SkStepDescriptor >> context [
 
@@ -149,6 +188,22 @@ SkStepDescriptor >> extraInfo [
 SkStepDescriptor >> extraInfo: anObject [
 
 	extraInfo := anObject
+]
+
+{ #category : #'as yet unclassified' }
+SkStepDescriptor >> happensAfterPathOf: anIndexlessStepDescriptor [
+
+	"Returns true if the statement described by self happens before the one in the argument"
+
+	^ (self comparePathTo: anIndexlessStepDescriptor) > 0
+]
+
+{ #category : #'as yet unclassified' }
+SkStepDescriptor >> happensBeforePathOf: anIndexlessStepDescriptor [
+
+	"Returns true if the statement described by self happens before the one in the argument"
+
+	^ (self comparePathTo: anIndexlessStepDescriptor) < 0
 ]
 
 { #category : #testing }

@@ -38,6 +38,18 @@ SeekerStepCollectionItem >> printOn: aStream [
 ]
 
 { #category : #accessing }
+SeekerStepCollectionItem >> result [
+
+	^ stepResult
+]
+
+{ #category : #accessing }
+SeekerStepCollectionItem >> result: anObject [
+
+	stepResult := anObject
+]
+
+{ #category : #accessing }
 SeekerStepCollectionItem >> seeker [
 
 	^ seeker
@@ -59,18 +71,6 @@ SeekerStepCollectionItem >> stepIndex [
 SeekerStepCollectionItem >> stepIndex: anObject [
 
 	stepIndex := anObject
-]
-
-{ #category : #accessing }
-SeekerStepCollectionItem >> stepResult [
-
-	^ stepResult
-]
-
-{ #category : #accessing }
-SeekerStepCollectionItem >> stepResult: anObject [
-
-	stepResult := anObject
 ]
 
 { #category : #'as yet unclassified' }
