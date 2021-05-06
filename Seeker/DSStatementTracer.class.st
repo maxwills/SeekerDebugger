@@ -182,7 +182,7 @@ DSStatementTracer >> isExecutionFinished [
 { #category : #testing }
 DSStatementTracer >> isRiskyStep [
 
-	| context receiver contextInsideInstanceOfExceptionSubclass contextInsideSubclassOfException contextInsideAssertionFailure |
+	| context receiver contextInsideInstanceOfExceptionSubclass contextInsideSubclassOfException contextInsideAssertionFailure primitiveFailed|
 	context := self currentContext.
 	receiver := context receiver.
 	contextInsideInstanceOfExceptionSubclass := [ 
@@ -194,11 +194,13 @@ DSStatementTracer >> isRiskyStep [
 	contextInsideAssertionFailure := [ 
 	                                 context receiver = TestResult and: [ 
 		                                 context methodSelector = #failure ] ].
-	^ receiver isClass
-		  ifTrue: [ 
-			  contextInsideSubclassOfException value or:
-				  contextInsideAssertionFailure ]
-		  ifFalse: contextInsideInstanceOfExceptionSubclass
+  primitiveFailed := [ (context methodSelector = #primitiveFailed) or: [ context methodSelector = #primitiveFailed ] ].
+	^ primitiveFailed value  or: [ 
+		  receiver isClass
+			  ifTrue: [ 
+				  contextInsideSubclassOfException value or:
+					  contextInsideAssertionFailure ]
+			  ifFalse: contextInsideInstanceOfExceptionSubclass ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -368,14 +370,17 @@ DSStatementTracer >> stDebugger: anObject [
 
 { #category : #'as yet unclassified' }
 DSStatementTracer >> stepAstIntoStatement [
-"No recording, no updates"
-|currentStatementNode|
-self isExecutionFinished ifTrue: [ ^self ].
-currentStatementNode := self currentStatementNode .
 
+	"No recording, no updates"
+
+	| currentStatementNode previousContext |
+	self isExecutionFinished ifTrue: [ ^ self ].
+	currentStatementNode := self currentStatementNode.
+	previousContext := self currentContext.
 	self stepAstUntilConditionIsTrue: [ 
-		(self currentStatementNode ~= currentStatementNode) "and: [self currentEsn isUnwinding =false]" "Code commented because I dont have esn yet here" 
-		 ]
+		self currentStatementNode ~= currentStatementNode or: [ "and: [self currentEsn isUnwinding =false]""Code commented because I dont have esn yet here"
+			self currentStatementNode = currentStatementNode and: [ 
+				previousContext ~= self currentContext ] ] ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -467,7 +472,7 @@ DSStatementTracer >> stepInto [
 
 	"This is the basic stepping at statement abstraction."
 
-	self isRiskyStep ifFalse: [ 
+	(self isExecutionFinished or:[ self isRiskyStep]) ifFalse: [ 
 		self doAndUpdateSessionAfter: [ 
 			astStepCounter := 0.
 			self stepAstIntoStatement.
@@ -485,7 +490,7 @@ DSStatementTracer >> stepOver [
 	self doAndUpdateSessionAfter: [ 
 		self stepUntilConditionIsTrue: [ 
 			| shouldStop currentStepDescriptor |
-			self isRiskyStep ifTrue: [ ^self ].
+			(self isExecutionFinished or:[ self isRiskyStep]) ifTrue: [ ^self ].
 			currentStepDescriptor := self currentStepDescriptor.
 			shouldStop := currentStepDescriptor pathDepth <= startingPathDepth 
 				              and: [ 
@@ -496,16 +501,19 @@ DSStatementTracer >> stepOver [
 
 { #category : #'as yet unclassified' }
 DSStatementTracer >> stepUntilConditionIsTrue: aBlock [
-   "Steps into statements until condition is true"
-	self doAndUpdateSessionAfter: [ 
-		aBlock whileFalse: [ 
-			| conditionValue |
-			self isExecutionFinished ifTrue: [ ^self ].
-			conditionValue := aBlock value.
-			conditionValue ifFalse: [ self stepInto ].
-			
 
-			conditionValue ] ]
+	"Steps into statements until condition is true"
+
+	self doAndUpdateSessionAfter: [ 
+		| shouldStop |
+		shouldStop := false.
+		[ shouldStop ] whileFalse: [ 
+			(self isExecutionFinished or: [ self isRiskyStep ])
+				ifTrue: [ shouldStop := true ]
+				ifFalse: [ 
+					shouldStop := aBlock value.
+					shouldStop ifFalse: [ self stepInto ].
+ ] ] ]
 ]
 
 { #category : #'as yet unclassified' }

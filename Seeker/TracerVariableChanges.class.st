@@ -642,12 +642,19 @@ TracerVariableChanges >> restartAndStepToIndex: aNumber [
 
 { #category : #'as yet unclassified' }
 TracerVariableChanges >> restartTestAndStopAtCurrentStep [
-"This is only used when neet to automap and return to the current step."
-"This case is only valid for the situation when the tests fails an assertion in the main test method. If there is an unhandled exception, this is invalid."
-|targetContext indexlessStepDescriptor|
-targetContext := self findContextInStack: [ :aContext| aContext sender methodSelector = #performTest  ].
-indexlessStepDescriptor := self createIndexlessStepDescriptorForContext: targetContext.
-self restartAndStepToCondition: [ self currentStepDescriptor hasSamePathAs: indexlessStepDescriptor ].
+
+	"This is only used when neet to automap and return to the current step."
+
+	"This case is only valid for the situation when the tests fails an assertion in the main test method. If there is an unhandled exception, this is invalid."
+
+	| targetContext indexlessStepDescriptor |
+	targetContext := self findContextInStack: [ :aContext | 
+		                 aContext sender methodSelector = #performTest ].
+	indexlessStepDescriptor := self 
+		                           createIndexlessStepDescriptorForContext:
+		                           targetContext.
+	self restartAndStepToCondition: [ 
+		self currentStepDescriptor hasSamePathAs: indexlessStepDescriptor ]
 ]
 
 { #category : #'as yet unclassified' }
