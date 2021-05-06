@@ -5,6 +5,22 @@ Class {
 }
 
 { #category : #tests }
+GeneralSeekerTests >> exceptionTest [
+
+	"Do this once the window opens:
+	seeker stepper trackedVariableName: 'aNumber'
+	then remap the test
+	"
+
+	| aNumber|
+	aNumber := -1.
+	aNumber := 0.
+	aNumber := 10/aNumber.
+
+	self assert: true
+]
+
+{ #category : #tests }
 GeneralSeekerTests >> testCreateIndexlessStepDescriptorForConditionInStack [
 	"launch the test and when the debugger opens with the failing assertion, evaluate 
 	|targetContext|
@@ -18,6 +34,22 @@ GeneralSeekerTests >> testCreateIndexlessStepDescriptorForConditionInStack [
 	aCol add: 1.
 	
 	self assert: false
+]
+
+{ #category : #tests }
+GeneralSeekerTests >> testExceptionScenario [
+
+	"Do this once the window opens:
+	seeker stepper trackedVariableName: 'aNumber'
+	then remap the test
+	"
+
+	| aNumber|
+	aNumber := -1.
+	aNumber := 0.
+	aNumber := 10/aNumber.
+
+	self assert: true
 ]
 
 { #category : #tests }
@@ -99,6 +131,8 @@ GeneralSeekerTests >> testVariableTracking [
 	aCol := OrderedCollection new.
 	aCol add: 1.
 	aCol add: 1.
+	aCol setEndFromCurrentStep.
+	self assert: false.
 	aNumber := aCol size.
 
 	self assert: false

@@ -45,6 +45,7 @@ Class {
 		'trace',
 		'currentStepIndex',
 		'startingContextForRecord',
+		'startingStepForNavigation',
 		'endStatementDescriptor',
 		'astStepCounter'
 	],
@@ -178,6 +179,28 @@ DSStatementTracer >> isExecutionFinished [
 	^ stDebugger interruptedContext sender isNil or: [stDebugger interruptedProcess isTerminating].
 ]
 
+{ #category : #testing }
+DSStatementTracer >> isRiskyStep [
+
+	| context receiver contextInsideInstanceOfExceptionSubclass contextInsideSubclassOfException contextInsideAssertionFailure |
+	context := self currentContext.
+	receiver := context receiver.
+	contextInsideInstanceOfExceptionSubclass := [ 
+	                                            context receiver 
+		                                            isKindOf: Exception ].
+	contextInsideSubclassOfException := [ 
+	                                    context receiver inheritsFrom:
+		                                    Exception ].
+	contextInsideAssertionFailure := [ 
+	                                 context receiver = TestResult and: [ 
+		                                 context methodSelector = #failure ] ].
+	^ receiver isClass
+		  ifTrue: [ 
+			  contextInsideSubclassOfException value or:
+				  contextInsideAssertionFailure ]
+		  ifFalse: contextInsideInstanceOfExceptionSubclass
+]
+
 { #category : #'as yet unclassified' }
 DSStatementTracer >> oldBlockAliasImplementationUpdateTrace [
 "This method was called immediately before printing the trace. It puts the information in strings. Otherwise, they will not be shown correctly"
@@ -277,6 +300,7 @@ DSStatementTracer >> restart [
 		self pushCurrentStepDescriptor.
 		].
 	self doStepOpeningProcess.
+	startingStepForNavigation ifNotNil: [self stepUntilConditionIsTrue: [self currentStepDescriptor hasSamePathAs: startingStepForNavigation ]].
 ]
 
 { #category : #'as yet unclassified' }
@@ -302,11 +326,20 @@ DSStatementTracer >> signalExceptionIfDebuggedExecutionHasSignalledUnhandledExce
 	| unhandledException |
 	(self hasSignalledUnhandledException)
 		ifTrue: [ 
+			Transcript show: 'ENTROOOO'.
 			unhandledException := self currentContext receiver.
 			UnhandledExceptionSignalledByADebuggedExecution
 				signalWithException: unhandledException.
 		]
 	
+]
+
+{ #category : #signalling }
+DSStatementTracer >> signalExceptionIfDebuggedExecutionIsFinished [
+	"Signals an DebuggedExecutionIsFinished exception if the debugged execution is finished"
+	(self isExecutionFinished) ifTrue: [ 
+		DebuggedExecutionIsFinished signal.
+	].
 ]
 
 { #category : #accessing }
@@ -353,7 +386,7 @@ TODO: Add error management. There are two kind, one from the executed code, and 
 	aBlock whileFalse: [ 
 		
 		| conditionValue |
-		conditionValue := (self isExecutionFinished) or: [aBlock value].
+		conditionValue := ((self isExecutionFinished) or:[self isRiskyStep]) or: [aBlock value].
 		conditionValue ifFalse: [ 
 			self stepAstWithoutSkipping.
 			"post ast stepping happens here?"].
@@ -382,7 +415,10 @@ DSStatementTracer >> stepAstWithoutSkipping [
 
 	| debuggerActionModel context startingNode|
 
+	self isRiskyStep ifTrue: [ ^self inform: 'Reached execution safe end point' ].
 	self signalExceptionIfDebuggedExecutionHasSignalledUnhandledException.
+	self signalExceptionIfDebuggedExecutionIsFinished .
+	
 	astStepCounter := astStepCounter +1. "Note that the counter increases just before actually executing the AST. So Ast nodes pre and post process takes place for the same current ast"
 	debuggerActionModel := stDebugger debuggerActionModel.
 	"InterruptedContext can be a CompiledBlock"
@@ -428,14 +464,16 @@ DSStatementTracer >> stepBackOver [
 
 { #category : #'debug - stepping' }
 DSStatementTracer >> stepInto [
-"This is the basic stepping at statement abstraction."
-self doAndUpdateSessionAfter: [ 
-	astStepCounter := 0.
-	self stepAstIntoStatement.
-	currentStepIndex := currentStepIndex +1.
-	self pushCurrentStepDescriptor]. 
-self doStepOpeningProcess 
 
+	"This is the basic stepping at statement abstraction."
+
+	self isRiskyStep ifFalse: [ 
+		self doAndUpdateSessionAfter: [ 
+			astStepCounter := 0.
+			self stepAstIntoStatement.
+			currentStepIndex := currentStepIndex + 1.
+			self pushCurrentStepDescriptor ].
+		self doStepOpeningProcess ] ifTrue: [ self inform: 'Reached RISKY node. No more stepping' ]
 ]
 
 { #category : #'debug - stepping' }
@@ -447,6 +485,7 @@ DSStatementTracer >> stepOver [
 	self doAndUpdateSessionAfter: [ 
 		self stepUntilConditionIsTrue: [ 
 			| shouldStop currentStepDescriptor |
+			self isRiskyStep ifTrue: [ ^self ].
 			currentStepDescriptor := self currentStepDescriptor.
 			shouldStop := currentStepDescriptor pathDepth <= startingPathDepth 
 				              and: [ 

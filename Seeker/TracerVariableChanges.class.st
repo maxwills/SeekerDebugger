@@ -64,22 +64,34 @@ TracerVariableChanges >> autoSetupForTestForUnhandledException [
 
 { #category : #'as yet unclassified' }
 TracerVariableChanges >> automapForDoItScenario [
-		|initialContext originalStep|
-	initialContext := self findContextInStack: [:aContext| aContext methodSelector = #DoIt ].
-	initialContext ifNil:[^self error: 'Could not detect the initial context for the DoIt Scenario.'].
-	startingContextForRecord := initialContext.
+		|initialRestartContext doItContext doItStep originalStep|
+		initialRestartContext := self findContextInStack: [:aContext| aContext receiver class = SpCodeDebugItCommand].
+		initialRestartContext ifNil:[^self error: 'Could not detect the initial context for the DoIt Scenario.'].
+	doItContext := self findContextInStack: [:aContext| aContext methodSelector = #DoIt ].
+	doItContext ifNil:[^self error: 'Could not detect the initial context for the DoIt Scenario.'].
+	startingContextForRecord := initialRestartContext.
+	doItStep := SkStepDescriptor newFromNode: (SkStepDescriptor currentNodeOf: doItContext) inContext: doItContext.
+	startingStepForNavigation := doItStep.
 	self replayAndBuildExecutionMap 
 	"Ideally I would mark the end statement"
 ]
 
 { #category : #'as yet unclassified' }
 TracerVariableChanges >> automapForTestCaseScenario [
-		|testInitialContext|
-	testInitialContext := self findContextInStack: [:aContext| aContext methodSelector = #runCase ].
-	testInitialContext ifNil:[^self error: 'Could not detect the initial context for the test.'].
-	startingContextForRecord := testInitialContext.
+		|recordingInitialContext testInitialContext|
+	recordingInitialContext := self findContextInStack: [:aContext| aContext methodSelector = #runCase ].
+	recordingInitialContext ifNil:[^self error: 'Could not detect the initial context for recording.'].
+	startingContextForRecord := recordingInitialContext.
+	
+	testInitialContext := self findContextInStack: [ :aContext| |senderContext|
+		senderContext := aContext sender.
+		(senderContext isNotNil) and: [ (senderContext receiver class inheritsFrom: TestCase) and: [ senderContext methodSelector = #performTest ] ]
+		 ].
+	testInitialContext ifNil:[^self error: 'Could not detect the initial context of the test.'].
+	startingStepForNavigation := testInitialContext.
+	"The initial context is the one after the following. self receiver class inheritsFrom: TestCase and selector=performTest"
 	self replayAndBuildExecutionMap .
-	"Ideally I would mark the end statement"
+
 ]
 
 { #category : #accessing }
