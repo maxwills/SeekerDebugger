@@ -37,7 +37,7 @@ Internal Representation and Key Implementation Points.
     Implementation Points
 "
 Class {
-	#name : #DSStatementTracer,
+	#name : #SkStatementStepper,
 	#superclass : #DebuggerStepperBase,
 	#instVars : [
 		'stDebugger',
@@ -45,22 +45,22 @@ Class {
 		'trace',
 		'currentStepIndex',
 		'startingContextForRecord',
-		'startingStepForNavigation',
 		'endStatementDescriptor',
-		'astStepCounter'
+		'astStepCounter',
+		'startingIndexlessStepForNavigation'
 	],
 	#category : #'Seeker-Components'
 }
 
 { #category : #'as yet unclassified' }
-DSStatementTracer >> clearStepBuffers [
+SkStatementStepper >> clearStepBuffers [
 	self subclassResponsibility
 	"This is a bad design implmenetation. Ideally, the current working step descriptor should be 'open' for modifications... it should be in the trace as a reference, from when the control enters it, and while the execution continues its ASTs, it is modified until we enter the next step"
 	"For the moment, I have no option but to update the previous step if a flag or condition is met. For the moment, such condition is the presence of seomthing in step buffers"
 ]
 
 { #category : #accessing }
-DSStatementTracer >> createIndexlessStepDescriptorForContext: aContext [
+SkStatementStepper >> createIndexlessStepDescriptorForContext: aContext [
 
 	"Returns the full path to the statement, with its execution index set to 0"
    "this is supposed to be an interrupted context (so the PC makes sense)"
@@ -75,7 +75,7 @@ DSStatementTracer >> createIndexlessStepDescriptorForContext: aContext [
 ]
 
 { #category : #'as yet unclassified' }
-DSStatementTracer >> currentContext [
+SkStatementStepper >> currentContext [
 
 	| context |
 	
@@ -84,7 +84,7 @@ DSStatementTracer >> currentContext [
 ]
 
 { #category : #accessing }
-DSStatementTracer >> currentIndexlessStepDescriptor [
+SkStatementStepper >> currentIndexlessStepDescriptor [
 
 	"Returns the full path to the statement, with its execution index set to 0"
 
@@ -92,7 +92,7 @@ DSStatementTracer >> currentIndexlessStepDescriptor [
 ]
 
 { #category : #'as yet unclassified' }
-DSStatementTracer >> currentNode [
+SkStatementStepper >> currentNode [
 
 	| context |
 	context := self currentContext.
@@ -100,48 +100,52 @@ DSStatementTracer >> currentNode [
 ]
 
 { #category : #'as yet unclassified' }
-DSStatementTracer >> currentStatementNode [
+SkStatementStepper >> currentStatementNode [
 ^self currentNode statementNode
 ]
 
 { #category : #accessing }
-DSStatementTracer >> currentStepDescriptor [
+SkStatementStepper >> currentStepDescriptor [
 
 	"Returns the full path to the statement, including the execution index"
 
 	| currentStatementDescriptor |
-	currentStatementDescriptor := self currentIndexlessStepDescriptor.
-	currentStatementDescriptor executionIndex: currentStepIndex.
+	(trace notEmpty and: [ trace size = currentStepIndex ])
+		ifTrue: [ currentStatementDescriptor := trace last ]
+		ifFalse: [ 
+			currentStatementDescriptor := self currentIndexlessStepDescriptor.
+			currentStatementDescriptor executionIndex: currentStepIndex ].
+
 	currentStatementDescriptor astSteps: astStepCounter.
 	^ currentStatementDescriptor
 ]
 
 { #category : #'as yet unclassified' }
-DSStatementTracer >> doAstStepPostProcess: preProcessAstNode [
+SkStatementStepper >> doAstStepPostProcess: preProcessAstNode [
 "subclasses should reimplement this"
 	
 ]
 
 { #category : #'as yet unclassified' }
-DSStatementTracer >> doAstStepPreProcess [ 
+SkStatementStepper >> doAstStepPreProcess [ 
 "subclasses shoudl reimplement this"
 	
 ]
 
 { #category : #'as yet unclassified' }
-DSStatementTracer >> doStepClosingProcess [ 
+SkStatementStepper >> doStepClosingProcess [ 
 "subclasses shoudl reimplement this" "Note that the current step is the next than the one that has been closed."
 	^self
 ]
 
 { #category : #'as yet unclassified' }
-DSStatementTracer >> doStepOpeningProcess [ 
+SkStatementStepper >> doStepOpeningProcess [ 
 "subclasses shoudl reimplement this"
-	^self halt
+	^self
 ]
 
 { #category : #'as yet unclassified' }
-DSStatementTracer >> doesAnyContextsInTheStackStatisfies: aPredicateBlock [
+SkStatementStepper >> doesAnyContextsInTheStackStatisfies: aPredicateBlock [
 
 	"the predicate block receives a context as parameter"
 
@@ -156,7 +160,7 @@ DSStatementTracer >> doesAnyContextsInTheStackStatisfies: aPredicateBlock [
 ]
 
 { #category : #testing }
-DSStatementTracer >> hasSignalledUnhandledException [
+SkStatementStepper >> hasSignalledUnhandledException [
 	"Returns true if the debugged execution has signalled an exception that has not been handled by any on:do: (i.e. the #defaultAction of the exception is about to be executed. This default action typically leads to opening a debugger on the process that signalled the exception)"
 	|context|
 	context := self currentContext.
@@ -164,7 +168,7 @@ DSStatementTracer >> hasSignalledUnhandledException [
 ]
 
 { #category : #initialization }
-DSStatementTracer >> initialize [
+SkStatementStepper >> initialize [
 	"comment stating purpose of instance-side method"
 	"scope: class-variables  &  instance-variables"	
 			
@@ -173,14 +177,14 @@ DSStatementTracer >> initialize [
 ]
 
 { #category : #testing }
-DSStatementTracer >> isExecutionFinished [
+SkStatementStepper >> isExecutionFinished [
 	"Returns whether the debugged execution is finished"
 
 	^ stDebugger interruptedContext sender isNil or: [stDebugger interruptedProcess isTerminating].
 ]
 
 { #category : #testing }
-DSStatementTracer >> isRiskyStep [
+SkStatementStepper >> isRiskyStep [
 
 	| context receiver contextInsideInstanceOfExceptionSubclass contextInsideSubclassOfException contextInsideAssertionFailure primitiveFailed|
 	context := self currentContext.
@@ -204,7 +208,7 @@ DSStatementTracer >> isRiskyStep [
 ]
 
 { #category : #'as yet unclassified' }
-DSStatementTracer >> oldBlockAliasImplementationUpdateTrace [
+SkStatementStepper >> oldBlockAliasImplementationUpdateTrace [
 "This method was called immediately before printing the trace. It puts the information in strings. Otherwise, they will not be shown correctly"
 	"Updates Trace with instances information"
  1 to: trace size do: [ :index|
@@ -223,7 +227,7 @@ DSStatementTracer >> oldBlockAliasImplementationUpdateTrace [
 ]
 
 { #category : #'debug - stepping' }
-DSStatementTracer >> oldBlockAliasImplementationstepAstWithoutSkipping [
+SkStatementStepper >> oldBlockAliasImplementationstepAstWithoutSkipping [
 <skBlockLegacy>
 "This code is here until the proper block handling happens in a StepInfoRegistry"
 
@@ -253,7 +257,7 @@ DSStatementTracer >> oldBlockAliasImplementationstepAstWithoutSkipping [
 ]
 
 { #category : #'debug - stepping' }
-DSStatementTracer >> previousBackOverStepIndex: aStepDescriptor [
+SkStatementStepper >> previousBackOverStepIndex: aStepDescriptor [
 
 	| startingPathDepth |
 	startingPathDepth := aStepDescriptor pathDepth.
@@ -268,18 +272,19 @@ DSStatementTracer >> previousBackOverStepIndex: aStepDescriptor [
 ]
 
 { #category : #'as yet unclassified' }
-DSStatementTracer >> pushCurrentStepDescriptor [
+SkStatementStepper >> pushCurrentStepDescriptor [
 
 	"Adds the statement descriptor of the current one to the trace"
 
 	| currentStepDescriptor |
+	currentStepIndex := currentStepIndex + 1.
 	currentStepDescriptor := self currentStepDescriptor.
 	trace add: currentStepDescriptor.
 	self updatePreviousStepFromBuffers.
 ]
 
 { #category : #'as yet unclassified' }
-DSStatementTracer >> replayAndBuildExecutionMap [
+SkStatementStepper >> replayAndBuildExecutionMap [
 "Should have an initial context set first"
 |currentStep|
    currentStep := self currentStepDescriptor.
@@ -288,7 +293,7 @@ DSStatementTracer >> replayAndBuildExecutionMap [
 ]
 
 { #category : #starting }
-DSStatementTracer >> restart [
+SkStatementStepper >> restart [
 
 	"Restart a record and debug session from the stored startingContextForRecord"
 
@@ -298,15 +303,15 @@ DSStatementTracer >> restart [
 	"Placing stDebugger relaed code at the end, so the triggered update include the step index changes"
 	stDebugger session restart: startingContextForRecord.
 	self doAndUpdateSessionAfter: [ 
-		currentStepIndex := 1.
+		currentStepIndex := 0.
 		self pushCurrentStepDescriptor.
 		].
 	self doStepOpeningProcess.
-	startingStepForNavigation ifNotNil: [self stepUntilConditionIsTrue: [self currentStepDescriptor hasSamePathAs: startingStepForNavigation ]].
+	startingIndexlessStepForNavigation ifNotNil: [self stepUntilConditionIsTrue: [self currentStepDescriptor hasSamePathAs: startingIndexlessStepForNavigation ]].
 ]
 
 { #category : #'as yet unclassified' }
-DSStatementTracer >> restartRecordFromContext: aContext [
+SkStatementStepper >> restartRecordFromContext: aContext [
    "Sets the startingContextForRecord and restart the debug session from that point"
    startingContextForRecord:= aContext.
 	self restart.
@@ -314,17 +319,17 @@ DSStatementTracer >> restartRecordFromContext: aContext [
 ]
 
 { #category : #initialization }
-DSStatementTracer >> setEndFromCurrentStep [ 
+SkStatementStepper >> setEndFromCurrentStep [ 
 	endStatementDescriptor := self currentStepDescriptor 
 ]
 
 { #category : #initialization }
-DSStatementTracer >> setSelectedContextAsStartingPoint: aContext [
+SkStatementStepper >> setSelectedContextAsStartingPoint: aContext [
 	startingContextForRecord:= aContext.
 ]
 
 { #category : #signalling }
-DSStatementTracer >> signalExceptionIfDebuggedExecutionHasSignalledUnhandledException [
+SkStatementStepper >> signalExceptionIfDebuggedExecutionHasSignalledUnhandledException [
 	| unhandledException |
 	(self hasSignalledUnhandledException)
 		ifTrue: [ 
@@ -337,7 +342,7 @@ DSStatementTracer >> signalExceptionIfDebuggedExecutionHasSignalledUnhandledExce
 ]
 
 { #category : #signalling }
-DSStatementTracer >> signalExceptionIfDebuggedExecutionIsFinished [
+SkStatementStepper >> signalExceptionIfDebuggedExecutionIsFinished [
 	"Signals an DebuggedExecutionIsFinished exception if the debugged execution is finished"
 	(self isExecutionFinished) ifTrue: [ 
 		DebuggedExecutionIsFinished signal.
@@ -345,31 +350,31 @@ DSStatementTracer >> signalExceptionIfDebuggedExecutionIsFinished [
 ]
 
 { #category : #accessing }
-DSStatementTracer >> sindarin [
+SkStatementStepper >> sindarin [
 
 	^ sindarin
 ]
 
 { #category : #accessing }
-DSStatementTracer >> sindarin: anObject [
+SkStatementStepper >> sindarin: anObject [
 
 	sindarin := anObject
 ]
 
 { #category : #accessing }
-DSStatementTracer >> stDebugger [
+SkStatementStepper >> stDebugger [
 
 	^ stDebugger
 ]
 
 { #category : #accessing }
-DSStatementTracer >> stDebugger: anObject [
+SkStatementStepper >> stDebugger: anObject [
 
 	stDebugger := anObject
 ]
 
 { #category : #'as yet unclassified' }
-DSStatementTracer >> stepAstIntoStatement [
+SkStatementStepper >> stepAstIntoStatement [
 
 	"No recording, no updates"
 
@@ -384,7 +389,7 @@ DSStatementTracer >> stepAstIntoStatement [
 ]
 
 { #category : #'as yet unclassified' }
-DSStatementTracer >> stepAstUntilConditionIsTrue: aBlock [
+SkStatementStepper >> stepAstUntilConditionIsTrue: aBlock [
    "Steps the AST. No skipping. No recording. No Updates
 TODO: Add error management. There are two kind, one from the executed code, and the other is from the debugger code"
 
@@ -401,7 +406,7 @@ TODO: Add error management. There are two kind, one from the executed code, and 
 ]
 
 { #category : #'as yet unclassified' }
-DSStatementTracer >> stepAstUntilNextStatement [
+SkStatementStepper >> stepAstUntilNextStatement [
 "As all stepAST, there is no recording happening (Or updates)"
 |startingStatementNode|
 self isExecutionFinished ifTrue: [ ^self ].
@@ -413,7 +418,7 @@ startingStatementNode := self currentNode statementNode .
 ]
 
 { #category : #'debug - stepping' }
-DSStatementTracer >> stepAstWithoutSkipping [
+SkStatementStepper >> stepAstWithoutSkipping [
 
 	"Steps the debugger. No skipping. No recording. No updates (rememeber to force update after)"
    "You must ensure that execution is not finished before callig this method."
@@ -443,7 +448,7 @@ debuggerActionModel updateTopContext"
 ]
 
 { #category : #'debug - stepping' }
-DSStatementTracer >> stepBackInto [
+SkStatementStepper >> stepBackInto [
 
 	self doAndUpdateSessionAfter: [ 
 		| targetStepIndex |
@@ -454,7 +459,7 @@ DSStatementTracer >> stepBackInto [
 ]
 
 { #category : #'debug - stepping' }
-DSStatementTracer >> stepBackOver [
+SkStatementStepper >> stepBackOver [
 
 	| startingStepDescriptor previousStepOverStepIndex |
 	startingStepDescriptor := self currentStepDescriptor.
@@ -468,7 +473,7 @@ DSStatementTracer >> stepBackOver [
 ]
 
 { #category : #'debug - stepping' }
-DSStatementTracer >> stepInto [
+SkStatementStepper >> stepInto [
 
 	"This is the basic stepping at statement abstraction."
 
@@ -476,13 +481,13 @@ DSStatementTracer >> stepInto [
 		self doAndUpdateSessionAfter: [ 
 			astStepCounter := 0.
 			self stepAstIntoStatement.
-			currentStepIndex := currentStepIndex + 1.
+			
 			self pushCurrentStepDescriptor ].
 		self doStepOpeningProcess ] ifTrue: [ self inform: 'Reached RISKY node. No more stepping' ]
 ]
 
 { #category : #'debug - stepping' }
-DSStatementTracer >> stepOver [
+SkStatementStepper >> stepOver [
 
 	| startingStepDescriptor startingPathDepth |
 	startingStepDescriptor := self currentStepDescriptor.
@@ -500,7 +505,7 @@ DSStatementTracer >> stepOver [
 ]
 
 { #category : #'as yet unclassified' }
-DSStatementTracer >> stepUntilConditionIsTrue: aBlock [
+SkStatementStepper >> stepUntilConditionIsTrue: aBlock [
 
 	"Steps into statements until condition is true"
 
@@ -517,7 +522,7 @@ DSStatementTracer >> stepUntilConditionIsTrue: aBlock [
 ]
 
 { #category : #'as yet unclassified' }
-DSStatementTracer >> testReplayToCurrentStep [
+SkStatementStepper >> testReplayToCurrentStep [
 "THIS WOULD IDEALLY BE ADDED AS AN EXTENSION TO BE REMOVED AFTER. BUT YOU CANT MAKE EXTENSION OF CLASSES IN THE SAME PACKAGE. WILL DO A DIFFERENT PACKAGE IN THE FUTURE"
 |currentStep|
 	Transcript show: 'testReplayToCurrentStep started'.
@@ -532,7 +537,7 @@ DSStatementTracer >> testReplayToCurrentStep [
 ]
 
 { #category : #'as yet unclassified' }
-DSStatementTracer >> testStepUntilEndlessCase [
+SkStatementStepper >> testStepUntilEndlessCase [
 "THIS WOULD IDEALLY BE ADDED AS AN EXTENSION TO BE REMOVED AFTER. BUT YOU CANT MAKE EXTENSION OF CLASSES IN THE SAME PACKAGE. WILL DO A DIFFERENT PACKAGE IN THE FUTURE"
 |currentStep|
 	Transcript show: 'testStepUntilEndlessCase started'.
@@ -547,13 +552,13 @@ DSStatementTracer >> testStepUntilEndlessCase [
 ]
 
 { #category : #accessing }
-DSStatementTracer >> trace [
+SkStatementStepper >> trace [
 	"Returns the collection of steps signatures"
 	^trace
 ]
 
 { #category : #'as yet unclassified' }
-DSStatementTracer >> updatePreviousStepFromBuffers [
+SkStatementStepper >> updatePreviousStepFromBuffers [
 	self subclassResponsibility
 	"This is a bad design implmenetation. Ideally, the current working step descriptor should be 'open' for modifications... it should be in the trace as a reference, from when the control enters it, and while the execution continues its ASTs, it is modified until we enter the next step"
 	"For the moment, I have no option but to update the previous step if a flag or condition is met. For the moment, such condition is the presence of seomthing in step buffers"

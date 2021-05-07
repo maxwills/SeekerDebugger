@@ -20,6 +20,13 @@ SkStepDescriptor class >> currentNodeOf: aContext [
 ]
 
 { #category : #'instance creation' }
+SkStepDescriptor class >> newFromCurrentNodeinContext: aContext [
+
+	"returns a SDStatementStepDescriptor with all the statement static IDs which lead to the nodenode"
+ ^self newFromNode: (self currentNodeOf: aContext) inContext: aContext
+]
+
+{ #category : #'instance creation' }
 SkStepDescriptor class >> newFromNode: aRBNode inContext: aContext [
 
 	"returns a SDStatementStepDescriptor with all the statement static IDs which lead to the nodenode"

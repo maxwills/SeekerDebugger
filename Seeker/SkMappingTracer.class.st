@@ -1,39 +1,16 @@
 Class {
-	#name : #TracerVariableChanges,
-	#superclass : #DSStatementTracer,
+	#name : #SkMappingTracer,
+	#superclass : #SkStatementStepper,
 	#instVars : [
-		'trackedVariableName',
-		'trackedVariableValues',
 		'navigationHistory',
 		'navigationForward',
-		'blocksCollection',
-		'returnDetectionLog',
-		'returnDectectionStepDescriptors',
-		'returnsDictionary',
-		'stepReturnBuffer',
-		'stepReturnBufferAvailableFlag'
+		'isMapped'
 	],
 	#category : #'Seeker-Components'
 }
 
-{ #category : #stackAccessHelpers }
-TracerVariableChanges >> astReadAssignmentNewValue [
-"Returns the value about to be assigned for the current ast node, if the current node is an assignment node. Otherwise, returns nil"
-|node context|
-node := self currentNode.
-	node isAssignment
-		ifFalse: [ ^ nil	"Error signal: 'Not about to perform a assignment'" ].
-			context := self currentContext.
-	^ context at: context basicSize
-]
-
-{ #category : #stackAccessHelpers }
-TracerVariableChanges >> astReadAssignmentOldValue [
-^self currentNode variable variable readInContext: (self currentContext)
-]
-
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> autoMapFromStartingPoint [
+SkMappingTracer >> autoMapFromStartingPoint [
 "Starting point needs to be set first!"
 	|currentStep|
 	currentStep := self currentIndexlessStepDescriptor.
@@ -41,7 +18,7 @@ TracerVariableChanges >> autoMapFromStartingPoint [
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> autoSetupForTest [
+SkMappingTracer >> autoSetupForTest [
 "If a debugger is opened automatically in a failing test, this method helps to map the execution by automatically detect the starting and ending point for the recording."
 	|testInitialContext|
 	testInitialContext := self findContextInStack: [:aContext| aContext methodSelector = #runCase ].
@@ -52,7 +29,7 @@ TracerVariableChanges >> autoSetupForTest [
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> autoSetupForTestForUnhandledException [
+SkMappingTracer >> autoSetupForTestForUnhandledException [
 "If a debugger is opened automatically in a failing test, this method helps to map the execution by automatically detect the starting and ending point for the recording." "This handles a debugger oppened by an unhandled exception within a test"
 	|testInitialContext|
 	testInitialContext := self findContextInStack: [:aContext| aContext methodSelector = #runCase ].
@@ -63,201 +40,77 @@ TracerVariableChanges >> autoSetupForTestForUnhandledException [
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> automapForDoItScenario [
-		|initialRestartContext doItContext doItStep originalStep|
-		initialRestartContext := self findContextInStack: [:aContext| aContext receiver class = SpCodeDebugItCommand].
-		initialRestartContext ifNil:[^self error: 'Could not detect the initial context for the DoIt Scenario.'].
-	doItContext := self findContextInStack: [:aContext| aContext methodSelector = #DoIt ].
-	doItContext ifNil:[^self error: 'Could not detect the initial context for the DoIt Scenario.'].
+SkMappingTracer >> automapForDoItScenario [
+
+	| initialRestartContext doItContext doItStep originalStep |
+	initialRestartContext := self findContextInStack: [ :aContext | 
+		                         aContext receiver class
+		                         = SpCodeDebugItInSeekerCommand  ].
+	initialRestartContext ifNil: [ 
+		^ self error:
+			  'Could not detect the initial context for the DoIt Scenario.' ].
+	doItContext := self findContextInStack: [ :aContext | 
+		               aContext methodSelector = #DoIt ].
+	doItContext ifNil: [ 
+		^ self error:
+			  'Could not detect the initial context for the DoIt Scenario.' ].
 	startingContextForRecord := initialRestartContext.
-	doItStep := SkStepDescriptor newFromNode: (SkStepDescriptor currentNodeOf: doItContext) inContext: doItContext.
-	startingStepForNavigation := doItStep.
-	self replayAndBuildExecutionMap 
+	doItStep := SkStepDescriptor
+		            newFromNode:
+		            (SkStepDescriptor currentNodeOf: doItContext)
+		            inContext: doItContext.
+	startingIndexlessStepForNavigation := doItStep.
+	self replayAndBuildExecutionMap
 	"Ideally I would mark the end statement"
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> automapForTestCaseScenario [
-		|recordingInitialContext testInitialContext|
-	recordingInitialContext := self findContextInStack: [:aContext| aContext methodSelector = #runCase ].
-	recordingInitialContext ifNil:[^self error: 'Could not detect the initial context for recording.'].
+SkMappingTracer >> automapForTestCaseScenario [
+
+	| recordingInitialContext testInitialContext startedInBreakpoint |
+	"First, if the developer used the 'debugTest' command, the execution will begin interrupted at a breakpoint. In such case, we need to advance it one ast step, so it enters the appropriate statement for the analysis"
+	self currentContext receiver class = Breakpoint ifTrue: [ 
+		self seeker stDebugger
+			stepOver;
+			stepOver.
+		startedInBreakpoint := true ].
+
+	recordingInitialContext := self findContextInStack: [ :aContext | 
+		                           aContext methodSelector = #runCase ].
+	recordingInitialContext ifNil: [ 
+		^ self error: 'Could not detect the initial context for recording.' ].
 	startingContextForRecord := recordingInitialContext.
-	
-	testInitialContext := self findContextInStack: [ :aContext| |senderContext|
-		senderContext := aContext sender.
-		(senderContext isNotNil) and: [ (senderContext receiver class inheritsFrom: TestCase) and: [ senderContext methodSelector = #performTest ] ]
-		 ].
-	testInitialContext ifNil:[^self error: 'Could not detect the initial context of the test.'].
-	startingStepForNavigation := testInitialContext.
-	"The initial context is the one after the following. self receiver class inheritsFrom: TestCase and selector=performTest"
-	self replayAndBuildExecutionMap .
 
-]
+	testInitialContext := self findContextInStack: [ :aContext | 
+		                      | senderContext |
+		                      senderContext := aContext sender.
+		                      senderContext isNotNil and: [ 
+			                      (senderContext receiver class inheritsFrom:
+				                       TestCase) and: [ 
+				                      senderContext methodSelector = #performTest ] ] ].
+	testInitialContext ifNil: [ 
+		^ self error: 'Could not detect the initial context of the test.' ].
+	startingIndexlessStepForNavigation := SkStepDescriptor 
+		                                      newFromCurrentNodeinContext:
+		                                      testInitialContext.
+	startingIndexlessStepForNavigation topStatementID indexInSequence: 1. "Force it to be the first statement"
 
-{ #category : #accessing }
-TracerVariableChanges >> blocksCollection [
-
-	^ blocksCollection
-]
-
-{ #category : #accessing }
-TracerVariableChanges >> blocksCollection: anObject [
-
-	blocksCollection := anObject
+	self replayAndBuildExecutionMap
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> clearStepBuffers [ 
-	stepReturnBuffer := nil.
-	stepReturnBufferAvailableFlag := false.
-]
-
-{ #category : #accessing }
-TracerVariableChanges >> currentStepDescriptor [ 
-	|stepDescriptor containerBlockNode|
-	stepDescriptor := super currentStepDescriptor.
-	"Check II: Executing code inside blocks"
-	containerBlockNode := SkNodeHelpers getBlockNodeOfStatementNode: self currentStatementNode .
-containerBlockNode ifNotNil: [ 
-	
-		 (blocksCollection containsBlock: containerBlockNode) ifTrue: [ 
-		| blockLabel |
-		blockLabel := blocksCollection createLabelForBlock: containerBlockNode.
-		stepDescriptor topStatementID sequenceStaticID belongsToBlock: true.
-		stepDescriptor topStatementID sequenceStaticID ownerBlockLabel: blockLabel
-		"Must store this info for the stepdescriptor somehow. Maybe just do this when creating the descriptor"
-		 ].
- ].
-^stepDescriptor
-]
-
-{ #category : #'as yet unclassified' }
-TracerVariableChanges >> doAstStepPostProcess: preProcessAstNode [
-
-	| node actualCurrentStepIndex |
-	actualCurrentStepIndex := currentStepIndex + 1. "This correction is needed at the moment, because the stepIndex is updated after stepping the ast NOTE THAT  ADDED CHANGEDSTATEMENT. MAYBE USE IT CALCULATE THE OFFSET"
-	node := self currentNode.
-	node isAssignment ifTrue: [ 
-		| variableName |
-		variableName := node variable name.
-		variableName = trackedVariableName ifTrue: [ 
-			| oldValue newValue |
-			oldValue := self astReadAssignmentOldValue.
-			newValue := self astReadAssignmentNewValue.
-			trackedVariableValues at: actualCurrentStepIndex put: { 
-					oldValue.
-					newValue } ] ].
-
-	preProcessAstNode isReturn ifTrue: [ 
-		| stepDescriptor stackTop actualStepIndex |
-		actualStepIndex := preProcessAstNode statementNode
-		                   = self currentStatementNode
-			                   ifTrue: [ currentStepIndex ]
-			                   ifFalse: [ currentStepIndex - 1 ].
-		stepDescriptor := self currentStepDescriptor "Note that it might be necessary to correct the execution index".
-		stackTop := self currentContext stackPtr > 0
-			            ifTrue: [ self currentContext top ]
-			            ifFalse: [ #emptyStackTop ].
-		returnDectectionStepDescriptors add: stepDescriptor.
-		returnDetectionLog := returnDetectionLog , 'IndexInLog: '
-		                      ,
-		                      returnDectectionStepDescriptors size asString
-		                      , ' PostAST Step: '
-		                      , actualStepIndex asString
-		                      , ' atAstCounter: ' , astStepCounter asString
-		                      , ' SD: ;' , stepDescriptor asStringForCsv
-		                      , '; topOfStack: ' , stackTop asString
-		                      , String cr.
-		stepReturnBuffer := stackTop.
-		stepReturnBufferAvailableFlag := true ]
-]
-
-{ #category : #'as yet unclassified' }
-TracerVariableChanges >> doAstStepPreProcess [
-|containerBlockNode node|
-"Check I: Blocks definition"
-	self currentNode class = RBBlockNode ifTrue: [ 
-		| blockNode |
-		blockNode := self currentNode.
-		"Need to check if it has already been added. The reason for this is that the ast may step more than once in the same block node"
-		(blocksCollection containsBlock: blockNode) ifFalse: [ 
-			blocksCollection
-				addBlock: blockNode
-				toStepIndex: currentStepIndex ] ].
-		"Check II: Executing code inside blocks"
-	"containerBlockNode := SkObjectHelpers getBlockNodeOfStatementNode: self currentStatementNode .
-containerBlockNode ifNotNil: [ 
-	
-		 (blocksCollection containsBlock: containerBlockNode) ifTrue: [ 
-		| blockLabel blockStepDescriptor |
-		blockLabel := blocksCollection createLabelForBlock: containerBlockNode.
-		""Must store this info for the stepdescriptor somehow. Maybe just do this when creating the descriptor""
-		 ].
- ]."
-node := self currentNode.
-node isReturn ifTrue: [ 
-	|stepDescriptor stackTop|
-	stackTop := (self currentContext stackPtr > 0) ifTrue: [ self currentContext top ] ifFalse: [ #emptyStackTop ].
-	stepDescriptor  := self currentStepDescriptor.
-	returnDectectionStepDescriptors add: stepDescriptor.
-	returnDetectionLog := returnDetectionLog ,'IndexInLog: ', returnDectectionStepDescriptors size asString, 'PreAST Step: ', (currentStepIndex asString), ' atAstCounter: ',astStepCounter asString , ' SD: ;', stepDescriptor asStringForCsv ,'; topOfStack: ', (stackTop asString),String cr  .
-	stepReturnBuffer :=(stackTop ).
-	stepReturnBufferAvailableFlag := true.
-	]
-]
-
-{ #category : #'as yet unclassified' }
-TracerVariableChanges >> doStepClosingProcess [
+SkMappingTracer >> clearStepBuffers [
 	^self
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> doStepOpeningProcess [
-"We are standing in the statement(current) after the execution of a statement (previous). The current statement hasn't been executed yet. And it is in the execution record at the top (last)"
-"
-Transcript clear.
-self isCurrentStepAssignment ifTrue:[|index|
-	Transcript show: 'this is an assignment'. Transcript cr.
-	index := self indexOfAssignmentStatementOpeningStepFor: self currentStepDescriptor.
-	Transcript show: 'Found opening index: ', index asString. Transcript cr.
-	].
-
-	Transcript show: self trace asString.
-	Transcript cr."
-]
-
-{ #category : #'as yet unclassified' }
-TracerVariableChanges >> evaluateExpressionInCurrentContext: aString [
-^self evaluateWithoutErrorsExpression: aString inContext: self currentContext.
-]
-
-{ #category : #'as yet unclassified' }
-TracerVariableChanges >> evaluateWithoutErrorsExpression: aString inContext: aContext [
-
-	"Evaluates the expression coming from a stream."
-
-	| evaluationBlock |
-	evaluationBlock := [ 
-	                   aContext receiver class compiler
-		                   source: aString;
-		                   context: aContext;
-		                   receiver: aContext receiver;
-		                   requestor: self;
-		                   failBlock: [ nil ];
-		                   evaluate ].
-	^ evaluationBlock
-		  on: Exception
-		  do: [ :e | e ]
-]
-
-{ #category : #'as yet unclassified' }
-TracerVariableChanges >> findContextInStack: aBlock [
+SkMappingTracer >> findContextInStack: aBlock [
 "returns the first context where the given predicate returns true. Or nil. The stack is traversed from top to bottom. The starting context is the interruptedContext"
 ^self findContextInStack: aBlock startingContext: self currentContext 
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> findContextInStack: aBlock startingContext: aContext [
+SkMappingTracer >> findContextInStack: aBlock startingContext: aContext [
 "returns the first context where the given predicate returns true. Or nil. The stack is traversed from top to bottom."
 
 aContext ifNil: [ ^nil ].
@@ -266,7 +119,7 @@ aContext ifNil: [ ^nil ].
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> findStepIndexOfFirstStatementInSameSequenceOfStep: aNumber [
+SkMappingTracer >> findStepIndexOfFirstStatementInSameSequenceOfStep: aNumber [
 |step|
 (aNumber <= 0) ifTrue: [ ^0 ].
 (aNumber > trace size) ifTrue: [ ^0 ].
@@ -279,13 +132,13 @@ step := trace at: aNumber.
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> findStepIndexOfLastStepOfTest [
+SkMappingTracer >> findStepIndexOfLastStepOfTest [
 |targetContext|
 targetContext := self findContextInStack: [ :aContext| aContext sender methodSelector = #performTest  ] 
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> findStepOfFirstRecursionCallFor: aNumber [
+SkMappingTracer >> findStepOfFirstRecursionCallFor: aNumber [
 
 	"First analize the stack path to search the original call, and its path"
 
@@ -325,19 +178,19 @@ TracerVariableChanges >> findStepOfFirstRecursionCallFor: aNumber [
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> findStepsWhereMethodSelectorIs: aSymbol [
+SkMappingTracer >> findStepsWhereMethodSelectorIs: aSymbol [
 ^ trace select: [ :eachStepDescriptor| eachStepDescriptor methodSelector = aSymbol ].
 	
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> findStepsWhereMethodSelectorIs: aSymbol ofClass: aClass [
+SkMappingTracer >> findStepsWhereMethodSelectorIs: aSymbol ofClass: aClass [
 ^ trace select: [ :eachStepDescriptor| (eachStepDescriptor methodSelector = aSymbol) and:[eachStepDescriptor receiverClass = aClass] ].
 	
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> findTestContext [
+SkMappingTracer >> findTestContext [
 "returns the first context where the given predicate returns true. Or nil. The stack is traversed from top to bottom. The starting context is the interruptedContext"
 |isTestContext|
 isTestContext := [:aContext| SkObjectHelpers isObject: aContext receiver subclassOf: TestCase ].
@@ -345,7 +198,7 @@ isTestContext := [:aContext| SkObjectHelpers isObject: aContext receiver subclas
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> getIndexlessDescriptorOfLastStatementInCurrentSequence [
+SkMappingTracer >> getIndexlessDescriptorOfLastStatementInCurrentSequence [
 
 	| stepDescriptor currentStatementNode statementsCount |
 	stepDescriptor := self currentStepDescriptor.
@@ -357,31 +210,7 @@ TracerVariableChanges >> getIndexlessDescriptorOfLastStatementInCurrentSequence 
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> getNewValueForStep: aNumber [
-^self
-	
-]
-
-{ #category : #'as yet unclassified' }
-TracerVariableChanges >> getOldValueForStep: aNumber [
-^self
-	
-]
-
-{ #category : #'as yet unclassified' }
-TracerVariableChanges >> getTraceAsStringWithBlocksAliases [
-| str |
-	str := Character cr join: (trace collect: [ :eachStepDescriptor | 
-		|stepIndex|
-		
-		eachStepDescriptor asString ]).
-	"self isUnwinding isNotNil and: [ 
-		self isUnwinding ifTrue: [ str := str , '+u' ] ]."
-	^ str
-]
-
-{ #category : #'as yet unclassified' }
-TracerVariableChanges >> goBackToTheBeginningOfDeepestStepWithinMethodWithSelector: aSymbol [
+SkMappingTracer >> goBackToTheBeginningOfDeepestStepWithinMethodWithSelector: aSymbol [
 	|stepsWithTheMethod lastStepIndex deepestStep deepestStepDepth firstStatementIndex| 
 	stepsWithTheMethod := self findStepsWhereMethodSelectorIs: aSymbol.
 	(stepsWithTheMethod isEmpty ) ifTrue: [ "Not found... should I throw an error?" ^self ].
@@ -399,7 +228,7 @@ TracerVariableChanges >> goBackToTheBeginningOfDeepestStepWithinMethodWithSelect
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> goBackToTheBeginningOfLastMethodWithSelector: aSymbol [
+SkMappingTracer >> goBackToTheBeginningOfLastMethodWithSelector: aSymbol [
 	|stepsWithTheMethod lastStepIndex firstStatementIndex| 
 	stepsWithTheMethod := self findStepsWhereMethodSelectorIs: aSymbol.
 	(stepsWithTheMethod isEmpty ) ifTrue: [ "Not found... should I throw an error?" ^self ].
@@ -410,7 +239,7 @@ TracerVariableChanges >> goBackToTheBeginningOfLastMethodWithSelector: aSymbol [
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> goBackToTheBeginningOfLastMethodWithSelector: aSymbol ofClass: aClass [
+SkMappingTracer >> goBackToTheBeginningOfLastMethodWithSelector: aSymbol ofClass: aClass [
 
 	| stepsWithTheMethod lastStepIndex firstStatementIndex startingStep |
 	startingStep := self currentStepDescriptor.
@@ -430,47 +259,23 @@ TracerVariableChanges >> goBackToTheBeginningOfLastMethodWithSelector: aSymbol o
 	self restartAndStepToIndex: firstStatementIndex
 ]
 
-{ #category : #accessing }
-TracerVariableChanges >> indexOfAssignmentStatementOpeningStepFor: aStepDescriptor [
-	|index|
-	index := self reverseFindStep: [ :eachStepDescriptor| 
-		(eachStepDescriptor pathDepth < aStepDescriptor pathDepth) ifTrue: [ ^0 ].
-		((eachStepDescriptor pathDepth) = (aStepDescriptor pathDepth)) ifTrue: [ 
-			(eachStepDescriptor hasSamePathAs: aStepDescriptor) ifTrue: [true] ifFalse: [^0].
-			].
-		false
-		] startingIndex: (aStepDescriptor executionIndex - 1).
-	^index
-]
+{ #category : #initialization }
+SkMappingTracer >> initialize [
 
-{ #category : #'as yet unclassified' }
-TracerVariableChanges >> initialize [
-
-	self reinitializeSupportFeatures.
+	super initialize.
 	navigationHistory := OrderedCollection new.
-	navigationForward := OrderedCollection new.
-	^ super initialize
+	navigationForward := OrderedCollection new
 ]
 
 { #category : #testing }
-TracerVariableChanges >> isAStepAssignment: aNumber [
-	^true
-]
-
-{ #category : #testing }
-TracerVariableChanges >> isCurrentStepAssignment [ 
-	^self currentNode statementNode isAssignment 
-]
-
-{ #category : #'as yet unclassified' }
-TracerVariableChanges >> isCurrentStepMappedFinalStep [
+SkMappingTracer >> isCurrentStepMappedFinalStep [
 "This requires an execution to be mapped"
 endStatementDescriptor ifNil: [ ^ false].
  ^(currentStepIndex = endStatementDescriptor executionIndex) or: [self currentStepDescriptor hasSamePathAs: endStatementDescriptor].
 ]
 
-{ #category : #'as yet unclassified' }
-TracerVariableChanges >> isCurrentStepTheFirstStatementOfAMethod [
+{ #category : #testing }
+SkMappingTracer >> isCurrentStepTheFirstStatementOfAMethod [
 
 	| statementNode sequenceNode currentStatementIndex |
 	currentStatementIndex := self currentIndexlessStepDescriptor
@@ -483,8 +288,8 @@ TracerVariableChanges >> isCurrentStepTheFirstStatementOfAMethod [
 	^ false
 ]
 
-{ #category : #'as yet unclassified' }
-TracerVariableChanges >> isCurrentStepTheLastStatementOfAMethod [
+{ #category : #testing }
+SkMappingTracer >> isCurrentStepTheLastStatementOfAMethod [
 
 	| statementNode sequenceNode currentStatementIndex |
 	currentStatementIndex := self currentIndexlessStepDescriptor
@@ -500,7 +305,7 @@ TracerVariableChanges >> isCurrentStepTheLastStatementOfAMethod [
 ]
 
 { #category : #testing }
-TracerVariableChanges >> isDoItScenario [
+SkMappingTracer >> isDoItScenario [
 	
 		|stepDescriptor|
 		"Check if this is a DoIt scenario"
@@ -511,29 +316,37 @@ TracerVariableChanges >> isDoItScenario [
 
 ]
 
+{ #category : #accessing }
+SkMappingTracer >> isMapped [
+
+	^ isMapped
+]
+
+{ #category : #accessing }
+SkMappingTracer >> isMapped: anObject [
+
+	isMapped := anObject
+]
+
 { #category : #testing }
-TracerVariableChanges >> isQuickMapAvailable [
+SkMappingTracer >> isQuickMapAvailable [
 	"returns true or false if a quick map can be performed"
 	"Mapping an execution enables trace analisys"
 	"Quick Map automatically creates the mapping. Creates indices for each step of the execution for the cases of test cases, and handles also 'Debug it' scenarios"	
-		|stepDescriptor|
-		"Check if this is a DoIt (Debug it) scenario"
-		stepDescriptor := self currentStepDescriptor.
-		(SkStepDescriptorHelpers descriptor: stepDescriptor containsSequenceByMethod: (UndefinedObject>>#DoIt) startingAt: 1) ifTrue: [ ^true ].
-	"Check if this is a case of test run using the run test button".
+		^self isDoItScenario or: [ self isTestCaseScenario ].
 	
 
 ]
 
-{ #category : #'as yet unclassified' }
-TracerVariableChanges >> isStepTheFinalStep: aStepDescriptor [
+{ #category : #testing }
+SkMappingTracer >> isStepTheFinalStep: aStepDescriptor [
 "This requires an execution to be mapped, and the descriptor mut be indexed"
 endStatementDescriptor ifNil: [ ^ false].
  ^(aStepDescriptor executionIndex = endStatementDescriptor executionIndex) or: [aStepDescriptor hasSamePathAs: endStatementDescriptor].
 ]
 
 { #category : #testing }
-TracerVariableChanges >> isTestCaseScenario [
+SkMappingTracer >> isTestCaseScenario [
 
 	"To solve this, we analyze the stack"
 
@@ -549,8 +362,8 @@ TracerVariableChanges >> isTestCaseScenario [
 			safelyMatchLiterals value: context method ] ]
 ]
 
-{ #category : #'as yet unclassified' }
-TracerVariableChanges >> navigateBack [
+{ #category : #navigation }
+SkMappingTracer >> navigateBack [
 |previousStep|
 navigationHistory isEmpty ifTrue: [^self inform: 'No more previous states in history.'].
 previousStep := navigationHistory last.
@@ -560,8 +373,8 @@ self restartAndStepToIndex: previousStep.
 	
 ]
 
-{ #category : #'as yet unclassified' }
-TracerVariableChanges >> navigateForward [
+{ #category : #navigation }
+SkMappingTracer >> navigateForward [
 	|forwardStep|
 navigationForward isEmpty ifTrue: [^self inform:'No more forward states'].
 forwardStep := navigationForward last.
@@ -571,33 +384,21 @@ self restartAndStepToIndex: forwardStep.
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> pushNavigationHistory [
+SkMappingTracer >> pushNavigationHistory [
 (currentStepIndex > 0 ) ifTrue:[	navigationHistory add: currentStepIndex. navigationForward removeAll] 
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> quickMap [
+SkMappingTracer >> quickMap [
 "TODO: Move out the inform calls"
-	(self isDoItScenario) ifTrue: [ self automapForDoItScenario .^self inform: 'Time Traveling enabled' ].
-	(self isTestCaseScenario ) ifTrue: [ self automapForTestCaseScenario.^self inform: 'Time Traveling enabled' ].
+	(self isDoItScenario) ifTrue: [ ^self automapForDoItScenario ".^self inform: 'Time Traveling enabled'" ].
+	(self isTestCaseScenario ) ifTrue: [ ^self automapForTestCaseScenario".^self inform: 'Time Traveling enabled' "].
 ^	self inform: 'Could not enable Time Traveling automatically. The session needs a manual set up' .
 	
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> reinitializeSupportFeatures [
-
-	trackedVariableValues := Dictionary new.
-	returnsDictionary := Dictionary new "keys are stepIndices, and values is the return object (Note that the developer might need a frozen-in-time version of that object though".
-	blocksCollection := BlockRegistry new.
-	self clearStepBuffers.
-	returnDetectionLog := ''.
-	returnDectectionStepDescriptors := OrderedCollection new.
-
-]
-
-{ #category : #'as yet unclassified' }
-TracerVariableChanges >> replayWhileEvaluatingExpressionInTheFirstStepOfEveryContextAndCollectResult: aString [
+SkMappingTracer >> replayWhileEvaluatingExpressionInTheFirstStepOfEveryContextAndCollectResult: aString [
 
 	"Needs a mapped execution"
 
@@ -621,27 +422,19 @@ TracerVariableChanges >> replayWhileEvaluatingExpressionInTheFirstStepOfEveryCon
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> restart [
-
-	self reinitializeSupportFeatures.
-
-	^ super restart
-]
-
-{ #category : #'as yet unclassified' }
-TracerVariableChanges >> restartAndStepToCondition: aBlock [
+SkMappingTracer >> restartAndStepToCondition: aBlock [
 	self restart.
 	self stepUntilConditionIsTrue: aBlock.
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> restartAndStepToIndex: aNumber [
+SkMappingTracer >> restartAndStepToIndex: aNumber [
 	self restart.
 	self stepUntilConditionIsTrue: [currentStepIndex = aNumber].
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> restartTestAndStopAtCurrentStep [
+SkMappingTracer >> restartTestAndStopAtCurrentStep [
 
 	"This is only used when neet to automap and return to the current step."
 
@@ -658,7 +451,7 @@ TracerVariableChanges >> restartTestAndStopAtCurrentStep [
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> restartTestAndStopAtCurrentStepForUnhandledExceptionCase [
+SkMappingTracer >> restartTestAndStopAtCurrentStepForUnhandledExceptionCase [
 "This is only used when neet to automap and return to the current step."
 
 |targetContext indexlessStepDescriptor|
@@ -668,7 +461,7 @@ self restartAndStepToCondition: [ self currentStepDescriptor hasSamePathAs: inde
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> restartTestAndStopAtFirstLine [
+SkMappingTracer >> restartTestAndStopAtFirstLine [
 	|targetContext indexlessStepDescriptor|
 targetContext := self findContextInStack: [ :aContext| aContext sender methodSelector = #performTest  ].
 indexlessStepDescriptor := self createIndexlessStepDescriptorForContext: targetContext.
@@ -676,8 +469,8 @@ indexlessStepDescriptor topStatementID indexInSequence: 1.
 self restartAndStepToCondition: [ self currentStepDescriptor hasSamePathAs: indexlessStepDescriptor ].
 ]
 
-{ #category : #accessing }
-TracerVariableChanges >> reverseFindStep: aBlock startingIndex: aNumber [
+{ #category : #'as yet unclassified' }
+SkMappingTracer >> reverseFindStep: aBlock startingIndex: aNumber [
 "aBlock is predicate for a stepDescriptor. If it evaluates to true, the index of such step is returned"
 	|stepDescriptor|
 	(aNumber > trace size) ifTrue: [ ^ 0 ].
@@ -688,20 +481,13 @@ TracerVariableChanges >> reverseFindStep: aBlock startingIndex: aNumber [
 ]
 
 { #category : #initialization }
-TracerVariableChanges >> setStartingPointAndMap: aContext [
+SkMappingTracer >> setStartingPointAndMap: aContext [
 	self setSelectedContextAsStartingPoint: aContext.
 	self autoMapFromStartingPoint.
 ]
 
-{ #category : #accessing }
-TracerVariableChanges >> stepContainsBlock: aNumber [
-
-	blocksCollection select: [ :each | ((each at: 2) = aNumber) ifTrue:[^true ]].
-	^false
-]
-
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> stepForwardToNextCallOfAMethodWithSelector: aSymbol ofClass: aClass [
+SkMappingTracer >> stepForwardToNextCallOfAMethodWithSelector: aSymbol ofClass: aClass [
 |startingStep foundStep|
 foundStep := false.
 startingStep := self currentStepDescriptor.
@@ -723,7 +509,7 @@ self stepUntilConditionIsTrue: [
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> stepForwardToStatement: anIndexlessStepDescriptor [
+SkMappingTracer >> stepForwardToStatement: anIndexlessStepDescriptor [
 
 	| foundTheStep |
 	foundTheStep := false.
@@ -740,7 +526,7 @@ TracerVariableChanges >> stepForwardToStatement: anIndexlessStepDescriptor [
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> stepForwardToStatementImmediatelyAfter: anIndexlessStepDescriptor [
+SkMappingTracer >> stepForwardToStatementImmediatelyAfter: anIndexlessStepDescriptor [
 "Should first move forward until reachine the descriptor"
 |foundTheStep|
 foundTheStep := false.
@@ -763,7 +549,7 @@ self stepUntilConditionIsTrue: [
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> stepForwardToStatementImmediatelyAfterMethodReturn: aCompiledMethod [
+SkMappingTracer >> stepForwardToStatementImmediatelyAfterMethodReturn: aCompiledMethod [
 
 "Returns true if the method was detected and control stops just after. If the the method could not be detected, returns false"
 
@@ -796,7 +582,7 @@ self stepUntilConditionIsTrue: [
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> stepForwardToStatementImmediatelyAfterMethodReturn: aCompiledMethod orMatchingPath: aStepDescriptorOfTheEnd [
+SkMappingTracer >> stepForwardToStatementImmediatelyAfterMethodReturn: aCompiledMethod orMatchingPath: aStepDescriptorOfTheEnd [
 
 "Returns true if the method was detected and control stops just after. If the the method could not be detected, returns false"
 
@@ -830,49 +616,12 @@ self stepUntilConditionIsTrue: [
 ]
 
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> stepToFinalStep [
+SkMappingTracer >> stepToFinalStep [
 "This requires an execution to be mapped"
 self stepUntilConditionIsTrue: [self isCurrentStepMappedFinalStep].
 ]
 
-{ #category : #accessing }
-TracerVariableChanges >> trackedVariableName [
-
-	^ trackedVariableName
-]
-
-{ #category : #accessing }
-TracerVariableChanges >> trackedVariableName: anObject [
-
-	trackedVariableName := anObject
-]
-
-{ #category : #accessing }
-TracerVariableChanges >> trackedVariableValues [
-
-	^ trackedVariableValues
-]
-
-{ #category : #accessing }
-TracerVariableChanges >> trackedVariableValues: anObject [
-
-	trackedVariableValues := anObject
-]
-
 { #category : #'as yet unclassified' }
-TracerVariableChanges >> updatePreviousStepFromBuffers [
-
-	"See comment on super implementation"
-
-	trace size <= 1 ifTrue: [ "No previous step" ^ self ].
-
-	stepReturnBufferAvailableFlag ifTrue: [ 
-		| previousStepDescriptor |
-		previousStepDescriptor := trace at: trace size - 1.
-		"Could update the descriptor itself or modify the dicitonary.. I am doing the dictionary option for now (closer to SPU design)"
-		returnsDictionary
-			at: previousStepDescriptor executionIndex
-			put: stepReturnBuffer.
-		stepReturnBuffer := nil.
-		stepReturnBufferAvailableFlag := false ]
+SkMappingTracer >> updatePreviousStepFromBuffers [
+	 ^self
 ]

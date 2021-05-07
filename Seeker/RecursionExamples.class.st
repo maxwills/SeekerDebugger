@@ -95,6 +95,6 @@ RecursionExamples >> testFindFirstStatementInSequence [
 { #category : #tests }
 RecursionExamples >> testIndirectRecursion [
 	|result|
-	result := self deferredFibonacci: 6.
+	result := self deferredFibonacci: 10.
 	self assert: result equals: -8
 ]

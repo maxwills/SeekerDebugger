@@ -51,5 +51,40 @@ SeekerWorldLiteCommands class >> menuBrowseSeekerTracerClass: aBuilder [
 		label: 'Browser Seeker Tracer Class';
 		icon: (self iconNamed: 'smallDebug');
 		help: 'Opens the Seeker tracer class';
-		action: [ TracerVariableChanges browse ]
+		action: [ SkRecorderTracer  browse ]
+]
+
+{ #category : #'as yet unclassified' }
+SeekerWorldLiteCommands class >> menuSetDefaultStepper: aBuilder [
+	<worldMenu>
+	(aBuilder item: #SeekerDevSetDefaultStepper)
+		parent: #SeekerDev;
+		order: 3;
+		label: 'Default Tracer';
+		icon: (self iconNamed: 'smallDebug');
+		help: 'Change the default tracer'
+]
+
+{ #category : #'as yet unclassified' }
+SeekerWorldLiteCommands class >> menuSetDefaultStepperMapping: aBuilder [
+	<worldMenu>
+	(aBuilder item: #SeekerDevSetDefaultStepperMapping)
+		parent: #SeekerDevSetDefaultStepper;
+		order: 1;
+		label: 'Set for Basic Mapping';
+		icon: (self iconNamed: 'smallDebug');
+		help: 'Change the default tracer';
+		action: [ SeekerGlobals instance defaultStepperClass: SkMappingTracer ]
+]
+
+{ #category : #'as yet unclassified' }
+SeekerWorldLiteCommands class >> menuSetDefaultStepperQuery: aBuilder [
+	<worldMenu>
+	(aBuilder item: #SeekerDevSetDefaultStepperQuery)
+		parent: #SeekerDevSetDefaultStepper;
+		order: 2;
+		label: 'Set for Queries';
+		icon: (self iconNamed: 'smallDebug');
+		help: 'Change the default tracer';
+		action: [ SeekerGlobals instance defaultStepperClass: SkQueryableTracer  ]
 ]

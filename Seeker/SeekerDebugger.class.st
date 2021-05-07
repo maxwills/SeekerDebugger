@@ -53,7 +53,7 @@ SeekerDebugger class >> newWithStatementGranularity: aStDebugger sindarin: aSind
 	updateCoordinator stDebugger: aStDebugger.
 
 	"Initialize the DebuggerStepperBase subclass to be injected in the seeker debugger"
-	stepper := QueriesStepTracer new.
+	stepper := "SkQueryableTracer"SkMappingTracer new.
 	stepper stDebugger: aStDebugger.
 	stepper sindarin: aSindarinDebugger.
 	stepper debuggerUpdateCoordinator: updateCoordinator.
@@ -125,6 +125,22 @@ SeekerDebugger >> isExecutionFinished [
 { #category : #printing }
 SeekerDebugger >> printTrace [
 	"Transcript show: stepper trace asString"
+]
+
+{ #category : #'as yet unclassified' }
+SeekerDebugger >> quickSetup [
+
+	"Automatic initialization logic. Happens when chossing debugging option from context menu commands. Options are stored in globals for the moment"
+
+	| process isWatchedProcess |
+	stepper ifNil: [ ^ self ].
+	stDebugger ifNil: [ ^ self ].
+	process := stDebugger interruptedProcess.
+	process ifNil: [ ^ self ].
+	isWatchedProcess := SeekerGlobals instance isWatchedProcess: process.
+	isWatchedProcess ifTrue: [ 
+		"[" stepper isQuickMapAvailable ifTrue: [ stepper quickMap ] "] "
+			"ensure: [ SeekerGlobals instance clearWatchedProcesses ] "]
 ]
 
 { #category : #starting }

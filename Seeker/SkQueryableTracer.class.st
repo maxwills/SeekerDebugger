@@ -4,13 +4,13 @@ There is no reason for this to be implemented as part of the stepper hierarchy. 
 So, for the momoent, I use this class to group up the Queries API
 "
 Class {
-	#name : #QueriesStepTracer,
-	#superclass : #TracerVariableChanges,
+	#name : #SkQueryableTracer,
+	#superclass : #SkRecorderTracer,
 	#category : #'Seeker-Components'
 }
 
 { #category : #'as yet unclassified' }
-QueriesStepTracer >> doesNextReturnOfMethod: aMethod satisfiesPredicate: aPredicateBlock [
+SkQueryableTracer >> doesNextReturnOfMethod: aMethod satisfiesPredicate: aPredicateBlock [
 
 	"Q4.
 	Predicate is a block that receives one parameter. Once the target method returns, its result is passed as parameter of the predicate returning its value.
@@ -39,7 +39,7 @@ QueriesStepTracer >> doesNextReturnOfMethod: aMethod satisfiesPredicate: aPredic
 ]
 
 { #category : #'as yet unclassified' }
-QueriesStepTracer >> doesPreviousReturnOfMethod: aMethod satisfiesPredicate: aPredicateBlock [
+SkQueryableTracer >> doesPreviousReturnOfMethod: aMethod satisfiesPredicate: aPredicateBlock [
 
 	"Q4.
 	Predicate is a block that receives one parameter. Once the target method returns, its result is passed as parameter of the predicate returning its value.
@@ -78,7 +78,7 @@ QueriesStepTracer >> doesPreviousReturnOfMethod: aMethod satisfiesPredicate: aPr
 ]
 
 { #category : #'as yet unclassified' }
-QueriesStepTracer >> getNextValuesAtEachRecursionOf: aMethod [
+SkQueryableTracer >> getNextValuesAtEachRecursionOf: aMethod [
 
 	"Q1.
 	Collection of the values returned at each call of the current recursion.
@@ -106,7 +106,7 @@ QueriesStepTracer >> getNextValuesAtEachRecursionOf: aMethod [
 ]
 
 { #category : #'as yet unclassified' }
-QueriesStepTracer >> getPastValuesAtEachRecursionOf: aMethod [
+SkQueryableTracer >> getPastValuesAtEachRecursionOf: aMethod [
 
 	"Q1.
 	Collection of the values returned at each call of the current recursion.
@@ -147,7 +147,7 @@ QueriesStepTracer >> getPastValuesAtEachRecursionOf: aMethod [
 ]
 
 { #category : #'as yet unclassified' }
-QueriesStepTracer >> getPreviousValueChangesOfVariableNamed: aString [
+SkQueryableTracer >> getPreviousValueChangesOfVariableNamed: aString [
 
 	"Needs a mapped execution"
 

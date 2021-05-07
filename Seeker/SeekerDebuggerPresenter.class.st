@@ -223,15 +223,17 @@ seekerDebugger setEndFromCurrentStep
 
 { #category : #'accessing model' }
 SeekerDebuggerPresenter >> setModelBeforeInitialization: aStDebugger [
-   |sindarin|
-   
-   stDebugger := aStDebugger.
-   sindarin := aStDebugger sindarinDebugger.
-   seekerDebugger := SeekerDebugger newWithStatementGranularity: aStDebugger sindarin: sindarin.
-   evaluatorDebugger := EvaluatorDebugger new.
-   evaluatorDebugger stDebugger: aStDebugger.
-debuggerUpdateCoordinator := seekerDebugger debuggerUpdateCoordinator.
-   
+
+	| sindarin |
+	stDebugger := aStDebugger.
+	sindarin := aStDebugger sindarinDebugger.
+	seekerDebugger := SeekerDebugger
+		                  newWithStatementGranularity: aStDebugger
+		                  sindarin: sindarin.
+	evaluatorDebugger := EvaluatorDebugger new.
+	evaluatorDebugger stDebugger: aStDebugger.
+	debuggerUpdateCoordinator := seekerDebugger debuggerUpdateCoordinator.
+	seekerDebugger quickSetup.
 ]
 
 { #category : #'event handling' }
