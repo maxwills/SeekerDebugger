@@ -187,7 +187,7 @@ SkStatementStepper >> isExecutionFinished [
 { #category : #testing }
 SkStatementStepper >> isRiskyStep [
 
-	| context receiver contextInsideInstanceOfExceptionSubclass contextInsideSubclassOfException contextInsideAssertionFailure primitiveFailed|
+	| context receiver contextInsideInstanceOfExceptionSubclass contextInsideSubclassOfException contextInsideAssertionFailure primitiveFailed contextInsideUnhandledException |
 	context := self currentContext.
 	receiver := context receiver.
 	contextInsideInstanceOfExceptionSubclass := [ 
@@ -199,13 +199,23 @@ SkStatementStepper >> isRiskyStep [
 	contextInsideAssertionFailure := [ 
 	                                 context receiver = TestResult and: [ 
 		                                 context methodSelector = #failure ] ].
-  primitiveFailed := [ (context methodSelector = #primitiveFailed) or: [ context methodSelector = #primitiveFailed ] ].
-	^ primitiveFailed value  or: [ 
+	contextInsideUnhandledException := [ 
+	                                   context selector = #defaultAction 
+		                                   and: [ 
+		                                   context receiver class 
+			                                   inheritsFrom: Exception ] ].
+	primitiveFailed := [ 
+	                   context methodSelector = #primitiveFailed ].
+	^ primitiveFailed value or: [ 
+		  receiver isClass
+			  ifTrue: contextInsideAssertionFailure
+			  ifFalse: contextInsideUnhandledException ]
+	"^ primitiveFailed value or: [ 
 		  receiver isClass
 			  ifTrue: [ 
 				  contextInsideSubclassOfException value or:
 					  contextInsideAssertionFailure ]
-			  ifFalse: contextInsideInstanceOfExceptionSubclass ]
+			  ifFalse: contextInsideInstanceOfExceptionSubclass ]"
 ]
 
 { #category : #'as yet unclassified' }
@@ -380,42 +390,22 @@ SkStatementStepper >> stepAstIntoStatement [
 	"No recording, no updates"
 
 	| currentStatementNode previousContext |
-	self isExecutionFinished ifTrue: [ ^ self ].
+	self isExecutionFinished ifTrue: [ ^ false ].
 	currentStatementNode := self currentStatementNode.
 	previousContext := self currentContext.
-	self stepAstUntilConditionIsTrue: [ 
-		self currentStatementNode ~= currentStatementNode or: [ "and: [self currentEsn isUnwinding =false]""Code commented because I dont have esn yet here"
-			self currentStatementNode = currentStatementNode and: [ 
-				previousContext ~= self currentContext ] ] ]
+	^self stepAstUntilConditionIsTrue: [ 
+		self currentStatementNode ~= currentStatementNode or: [ previousContext ~= self currentContext ] ]
 ]
 
 { #category : #'as yet unclassified' }
 SkStatementStepper >> stepAstUntilConditionIsTrue: aBlock [
-   "Steps the AST. No skipping. No recording. No Updates
+
+	"Steps the AST. No skipping. No recording. No Updates
 TODO: Add error management. There are two kind, one from the executed code, and the other is from the debugger code"
 
 	aBlock whileFalse: [ 
-		
-		| conditionValue |
-		conditionValue := ((self isExecutionFinished) or:[self isRiskyStep]) or: [aBlock value].
-		conditionValue ifFalse: [ 
-			self stepAstWithoutSkipping.
-			"post ast stepping happens here?"].
-
-		conditionValue ].
-
-]
-
-{ #category : #'as yet unclassified' }
-SkStatementStepper >> stepAstUntilNextStatement [
-"As all stepAST, there is no recording happening (Or updates)"
-|startingStatementNode|
-self isExecutionFinished ifTrue: [ ^self ].
-startingStatementNode := self currentNode statementNode .
-"self stepInto."
-	self stepAstUntilConditionIsTrue: [ 
-		(self currentNode statementNode ~= startingStatementNode) "and: [self currentEsn isUnwinding =false]" "Code commented because I dont have esn yet here" 
-		 ]
+		self stepAstWithoutSkipping ifFalse: [ ^ false ] ].
+	^ true
 ]
 
 { #category : #'debug - stepping' }
@@ -426,10 +416,10 @@ SkStatementStepper >> stepAstWithoutSkipping [
 	"You must ensure that execution is not finished before callig this method."
 
 	| debuggerActionModel context startingNode |
-	self isRiskyStep ifTrue: [ 
-		^ self inform: 'Reached execution safe end point' ].
-	self signalExceptionIfDebuggedExecutionHasSignalledUnhandledException.
-	self signalExceptionIfDebuggedExecutionIsFinished.
+	(self isExecutionFinished or: [ self isRiskyStep ]) ifTrue: [ "self inform: 'Reached execution safe end point'" 
+		^ false ].
+	"self signalExceptionIfDebuggedExecutionHasSignalledUnhandledException.
+	self signalExceptionIfDebuggedExecutionIsFinished."
 
 	astStepCounter := astStepCounter + 1. "Note that the counter increases just before actually executing the AST. So Ast nodes pre and post process takes place for the same current ast"
 	debuggerActionModel := stDebugger debuggerActionModel.
@@ -449,7 +439,8 @@ SkStatementStepper >> stepAstWithoutSkipping [
 	"	debuggerActionModel stepInto: self currentContext."
 
 
-	self doAstStepPostProcess: startingNode
+	self doAstStepPostProcess: startingNode.
+	^ true
 	"next line was a patch"
 	"debuggerActionModel session updateContextTo: context step.
 debuggerActionModel updateTopContext"
@@ -487,13 +478,18 @@ SkStatementStepper >> stepInto [
 
 	"This is the basic stepping at statement abstraction."
 
-	(self isExecutionFinished or:[ self isRiskyStep]) ifFalse: [ 
-		self doAndUpdateSessionAfter: [ 
-			astStepCounter := 0.
-			self doStepIntoFinishProcess.
-			self stepAstIntoStatement.
-			self pushCurrentStepDescriptor ].
-		self doStepIntoFinishProcess  ] ifTrue: [ self inform: 'Reached RISKY node. No more stepping' ]
+	"returns false if reached the end of the execution (or any type of end)"
+
+	| canContinueStepping |
+	canContinueStepping := false.
+	"Safety checking is done at ast stepping level"
+	self doAndUpdateSessionAfter: [ 
+		astStepCounter := 0.
+		self doStepIntoBeginProcess.
+		canContinueStepping := self stepAstIntoStatement.
+		self pushCurrentStepDescriptor.
+		self doStepIntoFinishProcess ].
+	^ canContinueStepping
 ]
 
 { #category : #'debug - stepping' }
@@ -503,15 +499,14 @@ SkStatementStepper >> stepOver [
 	startingStepDescriptor := self currentStepDescriptor.
 	startingPathDepth := startingStepDescriptor pathDepth.
 	self doAndUpdateSessionAfter: [ 
-		self stepUntilConditionIsTrue: [ 
-			| shouldStop currentStepDescriptor |
-			(self isExecutionFinished or:[ self isRiskyStep]) ifTrue: [ ^self ].
-			currentStepDescriptor := self currentStepDescriptor.
-			shouldStop := currentStepDescriptor pathDepth <= startingPathDepth 
-				              and: [ 
-				              (currentStepDescriptor hasSamePathAs:
-					               startingStepDescriptor) not ].
-			shouldStop ] ]
+		^ self stepUntilConditionIsTrue: [ 
+			  | shouldStop currentStepDescriptor |
+			  currentStepDescriptor := self currentStepDescriptor.
+			  shouldStop := currentStepDescriptor pathDepth
+			                <= startingPathDepth and: [ 
+				                (currentStepDescriptor hasSamePathAs:
+					                 startingStepDescriptor) not ].
+			  shouldStop ] ]
 ]
 
 { #category : #'as yet unclassified' }

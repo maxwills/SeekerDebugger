@@ -31,6 +31,7 @@ SkGoToNodeUnderCursorLC >> executeCommand [
 		                         countNodeStatementIndexInOwningSequence:
 		                         nodeUnderCursor.
 	descriptor topStatementID indexInSequence: targetStatementNumber.
+	self seeker stepper mapExecutionIfNotMappedAlready ifFalse: [ ^self inform: 'Unable to execute Seeker command in unmapped execution' ].
 	self seeker stepper restartAndStepToCondition: [ self seeker stepper currentStepDescriptor hasSamePathAs: descriptor ]
 ]
 

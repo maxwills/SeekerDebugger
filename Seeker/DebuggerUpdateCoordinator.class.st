@@ -20,10 +20,10 @@ DebuggerUpdateCoordinator >> coordinateUpdatesFor: aBlock [
 	preventUpdate ifFalse: [ stDebugger removeSessionHolderSubscriptions ].
 	oldFlagValue := preventUpdate.
 	preventUpdate := true.
-	aBlock value.
-	"aBlock
+	"aBlock value."
+	aBlock
 		on: Exception
-		do: [ :e | caughtException:=e ]."
+		do: [ :e | caughtException:=e ].
 	preventUpdate := oldFlagValue.
 	preventUpdate ifFalse: [ 
 		stDebugger session updateContextTo: stDebugger interruptedProcess suspendedContext.
@@ -32,7 +32,7 @@ DebuggerUpdateCoordinator >> coordinateUpdatesFor: aBlock [
 		stDebugger setSessionHolderSubscriptions.
 		stDebugger forceSessionUpdate.
 		stDebugger triggerEvent: #stepInto ].
-	caughtException ifNotNil: [ caughtException signal ]
+	caughtException ifNotNil: [ caughtException signal"signalIn: self stDebugger currentContext" ]
 ]
 
 { #category : #initialization }
