@@ -83,6 +83,18 @@ SkSequenceStaticID >> belongsToBlock: anObject [
 	belongsToBlock := anObject
 ]
 
+{ #category : #copying }
+SkSequenceStaticID >> clone [
+
+	| seq |
+	seq := self class new.
+	seq belongsToBlock: self belongsToBlock.
+	seq methodSelector: self methodSelector.
+	seq ownerBlockLabel: self ownerBlockLabel.
+	seq receiverClass: self receiverClass.
+	^ seq
+]
+
 { #category : #'as yet unclassified' }
 SkSequenceStaticID >> equalTo: aSequenceStaticID [
 	^ (self receiverClassName = aSequenceStaticID receiverClassName) and: [self methodName = aSequenceStaticID methodName]

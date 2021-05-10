@@ -4,7 +4,9 @@ Class {
 	#instVars : [
 		'navigationHistory',
 		'navigationForward',
-		'isMapped'
+		'isMapped',
+		'pressumedEndStepForKnownScenario',
+		'pressumedEndCondition'
 	],
 	#category : #'Seeker-Components'
 }
@@ -42,10 +44,19 @@ SkMappingTracer >> autoSetupForTestForUnhandledException [
 { #category : #'as yet unclassified' }
 SkMappingTracer >> automapForDoItScenario [
 
-	| initialRestartContext doItContext doItStep originalStep |
+	| initialRestartContext doItContext doItStep |
 	initialRestartContext := self findContextInStack: [ :aContext | 
-		                         aContext receiver class
-		                         = SpCodeDebugItInSeekerCommand  ].
+		                         | senderContext |
+		                         senderContext := aContext sender.
+		                         senderContext
+			                         ifNotNil: [ 
+				                         | receiverClass |
+				                         receiverClass := senderContext receiver
+					                                          class.
+				                         receiverClass
+				                         = SpCodeDebugItInSeekerCommand or: [ 
+					                         receiverClass = SpCodeDebugItCommand ] ]
+			                         ifNil: [ false ] ].
 	initialRestartContext ifNil: [ 
 		^ self error:
 			  'Could not detect the initial context for the DoIt Scenario.' ].
@@ -60,6 +71,24 @@ SkMappingTracer >> automapForDoItScenario [
 		            (SkStepDescriptor currentNodeOf: doItContext)
 		            inContext: doItContext.
 	startingIndexlessStepForNavigation := doItStep.
+	pressumedEndStepForKnownScenario := startingIndexlessStepForNavigation
+		                                    getParentIndexlessDescriptor.
+	pressumedEndStepForKnownScenario isReturning: true.
+	pressumedEndStepForKnownScenario topStatementID isReturning: true.
+
+	pressumedEndCondition := [ 
+	                         | compareToValue |
+	                         compareToValue := self currentStepDescriptor 
+		                                           comparePathTo:
+		                                           pressumedEndStepForKnownScenario.
+	                         compareToValue > 0
+		                         ifTrue: [ 
+		                         true "In fact, we are past that point!" ]
+		                         ifFalse: [ 
+			                         compareToValue = 0
+				                         ifTrue: [ self currentNode isReturn ]
+				                         ifFalse: [ false ] ] ].
+
 	self replayAndBuildExecutionMap
 	"Ideally I would mark the end statement"
 ]
@@ -67,14 +96,8 @@ SkMappingTracer >> automapForDoItScenario [
 { #category : #'as yet unclassified' }
 SkMappingTracer >> automapForTestCaseScenario [
 
-	| recordingInitialContext testInitialContext startedInBreakpoint |
-	"First, if the developer used the 'debugTest' command, the execution will begin interrupted at a breakpoint. In such case, we need to advance it one ast step, so it enters the appropriate statement for the analysis"
-	self currentContext receiver class = Breakpoint ifTrue: [ 
-		self seeker stDebugger
-			stepOver;
-			stepOver.
-		startedInBreakpoint := true ].
-
+	| recordingInitialContext testInitialContext endingContext |
+	"First, if the developer used the 'debugTest' command, the execution will begin interrupted at a breakpoint. In such case, we need to advance it one ast step, so it enters the appropriate statement for the analysis""true ifTrue: [ ^self ]."
 	recordingInitialContext := self findContextInStack: [ :aContext | 
 		                           aContext methodSelector = #runCase ].
 	recordingInitialContext ifNil: [ 
@@ -91,10 +114,21 @@ SkMappingTracer >> automapForTestCaseScenario [
 	testInitialContext ifNil: [ 
 		^ self error: 'Could not detect the initial context of the test.' ].
 	startingIndexlessStepForNavigation := SkStepDescriptor 
-		                                      newFromCurrentNodeinContext:
+		                                      newFromCurrentNodeInContext:
 		                                      testInitialContext.
 	startingIndexlessStepForNavigation topStatementID indexInSequence: 1. "Force it to be the first statement"
 
+	endingContext := self findContextInStack: [ :aContext | "We expect the exection will step in the method node of that context(because it doesn't have return node)"
+		                 (aContext receiver class inheritsFrom: TestCase) 
+			                 and: [ aContext methodSelector = #performTest ] ].
+	"The last step it the last statement?"
+	pressumedEndStepForKnownScenario := SkStepDescriptor 
+		                                    newFromCurrentNodeInContext:
+		                                    endingContext.
+	pressumedEndStepForKnownScenario topStatementID indexInSequence: 0. "Method Node"
+	pressumedEndCondition := [ 
+	                         self currentStepDescriptor hasSamePathAs:
+		                         pressumedEndStepForKnownScenario ].
 	self replayAndBuildExecutionMap
 ]
 
@@ -116,6 +150,22 @@ SkMappingTracer >> findContextInStack: aBlock startingContext: aContext [
 aContext ifNil: [ ^nil ].
 (aBlock value: aContext) ifTrue: [ ^aContext ].
 ^self findContextInStack: aBlock startingContext: aContext sender.
+]
+
+{ #category : #'as yet unclassified' }
+SkMappingTracer >> findContextInStack: aBlock startingContext: aContext untilContext: lastContextToSearch [
+"returns the first context where the given predicate returns true. Or nil. The stack is traversed from top to bottom."
+
+aContext ifNil: [ ^nil ].
+(aBlock value: aContext) ifTrue: [ ^aContext ].
+aContext = lastContextToSearch ifTrue: [ ^nil ].
+^self findContextInStack: aBlock startingContext: aContext sender untilContext: lastContextToSearch.
+]
+
+{ #category : #'as yet unclassified' }
+SkMappingTracer >> findContextInStackUntilStartingContextForRecord: aBlock [
+"returns the first context where the given predicate returns true. Or nil. The stack is traversed from top to bottom. The starting context is the interruptedContext"
+^self findContextInStack: aBlock startingContext: self currentContext untilContext: startingContextForRecord
 ]
 
 { #category : #'as yet unclassified' }
@@ -166,7 +216,7 @@ SkMappingTracer >> findStepOfFirstRecursionCallFor: aNumber [
 	1 to: indexOfStatementNotInRecursion + 1 do: [ :index | 
 		| statement |
 		statement := startingStep at: index.
-		targetDescriptor add: statement ].
+		targetDescriptor add: statement clone].
 	"Now, we want to actually stop at the first statement, so we enforce that in the targetDescriptor"
 	targetDescriptor topStatementID indexInSequence: 1.
 	"Got the target descriptor path. Now I need the execution index of a step with the same path"
@@ -198,10 +248,23 @@ isTestContext := [:aContext| SkObjectHelpers isObject: aContext receiver subclas
 ]
 
 { #category : #'as yet unclassified' }
+SkMappingTracer >> getContextStackAsFlatList [
+
+	"Returns a collection of the contexts in the stack. The bottom of the stack is at 1 in the list, and the top of the stack is at last in the list."
+
+	| contextCollection |
+	contextCollection := OrderedCollection new.
+	self
+		recursiveAddContextInStackToList: contextCollection
+		startingContext: self currentContext.
+	^ contextCollection
+]
+
+{ #category : #'as yet unclassified' }
 SkMappingTracer >> getIndexlessDescriptorOfLastStatementInCurrentSequence [
 
 	| stepDescriptor currentStatementNode statementsCount |
-	stepDescriptor := self currentStepDescriptor.
+	stepDescriptor := self currentStepDescriptor asIndexlessDescriptor.
 	currentStatementNode := self currentStatementNode.
 	statementsCount := SkNodeHelpers statementCountOfOwningSequenceFor:
 		                   currentStatementNode.
@@ -263,6 +326,8 @@ SkMappingTracer >> goBackToTheBeginningOfLastMethodWithSelector: aSymbol ofClass
 SkMappingTracer >> initialize [
 
 	super initialize.
+	pressumedEndStepForKnownScenario := nil.
+	pressumedEndCondition := nil.
 	navigationHistory := OrderedCollection new.
 	navigationForward := OrderedCollection new
 ]
@@ -316,6 +381,12 @@ SkMappingTracer >> isDoItScenario [
 
 ]
 
+{ #category : #testing }
+SkMappingTracer >> isExecutionFinished [
+
+	^ self isPressumedEndingStepReached or: [ super isExecutionFinished ]
+]
+
 { #category : #accessing }
 SkMappingTracer >> isMapped [
 
@@ -326,6 +397,17 @@ SkMappingTracer >> isMapped [
 SkMappingTracer >> isMapped: anObject [
 
 	isMapped := anObject
+]
+
+{ #category : #testing }
+SkMappingTracer >> isPressumedEndingStepReached [
+
+	"Only valid if quickmap was used (or automp for test and doit), for we need a pressumed ending step"
+
+	"Presummed ending step is a statement that should be reached in a good execution (no exceptions, or assertion failures)"
+
+	pressumedEndCondition ifNotNil: [ ^ pressumedEndCondition value ].
+	^ false
 ]
 
 { #category : #testing }
@@ -395,6 +477,18 @@ SkMappingTracer >> quickMap [
 	(self isTestCaseScenario ) ifTrue: [ ^self automapForTestCaseScenario".^self inform: 'Time Traveling enabled' "].
 ^	self inform: 'Could not enable Time Traveling automatically. The session needs a manual set up' .
 	
+]
+
+{ #category : #'as yet unclassified' }
+SkMappingTracer >> recursiveAddContextInStackToList: aCollection startingContext: aContext [
+
+	| sender |
+	sender := aContext sender.
+	sender ifNotNil: [ 
+		self
+			recursiveAddContextInStackToList: aCollection
+			startingContext: sender ].
+	aCollection add: aContext
 ]
 
 { #category : #'as yet unclassified' }
@@ -470,6 +564,15 @@ self restartAndStepToCondition: [ self currentStepDescriptor hasSamePathAs: inde
 ]
 
 { #category : #'as yet unclassified' }
+SkMappingTracer >> reverseFindContextInStack: aBlock startingContext: aContext [
+"returns the first context where the given predicate returns true. Or nil. The stack is traversed from top to bottom."
+
+aContext ifNil: [ ^nil ].
+(aBlock value: aContext) ifTrue: [ ^aContext ].
+^self findContextInStack: aBlock startingContext: aContext sender.
+]
+
+{ #category : #'as yet unclassified' }
 SkMappingTracer >> reverseFindStep: aBlock startingIndex: aNumber [
 "aBlock is predicate for a stepDescriptor. If it evaluates to true, the index of such step is returned"
 	|stepDescriptor|
@@ -484,6 +587,49 @@ SkMappingTracer >> reverseFindStep: aBlock startingIndex: aNumber [
 SkMappingTracer >> setStartingPointAndMap: aContext [
 	self setSelectedContextAsStartingPoint: aContext.
 	self autoMapFromStartingPoint.
+]
+
+{ #category : #'debug - stepping' }
+SkMappingTracer >> stepBackInto [
+
+	self doAndUpdateSessionAfter: [ 
+		| targetStepIndex targetStep stepCondition |
+		targetStepIndex := currentStepIndex - 1.
+		targetStepIndex <= 0 ifTrue: [ ^ self ].
+		targetStep := trace at: targetStepIndex.
+		(targetStep comparePathTo: startingIndexlessStepForNavigation) < 0
+			ifTrue: [ 
+				stepCondition := [ 
+				                 self currentStepDescriptor hasSamePathAs:
+					                 startingIndexlessStepForNavigation ] ]
+			ifFalse: [ 
+			stepCondition := [ currentStepIndex == targetStepIndex ] ].
+		self restart. "Ideally, we would restart from the closes context. TODO that"
+		self stepUntilConditionIsTrue: stepCondition ]
+]
+
+{ #category : #'debug - stepping' }
+SkMappingTracer >> stepBackOver [
+
+	| startingStepDescriptor previousStepOverStepIndex targetStep stepCondition |
+	startingStepDescriptor := self currentStepDescriptor.
+	previousStepOverStepIndex := self previousBackOverStepIndex:
+		                             startingStepDescriptor.
+	previousStepOverStepIndex = 0 ifTrue: [ 
+		self error: 'There are no more "StepBackOver" step candidates' ].
+
+	targetStep := trace at: previousStepOverStepIndex.
+	(targetStep comparePathTo: startingIndexlessStepForNavigation) < 0
+		ifTrue: [ 
+			stepCondition := [ 
+			                 self currentStepDescriptor hasSamePathAs:
+				                 startingIndexlessStepForNavigation ] ]
+		ifFalse: [ 
+		stepCondition := [ currentStepIndex == previousStepOverStepIndex ] ].
+
+	self doAndUpdateSessionAfter: [ 
+		self restart. "Ideally, we would restart from the closes context. TODO that"
+		self stepUntilConditionIsTrue: stepCondition ]
 ]
 
 { #category : #'as yet unclassified' }

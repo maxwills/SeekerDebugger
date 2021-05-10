@@ -114,6 +114,20 @@ GeneralSeekerTests >> testVariableChange [
 ]
 
 { #category : #tests }
+GeneralSeekerTests >> testVariableOfObject [
+
+	| dog person |
+	dog := SkDog new.
+	person := SkPerson new.
+	dog name: 'dogname'.
+	person name: 'person name'.
+	dog name: 'renamed dog'.
+	person name: 'renamed person'.
+
+	self assert: person name equals: 'unnamed'
+]
+
+{ #category : #tests }
 GeneralSeekerTests >> testVariableTracking [
 
 	"Do this once the window opens:
@@ -131,9 +145,32 @@ GeneralSeekerTests >> testVariableTracking [
 	aCol := OrderedCollection new.
 	aCol add: 1.
 	aCol add: 1.
-	aCol setEndFromCurrentStep.
 	self assert: false.
 	aNumber := aCol size.
 
 	self assert: false
+]
+
+{ #category : #tests }
+GeneralSeekerTests >> testWithoutFailure [
+
+
+	| aCol aNumber |
+	aNumber := -1.
+	aNumber := 0.
+	aCol := OrderedCollection new.
+	aCol add: 1.
+	aCol add: 1.
+	aNumber := aCol size.
+	aCol := OrderedCollection new.
+	aCol add: 1.
+	aCol add: 1.
+	aNumber := aCol size.
+
+	self assert: true
+]
+
+{ #category : #tests }
+GeneralSeekerTests >> testWithoutFailureShort [
+	^self assert: true
 ]

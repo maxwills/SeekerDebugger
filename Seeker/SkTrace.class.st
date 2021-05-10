@@ -38,3 +38,16 @@ SkTrace >> asStringIgnoringLeadingStatements: aNumber [
 		self isUnwinding ifTrue: [ str := str , '+u' ] ]."
 	^ str
 ]
+
+{ #category : #accessing }
+SkTrace >> findStep: aPredicateBlock startingAt: aNumber [
+
+	"Block is a block that rewceives a stepdescriptor and returns a boolean. It will return the first stepDescriptor that satisfies said block. Or nil otherwise"
+
+	aNumber > self size ifTrue: [ ^ nil ].
+	aNumber to: self size do: [ :index | 
+		| step |
+		step := self at: index.
+		(aPredicateBlock value: step) ifTrue: [ ^ step ] ].
+	^ nil
+]

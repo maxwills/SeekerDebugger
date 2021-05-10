@@ -14,19 +14,24 @@ Class {
 
 { #category : #accessing }
 DebuggerUpdateCoordinator >> coordinateUpdatesFor: aBlock [
-| oldFlagValue caughtException |
+
+	| oldFlagValue caughtException |
 	caughtException := nil.
 	preventUpdate ifFalse: [ stDebugger removeSessionHolderSubscriptions ].
 	oldFlagValue := preventUpdate.
 	preventUpdate := true.
 	aBlock value.
-   "aBlock
+	"aBlock
 		on: Exception
 		do: [ :e | caughtException:=e ]."
 	preventUpdate := oldFlagValue.
 	preventUpdate ifFalse: [ 
+		stDebugger session updateContextTo: stDebugger interruptedProcess suspendedContext.
+		stDebugger debuggerActionModel updateTopContext.
+		stDebugger updateStep.
 		stDebugger setSessionHolderSubscriptions.
-		stDebugger forceSessionUpdate ].
+		stDebugger forceSessionUpdate.
+		stDebugger triggerEvent: #stepInto ].
 	caughtException ifNotNil: [ caughtException signal ]
 ]
 

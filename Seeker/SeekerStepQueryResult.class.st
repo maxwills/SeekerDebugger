@@ -2,11 +2,11 @@ Class {
 	#name : #SeekerStepQueryResult,
 	#superclass : #Object,
 	#instVars : [
-		'stepResult',
 		'seeker',
 		'stepIndex',
 		'info',
-		'hasResult'
+		'hasResult',
+		'result'
 	],
 	#category : #'Seeker-Queries-Result'
 }
@@ -21,7 +21,7 @@ result hasResult: false.
 
 { #category : #'as yet unclassified' }
 SeekerStepQueryResult >> asString [
-	^stepResult asString
+	^result asString
 ]
 
 { #category : #accessing }
@@ -54,20 +54,20 @@ SeekerStepQueryResult >> printOn: aStream [
 	identifies the receiver."
 	aStream
 		nextPutAll: 'at Step: ';nextPutAll: stepIndex asString;nextPutAll: ' result: '.
-		stepResult printOn: aStream.
+		result printOn: aStream.
 		info ifNotNil: [ aStream nextPutAll: ' '. info printOn: aStream ]
 ]
 
 { #category : #accessing }
 SeekerStepQueryResult >> result [
 
-	^ stepResult
+	^ result
 ]
 
 { #category : #accessing }
 SeekerStepQueryResult >> result: anObject [
 
-	stepResult := anObject.
+	result := anObject.
 	hasResult := true.
 ]
 
@@ -97,5 +97,8 @@ SeekerStepQueryResult >> stepIndex: anObject [
 
 { #category : #'as yet unclassified' }
 SeekerStepQueryResult >> timeTravelToThis [
-	seeker stepper restartAndStepToIndex: stepIndex
+
+	self hasResult
+		ifTrue: [ seeker stepper restartAndStepToIndex: stepIndex ]
+		ifFalse: [ self inform: 'Nowhere to go' ]
 ]

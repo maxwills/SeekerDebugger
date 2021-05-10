@@ -9,7 +9,8 @@ Class {
 		'sourceCode',
 		'extraInfo',
 		'context',
-		'astSteps'
+		'astSteps',
+		'isReturning'
 	],
 	#category : #'Seeker-Components'
 }
@@ -20,7 +21,7 @@ SkStepDescriptor class >> currentNodeOf: aContext [
 ]
 
 { #category : #'instance creation' }
-SkStepDescriptor class >> newFromCurrentNodeinContext: aContext [
+SkStepDescriptor class >> newFromCurrentNodeInContext: aContext [
 
 	"returns a SDStatementStepDescriptor with all the statement static IDs which lead to the nodenode"
  ^self newFromNode: (self currentNodeOf: aContext) inContext: aContext
@@ -50,8 +51,18 @@ SkStepDescriptor class >> newFromNode: aRBNode inContext: aContext [
 	sourceCode := aRBNode statementNode
 		              ifNil: [ '"no statement for node"' ]
 		              ifNotNil: [ aRBNode statementNode sourceCode ].
+	stepDescriptor isReturning: aRBNode isReturn.
 	stepDescriptor sourceCode: sourceCode.
+	stepDescriptor topStatementID isReturning: stepDescriptor isReturning.
 	^ stepDescriptor
+]
+
+{ #category : #converting }
+SkStepDescriptor >> asIndexlessDescriptor [
+	|step|
+	step := self class new.
+	1 to: self size do: [ :index | step add: (self at: index) clone ].
+^step.
 ]
 
 { #category : #converting }
@@ -113,26 +124,34 @@ SkStepDescriptor >> comparePathTo: anIndexlessStepDescriptor [
 		                  ifFalse: [ anIndexlessStepDescriptor size ].
 	shortestLength = 0 ifTrue: [ ^ nil ].
 	(shortestLength = 1 and: [ 
-		 ((self at: 1) sequenceStaticID equalTo: (anIndexlessStepDescriptor at: 1) sequenceStaticID ) not ]) 
+		 ((self at: 1) sequenceStaticID equalTo:
+			  (anIndexlessStepDescriptor at: 1) sequenceStaticID) not ]) 
 		ifTrue: [ ^ nil ].
 	1 to: shortestLength do: [ :pathIndex | 
 		| thisPathStatement othersPathStatement |
 		thisPathStatement := self at: pathIndex.
 		othersPathStatement := anIndexlessStepDescriptor at: pathIndex.
 		(thisPathStatement equalTo: othersPathStatement)
-			ifTrue: [ "keep advancing the index" ]
+			ifTrue: [ 
+				thisPathStatement isReturning ~= othersPathStatement isReturning 
+					ifTrue: [ "the returning happens after""keep advancing the index"
+						thisPathStatement isReturning
+							ifTrue: [ ^ 1 ]
+							ifFalse: [ ^ -1 ] ] ]
 			ifFalse: [ "There is something different: the sequence or index""See if we are in the same sequence"
 				(thisPathStatement sequenceStaticID equalTo:
 					 othersPathStatement sequenceStaticID)
-					ifTrue: [ 
+					ifTrue: [ "if there is a index as 0, it is a sort of return"
+						thisPathStatement indexInSequence = 0 ifTrue: [ ^ 1 ].
+						othersPathStatement indexInSequence = 0 ifTrue: [ ^ -1 ].
 						^ thisPathStatement indexInSequence
 						  < othersPathStatement indexInSequence
 							  ifTrue: [ ^ -1 ]
 							  ifFalse: [ 
-								  ^ 1 "Not that we are skipping the equal case, because it should have been filtered before entering here" ] ]
+								  ^ 1 "Note that we are skipping the equal case, because it should have been filtered before entering here" ] ]
 					ifFalse: [ 
 						^ 0 "This is an error case? The index may or maynot be the same, and the sequence is different. I think this will happen in the current state of the project when parameters solve their own inner statements. However, it would be interesting to recocer the common statement in the path. not for now" ] ] ].
-			"At this point both paths have in common the shortest path. Then the longest describes what happens after".
+	"At this point both paths have in common the shortest path. Then the longest describes what happens after"
 	self size = anIndexlessStepDescriptor size ifTrue: [ ^ 0 ].
 	self size < anIndexlessStepDescriptor size ifTrue: [ ^ -1 ].
 	^ 1
@@ -198,6 +217,15 @@ SkStepDescriptor >> extraInfo: anObject [
 ]
 
 { #category : #'as yet unclassified' }
+SkStepDescriptor >> getParentIndexlessDescriptor [
+
+	| parentStep |
+	parentStep := SkStepDescriptor new.
+	1 to: self size - 1 do: [ :index | parentStep add: (self at: index) clone ].
+	^ parentStep
+]
+
+{ #category : #'as yet unclassified' }
 SkStepDescriptor >> happensAfterPathOf: anIndexlessStepDescriptor [
 
 	"Returns true if the statement described by self happens before the one in the argument"
@@ -249,7 +277,20 @@ SkStepDescriptor >> initialize [
 	executionIndex := 0.
 	sourceCode := ''.
 	astSteps := 0.
-	extraInfo := ''
+	extraInfo := ''.
+	isReturning := false.
+]
+
+{ #category : #accessing }
+SkStepDescriptor >> isReturning [
+
+	^ isReturning
+]
+
+{ #category : #accessing }
+SkStepDescriptor >> isReturning: anObject [
+
+	isReturning := anObject
 ]
 
 { #category : #testing }

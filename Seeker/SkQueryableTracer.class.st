@@ -10,6 +10,76 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
+SkQueryableTracer >> amIInARecursiveLoop [
+
+	"This can be answered by analyzing the stack, or the step descriptor. For the moment, we analyze the stack in case something is missing from the descriptor"
+
+	"if the current method is not a recursion, it searches up in the stack for the first that is"
+
+	| searchedMethod contexts recursionContext callSteps stepsDictionary result |
+	contexts := self getContextStackAsFlatList.
+
+	recursionContext := self 
+		                    findContextInStackUntilStartingContextForRecord: [ 
+			                    :aContext | 
+			                    | contextMethod callsOfMethodInStack |
+			                    contextMethod := aContext method.
+			                    callsOfMethodInStack := OrderedCollection new.
+			                    contexts do: [ :each | 
+				                    each method = contextMethod ifTrue: [ 
+					                    callsOfMethodInStack add:
+						                    (SkStepDescriptor 
+							                     newFromCurrentNodeInContext: each) ] ].
+			                    callsOfMethodInStack size > 1 ].
+
+	searchedMethod := recursionContext
+		                  ifNil: [ "Found no recursion. Will answer with the single call of the current method" 
+			                  self currentContext method ]
+		                  ifNotNil: [ "Found a recursion" 
+		                  recursionContext method ].
+
+	"need to find the first call of the method in the stack"
+	callSteps := OrderedCollection new. "will contain a list of indexless descriptors for every context in the stack for the target method"
+	contexts do: [ :each | 
+		each method = searchedMethod ifTrue: [ 
+			callSteps add: (SkStepDescriptor newFromCurrentNodeInContext: each) ] ].
+	stepsDictionary := Dictionary new.
+	callSteps do: [ :each | 
+		| parentStatementIndexlessDescriptor parentInTrace |
+		parentStatementIndexlessDescriptor := each
+			                                      getParentIndexlessDescriptor.
+		parentInTrace := trace
+			                 findStep: [ :s | 
+			                 s hasSamePathAs:
+				                 parentStatementIndexlessDescriptor ]
+			                 startingAt: 1.
+		parentInTrace ifNotNil: [ 
+			stepsDictionary
+				at: parentInTrace executionIndex
+				put: 'Method called' ] ].
+
+	result := SeekerStepCollectionQueryResult
+		          newFromStepDictionary: stepsDictionary
+		          seeker: self seeker
+		          infoMaker: nil.
+	result ifNotEmpty: [ 
+		1 to: result size do: [ :index | 
+			| res |
+			res := result at: index.
+			index = 1
+				ifTrue: [ res info: 'Initial call of method' ]
+				ifFalse: [ 
+				'Recursive call of method number ' , (index - 1) asString ].
+			res result: searchedMethod ] ].
+	result descriptionLabel:
+		'Query Result: - ' , (stepsDictionary size > 1
+			 ifTrue: [ 'Inside recursion. Presenting list of recursive calls.' ]
+			 ifFalse: [ 'No recursion detected (single call)' ]).
+	result result: result size > 1.
+	^ result
+]
+
+{ #category : #timeDependant }
 SkQueryableTracer >> doesNextReturnOfMethod: aMethod satisfiesPredicate: aPredicateBlock [
 
 	"Q4.
@@ -38,7 +108,7 @@ SkQueryableTracer >> doesNextReturnOfMethod: aMethod satisfiesPredicate: aPredic
 	^ result
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #timeDependant }
 SkQueryableTracer >> doesPreviousReturnOfMethod: aMethod satisfiesPredicate: aPredicateBlock [
 
 	"Q4.
@@ -54,6 +124,9 @@ SkQueryableTracer >> doesPreviousReturnOfMethod: aMethod satisfiesPredicate: aPr
 
 	| currentStep stepOfReturnNode methodSelector classOfReceiver methodReturnValue result |
 	currentStep := self currentStepDescriptor.
+	returnsRecordingEnabled := true.
+	self restartAndStepToIndex: currentStep executionIndex.
+	returnsRecordingEnabled := false.
 	methodSelector := aMethod selector.
 	classOfReceiver := aMethod methodClass.
 	stepOfReturnNode := self
@@ -72,12 +145,14 @@ SkQueryableTracer >> doesPreviousReturnOfMethod: aMethod satisfiesPredicate: aPr
 	result := SeekerStepQueryResult new.
 	result result: (aPredicateBlock value: methodReturnValue).
 	result stepIndex: stepOfReturnNode.
-	result info: { #returnOfTheMethodIs: . methodReturnValue }.
+	result info: { 
+			#returnOfTheMethodIs:.
+			methodReturnValue }.
 	result seeker: self seeker.
 	^ result
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #timeDependant }
 SkQueryableTracer >> getNextValuesAtEachRecursionOf: aMethod [
 
 	"Q1.
@@ -105,7 +180,7 @@ SkQueryableTracer >> getNextValuesAtEachRecursionOf: aMethod [
 	^result
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #timeDependant }
 SkQueryableTracer >> getPastValuesAtEachRecursionOf: aMethod [
 
 	"Q1.
@@ -115,14 +190,29 @@ SkQueryableTracer >> getPastValuesAtEachRecursionOf: aMethod [
 
 	"Needs a mapped execution: (A starting point and indexed steps)"
 
-	| firstStepOfRecursion stepRangeFirstIndex stepRangeLastIndex currentStep methodSelector classOfReceiver recursionReturnsDictionary |
-	currentStep := self currentStepDescriptor.
+	| firstStepOfRecursion stepRangeFirstIndex stepRangeLastIndex currentStep targetStepIndex targetStep methodSelector classOfReceiver recursionReturnsDictionary |
 	methodSelector := aMethod selector.
 	classOfReceiver := aMethod methodClass.
+	targetStepIndex := self
+		                   reverseFindStep: [ :aStep | 
+			                   aStep receiverClass = classOfReceiver and: [ 
+				                   aStep methodSelector = methodSelector ] ]
+		                   startingIndex: trace size.
+	targetStepIndex = 0 ifTrue: [ ^ SeekerStepQueryResult noResult ].
+	targetStep := trace at: targetStepIndex.
+	currentStep := self currentStepDescriptor.
+	self restart.
+	returnsRecordingEnabled := true.
+	self stepUntilConditionIsTrue: [ 
+		currentStepIndex = currentStep executionIndex ].
+	returnsRecordingEnabled := false.
+
+
+
 	firstStepOfRecursion := self findStepOfFirstRecursionCallFor:
-		                        currentStep executionIndex.
+		                        targetStep executionIndex.
 	stepRangeFirstIndex := firstStepOfRecursion.
-	stepRangeLastIndex := self currentStepDescriptor executionIndex.
+	stepRangeLastIndex := targetStep executionIndex.
 
 	"Return values are stored in a dictionary. We only need the return of the steps that has same receivers class and selector from with the steps range"
 	recursionReturnsDictionary := Dictionary new.
@@ -146,7 +236,7 @@ SkQueryableTracer >> getPastValuesAtEachRecursionOf: aMethod [
 		  seeker: self seeker
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #timeDependant }
 SkQueryableTracer >> getPreviousValueChangesOfVariableNamed: aString [
 
 	"Needs a mapped execution"
@@ -158,4 +248,144 @@ SkQueryableTracer >> getPreviousValueChangesOfVariableNamed: aString [
 	^ SeekerStepCollectionQueryResult
 		  newFromStepDictionary: trackedVariableValues
 		  seeker: self seeker
+]
+
+{ #category : #'as yet unclassified' }
+SkQueryableTracer >> getValueChangesOfVariableNamed: aString [
+
+	"Needs a mapped execution"
+
+	| originalStep results |
+	originalStep := self currentStepDescriptor.
+	self trackedVariableName: aString.
+
+	self restart.
+	variableTrackingEnabled := true.
+	self stepUntilConditionIsTrue: [ self isExecutionFinished ].
+	variableTrackingEnabled := false.
+
+	results := SeekerStepCollectionQueryResult
+		           newFromStepDictionary: trackedVariableValues
+		           seeker: self seeker.
+	self restartAndStepToIndex: originalStep executionIndex.
+	^ results
+]
+
+{ #category : #'as yet unclassified' }
+SkQueryableTracer >> getValueChangesOfVariableNamed: aString ofObject: anObjectAlias [
+
+	"Needs a mapped execution"
+
+	| originalStep filteredDictionary results |
+	originalStep := self currentStepDescriptor.
+	self trackedVariableName: aString.
+
+	self restart.
+	variableTrackingEnabled := true.
+	objectOfClassTrackingEnabled := true.
+	self stepUntilConditionIsTrue: [ self isExecutionFinished ].
+	variableTrackingEnabled := false.
+	objectOfClassTrackingEnabled := false.
+
+	filteredDictionary := Dictionary new.
+
+	trackedVariableValues keysDo: [ :stepIndex | 
+		| receiverAlias valueChange |
+		(receiverObjectAliasDictionary includesKey: stepIndex) ifTrue: [ 
+			| stepOfOrigin aliasedObject |
+			stepOfOrigin := receiverObjectAliasDictionary at: stepIndex.
+			anObjectAlias stepIndex = stepOfOrigin ifTrue: [ 
+				filteredDictionary
+					at: stepIndex
+					put: (trackedVariableValues at: stepIndex) ] ] ].
+
+	results := SeekerStepCollectionQueryResult
+		           newFromStepDictionary: filteredDictionary
+		           seeker: self seeker.
+	self restartAndStepToIndex: originalStep executionIndex.
+	^ results
+]
+
+{ #category : #'as yet unclassified' }
+SkQueryableTracer >> getValuesAtEachRecursionOf: aMethod [
+
+	"Q1.
+	Collection of the values returned at each call of the current recursion.
+	Looks backwards in time. Optimally used when the query is executed at the last recursive call.
+	"
+
+	"Needs a mapped execution: (A starting point and indexed steps)"
+
+	| firstStepOfRecursion stepRangeFirstIndex stepRangeLastIndex currentStep targetStepIndex targetStep methodSelector classOfReceiver recursionReturnsDictionary |
+	currentStep := self currentStepDescriptor.
+	self stepUntilConditionIsTrue: [ self isExecutionFinished ].
+	methodSelector := aMethod selector.
+	classOfReceiver := aMethod methodClass.
+	targetStepIndex := self
+		                   reverseFindStep: [ :aStep | 
+			                   aStep receiverClass = classOfReceiver and: [ 
+				                   aStep methodSelector = methodSelector ] ]
+		                   startingIndex: trace size.
+	targetStepIndex = 0 ifTrue: [ ^ SeekerStepQueryResult noResult ].
+	targetStep := trace at: targetStepIndex.
+
+	self restart.
+	returnsRecordingEnabled := true.
+	self stepUntilConditionIsTrue: [ self isExecutionFinished ].
+	returnsRecordingEnabled := false.
+
+
+
+	firstStepOfRecursion := self findStepOfFirstRecursionCallFor:
+		                        targetStep executionIndex.
+	stepRangeFirstIndex := firstStepOfRecursion.
+	stepRangeLastIndex := targetStep executionIndex.
+
+	"Return values are stored in a dictionary. We only need the return of the steps that has same receivers class and selector from with the steps range"
+	recursionReturnsDictionary := Dictionary new.
+	stepRangeFirstIndex to: stepRangeLastIndex do: [ :stepIndex | "	| methodSelector classOfReceiver currentContext searchFinalStep|
+	currentContext := self currentContext.
+	methodSelector := currentContext methodSelector.
+	classOfReceiver := currentContext receiver class.
+	searchFinalStep := self currentStepDescriptor.
+	self restart.
+"
+		| step |
+		step := trace at: stepIndex.
+		((step receiverClass = classOfReceiver and: [ 
+			  step methodSelector = methodSelector ]) and: [ 
+			 returnsDictionary includesKey: stepIndex ]) ifTrue: [ 
+			recursionReturnsDictionary
+				at: stepIndex
+				put: (returnsDictionary at: stepIndex) ] ].
+
+	self restart.
+	self stepUntilConditionIsTrue: [ 
+		currentStepIndex = currentStep executionIndex ].
+	^ SeekerStepCollectionQueryResult
+		  newFromStepDictionary: recursionReturnsDictionary
+		  seeker: self seeker
+]
+
+{ #category : #'as yet unclassified' }
+SkQueryableTracer >> whereIsTheExceptionRaised [
+
+	"In the current state of the program, the execution will stop right before the excetion (or assertion). So, we only need to replay all"
+
+	| originalStepIndex result |
+	originalStepIndex := currentStepIndex.
+
+	self restart.
+	self stepUntilConditionIsTrue: [ self isExecutionFinished ].
+	result := SeekerStepQueryResult new.
+	result seeker: self seeker.
+	self isPressumedEndingStepReached
+		ifTrue: [ 
+			result hasResult: false.
+			result info: 'Did not detect any Exception' ]
+		ifFalse: [ 
+			result result: self currentContext receiver class asString.
+			result stepIndex: currentStepIndex ].
+	self restartAndStepToIndex: originalStepIndex.
+	^ result
 ]

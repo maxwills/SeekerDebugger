@@ -79,6 +79,11 @@ SeekerLiteCommands >> stCodeCommandsTree [
 				  SkMapSessionFormSelectedStartingPointLC.
 				  SkSetSessionStartingPointLC } }.
 		  { 
+			  'Alias'.
+			  { 
+				  SkObjectAliasFromSelectionLC.
+				  SkObjectAliasFromReceiverLC } }.
+		  { 
 			  'History'.
 			  { 
 				  SkHistoryGoBackLC.

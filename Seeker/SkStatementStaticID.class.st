@@ -7,7 +7,8 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'sequenceStaticID',
-		'indexInSequence'
+		'indexInSequence',
+		'isReturning'
 	],
 	#category : #'Seeker-Components'
 }
@@ -26,18 +27,21 @@ SkStatementStaticID class >> countNodeStatementIndexInOwningSequence: aRBNode [
 
 { #category : #'instance creation' }
 SkStatementStaticID class >> newFromAstNode: aRBNode inContext: aContext [
-|statementID sequenceID nodeIndex|
-statementID := self new.
-	sequenceID := SkSequenceStaticID newFromAstNode: aRBNode inContext: aContext .
-	
+
+	| statementID sequenceID nodeIndex |
+	statementID := self new.
+	sequenceID := SkSequenceStaticID
+		              newFromAstNode: aRBNode
+		              inContext: aContext.
+
 	nodeIndex := self countNodeStatementIndexInOwningSequence: aRBNode.
 
 	statementID sequenceStaticID: sequenceID.
 	statementID indexInSequence: (nodeIndex == 0
 			 ifTrue: [ 0 "Exception new signal" ]
 			 ifFalse: [ nodeIndex ]).
-
-	^statementID
+	statementID isReturning: false. "aRBNode isReturn" "Note that this had to be done because there when calculating the current node of an upper context, it may give the return node, even if the ast has not executed it yet"
+	^ statementID
 ]
 
 { #category : #accessing }
@@ -56,6 +60,17 @@ SkStatementStaticID >> asString [
 	^ sequenceStaticID asString , ' (', indexInSequence asString,') '
 ]
 
+{ #category : #copying }
+SkStatementStaticID >> clone [
+
+	| statement |
+	statement := self class new.
+	statement indexInSequence: self indexInSequence.
+	statement isReturning: self isReturning.
+	statement sequenceStaticID: self sequenceStaticID copy.
+	^ statement
+]
+
 { #category : #'as yet unclassified' }
 SkStatementStaticID >> equalTo: aStatementStaticID [
 	^ (self indexInSequence = aStatementStaticID indexInSequence) and: [ self sequenceStaticID equalTo: aStatementStaticID sequenceStaticID ]
@@ -71,6 +86,23 @@ SkStatementStaticID >> indexInSequence [
 SkStatementStaticID >> indexInSequence: anObject [
 
 	indexInSequence := anObject
+]
+
+{ #category : #initialization }
+SkStatementStaticID >> initialize [ 
+	isReturning := false.
+]
+
+{ #category : #accessing }
+SkStatementStaticID >> isReturning [
+
+	^ isReturning
+]
+
+{ #category : #accessing }
+SkStatementStaticID >> isReturning: anObject [
+
+	isReturning := anObject
 ]
 
 { #category : #accessing }

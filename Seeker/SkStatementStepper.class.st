@@ -71,6 +71,7 @@ SkStatementStepper >> createIndexlessStepDescriptorForContext: aContext [
 		                              inContext: aContext.
 	currentStatementDescriptor executionIndex: 0.
 	currentStatementDescriptor context: aContext.
+	currentStatementDescriptor isReturning: node isReturn.
 	^ currentStatementDescriptor
 ]
 
@@ -79,7 +80,7 @@ SkStatementStepper >> currentContext [
 
 	| context |
 	
-	context := stDebugger debuggerActionModel session interruptedContext.
+	context := stDebugger interruptedProcess suspendedContext  "debuggerActionModel session interruptedContext".
 	^ context
 ]
 
@@ -133,14 +134,14 @@ SkStatementStepper >> doAstStepPreProcess [
 ]
 
 { #category : #'as yet unclassified' }
-SkStatementStepper >> doStepClosingProcess [ 
-"subclasses shoudl reimplement this" "Note that the current step is the next than the one that has been closed."
+SkStatementStepper >> doStepIntoBeginProcess [ 
+"subclasses shoudl reimplement this"
 	^self
 ]
 
 { #category : #'as yet unclassified' }
-SkStatementStepper >> doStepOpeningProcess [ 
-"subclasses shoudl reimplement this"
+SkStatementStepper >> doStepIntoFinishProcess [ 
+"subclasses shoudl reimplement this" "Note that the current step is the next than the one that has been closed."
 	^self
 ]
 
@@ -306,7 +307,7 @@ SkStatementStepper >> restart [
 		currentStepIndex := 0.
 		self pushCurrentStepDescriptor.
 		].
-	self doStepOpeningProcess.
+	self doStepIntoBeginProcess.
 	startingIndexlessStepForNavigation ifNotNil: [self stepUntilConditionIsTrue: [self currentStepDescriptor hasSamePathAs: startingIndexlessStepForNavigation ]].
 ]
 
@@ -421,38 +422,47 @@ startingStatementNode := self currentNode statementNode .
 SkStatementStepper >> stepAstWithoutSkipping [
 
 	"Steps the debugger. No skipping. No recording. No updates (rememeber to force update after)"
-   "You must ensure that execution is not finished before callig this method."
 
-	| debuggerActionModel context startingNode|
+	"You must ensure that execution is not finished before callig this method."
 
-	self isRiskyStep ifTrue: [ ^self inform: 'Reached execution safe end point' ].
+	| debuggerActionModel context startingNode |
+	self isRiskyStep ifTrue: [ 
+		^ self inform: 'Reached execution safe end point' ].
 	self signalExceptionIfDebuggedExecutionHasSignalledUnhandledException.
-	self signalExceptionIfDebuggedExecutionIsFinished .
-	
-	astStepCounter := astStepCounter +1. "Note that the counter increases just before actually executing the AST. So Ast nodes pre and post process takes place for the same current ast"
+	self signalExceptionIfDebuggedExecutionIsFinished.
+
+	astStepCounter := astStepCounter + 1. "Note that the counter increases just before actually executing the AST. So Ast nodes pre and post process takes place for the same current ast"
 	debuggerActionModel := stDebugger debuggerActionModel.
 	"InterruptedContext can be a CompiledBlock"
 	context := debuggerActionModel session interruptedContext.
-	context compiledCode class = CompiledBlock ifFalse: [ 
-		"I think there is an error in the first call of context stepIntoQuickMethod. My suspicious is that the message isBlock doesn't do what the developer thought it did. This ifFalse prevent reaching that case."
+	context compiledCode class = CompiledBlock ifFalse: [ "I think there is an error in the first call of context stepIntoQuickMethod. My suspicious is that the message isBlock doesn't do what the developer thought it did. This ifFalse prevent reaching that case." 
 		context stepIntoQuickMethod: true ].
 	"Next line comes from the stdebugger"
-	startingNode := self currentNode. 
+	startingNode := self currentNode.
 	self doAstStepPreProcess.
-   debuggerActionModel stepInto: self currentContext.
-	self doAstStepPostProcess: startingNode.
-"next line was a patch"
-"debuggerActionModel session updateContextTo: context step.
-debuggerActionModel updateTopContext" 
 
+	self stDebugger interruptedProcess step.
+
+
+
+
+	"	debuggerActionModel stepInto: self currentContext."
+
+
+	self doAstStepPostProcess: startingNode
+	"next line was a patch"
+	"debuggerActionModel session updateContextTo: context step.
+debuggerActionModel updateTopContext"
 ]
 
 { #category : #'debug - stepping' }
 SkStatementStepper >> stepBackInto [
 
 	self doAndUpdateSessionAfter: [ 
-		| targetStepIndex |
+		| targetStepIndex targetStep|
 		targetStepIndex := currentStepIndex - 1.
+		targetStepIndex <= 0 ifTrue: [ ^ self ].
+		targetStep := trace at: targetStepIndex.
 		self restart. "Ideally, we would restart from the closes context. TODO that"
 		self stepUntilConditionIsTrue: [ 
 			currentStepIndex == targetStepIndex ] ]
@@ -480,10 +490,10 @@ SkStatementStepper >> stepInto [
 	(self isExecutionFinished or:[ self isRiskyStep]) ifFalse: [ 
 		self doAndUpdateSessionAfter: [ 
 			astStepCounter := 0.
+			self doStepIntoFinishProcess.
 			self stepAstIntoStatement.
-			
 			self pushCurrentStepDescriptor ].
-		self doStepOpeningProcess ] ifTrue: [ self inform: 'Reached RISKY node. No more stepping' ]
+		self doStepIntoFinishProcess  ] ifTrue: [ self inform: 'Reached RISKY node. No more stepping' ]
 ]
 
 { #category : #'debug - stepping' }

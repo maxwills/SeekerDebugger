@@ -3,7 +3,9 @@ Class {
 	#superclass : #OrderedCollection,
 	#instVars : [
 		'rawStepDictionary',
-		'seeker'
+		'seeker',
+		'descriptionLabel',
+		'result'
 	],
 	#category : #'Seeker-Queries-Result'
 }
@@ -22,7 +24,7 @@ SeekerStepCollectionQueryResult class >> newFromStepDictionary: aDictionary seek
 	| resultCollection sortedKeys |
 	resultCollection := self new.
 	resultCollection seeker: aSeekerDebugger.
-	resultCollection rawResult: aDictionary.
+	resultCollection rawStepDictionary: aDictionary.
 	"keys need to be ordered chronologically"
 	sortedKeys := aDictionary keysSortedSafely.
 	sortedKeys do: [ :stepIndex | 
@@ -36,24 +38,70 @@ SeekerStepCollectionQueryResult class >> newFromStepDictionary: aDictionary seek
 	^resultCollection 
 ]
 
-{ #category : #printing }
-SeekerStepCollectionQueryResult >> printOn: aStream [
-	"Append to the argument, aStream, a sequence of characters that  
-	identifies the receiver."
-	aStream
-		nextPutAll: 'aSeekerStepCollectionQueryResult' 
+{ #category : #'as yet unclassified' }
+SeekerStepCollectionQueryResult class >> noResults [
+
+	| res |
+	res := self new.
+	res result: nil
 ]
 
 { #category : #accessing }
-SeekerStepCollectionQueryResult >> rawResult [
+SeekerStepCollectionQueryResult >> descriptionLabel [
+
+	^ descriptionLabel
+]
+
+{ #category : #accessing }
+SeekerStepCollectionQueryResult >> descriptionLabel: anObject [
+
+	descriptionLabel := anObject
+]
+
+{ #category : #testing }
+SeekerStepCollectionQueryResult >> hasResult [ 
+	^self notEmpty
+]
+
+{ #category : #initialization }
+SeekerStepCollectionQueryResult >> initialize [
+	descriptionLabel := ''
+]
+
+{ #category : #printing }
+SeekerStepCollectionQueryResult >> printOn: aStream [
+
+	"Append to the argument, aStream, a sequence of characters that  
+	identifies the receiver."
+
+	descriptionLabel
+		ifEmpty: [ self printNameOn: aStream]
+		ifNotEmpty: [ aStream nextPutAll: descriptionLabel ].
+	self printElementsOn: aStream
+]
+
+{ #category : #accessing }
+SeekerStepCollectionQueryResult >> rawStepDictionary [
 
 	^ rawStepDictionary
 ]
 
 { #category : #accessing }
-SeekerStepCollectionQueryResult >> rawResult: anObject [
+SeekerStepCollectionQueryResult >> rawStepDictionary: anObject [
 
 	rawStepDictionary := anObject
+]
+
+{ #category : #accessing }
+SeekerStepCollectionQueryResult >> result [
+
+	^ result
+]
+
+{ #category : #accessing }
+SeekerStepCollectionQueryResult >> result: anObject [
+
+	result := anObject
 ]
 
 { #category : #accessing }

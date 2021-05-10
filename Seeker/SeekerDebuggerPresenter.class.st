@@ -56,7 +56,7 @@ Class {
 SeekerDebuggerPresenter class >> defaultSpec [
 
 	^ SpBoxLayout newVertical 
-	     add: 'Statement Steppping' expand: false fill: false padding: 5;
+	     add: 'Traced Statement Steppping' expand: false fill: false padding: 5;
 		  add: #toolbar expand: false fill: false padding: 0;
 		  add: #code expand: true;
 		  add: #currentStepLabel expand: false fill: false padding: 5;
@@ -165,15 +165,15 @@ SeekerDebuggerPresenter >> initializeToolbar [
 				            action: [self restartHandler ];
 				            yourself);
 				addItem: (self newToolbarButton
-				            label: 'Set Selected as Starting Point';
+				            label: 'Set new initial Step';
 				            icon: (self application iconNamed: #glamorousRestart);
 				            action: [self setSelectedContexAsStartingPointHandler  ];
 				            yourself);
-				addItem: (self newToolbarButton
+				"addItem: (self newToolbarButton
 				            label: 'Mark end statement';
 				            icon: (self application iconNamed: #protocolPrivate);
 				            action: [self setEndHandler ];
-				            yourself);
+				            yourself);"
 		           yourself .
 ]
 
@@ -326,7 +326,7 @@ SeekerDebuggerPresenter >> updatePresenter [
 	self seekerDebugger isExecutionFinished ifTrue: [ 
 		stepLabel := '(Finished) ' , stepLabel ].
 	currentStepLabel label:
-		stepLabel , seekerDebugger currentStepDescriptor asString.
+		stepLabel , seekerDebugger currentStepDescriptor executionIndex asString.
 
 	self updateEvaluatorCode.
 	self updateExpressionValueDisplayed.

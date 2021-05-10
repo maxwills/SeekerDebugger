@@ -12,7 +12,10 @@ SkQuickMapLC >> description [
 
 { #category : #executing }
 SkQuickMapLC >> executeCommand [
+|selectedContextDescriptor|
+selectedContextDescriptor := SkStepDescriptor newFromCurrentNodeInContext: self seeker stDebugger selectedContext.
 	self seeker stepper quickMap.
+	self seeker stepper restartAndStepToCondition: [ self seeker stepper currentStepDescriptor hasSamePathAs: selectedContextDescriptor ]
 	 
 ]
 

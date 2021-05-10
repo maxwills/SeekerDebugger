@@ -24,7 +24,7 @@ SkBugMarkdownEscapeCharTest >> testMarkdownEscapeCharShortExample [
 
 	| micSplitter theStringWithEscapeChar |
 	micSplitter := MicInlineSplitter new.
-	theStringWithEscapeChar := 'gg \'.
+	theStringWithEscapeChar := 'Hi \'.
 	micSplitter pillarFrom: theStringWithEscapeChar
 	
 	"Nothing to assert. The previous call is not expected to have an unhandled exception"
