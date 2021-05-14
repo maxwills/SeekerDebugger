@@ -94,6 +94,26 @@ SkQueryExperimentalTracer >> createReturnValuesQueryNewNewUltimate [
 ]
 
 { #category : #'as yet unclassified' }
+SkQueryExperimentalTracer >> createVirtualExecutionTableForReturnValues [
+
+	| csi virtualTable |
+	csi := self currentStateInterface.
+	virtualTable := SkExecutionVirtualTable
+		                newWithRowReificationBlock: [ 
+			                SkNew with: { 
+					                (#stepIndex -> csi tracedStatementStepIndex).
+					                (#receiverClass -> csi receiverClass).
+					                (#methodSelector -> csi methodSelector).
+					                (#statementNotation -> csi statementNotation).
+					                (#returnValue -> csi methodReturnValue).
+					                (#contextPC -> csi contextPC).
+					                (#endPC -> csi endPC) } ]
+		                forTracer: self.
+
+	^ virtualTable
+]
+
+{ #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> currentStateInterface [
 
 	^ currentStateInterfaceInstance
@@ -129,6 +149,31 @@ SkQueryExperimentalTracer >> doStepIntoBeginProcess [
 	super doStepIntoBeginProcess.
 	"queriesForPass ifNil: [ ^ self ].
 	queriesForPass do: [ :each | each privateOpeningStepProcessBlock value: self ]"
+]
+
+{ #category : #accessing }
+SkQueryExperimentalTracer >> executionVirtualTables [
+
+	^ executionVirtualTableCreator
+]
+
+{ #category : #initialization }
+SkQueryExperimentalTracer >> initialize [
+
+	currentStateInterfaceInstance := SkCurrentStateInterface new.
+	currentStateInterfaceInstance tracer: self.
+	executionVirtualTableCreator := SkExecutionVirtualTableCreator new.
+	executionVirtualTableCreator tracer: self.
+	queriesLibrary := SkQueriesLibrary new.
+	queriesLibrary tracer: self.
+	astPreStepHooks := OrderedCollection new.
+	^ super initialize
+]
+
+{ #category : #accessing }
+SkQueryExperimentalTracer >> queriesLibrary [
+
+	^ queriesLibrary
 ]
 
 { #category : #adding }
