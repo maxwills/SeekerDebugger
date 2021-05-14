@@ -8,6 +8,30 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
+SkQueriesLibrary >> forAliases [
+
+	| q aliasesTable methodsTable |
+	aliasesTable := tracer executionVirtualTables tableOfAliases.
+	methodsTable := tracer executionVirtualTables tableOfMethods.
+
+	"aliasTable columns: #stepIndex #creationStep #bytecodeIndex "
+	"methodsTable columuns: #stepIndex #receiverClass #methodSelector #bytecodeIndex"
+
+	q := SkQuery
+		     from: (methodsTable join: aliasesTable)
+		     select: [ :row | 
+			     SkNew with: { 
+					     (#stepIndex -> row stepIndex).
+					     (#receiverClass -> row receiverClass).
+					     (#methodSelector -> row methodSelector).
+					     (#bytecodeIndex -> row bytecodeIndex).
+					     (#alias -> row creationStep) } ]
+		     where: [ :row | "row isFirstBytecode" 
+			     true "and: [ row methodSelector = #initialize ]" ].
+	^ q
+]
+
+{ #category : #'as yet unclassified' }
 SkQueriesLibrary >> forReturnValues [
 
 	| q table |

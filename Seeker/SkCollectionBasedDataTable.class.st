@@ -1,6 +1,6 @@
 Class {
-	#name : #SkTableForCollection,
-	#superclass : #SkIterableDataSetBase,
+	#name : #SkCollectionBasedDataTable,
+	#superclass : #SkIterableDataTableBase,
 	#instVars : [
 		'traversingCursorIndex',
 		'data'
@@ -9,7 +9,7 @@ Class {
 }
 
 { #category : #'instance creation' }
-SkTableForCollection class >> newFromCollection: aCollection [
+SkCollectionBasedDataTable class >> newFromCollection: aCollection [
 
 	| table |
 	table := self new.
@@ -18,7 +18,7 @@ SkTableForCollection class >> newFromCollection: aCollection [
 ]
 
 { #category : #'as yet unclassified' }
-SkTableForCollection >> advanceToNextRow [
+SkCollectionBasedDataTable >> advanceToNextRow [
 
 	"advances to the next row. returns false if the end of the table (there are no more rows) was reached before trying to advance."
 
@@ -29,12 +29,12 @@ SkTableForCollection >> advanceToNextRow [
 ]
 
 { #category : #accessing }
-SkTableForCollection >> collectionToIterateOver: aCollection [
+SkCollectionBasedDataTable >> collectionToIterateOver: aCollection [
 	data := aCollection.
 ]
 
 { #category : #'as yet unclassified' }
-SkTableForCollection >> currentRow [
+SkCollectionBasedDataTable >> currentRow [
 
 	"returns the object that represents the current row"
 
@@ -42,14 +42,19 @@ SkTableForCollection >> currentRow [
 	^ data at: traversingCursorIndex
 ]
 
+{ #category : #'as yet unclassified' }
+SkCollectionBasedDataTable >> dataSourceIsTracedExecution [
+	^false
+]
+
 { #category : #enumerating }
-SkTableForCollection >> do: aBlock [
+SkCollectionBasedDataTable >> do: aBlock [
 
 	data do: aBlock
 ]
 
 { #category : #'as yet unclassified' }
-SkTableForCollection >> endOfTableReached [
+SkCollectionBasedDataTable >> endOfTableReached [
 
 	"returns true if the table has no more rows (and advanceToNextRow will return false)"
 
@@ -57,13 +62,20 @@ SkTableForCollection >> endOfTableReached [
 ]
 
 { #category : #initialization }
-SkTableForCollection >> initialize [ 
+SkCollectionBasedDataTable >> initialize [ 
 	traversingCursorIndex := 0.
 	
 ]
 
+{ #category : #splitjoin }
+SkCollectionBasedDataTable >> join: aTable [
+
+	^ self error:
+		  'JOIN operator unsupported for CollectionBasedDataTable'
+]
+
 { #category : #'as yet unclassified' }
-SkTableForCollection >> resetTableTraversing [
+SkCollectionBasedDataTable >> resetTableTraversing [
 
 	"Puts the table traversing cursor 'before the first row'. one advanceToNextRow is necessary to enter the first row. A reseted table should reply currentRow nil always."
 

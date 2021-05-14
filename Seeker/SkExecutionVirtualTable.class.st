@@ -1,10 +1,11 @@
 Class {
 	#name : #SkExecutionVirtualTable,
-	#superclass : #SkIterableDataSetBase,
+	#superclass : #SkIterableDataTableBase,
 	#instVars : [
 		'rowReificationBlock',
 		'tracer',
-		'justRestarted'
+		'justRestarted',
+		'joined'
 	],
 	#category : #'Seeker-Components-Experimental'
 }
@@ -34,6 +35,12 @@ SkExecutionVirtualTable >> advanceToNextRow [
 SkExecutionVirtualTable >> currentRow [
 
 	^ rowReificationBlock value
+]
+
+{ #category : #'as yet unclassified' }
+SkExecutionVirtualTable >> dataSourceIsTracedExecution [
+
+	^ true
 ]
 
 { #category : #enumerating }

@@ -15,6 +15,17 @@ annonymousObj privateFields: anAssocArray asDictionary.
 ^annonymousObj 
 ]
 
+{ #category : #operations }
+SkAnonymousType >> @ aSymbol [
+	^privateFields at: aSymbol
+]
+
+{ #category : #accessing }
+SkAnonymousType >> at: aSymbol put: aValue [
+
+	^ privateFields at: aSymbol put: aValue
+]
+
 { #category : #'reflective operations' }
 SkAnonymousType >> doesNotUnderstand: aMessage [
 
@@ -38,6 +49,18 @@ SkAnonymousType >> doesNotUnderstand: aMessage [
 SkAnonymousType >> fieldNames [
 
 	^ privateFields keys
+]
+
+{ #category : #operations }
+SkAnonymousType >> mergeWith: anotherAnonymousTypeObject [
+
+	"The second anonymous objects takes priority on its values"
+
+	anotherAnonymousTypeObject privateFields keysDo: [ :eachKey | 
+		privateFields
+			at: eachKey
+			put: (anotherAnonymousTypeObject privateFields at: eachKey) ].
+	^ self
 ]
 
 { #category : #printing }

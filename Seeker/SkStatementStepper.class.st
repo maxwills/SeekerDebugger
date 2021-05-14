@@ -54,9 +54,12 @@ Class {
 	#category : #'Seeker-Components'
 }
 
-{ #category : #accessing }
-SkStatementStepper >> byteCountCounter [
-	^byteCountCounter
+{ #category : #mapping }
+SkStatementStepper >> bytecodeIndex [
+
+	"comment stating purpose of instance-side method"
+
+	^ byteCountCounter
 ]
 
 { #category : #'as yet unclassified' }

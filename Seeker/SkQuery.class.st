@@ -32,7 +32,7 @@ Queries experessions are compatible with AnonymousTypes. Providing freedom to ex
 "
 Class {
 	#name : #SkQuery,
-	#superclass : #SkIterableDataSetBase,
+	#superclass : #SkIterableDataTableBase,
 	#instVars : [
 		'fromDataSource',
 		'selectBlock',
@@ -74,22 +74,7 @@ SkQuery >> advanceToNextRow [
 	^fromDataSource advanceToNextRow 
 ]
 
-{ #category : #converting }
-SkQuery >> asSolvedTable [
-
-	"Advances the stream storing the results"
-
-	| selectedRows |
-	selectedRows := OrderedCollection new.
-	self onQueryRowMatch: [ :row | 
-		| transformedRow |
-		transformedRow := selectBlock value: row.
-		selectedRows add: transformedRow ].
-	[ self rowStream isStreamFinished ] whileFalse: [ self queryNextRow ].
-	^ SkXDataSet newForAnonymousTypeObjects: selectedRows
-]
-
-{ #category : #converting }
+{ #category : #operation }
 SkQuery >> asTable [
 
 	"Triggers the solution of the query"
@@ -120,7 +105,7 @@ SkQuery >> columnLabels [
 	^result columnLabels 
 ]
 
-{ #category : #converting }
+{ #category : #operation }
 SkQuery >> count [
 
 	"a result operation"
@@ -138,6 +123,11 @@ SkQuery >> currentRow [
 	"Part of the iterable data set interface. Used for queries nesting. returns the rowgetter result"
 
 	^ fromDataSource currentRow
+]
+
+{ #category : #'as yet unclassified' }
+SkQuery >> dataSourceIsTracedExecution [
+	^fromDataSource dataSourceIsTracedExecution 
 ]
 
 { #category : #enumerating }
@@ -184,6 +174,23 @@ SkQuery >> endOfTableReached [
 	^ fromDataSource endOfTableReached
 ]
 
+{ #category : #operations }
+SkQuery >> first [
+
+	"finds the first matching row in the table and returns it. The table will continue to be iterated until it finishes"
+
+	| found |
+	operationType := #first.
+	found := false.
+	resultBuffer := nil.
+	self onQueryRowMatch: [ 
+		found ifFalse: [ 
+			found := true.
+			resultBuffer := self currentRow ] ].
+	self resolve.
+	^ self result
+]
+
 { #category : #'as yet unclassified' }
 SkQuery >> fromDataSource [
 	^fromDataSource
@@ -217,8 +224,9 @@ SkQuery >> processResult [
 	result := [ operationType ] switchCase: { 
 			          (#asTable
 			           -> [ 
-			           SkXDataSet newForAnonymousTypeObjects: resultBuffer ]).
+			           SkDataTable newForAnonymousTypeObjects: resultBuffer ]).
 			          (#count -> [ resultBuffer ]).
+			          (#first -> [ resultBuffer ]).
 			          (#defaultCase -> [ #operationCompleted ]) }
 ]
 

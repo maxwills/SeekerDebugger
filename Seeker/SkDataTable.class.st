@@ -2,8 +2,8 @@
 Represents a data table
 "
 Class {
-	#name : #SkXDataSet,
-	#superclass : #SkTableForCollection,
+	#name : #SkDataTable,
+	#superclass : #SkCollectionBasedDataTable,
 	#instVars : [
 		'columnLabels',
 		'tableName'
@@ -12,7 +12,7 @@ Class {
 }
 
 { #category : #'instance creation' }
-SkXDataSet class >> newForAnonymousTypeObjects: aCollectionOfAnonymousTypeObjects [
+SkDataTable class >> newForAnonymousTypeObjects: aCollectionOfAnonymousTypeObjects [
 
 	| ds |
 	ds := self new.
@@ -25,7 +25,7 @@ SkXDataSet class >> newForAnonymousTypeObjects: aCollectionOfAnonymousTypeObject
 ]
 
 { #category : #'instance creation' }
-SkXDataSet class >> newWithColumns: aCollectionOfSymbols [
+SkDataTable class >> newWithColumns: aCollectionOfSymbols [
 
 	| ds |
 	ds := self new.
@@ -34,19 +34,19 @@ SkXDataSet class >> newWithColumns: aCollectionOfSymbols [
 ]
 
 { #category : #accessing }
-SkXDataSet >> columnLabels [
+SkDataTable >> columnLabels [
 
 	^ columnLabels
 ]
 
 { #category : #accessing }
-SkXDataSet >> columnLabels: anObject [
+SkDataTable >> columnLabels: anObject [
 
 	columnLabels := anObject
 ]
 
 { #category : #initialization }
-SkXDataSet >> initialize [
+SkDataTable >> initialize [
 
 	super initialize.
 	tableName := 'unnamedTable'.
@@ -55,25 +55,25 @@ SkXDataSet >> initialize [
 ]
 
 { #category : #accessing }
-SkXDataSet >> rows [
+SkDataTable >> rows [
 
 	^ data
 ]
 
 { #category : #accessing }
-SkXDataSet >> rows: anObject [
+SkDataTable >> rows: anObject [
 
 	data := anObject 
 ]
 
 { #category : #accessing }
-SkXDataSet >> tableName [
+SkDataTable >> tableName [
 
 	^ tableName
 ]
 
 { #category : #accessing }
-SkXDataSet >> tableName: anObject [
+SkDataTable >> tableName: anObject [
 
 	tableName := anObject
 ]

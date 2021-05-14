@@ -10,8 +10,8 @@ Class {
 
 { #category : #accessing }
 SkCurrentStateInterface >> bytecodeIndex [
-
-	^ tracer byteCountCounter
+"Eachtime a bytecode is executed, the tracer counts it. this is that counter"
+	^ tracer bytecodeIndex
 ]
 
 { #category : #'as yet unclassified' }
@@ -78,6 +78,11 @@ SkCurrentStateInterface >> initialize [
 		cachedValues at: selector put: -1 -> nil ]
 ]
 
+{ #category : #'as yet unclassified' }
+SkCurrentStateInterface >> isFirstBytecodeOfMethod [
+	^self contextPC = self initialPC
+]
+
 { #category : #accessing }
 SkCurrentStateInterface >> methodClass [
 	^tracer currentContext methodClass
@@ -104,6 +109,12 @@ SkCurrentStateInterface >> methodSelector [
 { #category : #accessing }
 SkCurrentStateInterface >> node [
 	^tracer currentNode
+]
+
+{ #category : #'as yet unclassified' }
+SkCurrentStateInterface >> receiver [
+
+	^ tracer currentContext receiver
 ]
 
 { #category : #accessing }
