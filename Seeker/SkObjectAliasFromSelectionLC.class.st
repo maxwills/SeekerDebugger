@@ -15,6 +15,7 @@ SkObjectAliasFromSelectionLC >> executeCommand [
 
 	| selection result |
 	selection := self codeSelectedText.
+	self seeker stepper mapExecutionIfNotMappedAlready ifFalse: [ ^self inform: 'Unable to execute Seeker command in unmapped execution' ].
 	result := self seeker stepper createObjectAliasForExpression:
 		          selection.
 

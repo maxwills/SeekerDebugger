@@ -1,6 +1,6 @@
 Class {
 	#name : #SkMappingTracer,
-	#superclass : #SkStatementStepper,
+	#superclass : #SkOptimizedStatementStepper,
 	#instVars : [
 		'navigationHistory',
 		'navigationForward',
@@ -58,13 +58,13 @@ SkMappingTracer >> automapForDoItScenario [
 					                         receiverClass = SpCodeDebugItCommand ] ]
 			                         ifNil: [ false ] ].
 	initialRestartContext ifNil: [ 
-		^ self error:
-			  'Could not detect the initial context for the DoIt Scenario.' ].
+		 self error:
+			  'Could not detect the initial context for the DoIt Scenario.' .^false].
 	doItContext := self findContextInStack: [ :aContext | 
 		               aContext methodSelector = #DoIt ].
 	doItContext ifNil: [ 
-		^ self error:
-			  'Could not detect the initial context for the DoIt Scenario.' ].
+		self error:
+			  'Could not detect the initial context for the DoIt Scenario.'.^false ].
 	startingContextForRecord := initialRestartContext.
 	doItStep := SkStepDescriptor
 		            newFromNode:
@@ -89,8 +89,9 @@ SkMappingTracer >> automapForDoItScenario [
 				                         ifTrue: [ self currentNode isReturn ]
 				                         ifFalse: [ false ] ] ].
 
-	self replayAndBuildExecutionMap
-	"Ideally I would mark the end statement"
+	self replayAndBuildExecutionMap.
+	isMapped := true.
+	^true
 ]
 
 { #category : #'as yet unclassified' }
@@ -101,7 +102,7 @@ SkMappingTracer >> automapForTestCaseScenario [
 	recordingInitialContext := self findContextInStack: [ :aContext | 
 		                           aContext methodSelector = #runCase ].
 	recordingInitialContext ifNil: [ 
-		^ self error: 'Could not detect the initial context for recording.' ].
+		self error: 'Could not detect the initial context for recording.'. ^false].
 	startingContextForRecord := recordingInitialContext.
 
 	testInitialContext := self findContextInStack: [ :aContext | 
@@ -112,7 +113,7 @@ SkMappingTracer >> automapForTestCaseScenario [
 				                       TestCase) and: [ 
 				                      senderContext methodSelector = #performTest ] ] ].
 	testInitialContext ifNil: [ 
-		^ self error: 'Could not detect the initial context of the test.' ].
+		self error: 'Could not detect the initial context of the test.'. ^false ].
 	startingIndexlessStepForNavigation := SkStepDescriptor 
 		                                      newFromCurrentNodeInContext:
 		                                      testInitialContext.
@@ -129,7 +130,9 @@ SkMappingTracer >> automapForTestCaseScenario [
 	pressumedEndCondition := [ 
 	                         self currentStepDescriptor hasSamePathAs:
 		                         pressumedEndStepForKnownScenario ].
-	self replayAndBuildExecutionMap
+	self replayAndBuildExecutionMap.
+	isMapped := true.
+	^true
 ]
 
 { #category : #'as yet unclassified' }
@@ -328,8 +331,14 @@ SkMappingTracer >> initialize [
 	super initialize.
 	pressumedEndStepForKnownScenario := nil.
 	pressumedEndCondition := nil.
+	isMapped := false.
 	navigationHistory := OrderedCollection new.
 	navigationForward := OrderedCollection new
+]
+
+{ #category : #testing }
+SkMappingTracer >> isCurrentExceptionUnhandled [
+	^false
 ]
 
 { #category : #testing }
@@ -421,13 +430,6 @@ SkMappingTracer >> isQuickMapAvailable [
 ]
 
 { #category : #testing }
-SkMappingTracer >> isStepTheFinalStep: aStepDescriptor [
-"This requires an execution to be mapped, and the descriptor mut be indexed"
-endStatementDescriptor ifNil: [ ^ false].
- ^(aStepDescriptor executionIndex = endStatementDescriptor executionIndex) or: [aStepDescriptor hasSamePathAs: endStatementDescriptor].
-]
-
-{ #category : #testing }
 SkMappingTracer >> isTestCaseScenario [
 
 	"To solve this, we analyze the stack"
@@ -442,6 +444,13 @@ SkMappingTracer >> isTestCaseScenario [
 	^self doesAnyContextsInTheStackStatisfies: [ :context | 
 		context method class = CompiledBlock and: [ 
 			safelyMatchLiterals value: context method ] ]
+]
+
+{ #category : #'as yet unclassified' }
+SkMappingTracer >> mapExecutionIfNotMappedAlready [
+
+	isMapped ifTrue: [ ^ true ].
+	^ self quickMap
 ]
 
 { #category : #navigation }
@@ -475,7 +484,7 @@ SkMappingTracer >> quickMap [
 "TODO: Move out the inform calls"
 	(self isDoItScenario) ifTrue: [ ^self automapForDoItScenario ".^self inform: 'Time Traveling enabled'" ].
 	(self isTestCaseScenario ) ifTrue: [ ^self automapForTestCaseScenario".^self inform: 'Time Traveling enabled' "].
-^	self inform: 'Could not enable Time Traveling automatically. The session needs a manual set up' .
+^ false "self inform: 'Could not enable Time Traveling automatically. The session needs a manual set up' ."
 	
 ]
 
@@ -638,7 +647,7 @@ SkMappingTracer >> stepForwardToNextCallOfAMethodWithSelector: aSymbol ofClass: 
 foundStep := false.
 startingStep := self currentStepDescriptor.
 self stepUntilConditionIsTrue: [ 
-	self isCurrentStepMappedFinalStep ifTrue: [ true ] ifFalse:[
+
 		|aStep sequence isMatchingMethod|
 		aStep := self currentStepDescriptor .
 	(aStep isSiblingOf: startingStep) ifFalse:[
@@ -647,7 +656,7 @@ self stepUntilConditionIsTrue: [
 	isMatchingMethod ifTrue: [ foundStep := true ].
    isMatchingMethod.
 	] ifTrue: [ false "it is a sibling step in the same sequence, so dont stop here"].
-		]
+		
 	
 ].
  foundStep ifFalse: [ self inform: 'No new method call was found.' ]
@@ -662,12 +671,10 @@ SkMappingTracer >> stepForwardToStatement: anIndexlessStepDescriptor [
 	self stepUntilConditionIsTrue: [ 
 		| step |
 		step := self currentStepDescriptor.
-		(self isStepTheFinalStep: step)
-			ifTrue: [ true ]
-			ifFalse: [ 
-				foundTheStep := self currentStepDescriptor hasSamePathAs:
-					                anIndexlessStepDescriptor.
-				foundTheStep ] ].
+
+		foundTheStep := self currentStepDescriptor hasSamePathAs:
+			                anIndexlessStepDescriptor.
+		foundTheStep ].
 	^ foundTheStep
 ]
 
@@ -677,18 +684,13 @@ SkMappingTracer >> stepForwardToStatementImmediatelyAfter: anIndexlessStepDescri
 |foundTheStep|
 foundTheStep := false.
 self stepUntilConditionIsTrue: [ 
-	self isCurrentStepMappedFinalStep ifTrue: [ true ] ifFalse:[
 		foundTheStep := (self currentStepDescriptor hasSamePathAs: anIndexlessStepDescriptor) .
 		foundTheStep
-		]
-	
 ].
 foundTheStep ifFalse: [ ^self inform: 'SeekerDebuger: Could not find the requested step' ].
 "Then keep moving forward until we exit it"
 self stepUntilConditionIsTrue: [ 
-	self isCurrentStepMappedFinalStep ifTrue: [ true ] ifFalse:[
 		(self currentStepDescriptor hasSamePathAs: anIndexlessStepDescriptor upToLevel: anIndexlessStepDescriptor size) not 
-		]
 	
 ].
 
@@ -706,22 +708,16 @@ methodSelector := aCompiledMethod selector.
 
 foundTheStep := false.
 self stepUntilConditionIsTrue: [ 
-	self isCurrentStepMappedFinalStep ifTrue: [ true ] ifFalse:[
 		|stepDescriptor|
 		stepDescriptor := self currentStepDescriptor.
 		foundTheStep := (( stepDescriptor receiverClass = receiverClass) and: [ stepDescriptor methodSelector = methodSelector ] ) .
-		foundTheStep
-		]
-	
+		foundTheStep	
 ].
 foundTheStep ifFalse: [ self inform: 'SeekerDebuger: Could not find the requested step'.^false ].
 startingStepDescriptor := self currentStepDescriptor.
 "Then keep moving forward until we exit it"
 self stepUntilConditionIsTrue: [ 
-	self isCurrentStepMappedFinalStep ifTrue: [ true ] ifFalse:[
-		(self currentStepDescriptor hasSamePathAs: startingStepDescriptor upToLevel: (startingStepDescriptor size-1)) not 
-		]
-	
+		(self currentStepDescriptor hasSamePathAs: startingStepDescriptor upToLevel: (startingStepDescriptor size-1)) not 	
 ].
 ^true
 
@@ -736,7 +732,7 @@ SkMappingTracer >> stepForwardToStatementImmediatelyAfterMethodReturn: aCompiled
 |foundTheStep startingStepDescriptor receiverClass methodSelector executionEndChecker|
 receiverClass := aCompiledMethod methodClass.
 methodSelector := aCompiledMethod selector.
-executionEndChecker := [ :step| (step hasSamePathAs: aStepDescriptorOfTheEnd ) or: [self isCurrentStepMappedFinalStep ]].
+executionEndChecker := [ :step| (step hasSamePathAs: aStepDescriptorOfTheEnd )].
 foundTheStep := false.
 self stepUntilConditionIsTrue: [ 
 	|stepDescriptor|
@@ -752,10 +748,7 @@ foundTheStep ifFalse: [ self inform: 'SeekerDebuger: Could not find the requeste
 startingStepDescriptor := self currentStepDescriptor.
 "Then keep moving forward until we exit it"
 self stepUntilConditionIsTrue: [ 
-	self isCurrentStepMappedFinalStep ifTrue: [ true ] ifFalse:[
 		(self currentStepDescriptor hasSamePathAs: startingStepDescriptor upToLevel: (startingStepDescriptor size-1)) not 
-		]
-	
 ].
 ^true
 
@@ -764,7 +757,7 @@ self stepUntilConditionIsTrue: [
 { #category : #'as yet unclassified' }
 SkMappingTracer >> stepToFinalStep [
 "This requires an execution to be mapped"
-self stepUntilConditionIsTrue: [self isCurrentStepMappedFinalStep].
+self stepUntilConditionIsTrue: [self isRiskyStep].
 ]
 
 { #category : #'as yet unclassified' }

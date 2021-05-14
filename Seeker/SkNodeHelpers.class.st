@@ -30,8 +30,11 @@ SkNodeHelpers class >> statementCountOfOwningSequenceFor: aStatementNode [
 
 { #category : #'as yet unclassified' }
 SkNodeHelpers class >> statementCountOfSequenceNode: aSequenceNode [
-	aSequenceNode isSequence ifFalse: [ ^self error: 'not a sequence node'].
-	^aSequenceNode statements size.
+
+	aSequenceNode ifNil: [ ^ 0 ].
+	aSequenceNode isSequence ifFalse: [ 
+		^ self error: 'not a sequence node' ].
+	^ aSequenceNode statements size
 ]
 
 { #category : #'as yet unclassified' }

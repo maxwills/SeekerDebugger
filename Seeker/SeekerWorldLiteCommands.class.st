@@ -27,7 +27,7 @@ SeekerWorldLiteCommands class >> menuBrowseSeekerExamplesClass: aBuilder [
 		label: 'Browser Seeker Examples Class';
 		icon: (self iconNamed: 'smallDebug');
 		help: 'Opens the Seeker examples class';
-		action: [ RecursionExamples browse ]
+		action: [ RecursionExamples browse ] 
 ]
 
 { #category : #'as yet unclassified' }
@@ -39,7 +39,7 @@ SeekerWorldLiteCommands class >> menuBrowseSeekerPackage: aBuilder [
 		label: 'Open Seeker Package';
 		icon: (self iconNamed: 'smallDebug');
 		help: 'Opens a browser on Seeker package';
-		action: [ (RPackageOrganizer default packageNamed: 'Seeker') browse ]
+		action: [ (RPackageOrganizer default packageNamed: 'Seeker') browse ] 
 ]
 
 { #category : #'as yet unclassified' }
@@ -51,7 +51,7 @@ SeekerWorldLiteCommands class >> menuBrowseSeekerTracerClass: aBuilder [
 		label: 'Browser Seeker Tracer Class';
 		icon: (self iconNamed: 'smallDebug');
 		help: 'Opens the Seeker tracer class';
-		action: [ SkRecorderTracer  browse ]
+		action: [ SkRecorderTracer  browse ] 
 ]
 
 { #category : #'as yet unclassified' }
@@ -73,7 +73,7 @@ SeekerWorldLiteCommands class >> menuSetDefaultStepperMapping: aBuilder [
 		order: 1;
 		label: 'Set for Basic Mapping';
 		icon: (self iconNamed: 'smallDebug');
-		help: 'Change the default tracer';
+		help: 'Change the default tracer'; 
 		action: [ SeekerGlobals instance defaultStepperClass: SkMappingTracer ]
 ]
 
@@ -84,7 +84,7 @@ SeekerWorldLiteCommands class >> menuSetDefaultStepperQuery: aBuilder [
 		parent: #SeekerDevSetDefaultStepper;
 		order: 2;
 		label: 'Set for Queries';
-		icon: (self iconNamed: 'smallDebug');
+		icon: (self iconNamed: 'smallDebug'); 
 		help: 'Change the default tracer';
 		action: [ SeekerGlobals instance defaultStepperClass: SkQueryableTracer  ]
 ]

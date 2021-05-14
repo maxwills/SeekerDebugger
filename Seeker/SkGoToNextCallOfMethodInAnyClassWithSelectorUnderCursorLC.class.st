@@ -14,6 +14,7 @@ SkGoToNextCallOfMethodInAnyClassWithSelectorUnderCursorLC >> description [
 SkGoToNextCallOfMethodInAnyClassWithSelectorUnderCursorLC >> executeCommand [
 
 	| selector |
+	self seeker stepper mapExecutionIfNotMappedAlready ifFalse: [ ^self inform: 'Unable to execute Seeker command in unmapped execution' ].
 	selector := self codeSelectedSelector.
 	self seeker stepper stepUntilConditionIsTrue: [ 
 		self seeker stepper currentStepDescriptor methodSelector = selector ]

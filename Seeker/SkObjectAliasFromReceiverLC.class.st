@@ -14,6 +14,7 @@ SkObjectAliasFromReceiverLC >> description [
 SkObjectAliasFromReceiverLC >> executeCommand [
 
 	| objectAlias |
+	self seeker stepper mapExecutionIfNotMappedAlready ifFalse: [ ^self inform: 'Unable to execute Seeker command in unmapped execution' ].
 	objectAlias := self seeker stepper getObjectAliasFor:
 		               self seeker stepper
 			               createObjectAliasForCurrentReceiver.

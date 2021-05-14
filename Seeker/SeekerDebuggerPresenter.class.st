@@ -183,6 +183,13 @@ code text: (code text, aString)
 ]
 
 { #category : #'as yet unclassified' }
+SeekerDebuggerPresenter >> mapExecutionIfNotMappedAlready [
+"This function also notifies in the UI"
+	(self seekerDebugger stepper isMapped) ifTrue:[^self].
+	self seekerDebugger stepper quickMap ifTrue:[self inform: 'SEEKER: Time Traveling Enabled'] ifFalse: [ self inform: 'SEEKER: Could not enable Time Traveling' ]
+]
+
+{ #category : #'as yet unclassified' }
 SeekerDebuggerPresenter >> onCodeTextChanged [
 	SeekerGlobals instance seekerCodePresenterText: code text.
 ]
@@ -190,6 +197,7 @@ SeekerDebuggerPresenter >> onCodeTextChanged [
 { #category : #'event handling' }
 SeekerDebuggerPresenter >> restartHandler [
 "Called when pressing the icon in the toolbar"
+self mapExecutionIfNotMappedAlready.
 self doAndUpdateSessionAfter: [ self seekerDebugger stepper pushNavigationHistory .	self seekerDebugger restart ]
 	
 ]
@@ -251,6 +259,7 @@ SeekerDebuggerPresenter >> startRecordFromContextHandler [
 { #category : #'event handling' }
 SeekerDebuggerPresenter >> stepBackIntoHandler [
 "Called when pressing the icon in the toolbar"
+self mapExecutionIfNotMappedAlready.
 self doAndUpdateSessionAfter: [ self seekerDebugger stepper pushNavigationHistory .	self seekerDebugger stepBackInto ]
 	
 ]
@@ -258,6 +267,7 @@ self doAndUpdateSessionAfter: [ self seekerDebugger stepper pushNavigationHistor
 { #category : #'event handling' }
 SeekerDebuggerPresenter >> stepBackOverHandler [
 "Called when pressing the icon in the toolbar"
+self mapExecutionIfNotMappedAlready.
 self doAndUpdateSessionAfter: [ self seekerDebugger stepper pushNavigationHistory .	self seekerDebugger stepBackOver ]
      
 ]
@@ -265,6 +275,7 @@ self doAndUpdateSessionAfter: [ self seekerDebugger stepper pushNavigationHistor
 { #category : #'event handling' }
 SeekerDebuggerPresenter >> stepIntoHandler [
 "Called when pressing the icon in the toolbar"
+self mapExecutionIfNotMappedAlready.
 self doAndUpdateSessionAfter: [ self seekerDebugger stepper pushNavigationHistory .	self seekerDebugger stepInto ]
 
 ]
@@ -272,6 +283,7 @@ self doAndUpdateSessionAfter: [ self seekerDebugger stepper pushNavigationHistor
 { #category : #'event handling' }
 SeekerDebuggerPresenter >> stepOverHandler [
 "Called when pressing the icon in the toolbar"
+self mapExecutionIfNotMappedAlready.
 self doAndUpdateSessionAfter: [ self seekerDebugger stepper pushNavigationHistory .	self seekerDebugger stepOver ]
 	
 ]

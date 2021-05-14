@@ -21,9 +21,8 @@ SkTrackVariableValuesByNameLC >> executeCommand [
 	self seeker stepper trackedVariableName: variableName.
 	currentStepIndex := self seeker stepper currentStepDescriptor
 		                    executionIndex.
-	self seeker stepper restartAndStepToIndex: currentStepIndex.
-	self inform: 'Tracking variables named: ' , variableName.
-	self seeker stepper trackedVariableValues inspect
+		"TODO THIS NEEDS TO BE REPLACE BY THE ACTUAL QUERY. Remember to ensure mapping"
+		self error: 'Not implmenented method'
 ]
 
 { #category : #accessing }

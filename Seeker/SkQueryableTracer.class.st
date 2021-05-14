@@ -5,7 +5,7 @@ So, for the momoent, I use this class to group up the Queries API
 "
 Class {
 	#name : #SkQueryableTracer,
-	#superclass : #SkRecorderTracer,
+	#superclass : #SkQueryExperimentalTracer,
 	#category : #'Seeker-Components'
 }
 

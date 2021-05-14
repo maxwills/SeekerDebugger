@@ -13,6 +13,12 @@ Class {
 }
 
 { #category : #converting }
+SkTrace >> @ aNumber [
+
+	^ self at: aNumber
+]
+
+{ #category : #converting }
 SkTrace >> asString [
 	| str |
 	str := Character cr join: (self collect: [ :eachStepDescriptor | eachStepDescriptor asString ]).

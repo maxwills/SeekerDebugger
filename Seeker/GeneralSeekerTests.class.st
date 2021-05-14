@@ -53,6 +53,21 @@ GeneralSeekerTests >> testExceptionScenario [
 ]
 
 { #category : #tests }
+GeneralSeekerTests >> testExceptionStepCount [
+
+	"Do this once the window opens:
+	seeker stepper trackedVariableName: 'aNumber'
+	then remap the test
+	"
+
+	| aNumber|
+	aNumber := 0.
+	aNumber := 10/aNumber.
+
+	self assert: true
+]
+
+{ #category : #tests }
 GeneralSeekerTests >> testFamixJavaclass [
 
 "This reproduces the recursion in Anne's bug case. But first need to deploy the debugger to that image."
