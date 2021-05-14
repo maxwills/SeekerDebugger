@@ -330,7 +330,7 @@ SeekerDebuggerPresenter >> updatePresenter [
 	code interactionModel context: stDebugger currentContext.
 	code interactionModel bindings
 		at: #seeker
-		put: (WorkspaceVariable key: #seeker value: self seekerDebugger).
+		put: (WorkspaceVariable key: #seeker value: self seekerDebugger stepper).
 	code interactionModel bindings
 		at: #executeQuery
 		put: (WorkspaceVariable key: #executeQuery value: self seekerDebugger stepper).

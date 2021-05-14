@@ -31,7 +31,7 @@ Queries experessions are compatible with AnonymousTypes. Providing freedom to ex
 
 "
 Class {
-	#name : #SkQueryExpression,
+	#name : #SkQuery,
 	#superclass : #SkIterableDataSetBase,
 	#instVars : [
 		'fromDataSource',
@@ -40,36 +40,34 @@ Class {
 		'resultBuffer',
 		'result',
 		'onQueryRowMatch',
-		'rowGetter',
 		'operationType'
 	],
 	#category : #'Seeker-Components-Experimental'
 }
 
 { #category : #'instance creation' }
-SkQueryExpression class >> from: aSeekerDataSet select: aProjectionBlock [
+SkQuery class >> from: aSeekerDataSet select: aProjectionBlock [
   ^ self from: aSeekerDataSet select: aProjectionBlock where: [ true ].
 ]
 
 { #category : #'instance creation' }
-SkQueryExpression class >> from: aSeekerDataSet select: aProjectionBlock where: aPredicateBlock [ 
+SkQuery class >> from: aSeekerDataSet select: aProjectionBlock where: aPredicateBlock [ 
   ^self from: aSeekerDataSet where: aPredicateBlock select: aProjectionBlock
 ]
 
 { #category : #'instance creation' }
-SkQueryExpression class >> from: aSeekerDataSet where: aPredicateBlock select: aProjectionBlock [
+SkQuery class >> from: aSeekerDataSet where: aPredicateBlock select: aProjectionBlock [
 
 	| q |
 	q := self new.
 	q selectBlock: aProjectionBlock.
 	q whereBlock: aPredicateBlock.
 	q fromDataSource: aSeekerDataSet.
-	q rowGetter: [ aSeekerDataSet currentRow ].
 	^ q
 ]
 
 { #category : #'as yet unclassified' }
-SkQueryExpression >> advanceToNextRow [
+SkQuery >> advanceToNextRow [
 
 	"advances to the next row. returns false if the end of the table (there are no more rows) was reached before trying to advance."
 
@@ -77,7 +75,7 @@ SkQueryExpression >> advanceToNextRow [
 ]
 
 { #category : #converting }
-SkQueryExpression >> asSolvedTable [
+SkQuery >> asSolvedTable [
 
 	"Advances the stream storing the results"
 
@@ -92,7 +90,7 @@ SkQueryExpression >> asSolvedTable [
 ]
 
 { #category : #converting }
-SkQueryExpression >> asTable [
+SkQuery >> asTable [
 
 	"Triggers the solution of the query"
 
@@ -109,7 +107,7 @@ SkQueryExpression >> asTable [
 		ifFalse: [ 
 			self onQueryRowMatch: [ 
 				| transformedRow row |
-				row := rowGetter value.
+				row := self currentRow.
 				transformedRow := selectBlock value: row.
 				resultBuffer add: transformedRow ] ].
 	self resolve.
@@ -118,12 +116,12 @@ SkQueryExpression >> asTable [
 ]
 
 { #category : #accessing }
-SkQueryExpression >> columnLabels [
+SkQuery >> columnLabels [
 	^result columnLabels 
 ]
 
 { #category : #converting }
-SkQueryExpression >> count [
+SkQuery >> count [
 
 	"a result operation"
 
@@ -135,7 +133,7 @@ SkQueryExpression >> count [
 ]
 
 { #category : #'as yet unclassified' }
-SkQueryExpression >> currentRow [
+SkQuery >> currentRow [
 
 	"Part of the iterable data set interface. Used for queries nesting. returns the rowgetter result"
 
@@ -143,7 +141,7 @@ SkQueryExpression >> currentRow [
 ]
 
 { #category : #enumerating }
-SkQueryExpression >> do: aBlock [
+SkQuery >> do: aBlock [
 
 	| originalOnQueryRowMatch |
 	originalOnQueryRowMatch := onQueryRowMatch.
@@ -155,7 +153,7 @@ SkQueryExpression >> do: aBlock [
 ]
 
 { #category : #'as yet unclassified' }
-SkQueryExpression >> doQueryOnRow: aRow [
+SkQuery >> doQueryOnRow: aRow [
 
 	"performs the query in the specified row"
 
@@ -165,7 +163,7 @@ SkQueryExpression >> doQueryOnRow: aRow [
 ]
 
 { #category : #'as yet unclassified' }
-SkQueryExpression >> doQueryRow [
+SkQuery >> doQueryRow [
 
 	"performs the query in the current row of the input"
 
@@ -174,12 +172,12 @@ SkQueryExpression >> doQueryRow [
 		ifTrue: [ whereBlock value ifTrue: onQueryRowMatch ]
 		ifFalse: [ 
 			| row |
-			row := rowGetter value.
+			row := self currentRow.
 			(whereBlock value: row) ifTrue: onQueryRowMatch ]
 ]
 
 { #category : #'as yet unclassified' }
-SkQueryExpression >> endOfTableReached [
+SkQuery >> endOfTableReached [
 
 	"returns true if the table has no more rows (and advanceToNextRow will return false)"
 
@@ -187,34 +185,34 @@ SkQueryExpression >> endOfTableReached [
 ]
 
 { #category : #'as yet unclassified' }
-SkQueryExpression >> fromDataSource [
+SkQuery >> fromDataSource [
 	^fromDataSource
 ]
 
 { #category : #'as yet unclassified' }
-SkQueryExpression >> fromDataSource: anObject [
+SkQuery >> fromDataSource: anObject [
 	^fromDataSource := anObject
 ]
 
 { #category : #initialization }
-SkQueryExpression >> initialize [
+SkQuery >> initialize [
 operationType := #defaultOperation.
 ]
 
 { #category : #accessing }
-SkQueryExpression >> onQueryRowMatch [
+SkQuery >> onQueryRowMatch [
 
 	^ onQueryRowMatch
 ]
 
 { #category : #accessing }
-SkQueryExpression >> onQueryRowMatch: anObject [
+SkQuery >> onQueryRowMatch: anObject [
 
 	onQueryRowMatch := anObject
 ]
 
 { #category : #accessing }
-SkQueryExpression >> processResult [
+SkQuery >> processResult [
 
 	result := [ operationType ] switchCase: { 
 			          (#asTable
@@ -225,7 +223,7 @@ SkQueryExpression >> processResult [
 ]
 
 { #category : #'as yet unclassified' }
-SkQueryExpression >> resetTableTraversing [
+SkQuery >> resetTableTraversing [
 
 	"Puts the table traversing cursor 'before the first row'. one advanceToNextRow is necessary to enter the first row. A reseted table should reply currentRow nil always."
 
@@ -233,7 +231,7 @@ SkQueryExpression >> resetTableTraversing [
 ]
 
 { #category : #navigating }
-SkQueryExpression >> resolve [
+SkQuery >> resolve [
 
 	fromDataSource do: [ :row | self doQueryOnRow: row ].
 	self processResult.
@@ -241,46 +239,34 @@ SkQueryExpression >> resolve [
 ]
 
 { #category : #accessing }
-SkQueryExpression >> result [
+SkQuery >> result [
 
 ^ result
 ]
 
 { #category : #accessing }
-SkQueryExpression >> result: anObject [
+SkQuery >> result: anObject [
 
 	result := anObject
 ]
 
-{ #category : #accessing }
-SkQueryExpression >> rowGetter [
-
-	^ rowGetter
-]
-
-{ #category : #accessing }
-SkQueryExpression >> rowGetter: anObject [
-
-	rowGetter := anObject
-]
-
 { #category : #'as yet unclassified' }
-SkQueryExpression >> selectBlock [
+SkQuery >> selectBlock [
 	^selectBlock 
 ]
 
 { #category : #'as yet unclassified' }
-SkQueryExpression >> selectBlock: anObject [
+SkQuery >> selectBlock: anObject [
 	^selectBlock  := anObject
 ]
 
 { #category : #'as yet unclassified' }
-SkQueryExpression >> whereBlock [
+SkQuery >> whereBlock [
 
 	^ whereBlock
 ]
 
 { #category : #'as yet unclassified' }
-SkQueryExpression >> whereBlock: anObject [
+SkQuery >> whereBlock: anObject [
 	^whereBlock := anObject
 ]

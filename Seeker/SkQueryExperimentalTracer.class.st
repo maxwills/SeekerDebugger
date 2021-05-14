@@ -30,7 +30,7 @@ SkQueryExperimentalTracer >> createNestedQueryForReturnsOfMethod: aMethod [
 	methodClass := aMethod methodClass.
 	methodSelector := aMethod selector.
 
-	q := SkQueryExpression
+	q := SkQuery
 		     from: innerQuery
 		     select: [ :row | 
 			     SkNew with: { 
@@ -56,7 +56,7 @@ SkQueryExperimentalTracer >> createReturnValuesQueryNewNew [
      #contextPC
      #endPC"
 
-	q := SkQueryExpression
+	q := SkQuery
 		     from: table
 		     select: [ :row | 
 			     SkNew with: { 
@@ -81,7 +81,7 @@ SkQueryExperimentalTracer >> createReturnValuesQueryNewNewUltimate [
      #contextPC
      #endPC"
 
-	q := SkQueryExpression
+	q := SkQuery
 		     from: table
 		     select: [ :row | 
 			     SkNew with: { 
@@ -155,6 +155,14 @@ SkQueryExperimentalTracer >> doStepIntoBeginProcess [
 SkQueryExperimentalTracer >> executionVirtualTables [
 
 	^ executionVirtualTableCreator
+]
+
+{ #category : #'as yet unclassified' }
+SkQueryExperimentalTracer >> giveMeAQuery [
+
+	"Sugar-coated naming to please the crowd"
+
+	^ queriesLibrary
 ]
 
 { #category : #initialization }

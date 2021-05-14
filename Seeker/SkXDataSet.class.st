@@ -50,20 +50,20 @@ SkXDataSet >> initialize [
 
 	super initialize.
 	tableName := 'unnamedTable'.
-	underlyingCollection := OrderedCollection new.
+	data := OrderedCollection new.
 	columnLabels := SortedCollection new
 ]
 
 { #category : #accessing }
 SkXDataSet >> rows [
 
-	^ underlyingCollection
+	^ data
 ]
 
 { #category : #accessing }
 SkXDataSet >> rows: anObject [
 
-	underlyingCollection := anObject 
+	data := anObject 
 ]
 
 { #category : #accessing }

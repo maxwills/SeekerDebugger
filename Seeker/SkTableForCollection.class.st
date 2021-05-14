@@ -3,7 +3,7 @@ Class {
 	#superclass : #SkIterableDataSetBase,
 	#instVars : [
 		'traversingCursorIndex',
-		'underlyingCollection'
+		'data'
 	],
 	#category : #'Seeker-Components-Experimental'
 }
@@ -22,15 +22,15 @@ SkTableForCollection >> advanceToNextRow [
 
 	"advances to the next row. returns false if the end of the table (there are no more rows) was reached before trying to advance."
 
-	traversingCursorIndex > underlyingCollection size ifTrue: [ 
+	traversingCursorIndex > data size ifTrue: [ 
 		^ false ].
 	traversingCursorIndex := traversingCursorIndex + 1.
-	^ traversingCursorIndex > underlyingCollection size
+	^ traversingCursorIndex > data size
 ]
 
 { #category : #accessing }
 SkTableForCollection >> collectionToIterateOver: aCollection [
-	underlyingCollection := aCollection.
+	data := aCollection.
 ]
 
 { #category : #'as yet unclassified' }
@@ -39,13 +39,13 @@ SkTableForCollection >> currentRow [
 	"returns the object that represents the current row"
 
 	traversingCursorIndex = 0 ifTrue: [ ^ nil ].
-	^ underlyingCollection at: traversingCursorIndex
+	^ data at: traversingCursorIndex
 ]
 
 { #category : #enumerating }
 SkTableForCollection >> do: aBlock [
 
-	underlyingCollection do: aBlock
+	data do: aBlock
 ]
 
 { #category : #'as yet unclassified' }
@@ -53,7 +53,7 @@ SkTableForCollection >> endOfTableReached [
 
 	"returns true if the table has no more rows (and advanceToNextRow will return false)"
 
-	^ traversingCursorIndex > underlyingCollection size
+	^ traversingCursorIndex > data size
 ]
 
 { #category : #initialization }

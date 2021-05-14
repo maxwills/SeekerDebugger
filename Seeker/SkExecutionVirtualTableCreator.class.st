@@ -18,7 +18,6 @@ SkExecutionVirtualTableCreator >> tableOfReturnValues [
 					                (#stepIndex -> csi tracedStatementStepIndex).
 					                (#receiverClass -> csi receiverClass).
 					                (#methodSelector -> csi methodSelector).
-					                (#statementNotation -> csi statementNotation).
 					                (#returnValue -> csi methodReturnValue).
 					                (#contextPC -> csi contextPC).
 					                (#endPC -> csi endPC) } ]
