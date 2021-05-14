@@ -26,3 +26,15 @@ SkExecutionVirtualTableCreator >> tableOfReturnValues [
 
 	^ virtualTable
 ]
+
+{ #category : #accessing }
+SkExecutionVirtualTableCreator >> tracer [
+
+	^ tracer
+]
+
+{ #category : #accessing }
+SkExecutionVirtualTableCreator >> tracer: anObject [
+
+	tracer := anObject
+]

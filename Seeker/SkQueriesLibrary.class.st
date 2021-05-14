@@ -32,3 +32,15 @@ SkQueriesLibrary >> forReturnValues [
 		     where: [ :row | row contextPC = row endPC ].
 	^ q
 ]
+
+{ #category : #accessing }
+SkQueriesLibrary >> tracer [
+
+	^ tracer
+]
+
+{ #category : #accessing }
+SkQueriesLibrary >> tracer: anObject [
+
+	tracer := anObject
+]
