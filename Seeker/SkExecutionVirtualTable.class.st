@@ -5,7 +5,8 @@ Class {
 		'rowReificationBlock',
 		'tracer',
 		'justRestarted',
-		'joined'
+		'optimizedRowReificationBlock',
+		'excludedFields'
 	],
 	#category : #'Seeker-Components-Experimental'
 }
@@ -34,7 +35,7 @@ SkExecutionVirtualTable >> advanceToNextRow [
 { #category : #'as yet unclassified' }
 SkExecutionVirtualTable >> currentRow [
 
-	^ rowReificationBlock value
+	^ optimizedRowReificationBlock value
 ]
 
 { #category : #'as yet unclassified' }
@@ -78,6 +79,40 @@ SkExecutionVirtualTable >> endOfTableReached [
 	^ tracer isExecutionFinished or: [ tracer isRiskyStep ]
 ]
 
+{ #category : #accessing }
+SkExecutionVirtualTable >> excluding [
+
+	^ excludedFields
+]
+
+{ #category : #accessing }
+SkExecutionVirtualTable >> excluding: anObject [
+	excludedFields := anObject
+]
+
+{ #category : #'as yet unclassified' }
+SkExecutionVirtualTable >> findTracer [
+
+	tracer isMapped ifFalse: [ self error: 'Time Traveling not enabled' ].
+	^ tracer
+]
+
+{ #category : #'as yet unclassified' }
+SkExecutionVirtualTable >> getRelevantFields [
+
+	^ {  }
+]
+
+{ #category : #'as yet unclassified' }
+SkExecutionVirtualTable >> optimizeRowAcquisitionForFields: aCollection [
+
+	optimizedRowReificationBlock := SkAnonymousTypeHelpers
+		                                filterKeepingFields: aCollection
+		                                andExcluding: excludedFields
+		                                ofInstantiationBlock:
+		                                rowReificationBlock
+]
+
 { #category : #'as yet unclassified' }
 SkExecutionVirtualTable >> resetTableTraversing [
 
@@ -96,6 +131,7 @@ SkExecutionVirtualTable >> rowReificationBlock [
 { #category : #accessing }
 SkExecutionVirtualTable >> rowReificationBlock: anObject [
 
+	optimizedRowReificationBlock := anObject.
 	rowReificationBlock := anObject
 ]
 

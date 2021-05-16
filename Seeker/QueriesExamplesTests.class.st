@@ -46,7 +46,7 @@ QueriesExamplesTests >> test3AmIInARecursiveCall [
 
 	| micSplitter theStringWithEscapeChar |
 	micSplitter := MicInlineSplitter new.
-	theStringWithEscapeChar := 'Hi \'.
+	theStringWithEscapeChar := 'Hi sduf sdf sdf sdf sdfsdffdgdf gdf gdfg dfg dfg d ffdg gdf g\'.
 	micSplitter pillarFrom: theStringWithEscapeChar
 	
 	"Nothing to assert. The previous call is not expected to have an unhandled exception"

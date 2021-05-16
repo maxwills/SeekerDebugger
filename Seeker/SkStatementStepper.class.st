@@ -41,7 +41,6 @@ Class {
 	#superclass : #DebuggerStepperBase,
 	#instVars : [
 		'stDebugger',
-		'sindarin',
 		'trace',
 		'currentStepIndex',
 		'startingContextForRecord',
@@ -57,7 +56,7 @@ Class {
 { #category : #mapping }
 SkStatementStepper >> bytecodeIndex [
 
-	"comment stating purpose of instance-side method"
+	"total number of bytecode steps executed"
 
 	^ byteCountCounter
 ]
@@ -73,14 +72,16 @@ SkStatementStepper >> clearStepBuffers [
 SkStatementStepper >> createIndexlessStepDescriptorForContext: aContext [
 
 	"Returns the full path to the statement, with its execution index set to 0"
-   "this is supposed to be an interrupted context (so the PC makes sense)"
+
+	"this is supposed to be an interrupted context (so the PC makes sense)"
+
 	| node currentStatementDescriptor |
 	node := aContext method sourceNodeForPC: aContext pc.
 	currentStatementDescriptor := SkStepDescriptor
 		                              newFromNode: node
-		                              inContext: aContext.
+		                              inContext: aContext
+		                              isTopContext: true.
 	currentStatementDescriptor executionIndex: 0.
-	currentStatementDescriptor context: aContext.
 	currentStatementDescriptor isReturning: node isReturn.
 	^ currentStatementDescriptor
 ]
@@ -97,9 +98,11 @@ SkStatementStepper >> currentContext [
 { #category : #accessing }
 SkStatementStepper >> currentIndexlessStepDescriptor [
 
-	"Returns the full path to the statement, with its execution index set to 0"
+	"Returns the full path to the current statement, with its execution index set to 0"
 
-	^ self createIndexlessStepDescriptorForContext: self currentContext.
+	| step |
+	step := self currentStepDescriptor clone.
+	^ step executionIndex: 0
 ]
 
 { #category : #'as yet unclassified' }
@@ -129,8 +132,12 @@ SkStatementStepper >> currentStepDescriptor [
 	| currentStatementDescriptor |
 	(trace notEmpty and: [ trace size = currentStepIndex ])
 		ifTrue: [ currentStatementDescriptor := trace last ]
-		ifFalse: [ 
-			currentStatementDescriptor := self currentIndexlessStepDescriptor.
+		ifFalse: [ "To create a new one, we start copying the previous one"
+			| previousStep |
+			previousStep := trace ifEmpty: [ nil ] ifNotEmpty: [ trace last ].
+			currentStatementDescriptor := SkStepDescriptor
+				                              newFromContext: self currentContext
+				                              withPrevious: previousStep.
 			currentStatementDescriptor executionIndex: currentStepIndex.
 			currentStatementDescriptor astSteps: astStepCounter ].
 
@@ -318,11 +325,14 @@ SkStatementStepper >> pushCurrentStepDescriptor [
 
 { #category : #'as yet unclassified' }
 SkStatementStepper >> replayAndBuildExecutionMap [
-"Should have an initial context set first"
-|currentStep|
-   currentStep := self currentStepDescriptor.
+
+	"Should have an initial context set first"
+
+	| currentStep |
+	currentStep := self currentStepDescriptor.
 	self restart.
-	self stepUntilConditionIsTrue: [currentStep hasSameIndexlessSignatureAs: self currentIndexlessStepDescriptor ].
+	self stepUntilConditionIsTrue: [ 
+		currentStep hasSameIndexlessSignatureAs: self currentStepDescriptor ]
 ]
 
 { #category : #starting }
@@ -383,18 +393,6 @@ SkStatementStepper >> signalExceptionIfDebuggedExecutionIsFinished [
 	(self isExecutionFinished) ifTrue: [ 
 		DebuggedExecutionIsFinished signal.
 	].
-]
-
-{ #category : #accessing }
-SkStatementStepper >> sindarin [
-
-	^ sindarin
-]
-
-{ #category : #accessing }
-SkStatementStepper >> sindarin: anObject [
-
-	sindarin := anObject
 ]
 
 { #category : #accessing }

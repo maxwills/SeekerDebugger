@@ -8,7 +8,6 @@ Class {
 		'executionIndex',
 		'sourceCode',
 		'extraInfo',
-		'context',
 		'astSteps',
 		'isReturning'
 	],
@@ -21,36 +20,81 @@ SkStepDescriptor class >> currentNodeOf: aContext [
 ]
 
 { #category : #'instance creation' }
-SkStepDescriptor class >> newFromCurrentNodeInContext: aContext [
+SkStepDescriptor class >> newFromContext: aContext withPrevious: aStepDescriptor [
 
 	"returns a SDStatementStepDescriptor with all the statement static IDs which lead to the nodenode"
- ^self newFromNode: (self currentNodeOf: aContext) inContext: aContext
+
+	| newDepth depthDiff |
+	aStepDescriptor ifNil: [ "Do slow version"
+		^ self
+			  newFromNode:
+			  (SkContextHelpers currentNodeOf: aContext isTopContext: true)
+			  inContext: aContext
+			  isTopContext: true ].
+	newDepth := SkContextHelpers countStackDepthFrom: aContext.
+	depthDiff := newDepth - aStepDescriptor size.
+	depthDiff abs <= 1
+		ifTrue: [ "Optimized version"
+			| newStep |
+			newStep := aStepDescriptor clone.
+			[ depthDiff ] switchCase: { 
+					([ 1 ] -> [ "doNothing" ]).
+					([ -1 ] -> [ 
+					 newStep removeLast.
+					 newStep removeLast ]).
+					(#defaultCase -> [ newStep removeLast ]) }.
+			newStep add: (SkStatementStaticID
+					 newFromAstNode:
+					 (SkContextHelpers currentNodeOf: aContext isTopContext: true)
+					 inContext: aContext
+					 isTopContext: true).
+			^ newStep ]
+		ifFalse: [ "Do slow version"
+			^ self
+				  newFromNode:
+				  (SkContextHelpers currentNodeOf: aContext isTopContext: true)
+				  inContext: aContext
+				  isTopContext: true ]
 ]
 
 { #category : #'instance creation' }
-SkStepDescriptor class >> newFromNode: aRBNode inContext: aContext [
+SkStepDescriptor class >> newFromCurrentNodeInContext: aContext [
 
 	"returns a SDStatementStepDescriptor with all the statement static IDs which lead to the nodenode"
 
-	| stepDescriptor sourceCode iterationContext |
+	^ self
+		  newFromNode: (SkContextHelpers currentNodeOf: aContext isTopContext: true)
+		  inContext: aContext
+		  isTopContext: true
+]
+
+{ #category : #'instance creation' }
+SkStepDescriptor class >> newFromNode: aRBNode inContext: aContext isTopContext: aBoolean [
+
+	"returns a SDStatementStepDescriptor with all the statement static IDs which lead to the nodenode"
+
+	| stepDescriptor sourceCode contexts firstIteration |
 	aContext ifNil: [ Exception new signal ].
 
 	stepDescriptor := self new.
-
-	iterationContext := aContext.
-	"Traverse the contexts stack from top to bottom, creating statement names from right(current node) to left (the source caller)."
-	[ iterationContext isNotNil ] whileTrue: [ 
+	"current context (top) is the last one"
+	contexts := SkContextHelpers contextStackAsListFrom: aContext.
+	firstIteration := true.
+	contexts do: [ :iterationContext | 
 		| statementID iterationNode |
-		iterationNode := self currentNodeOf: iterationContext. "iterationNode might be constant. need to check"
+		iterationNode := SkContextHelpers
+			                 currentNodeOf: iterationContext
+			                 isTopContext: firstIteration.
 		statementID := SkStatementStaticID
 			               newFromAstNode: iterationNode
-			               inContext: iterationContext.
-		stepDescriptor addFirst: statementID.
-		iterationContext := iterationContext sender ].
+			               inContext: iterationContext
+			               isTopContext: firstIteration.
+		stepDescriptor add: statementID.
+		firstIteration := false ].
 
-	sourceCode := aRBNode statementNode
-		              ifNil: [ '"no statement for node"' ]
-		              ifNotNil: [ aRBNode statementNode sourceCode ].
+	sourceCode := ''. "aRBNode statementNode
+		              ifNil: [ '""no statement for node""' ]
+		              ifNotNil: [ aRBNode statementNode sourceCode ]."
 	stepDescriptor isReturning: aRBNode isReturn.
 	stepDescriptor sourceCode: sourceCode.
 	stepDescriptor topStatementID isReturning: stepDescriptor isReturning.
@@ -110,6 +154,20 @@ SkStepDescriptor >> astSteps: anObject [
 	astSteps := anObject
 ]
 
+{ #category : #copying }
+SkStepDescriptor >> clone [
+
+	| step |
+	step := self class new: self size.
+	step executionIndex: self executionIndex.
+	step sourceCode: self sourceCode.
+	step extraInfo: self extraInfo.
+	step astSteps: self astSteps.
+	step isReturning: self isReturning.
+	self do: [ :each | step add: each clone ].
+	^ step
+]
+
 { #category : #'as yet unclassified' }
 SkStepDescriptor >> comparePathTo: anIndexlessStepDescriptor [
 
@@ -155,18 +213,6 @@ SkStepDescriptor >> comparePathTo: anIndexlessStepDescriptor [
 	self size = anIndexlessStepDescriptor size ifTrue: [ ^ 0 ].
 	self size < anIndexlessStepDescriptor size ifTrue: [ ^ -1 ].
 	^ 1
-]
-
-{ #category : #accessing }
-SkStepDescriptor >> context [
-
-	^ context
-]
-
-{ #category : #accessing }
-SkStepDescriptor >> context: anObject [
-
-	context := anObject
 ]
 
 { #category : #'as yet unclassified' }

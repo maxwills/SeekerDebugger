@@ -42,17 +42,40 @@ Class {
 		'onQueryRowMatch',
 		'operationType'
 	],
+	#classInstVars : [
+		'identityProjection',
+		'alwaysMatch'
+	],
 	#category : #'Seeker-Components-Experimental'
 }
 
-{ #category : #'instance creation' }
-SkQuery class >> from: aSeekerDataSet select: aProjectionBlock [
-  ^ self from: aSeekerDataSet select: aProjectionBlock where: [ true ].
+{ #category : #accessing }
+SkQuery class >> alwaysMatch [
+
+	alwaysMatch ifNil: [ alwaysMatch := [ :anArg | true ] ].
+	^ alwaysMatch
 ]
 
 { #category : #'instance creation' }
-SkQuery class >> from: aSeekerDataSet select: aProjectionBlock where: aPredicateBlock [ 
-  ^self from: aSeekerDataSet where: aPredicateBlock select: aProjectionBlock
+SkQuery class >> from: aDataSource [
+
+	"Creates a query that can be issued over aDataSource. aDataSource is an object whose class inherits from SkIterableDataTableBase"
+
+	^ self
+		  from: aDataSource
+		  select: self alwaysMatch
+		  collect: self identityProjection
+]
+
+{ #category : #'instance creation' }
+SkQuery class >> from: aDataSource select: aRowPredicateBlock collect: aProjectionBlock [
+
+	"A more 'Pharo-like' version of the classic From Select Collect style"
+
+	^ self
+		  from: aDataSource
+		  where: aRowPredicateBlock
+		  select: aProjectionBlock
 ]
 
 { #category : #'instance creation' }
@@ -66,12 +89,91 @@ SkQuery class >> from: aSeekerDataSet where: aPredicateBlock select: aProjection
 	^ q
 ]
 
+{ #category : #accessing }
+SkQuery class >> identityProjection [
+
+	identityProjection ifNil: [ identityProjection := [ :anArg | anArg ] ].
+	^ identityProjection
+]
+
 { #category : #'as yet unclassified' }
 SkQuery >> advanceToNextRow [
 
 	"advances to the next row. returns false if the end of the table (there are no more rows) was reached before trying to advance."
 
 	^fromDataSource advanceToNextRow 
+]
+
+{ #category : #converting }
+SkQuery >> asCsvFile [
+
+	| aFileReference |
+	aFileReference := Smalltalk imageDirectory / 'tempCvsResult.csv'.
+	operationType := #asCsv.
+	aFileReference writeStreamDo: [ :aStream | 
+		| firstResult |
+		firstResult := true.
+		resultBuffer := ''.
+		selectBlock numArgs = 0
+			ifTrue: [ 
+				self onQueryRowMatch: [ 
+					| transformedRow |
+					transformedRow := selectBlock value.
+					firstResult ifTrue: [ 
+						firstResult := false.
+						transformedRow headersAsCsvPrintOn: aStream].
+					transformedRow asCsvPrintOn: aStream] ]
+			ifFalse: [ 
+				self onQueryRowMatch: [ 
+					| transformedRow row |
+					row := self currentRow.
+					transformedRow := selectBlock value: row.
+					firstResult ifTrue: [ 
+						firstResult := false.
+						transformedRow headersAsCsvPrintOn: aStream].
+					transformedRow asCsvPrintOn: aStream] ].
+		self resolve ].
+	result := aFileReference.
+
+	^ self result
+]
+
+{ #category : #converting }
+SkQuery >> asCsvInClipboard [
+
+	| str |
+	operationType := #asCsv.
+	str := String streamContents: [ :aStream | 
+		       | firstResult |
+		       firstResult := true.
+		       resultBuffer := ''.
+		       selectBlock numArgs = 0
+			       ifTrue: [ 
+				       self onQueryRowMatch: [ 
+					       | transformedRow |
+					       transformedRow := selectBlock value.
+					       firstResult ifTrue: [ 
+						       firstResult := false.
+						       transformedRow headersAsCsvPrintOn: aStream.
+						       aStream nextPutAll: String cr ].
+					       transformedRow asCsvPrintOn: aStream.
+					       aStream nextPutAll: String cr ] ]
+			       ifFalse: [ 
+				       self onQueryRowMatch: [ 
+					       | transformedRow row |
+					       row := self currentRow.
+					       transformedRow := selectBlock value: row.
+					       firstResult ifTrue: [ 
+						       firstResult := false.
+						       transformedRow headersAsCsvPrintOn: aStream.
+						       aStream nextPutAll: String cr ].
+					       transformedRow asCsvPrintOn: aStream.
+					       aStream nextPutAll: String cr ] ].
+		       self resolve ].
+	result := str.
+	Clipboard clipboardText: result.
+
+	^ self result
 ]
 
 { #category : #operation }
@@ -98,6 +200,68 @@ SkQuery >> asTable [
 	self resolve.
 
 	^ self result
+]
+
+{ #category : #operation }
+SkQuery >> asTableForTimeTravel [
+
+	"Triggers the solution of the query"
+
+	"a result operation"
+
+	| tracer makeItForTimeTravel |
+	tracer := self findTracer.
+	makeItForTimeTravel := [ :row | 
+	                       | t |
+	                       t := SkAnonymousTypeForTimeTravel
+		                            newWith: {  }
+		                            forTracer: tracer.
+	                       t mergeWith: row ].
+	operationType := #asTable.
+	resultBuffer := OrderedCollection new.
+	selectBlock numArgs = 0
+		ifTrue: [ 
+			self onQueryRowMatch: [ 
+				| transformedRow |
+				transformedRow := selectBlock value.
+				resultBuffer add: (makeItForTimeTravel value: transformedRow) ] ]
+		ifFalse: [ 
+			self onQueryRowMatch: [ 
+				| transformedRow row |
+				row := self currentRow.
+				transformedRow := selectBlock value: row.
+				resultBuffer add: (makeItForTimeTravel value: transformedRow) ] ].
+	self resolve.
+
+	^ self result
+]
+
+{ #category : #enumerating }
+SkQuery >> collect: aBlock [
+
+	"A lazy version of collect: of Pharo collections, applicable to queries"
+
+	| q composedProjection selfisIdentity blockIsIdentity |
+	selfisIdentity := whereBlock == self class alwaysMatch.
+	blockIsIdentity := aBlock == self class alwaysMatch.
+	composedProjection := [ true ] switchCase: { 
+			                      ([ selfisIdentity and: blockIsIdentity ]
+			                       -> [ selectBlock ]).
+			                      ([ selfisIdentity and: blockIsIdentity not ]
+			                       -> [ aBlock ]).
+			                      ([ selfisIdentity not and: blockIsIdentity ]
+			                       -> [ selectBlock ]).
+			                      ([ 
+			                       selfisIdentity not and: blockIsIdentity not ]
+			                       -> [ 
+			                       [ :anArg1 | 
+			                       aBlock cull: (selectBlock cull: anArg1) ] ]) }.
+	q := self class
+		     from: self fromDataSource
+		     select: whereBlock
+		     collect: composedProjection.
+
+	^ self
 ]
 
 { #category : #accessing }
@@ -174,6 +338,24 @@ SkQuery >> endOfTableReached [
 	^ fromDataSource endOfTableReached
 ]
 
+{ #category : #accessing }
+SkQuery >> excluding [
+
+	^ fromDataSource excluding
+]
+
+{ #category : #accessing }
+SkQuery >> excluding: aCollection [
+	
+	fromDataSource excluding: aCollection 
+]
+
+{ #category : #'as yet unclassified' }
+SkQuery >> findTracer [
+
+	^ fromDataSource findTracer
+]
+
 { #category : #operations }
 SkQuery >> first [
 
@@ -198,12 +380,35 @@ SkQuery >> fromDataSource [
 
 { #category : #'as yet unclassified' }
 SkQuery >> fromDataSource: anObject [
-	^fromDataSource := anObject
+
+	fromDataSource := anObject.
+	"self optimizeRowAcquisitionForFields: self getRelevantFields"
+]
+
+{ #category : #'as yet unclassified' }
+SkQuery >> getRelevantFields [
+
+	"Returns a collection of the fields (when using anonymous type rows) that are used in the selectBlock or whereBlock. it will search recursivelly in every nested block"
+
+	| selectFields whereFields fromRelevantFields mergedSet |
+	selectFields := SkAnonymousTypeHelpers 
+		                listOfFieldsInAnonymousTypeBlock: selectBlock.
+	whereFields := SkAnonymousTypeHelpers 
+		               listOfFieldsInAnonymousTypeBlock: whereBlock.
+	fromRelevantFields := fromDataSource
+		                      ifNotNil: [ fromDataSource getRelevantFields ]
+		                      ifNil: [ {  } ].
+	mergedSet := Set new.
+	mergedSet addAll: selectFields.
+	mergedSet addAll: whereFields.
+	mergedSet addAll: fromRelevantFields.
+	^ mergedSet asOrderedCollection
 ]
 
 { #category : #initialization }
 SkQuery >> initialize [
 operationType := #defaultOperation.
+super initialize
 ]
 
 { #category : #accessing }
@@ -218,6 +423,13 @@ SkQuery >> onQueryRowMatch: anObject [
 	onQueryRowMatch := anObject
 ]
 
+{ #category : #'as yet unclassified' }
+SkQuery >> optimizeRowAcquisitionForFields: aCollection [
+
+	fromDataSource ifNotNil: [ 
+		fromDataSource optimizeRowAcquisitionForFields: aCollection ]
+]
+
 { #category : #accessing }
 SkQuery >> processResult [
 
@@ -227,6 +439,7 @@ SkQuery >> processResult [
 			           SkDataTable newForAnonymousTypeObjects: resultBuffer ]).
 			          (#count -> [ resultBuffer ]).
 			          (#first -> [ resultBuffer ]).
+			          (#asCsv -> [ resultBuffer ]).
 			          (#defaultCase -> [ #operationCompleted ]) }
 ]
 
@@ -241,6 +454,7 @@ SkQuery >> resetTableTraversing [
 { #category : #navigating }
 SkQuery >> resolve [
 
+	self optimizeRowAcquisitionForFields: self getRelevantFields.
 	fromDataSource do: [ :row | self doQueryOnRow: row ].
 	self processResult.
 	^ self
@@ -258,6 +472,35 @@ SkQuery >> result: anObject [
 	result := anObject
 ]
 
+{ #category : #enumerating }
+SkQuery >> select: aBlock [
+
+	"A lazy version of select: of Pharo collections, applicable to queries"
+
+	"Creates a new query with a composition of row matching condition"
+
+	| q composedWhereBlock selfTrue aBlockTrue |
+	selfTrue := whereBlock == self class alwaysMatch.
+	aBlockTrue := aBlock == self class alwaysMatch.
+	composedWhereBlock := [ true ] switchCase: { 
+			                      ([ selfTrue and: aBlockTrue ]
+			                       -> [ whereBlock ]).
+			                      ([ selfTrue and: aBlockTrue not ]
+			                       -> [ aBlock ]).
+			                      ([ selfTrue not and: aBlockTrue ]
+			                       -> [ whereBlock ]).
+			                      ([ selfTrue not and: aBlockTrue not ] -> [ 
+			                       [ :anArg1 | 
+			                       (whereBlock value: anArg1) and: [ 
+				                       aBlock value: anArg1 ] ] ]) }.
+	q := self class
+		     from: self fromDataSource
+		     select: composedWhereBlock
+		     collect: selectBlock.
+
+	^ self
+]
+
 { #category : #'as yet unclassified' }
 SkQuery >> selectBlock [
 	^selectBlock 
@@ -265,7 +508,8 @@ SkQuery >> selectBlock [
 
 { #category : #'as yet unclassified' }
 SkQuery >> selectBlock: anObject [
-	^selectBlock  := anObject
+	selectBlock  := anObject.
+"	self optimizeRowAcquisitionForFields: self getRelevantFields."
 ]
 
 { #category : #'as yet unclassified' }
@@ -276,5 +520,6 @@ SkQuery >> whereBlock [
 
 { #category : #'as yet unclassified' }
 SkQuery >> whereBlock: anObject [
-	^whereBlock := anObject
+	whereBlock := anObject.
+	"self optimizeRowAcquisitionForFields: self getRelevantFields"
 ]

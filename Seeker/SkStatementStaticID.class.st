@@ -26,7 +26,7 @@ SkStatementStaticID class >> countNodeStatementIndexInOwningSequence: aRBNode [
 ]
 
 { #category : #'instance creation' }
-SkStatementStaticID class >> newFromAstNode: aRBNode inContext: aContext [
+SkStatementStaticID class >> newFromAstNode: aRBNode inContext: aContext isTopContext: aBoolean [
 
 	| statementID sequenceID nodeIndex |
 	statementID := self new.
@@ -67,7 +67,7 @@ SkStatementStaticID >> clone [
 	statement := self class new.
 	statement indexInSequence: self indexInSequence.
 	statement isReturning: self isReturning.
-	statement sequenceStaticID: self sequenceStaticID copy.
+	statement sequenceStaticID: self sequenceStaticID clone.
 	^ statement
 ]
 

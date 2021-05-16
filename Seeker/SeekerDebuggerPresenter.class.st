@@ -60,18 +60,23 @@ SeekerDebuggerPresenter class >> defaultSpec [
 		  add: #toolbar expand: false fill: false padding: 0;
 		  add: #code expand: true;
 		  add: #currentStepLabel expand: false fill: false padding: 5;
-		add: ' ------------- Evaluator ------------- ' expand: false fill: false padding: 5;
+		"add: ' ------------- Evaluator ------------- ' expand: false fill: false padding: 5;
 		add: #evaluatorToolbar expand: false fill: false padding: 0;
       add: #evaluatorCode;
       add: 'Expression Value' expand: false fill: false padding: 5;
       add: #valueLabel expand: false fill: false padding: 5;
-      add: #inspector;
+      add: #inspector;"
 		  yourself
 ]
 
 { #category : #'debugger extension' }
 SeekerDebuggerPresenter >> debuggerExtensionToolName [
 	^ 'Seeker'
+]
+
+{ #category : #'as yet unclassified' }
+SeekerDebuggerPresenter >> enableTimeTravelingHandler [
+	self mapExecutionIfNotMappedAlready
 ]
 
 { #category : #initialization }
@@ -165,9 +170,14 @@ SeekerDebuggerPresenter >> initializeToolbar [
 				            action: [self restartHandler ];
 				            yourself);
 				addItem: (self newToolbarButton
-				            label: 'Set new initial Step';
-				            icon: (self application iconNamed: #glamorousRestart);
+				            label: 'Set Restart Point';
+				            icon: (self application iconNamed: #smallHome);
 				            action: [self setSelectedContexAsStartingPointHandler  ];
+				            yourself);
+				addItem: (self newToolbarButton
+				            label: 'Enable Time Travel';
+				            icon: (self application iconNamed: #smallProfile);
+				            action: [self enableTimeTravelingHandler  ];
 				            yourself);
 				"addItem: (self newToolbarButton
 				            label: 'Mark end statement';
@@ -235,13 +245,11 @@ SeekerDebuggerPresenter >> setModelBeforeInitialization: aStDebugger [
 	| sindarin |
 	stDebugger := aStDebugger.
 	sindarin := aStDebugger sindarinDebugger.
-	seekerDebugger := SeekerDebugger
-		                  newWithStatementGranularity: aStDebugger
-		                  sindarin: sindarin.
+	seekerDebugger := SeekerDebugger newFor: aStDebugger.
 	evaluatorDebugger := EvaluatorDebugger new.
 	evaluatorDebugger stDebugger: aStDebugger.
 	debuggerUpdateCoordinator := seekerDebugger debuggerUpdateCoordinator.
-	seekerDebugger quickSetup.
+	seekerDebugger quickSetup
 ]
 
 { #category : #'event handling' }
@@ -334,11 +342,11 @@ SeekerDebuggerPresenter >> updatePresenter [
 	code interactionModel bindings
 		at: #executeQuery
 		put: (WorkspaceVariable key: #executeQuery value: self seekerDebugger stepper).
-	stepLabel := 'Current Step: '.
+	stepLabel := 'TracedStatement: '.
 	self seekerDebugger isExecutionFinished ifTrue: [ 
 		stepLabel := '(Finished) ' , stepLabel ].
 	currentStepLabel label:
-		stepLabel , seekerDebugger currentStepDescriptor executionIndex asString.
+		stepLabel , (seekerDebugger currentStepDescriptor executionIndex asString), ' / BytecodeIndex: ',(seekerDebugger stepper bytecodeIndex asString).
 
 	self updateEvaluatorCode.
 	self updateExpressionValueDisplayed.

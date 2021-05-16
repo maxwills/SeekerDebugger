@@ -17,7 +17,7 @@ SkQueryableTracer >> amIInARecursiveLoop [
 	"if the current method is not a recursion, it searches up in the stack for the first that is"
 
 	| searchedMethod contexts recursionContext callSteps stepsDictionary result |
-	contexts := self getContextStackAsFlatList.
+	contexts := SkContextHelpers contextStackAsListFrom: self currentContext.
 
 	recursionContext := self 
 		                    findContextInStackUntilStartingContextForRecord: [ 

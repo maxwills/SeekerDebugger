@@ -61,9 +61,16 @@ SkCollectionBasedDataTable >> endOfTableReached [
 	^ traversingCursorIndex > data size
 ]
 
+{ #category : #'as yet unclassified' }
+SkCollectionBasedDataTable >> getRelevantFields [
+
+	^ {  }
+]
+
 { #category : #initialization }
 SkCollectionBasedDataTable >> initialize [ 
 	traversingCursorIndex := 0.
+	super initialize
 	
 ]
 
@@ -72,6 +79,11 @@ SkCollectionBasedDataTable >> join: aTable [
 
 	^ self error:
 		  'JOIN operator unsupported for CollectionBasedDataTable'
+]
+
+{ #category : #'as yet unclassified' }
+SkCollectionBasedDataTable >> optimizeRowAcquisitionForFields: aCollection [
+"No optimization avaliable for this type of tables at the moment"
 ]
 
 { #category : #'as yet unclassified' }

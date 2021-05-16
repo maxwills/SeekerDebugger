@@ -45,13 +45,18 @@ SkDataTable >> columnLabels: anObject [
 	columnLabels := anObject
 ]
 
+{ #category : #'as yet unclassified' }
+SkDataTable >> getRelevantFields [
+
+	^ {  }
+]
+
 { #category : #initialization }
 SkDataTable >> initialize [
-
-	super initialize.
 	tableName := 'unnamedTable'.
 	data := OrderedCollection new.
-	columnLabels := SortedCollection new
+	columnLabels := SortedCollection new.
+	super initialize.
 ]
 
 { #category : #accessing }

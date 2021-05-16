@@ -20,6 +20,21 @@ SkAnonymousType >> @ aSymbol [
 	^privateFields at: aSymbol
 ]
 
+{ #category : #'as yet unclassified' }
+SkAnonymousType >> asCsvPrintOn: aStream [
+
+	| keys |
+	keys := privateFields keys asSortedCollection.
+	keys ifEmpty: [ ^ aStream nextPutAll: '-' ].
+	1 to: keys size do: [ :keyIndex | 
+		| value |
+		value := privateFields at: (keys at: keyIndex).
+		aStream nextPutAll: value asString.
+		keyIndex = keys size ifFalse: [ "I am sure there is better code for this" 
+			aStream nextPutAll: ';' ] ].
+	aStream nextPutAll: String cr
+]
+
 { #category : #accessing }
 SkAnonymousType >> at: aSymbol put: aValue [
 
@@ -49,6 +64,26 @@ SkAnonymousType >> doesNotUnderstand: aMessage [
 SkAnonymousType >> fieldNames [
 
 	^ privateFields keys
+]
+
+{ #category : #'as yet unclassified' }
+SkAnonymousType >> headersAsCsvPrintOn: aStream [
+
+	| keys |
+	keys := privateFields keys asSortedCollection.
+	keys ifEmpty: [ ^ aStream nextPutAll: '-' ].
+	1 to: keys size do: [ :keyIndex | 
+		| key |
+		key := keys at: keyIndex.
+		aStream nextPutAll: key asString.
+		keyIndex = keys size ifFalse: [ "I am sure there is better code for this" 
+			aStream nextPutAll: ';' ] ].
+	aStream nextPutAll: String cr
+]
+
+{ #category : #initialization }
+SkAnonymousType >> initialize [
+
 ]
 
 { #category : #operations }

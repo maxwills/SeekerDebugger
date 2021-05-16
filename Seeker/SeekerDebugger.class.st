@@ -43,7 +43,7 @@ Class {
 }
 
 { #category : #'instance creation' }
-SeekerDebugger class >> newWithStatementGranularity: aStDebugger sindarin: aSindarinDebugger [
+SeekerDebugger class >> newFor: aStDebugger [
 
 	"Initializes a seeker debugger with a statement-level stepper and trace.
     Returns a SeekerDebugger"
@@ -55,13 +55,11 @@ SeekerDebugger class >> newWithStatementGranularity: aStDebugger sindarin: aSind
 	"Initialize the DebuggerStepperBase subclass to be injected in the seeker debugger"
 	stepper := SeekerGlobals instance defaultStepperClass new.
 	stepper stDebugger: aStDebugger.
-	stepper sindarin: aSindarinDebugger.
 	stepper debuggerUpdateCoordinator: updateCoordinator.
 
 	debugger := SeekerDebugger new.
 	debugger initializeWithStepper: stepper.
 	debugger stDebugger: aStDebugger.
-	debugger sindarin: aSindarinDebugger.
 	debugger debuggerUpdateCoordinator: updateCoordinator.
 	stepper seeker: debugger.
 	^ debugger

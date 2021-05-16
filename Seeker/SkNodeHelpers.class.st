@@ -41,6 +41,7 @@ SkNodeHelpers class >> statementCountOfSequenceNode: aSequenceNode [
 SkNodeHelpers class >> statementNodeIndexInSequence: aStatementNode [
 |aSequenceNode|
 aSequenceNode := aStatementNode parent.
+aSequenceNode ifNil: [ ^0 ].
 	1 to: (aSequenceNode statements size) do: [ :i| 
 		(aStatementNode == (aSequenceNode statements at: i)) ifTrue: [ ^i]
 		].

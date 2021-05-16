@@ -82,6 +82,12 @@ SkXStatementNotation >> asString [
 	^ (sequenceID methodClass name asString), '>>#', (sequenceID selector asString)  , '@' , statementIndex asString
 ]
 
+{ #category : #'as yet unclassified' }
+SkXStatementNotation >> node [
+	"We assume for the moment that the sequenceID is a method or block"
+	^ sequenceID ast body statements at: statementIndex
+]
+
 { #category : #accessing }
 SkXStatementNotation >> sequenceID [
 "sequenceID is an expression that could be a CompiledMethod, a CompiledBlock or aBlock"
@@ -92,12 +98,6 @@ SkXStatementNotation >> sequenceID [
 SkXStatementNotation >> sequenceID: anObject [
 
 	sequenceID := anObject
-]
-
-{ #category : #'as yet unclassified' }
-SkXStatementNotation >> solve [
-	"We assume for the moment that the sequenceID is a method or block"
-	^ sequenceID ast body statements at: statementIndex
 ]
 
 { #category : #accessing }

@@ -53,6 +53,33 @@ SkJointDataTable >> endOfTableReached [
 ]
 
 { #category : #accessing }
+SkJointDataTable >> excluding [
+	^leftTable excluding
+]
+
+{ #category : #accessing }
+SkJointDataTable >> excluding: aCollection [
+
+	rightTable excluding: aCollection.
+	^ leftTable excluding: aCollection
+]
+
+{ #category : #'as yet unclassified' }
+SkJointDataTable >> findTracer [
+
+	| tracer |
+	tracer := leftTable findTracer.
+	tracer ifNotNil: [ ^ tracer ].
+	^ rightTable findTracer
+]
+
+{ #category : #'as yet unclassified' }
+SkJointDataTable >> getRelevantFields [
+
+	^ {  }
+]
+
+{ #category : #accessing }
 SkJointDataTable >> leftTable [
 
 	^ leftTable
@@ -62,6 +89,12 @@ SkJointDataTable >> leftTable [
 SkJointDataTable >> leftTable: anObject [
 
 	leftTable := anObject
+]
+
+{ #category : #'as yet unclassified' }
+SkJointDataTable >> optimizeRowAcquisitionForFields: aCollection [
+	leftTable optimizeRowAcquisitionForFields: aCollection.
+	rightTable optimizeRowAcquisitionForFields: aCollection.
 ]
 
 { #category : #'as yet unclassified' }

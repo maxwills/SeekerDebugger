@@ -29,6 +29,18 @@ SkSequenceStaticID class >> getBlockNodeOfStatementNode: aRBNode [
 ]
 
 { #category : #'instance creation' }
+SkSequenceStaticID class >> newForClass: aClass withMethodSelector: aSymbol [
+
+	| sequenceID |
+	sequenceID := self new.
+	"Possible block issues here. Check later"
+	sequenceID receiverClass: aClass.
+	
+	sequenceID methodSelector: aSymbol.
+	^ sequenceID
+]
+
+{ #category : #'instance creation' }
 SkSequenceStaticID class >> newFromAstNode: aRBNode inContext: aContext [
 
 	| sequenceID |

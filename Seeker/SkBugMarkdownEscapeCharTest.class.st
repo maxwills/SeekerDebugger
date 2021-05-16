@@ -18,6 +18,19 @@ SkBugMarkdownEscapeCharTest >> testMarkdownEscapeCharExample [
 ]
 
 { #category : #'as yet unclassified' }
+SkBugMarkdownEscapeCharTest >> testMarkdownEscapeCharMediumExample [
+
+	"To originally reproduce this bug, put the failing string in the class comment tab (in any class) and save. The comment is saved, but an exception happens when the renderer tries to parse the content (because of the trailing escape character)"
+
+	| micSplitter theStringWithEscapeChar |
+	micSplitter := MicInlineSplitter new.
+	theStringWithEscapeChar := 'Hi this is a somewaht large text to try the performance hey!!! \'.
+	micSplitter pillarFrom: theStringWithEscapeChar
+	
+	"Nothing to assert. The previous call is not expected to have an unhandled exception"
+]
+
+{ #category : #'as yet unclassified' }
 SkBugMarkdownEscapeCharTest >> testMarkdownEscapeCharShortExample [
 
 	"To originally reproduce this bug, put the failing string in the class comment tab (in any class) and save. The comment is saved, but an exception happens when the renderer tries to parse the content (because of the trailing escape character)"
