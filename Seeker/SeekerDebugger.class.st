@@ -194,9 +194,8 @@ SeekerDebugger >> startRecordFromContext: aContext [
 
 { #category : #'debug - stepping' }
 SeekerDebugger >> stepBackInto [
-	stepper stepBackInto.
-	Transcript clear.
-	self printTrace
+
+	stepper stepBackInto
 ]
 
 { #category : #'debug - stepping' }

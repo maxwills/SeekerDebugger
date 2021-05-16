@@ -69,43 +69,28 @@ SeekerLiteCommands >> registerCommands:stDebuggerInstance forRoot: rootCommandGr
 { #category : #'as yet unclassified' }
 SeekerLiteCommands >> stCodeCommandsTree [
 
-	^ { 
-		  SkQuickMapLC.
+	^ { { 
+		  'Time-Travel'.
 		  { 
+			  SkGoToNodeUnderCursorLC.
+			  SkStepToNextStatementInSequenceLC.
+			  SkStepToNextInstanceCreationLC } } }
+	"{ 
+			  'Alias'.
+			  { 
+				  SkObjectAliasFromSelectionLC.
+				  SkObjectAliasFromReceiverLC } }."
+	"{ 
+			  'History'.
+			  { 
+				  SkHistoryGoBackLC.
+				  SkHistoryGoForwardLC } }."
+	"SkQuickMapLC."
+	"{ 
 			  'Map Session'.
 			  { 
 				  SkAutoMapSessionFromTestFailedAssertionLC.
 				  SkAutoMapSessionFromTestUnhandledExceptionLC.
 				  SkMapSessionFormSelectedStartingPointLC.
-				  SkSetSessionStartingPointLC } }.
-		  { 
-			  'Alias'.
-			  { 
-				  SkObjectAliasFromSelectionLC.
-				  SkObjectAliasFromReceiverLC } }.
-		  { 
-			  'History'.
-			  { 
-				  SkHistoryGoBackLC.
-				  SkHistoryGoForwardLC } }.
-		  { 
-			  'Time-Travel'.
-			  { 
-				  SkGoToNodeUnderCursorLC.
-				  SkGoToTestFirstStepLC.
-				  SkGoToFinalStepLC.
-				  SkGoToNextCallOfMethodInAnyClassWithSelectorUnderCursorLC.
-				  SkGoToNextCallOfCurrentMethodLC.
-				  SkGoToPreviousCallOfCurrentMethodLC } }.
-		  { 
-			  'Insert Script'.
-			  { 
-				  SkInsertScriptGoToStepNumberLC.
-				  SkInsertScriptGoToLastMethodCallLC.
-				  SkInsertScriptEvaluateExpressionAndCollectLC } }.
-		  { 
-			  'Misc.'.
-			  { 
-				  SkTrackVariableValuesByNameLC.
-				  SkPrintTraceToClipboardLC } } }
+				  SkSetSessionStartingPointLC } }."
 ]

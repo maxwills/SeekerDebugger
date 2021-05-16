@@ -76,7 +76,18 @@ SeekerDebuggerPresenter >> debuggerExtensionToolName [
 
 { #category : #'as yet unclassified' }
 SeekerDebuggerPresenter >> enableTimeTravelingHandler [
-	self mapExecutionIfNotMappedAlready
+
+	self seekerDebugger stepper isMapped
+		ifTrue: [ 
+			| context descriptor |
+			context := self seekerDebugger stDebugger interruptedContext.
+
+			descriptor := self seekerDebugger stepper 
+				              createIndexlessStepDescriptorForContext: context.
+			self seekerDebugger stepper restartAndStepToCondition: [ 
+				self seekerDebugger stepper currentStepDescriptor hasSamePathAs:
+					descriptor ] ]
+		ifFalse: [ self mapExecutionIfNotMappedAlready ]
 ]
 
 { #category : #initialization }
@@ -166,14 +177,14 @@ SeekerDebuggerPresenter >> initializeToolbar [
 				            yourself);
 				addItem: (self newToolbarButton
 				            label: 'Restart';
-				            icon: (self application iconNamed: #glamorousRestart);
+				            icon: (self application iconNamed: #smallHome);
 				            action: [self restartHandler ];
 				            yourself);
-				addItem: (self newToolbarButton
+				"addItem: (self newToolbarButton
 				            label: 'Set Restart Point';
 				            icon: (self application iconNamed: #smallHome);
 				            action: [self setSelectedContexAsStartingPointHandler  ];
-				            yourself);
+				            yourself);"
 				addItem: (self newToolbarButton
 				            label: 'Enable Time Travel';
 				            icon: (self application iconNamed: #smallProfile);

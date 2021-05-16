@@ -328,8 +328,12 @@ SkStatementStepper >> replayAndBuildExecutionMap [
 
 	"Should have an initial context set first"
 
-	| currentStep |
-	currentStep := self currentStepDescriptor.
+	| currentStep context |
+	context := self stDebugger selectedContext.
+	context ifNil: [ context := self stDebugger interruptedContext ].
+
+	currentStep := self seeker stepper 
+		               createIndexlessStepDescriptorForContext: context.
 	self restart.
 	self stepUntilConditionIsTrue: [ 
 		currentStep hasSameIndexlessSignatureAs: self currentStepDescriptor ]
@@ -473,13 +477,14 @@ debuggerActionModel updateTopContext"
 SkStatementStepper >> stepBackInto [
 
 	self doAndUpdateSessionAfter: [ 
-		| targetStepIndex targetStep|
-		targetStepIndex := currentStepIndex - 1.
+		| targetStepIndex "targetStep" currentStep |
+		currentStep := self currentStepDescriptor.
+		targetStepIndex := currentStep executionIndex - 1.
 		targetStepIndex <= 0 ifTrue: [ ^ self ].
-		targetStep := trace at: targetStepIndex.
+		"targetStep := trace at: targetStepIndex."
 		self restart. "Ideally, we would restart from the closes context. TODO that"
 		self stepUntilConditionIsTrue: [ 
-			currentStepIndex == targetStepIndex ] ]
+			self currentStepDescriptor executionIndex >= targetStepIndex ] ]
 ]
 
 { #category : #'debug - stepping' }
@@ -511,7 +516,7 @@ SkStatementStepper >> stepInto [
 		stepBC := 1.
 		self doStepIntoBeginProcess.
 		canContinueStepping := self stepAstIntoStatement.
-		self pushCurrentStepDescriptor.
+		"self pushCurrentStepDescriptor."
 		self doStepIntoFinishProcess ].
 	^ canContinueStepping
 ]

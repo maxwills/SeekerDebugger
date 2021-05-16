@@ -198,6 +198,16 @@ SkCurrentStateInterface >> statementNotation [
 ]
 
 { #category : #accessing }
+SkCurrentStateInterface >> tracedStatementDescriptor [
+	^tracer currentStepDescriptor
+]
+
+{ #category : #accessing }
+SkCurrentStateInterface >> tracedStatementPath [
+	^tracer currentStepDescriptor
+]
+
+{ #category : #accessing }
 SkCurrentStateInterface >> tracedStatementStepIndex [
 	^tracer currentStepDescriptor executionIndex
 ]

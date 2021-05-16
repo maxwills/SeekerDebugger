@@ -40,7 +40,8 @@ Class {
 		'resultBuffer',
 		'result',
 		'onQueryRowMatch',
-		'operationType'
+		'operationType',
+		'disableOptimization'
 	],
 	#classInstVars : [
 		'identityProjection',
@@ -83,8 +84,10 @@ SkQuery class >> from: aSeekerDataSet where: aPredicateBlock select: aProjection
 
 	| q |
 	q := self new.
+	q disableOptimization: true.
 	q selectBlock: aProjectionBlock.
 	q whereBlock: aPredicateBlock.
+	q disableOptimization: false.
 	q fromDataSource: aSeekerDataSet.
 	^ q
 ]
@@ -261,7 +264,7 @@ SkQuery >> collect: aBlock [
 		     select: whereBlock
 		     collect: composedProjection.
 
-	^ self
+	^ q
 ]
 
 { #category : #accessing }
@@ -294,14 +297,28 @@ SkQuery >> dataSourceIsTracedExecution [
 	^fromDataSource dataSourceIsTracedExecution 
 ]
 
+{ #category : #accessing }
+SkQuery >> disableOptimization [
+
+	^ disableOptimization
+]
+
+{ #category : #accessing }
+SkQuery >> disableOptimization: anObject [
+
+	disableOptimization := anObject
+]
+
 { #category : #enumerating }
 SkQuery >> do: aBlock [
 
+	"Performs aBlock on the underlying condition matching rows. To simulate that, the onQueryRowMatch mechanism is used."
+
 	| originalOnQueryRowMatch |
-	originalOnQueryRowMatch := onQueryRowMatch.
+	originalOnQueryRowMatch := onQueryRowMatch. "we don't perform the original onQueryRowMatch because this is not a resolve situation"
 	"Ablock is a method that takes orgument (the iteration row). Hoever, OnQueryRow match is a block that receives no arguments. (might change this in the future)"
-	onQueryRowMatch := [aBlock value: self currentRow].
-	"The idea here is to simulate that we will iterate over its filtered items. So aBlock will only be executed for the items that matchnthe where clause"
+	onQueryRowMatch := [ aBlock value: self currentRow ].
+	"The idea here is to simulate that we will iterate over the datasources filtered items. So aBlock will only be executed for the items that matchnthe where clause"
 	[ fromDataSource do: [ :row | self doQueryOnRow: row ] ] ensure: [ 
 		onQueryRowMatch := originalOnQueryRowMatch ]
 ]
@@ -320,7 +337,6 @@ SkQuery >> doQueryOnRow: aRow [
 SkQuery >> doQueryRow [
 
 	"performs the query in the current row of the input"
-
 
 	whereBlock numArgs = 0
 		ifTrue: [ whereBlock value ifTrue: onQueryRowMatch ]
@@ -382,7 +398,7 @@ SkQuery >> fromDataSource [
 SkQuery >> fromDataSource: anObject [
 
 	fromDataSource := anObject.
-	"self optimizeRowAcquisitionForFields: self getRelevantFields"
+	self optimizeRowAcquisitionForFields: self getRelevantFields
 ]
 
 { #category : #'as yet unclassified' }
@@ -407,8 +423,36 @@ SkQuery >> getRelevantFields [
 
 { #category : #initialization }
 SkQuery >> initialize [
-operationType := #defaultOperation.
-super initialize
+
+	operationType := #defaultOperation.
+	disableOptimization := false.
+	super initialize
+]
+
+{ #category : #'as yet unclassified' }
+SkQuery >> isCurrentRowAMatch [
+
+	"returns true if the current row matches the query predicate without triggering the onQueryRowMatch handler"
+
+	whereBlock numArgs = 0
+		ifTrue: [ whereBlock value ifTrue: [ ^ true ] ]
+		ifFalse: [ 
+			| row |
+			row := self currentRow.
+			(whereBlock value: row) ifTrue: [ ^ true ] ].
+	^ false
+]
+
+{ #category : #'as yet unclassified' }
+SkQuery >> isRowAMatch: aRow [
+
+	"returns true if the given row matches the query predicate without triggering the onQueryRowMatch handler"
+
+	whereBlock numArgs = 0
+		ifTrue: [ whereBlock value ifTrue: [ ^ true ] ]
+		ifFalse: [ 
+			(whereBlock value: aRow) ifTrue: [ ^ true ] ].
+	^ false
 ]
 
 { #category : #accessing }
@@ -426,6 +470,7 @@ SkQuery >> onQueryRowMatch: anObject [
 { #category : #'as yet unclassified' }
 SkQuery >> optimizeRowAcquisitionForFields: aCollection [
 
+	disableOptimization ifTrue: [ ^ self ].
 	fromDataSource ifNotNil: [ 
 		fromDataSource optimizeRowAcquisitionForFields: aCollection ]
 ]
@@ -498,7 +543,7 @@ SkQuery >> select: aBlock [
 		     select: composedWhereBlock
 		     collect: selectBlock.
 
-	^ self
+	^ q
 ]
 
 { #category : #'as yet unclassified' }
@@ -508,8 +553,9 @@ SkQuery >> selectBlock [
 
 { #category : #'as yet unclassified' }
 SkQuery >> selectBlock: anObject [
-	selectBlock  := anObject.
-"	self optimizeRowAcquisitionForFields: self getRelevantFields."
+
+	selectBlock := anObject.
+	self optimizeRowAcquisitionForFields: self getRelevantFields
 ]
 
 { #category : #'as yet unclassified' }
@@ -520,6 +566,7 @@ SkQuery >> whereBlock [
 
 { #category : #'as yet unclassified' }
 SkQuery >> whereBlock: anObject [
+
 	whereBlock := anObject.
-	"self optimizeRowAcquisitionForFields: self getRelevantFields"
+	self optimizeRowAcquisitionForFields: self getRelevantFields
 ]

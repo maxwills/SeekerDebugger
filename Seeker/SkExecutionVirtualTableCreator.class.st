@@ -64,18 +64,21 @@ SkExecutionVirtualTableCreator >> omniscientTable [
 
 					                (#methodSelector -> csi methodSelector).
 					                (#node -> csi node).
+					                (#receiver -> csi receiver).
 					                (#receiverClass -> csi receiverClass).
 
 					                (#statementIndex -> csi statementIndex).
 					                (#statementNode -> csi statementNode).
-					                (#statementNotation -> csi statementNotation).
+					                (#statementNotation
+					                 -> csi statementNotation asString).
 					                (#stepIndex -> csi tracedStatementStepIndex).
 					                (#stackDepth -> csi stackDepth).
 					                (#sequenceNode -> csi sequenceNode).
 
 					                (#sequenceStatementCount
 					                 -> csi sequenceStatementCount).
-
+					                (#tracedStatementDescriptor
+					                 -> csi tracedStatementDescriptor).
 					                (#sourceCodeOfNode -> csi node sourceCode).
 					                (#sourceCodeOfStatementNode
 					                 -> csi statementNode sourceCode) } ]

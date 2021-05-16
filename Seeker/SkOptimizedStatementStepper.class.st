@@ -33,27 +33,25 @@ SkOptimizedStatementStepper >> currentStatementNode [
 { #category : #'as yet unclassified' }
 SkOptimizedStatementStepper >> doAstStepPostProcess: preProcessAstNode [
 
-	| currentNode currentStatementNode currentContext |
+	| currentNode currentStatementNode currentContext statementChanged |
 	"Dont do a super call here!"
 	currentContext := stDebugger interruptedProcess suspendedContext.
 	currentNode := currentContext method sourceNodeForPC:
 		               currentContext pc.
+	cachedCurrentNode := currentNode.
 	currentStatementNode := currentNode statementNode.
-	self currentStepDescriptor astSteps: astStepCounter.
-	"Need to check here if the statement node changed, so I create a new Step descriptor "
-	(currentStatementNode ~= cachedCurrentStatementNode or: [ 
-		 currentContext ~= cachedCurrentContext ])
-		ifTrue: [ 
-			cachedCurrentContext := currentContext.
-			cachedCurrentNode := currentNode.
-			cachedCurrentStatementNode := currentStatementNode.
-			astStepCounter := 0.
-			self pushCurrentStepDescriptor
-			"The statement changed, push here the new descriptor" ]
-		ifFalse: [ 
-			cachedCurrentContext := currentContext.
-			cachedCurrentNode := currentNode.
-			cachedCurrentStatementNode := currentStatementNode ]
+	statementChanged := (currentStatementNode
+	                     ~= cachedCurrentStatementNode or: [ 
+		                     currentContext ~= cachedCurrentContext ])
+		                    ifTrue: [ 
+			                    astStepCounter := 0.
+			                    cachedCurrentContext := currentContext.
+			                    cachedCurrentStatementNode := currentStatementNode.
+			                    self pushCurrentStepDescriptor ]
+		                    ifFalse: [ 
+			                    cachedCurrentContext := currentContext.
+			                    cachedCurrentStatementNode := currentStatementNode ].
+	self currentStepDescriptor astSteps: astStepCounter
 ]
 
 { #category : #initialization }
@@ -68,4 +66,21 @@ SkOptimizedStatementStepper >> restart [
 	cachedCurrentContext := nil.
 	cachedCurrentStatementNode := nil.
 	super restart
+]
+
+{ #category : #'accessing context' }
+SkOptimizedStatementStepper >> slowCurrentContext [
+
+	^ super currentContext
+]
+
+{ #category : #'as yet unclassified' }
+SkOptimizedStatementStepper >> slowCurrentNode [
+	^ super currentNode
+]
+
+{ #category : #'as yet unclassified' }
+SkOptimizedStatementStepper >> slowCurrentStatementNode [
+
+	^ super currentStatementNode
 ]

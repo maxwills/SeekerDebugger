@@ -94,6 +94,16 @@ SkQueryExperimentalTracer >> createReturnValuesQueryNewNewUltimate [
 ]
 
 { #category : #'as yet unclassified' }
+SkQueryExperimentalTracer >> currentStateAsRow [
+
+	"Debug help. Don't use this. No filtering or optimizations. Create a baseQuery instead and use it with select: collect:"
+
+	| q |
+	q := self queries baseQuery.
+	^ q currentRow
+]
+
+{ #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> currentStateInterface [
 
 	| csi |
@@ -128,14 +138,6 @@ SkQueryExperimentalTracer >> doStepIntoBeginProcess [
 	queriesForPass do: [ :each | each privateOpeningStepProcessBlock value: self ]"
 ]
 
-{ #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> giveMeAQuery [
-
-	"Sugar-coated naming to please the crowd"
-
-	^ queriesLibrary
-]
-
 { #category : #initialization }
 SkQueryExperimentalTracer >> initialize [
 
@@ -143,7 +145,7 @@ SkQueryExperimentalTracer >> initialize [
 	currentStateInterfaceInstance tracer: self.
 	executionVirtualTableCreator := SkExecutionVirtualTableCreator new.
 	executionVirtualTableCreator tracer: self.
-	queriesLibrary := SkQueriesLibrary new.
+	queriesLibrary := SkTraceQueries new.
 	queriesLibrary tracer: self.
 	astPreStepHooks := OrderedCollection new.
 	^ super initialize
@@ -155,7 +157,16 @@ SkQueryExperimentalTracer >> queries [
 	"Should return the instance variable, but it works better like this when changint the libary class during a debug session (it is not updated)"
 
 	| lib |
-	lib := SkQueriesLibrary new.
+	lib := SkTraceQueries new.
+	lib tracer: self.
+	^ lib
+]
+
+{ #category : #accessing }
+SkQueryExperimentalTracer >> queriesForTimeTravel [
+
+	| lib |
+	lib := SkTimeTravelQueries new.
 	lib tracer: self.
 	^ lib
 ]
@@ -164,6 +175,20 @@ SkQueryExperimentalTracer >> queries [
 SkQueryExperimentalTracer >> removeAstPreStepHook: aBlock [
 
 	astPreStepHooks remove: aBlock
+]
+
+{ #category : #'as yet unclassified' }
+SkQueryExperimentalTracer >> stepUntilQueryMatch: aQuery [
+
+	| match bcstephook |
+	"Use the condition with the hook technique. Because The predicate block of stepUntilCondition as step granularity statement."
+	match := false.
+	aQuery optimizeRowAcquisitionForFields: aQuery getRelevantFields.
+	bcstephook := [ aQuery isCurrentRowAMatch ifTrue: [ match := true ].match  ].
+	self addAstPreStepHook: bcstephook.
+	"Note the double bcstephook check. This is because, the ast level checkin happens after initiating the step into, it will always stop one step later. By repeating the condition in the statemement stepping, the problem is solved. this will change when reworking the debugger granularity"
+	[ self stepUntilConditionIsTrue: bcstephook] ensure: [ 
+		self removeAstPreStepHook: bcstephook ]
 ]
 
 { #category : #accessing }
@@ -175,4 +200,13 @@ SkQueryExperimentalTracer >> tables [
 	tableCreator := SkExecutionVirtualTableCreator new.
 	tableCreator tracer: self.
 	^ tableCreator
+]
+
+{ #category : #'as yet unclassified' }
+SkQueryExperimentalTracer >> timeTravel [
+
+	| timeTravelInterface |
+	timeTravelInterface := SkTimeTravelInterface new.
+	timeTravelInterface tracer: self.
+	^ timeTravelInterface
 ]

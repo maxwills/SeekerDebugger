@@ -103,6 +103,11 @@ SkExecutionVirtualTable >> getRelevantFields [
 	^ {  }
 ]
 
+{ #category : #initialization }
+SkExecutionVirtualTable >> initialize [
+excludedFields := {  }
+]
+
 { #category : #'as yet unclassified' }
 SkExecutionVirtualTable >> optimizeRowAcquisitionForFields: aCollection [
 

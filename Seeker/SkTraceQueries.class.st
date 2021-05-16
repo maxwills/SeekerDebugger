@@ -1,5 +1,5 @@
 Class {
-	#name : #SkQueriesLibrary,
+	#name : #SkTraceQueries,
 	#superclass : #Object,
 	#instVars : [
 		'tracer'
@@ -8,7 +8,15 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
-SkQueriesLibrary >> forAliases [
+SkTraceQueries >> baseQuery [
+
+	"returns a query upon the omniscientTable"
+
+	^ SkQuery from: tracer tables omniscientTable
+]
+
+{ #category : #'as yet unclassified' }
+SkTraceQueries >> forAliases [
 
 	| q aliasesTable methodsTable |
 	aliasesTable := tracer tables tableOfAliases.
@@ -32,7 +40,7 @@ SkQueriesLibrary >> forAliases [
 ]
 
 { #category : #'as yet unclassified' }
-SkQueriesLibrary >> forReturnValues [
+SkTraceQueries >> forReturnValues [
 
 	| q table |
 	table := tracer tables tableOfReturnValues.
@@ -58,7 +66,7 @@ SkQueriesLibrary >> forReturnValues [
 ]
 
 { #category : #'as yet unclassified' }
-SkQueriesLibrary >> forReturnValuesOfMethod: aMethod [
+SkTraceQueries >> forReturnValuesOfMethod: aMethod [
 
 	| q table methodClass methodSelector |
 	methodClass := aMethod methodClass.
@@ -88,13 +96,13 @@ SkQueriesLibrary >> forReturnValuesOfMethod: aMethod [
 ]
 
 { #category : #accessing }
-SkQueriesLibrary >> tracer [
+SkTraceQueries >> tracer [
 
 	^ tracer
 ]
 
 { #category : #accessing }
-SkQueriesLibrary >> tracer: anObject [
+SkTraceQueries >> tracer: anObject [
 
 	tracer := anObject
 ]

@@ -185,7 +185,7 @@ SkAnonymousTypeHelpers class >> listOfFieldsInAnonymousTypeBlock: aBlock [
 	setOfFields := Set new.
 	blockNode := aBlock sourceNode.
 	blockNode arguments size ~= 1 ifTrue: [ 
-		^ setOfFields "unsupported block. The block should have one one argument" ].
+		^ setOfFields "unsupported block. The block should have only one argument" ].
 	argument := (blockNode arguments at: 1) name. "the first argument is a variable node"
 	blockNode sendNodes do: [ :each | 
 		(each receiver isVariable and: [ each receiver name = argument ]) 
@@ -194,7 +194,7 @@ SkAnonymousTypeHelpers class >> listOfFieldsInAnonymousTypeBlock: aBlock [
 	blockNode body allVariables do: [ :var | 
 		| varValue |
 		varValue := aBlock asContext readVariableNamed: var variable name. "var variableValueInContext: aBlock asContext" "this might fail. should I try catch it?"
-		varValue class = BlockClosure ifTrue: [ 
+		(varValue class inheritsFrom: BlockClosure) ifTrue: [ 
 			setOfFields addAll:
 				(self listOfFieldsInAnonymousTypeBlock: varValue) ] ].
 	"c sourceNode allVariables first variableValueInContext: c outerContext sourceNode"

@@ -645,17 +645,15 @@ SkMappingTracer >> setStartingPointAndMap: aContext [
 SkMappingTracer >> stepBackInto [
 
 	self doAndUpdateSessionAfter: [ 
-		| targetStepIndex targetStep stepCondition |
-		targetStepIndex := currentStepIndex - 1.
-		targetStepIndex <= 0 ifTrue: [ ^ self ].
+		| currentStep targetStepIndex targetStep stepCondition |
+		currentStep := self currentStepDescriptor.
+		targetStepIndex := currentStep executionIndex - 1.
+		targetStepIndex <= 0 ifTrue: [ ^ self error: 'something' ].
 		targetStep := trace at: targetStepIndex.
-		(targetStep comparePathTo: startingIndexlessStepForNavigation) < 0
-			ifTrue: [ 
-				stepCondition := [ 
-				                 self currentStepDescriptor hasSamePathAs:
-					                 startingIndexlessStepForNavigation ] ]
-			ifFalse: [ 
-			stepCondition := [ currentStepIndex == targetStepIndex ] ].
+
+		stepCondition := [ 
+		                 self currentStepDescriptor executionIndex
+		                 >= targetStepIndex ].
 		self restart. "Ideally, we would restart from the closes context. TODO that"
 		self stepUntilConditionIsTrue: stepCondition ]
 ]
@@ -677,7 +675,7 @@ SkMappingTracer >> stepBackOver [
 			                 self currentStepDescriptor hasSamePathAs:
 				                 startingIndexlessStepForNavigation ] ]
 		ifFalse: [ 
-		stepCondition := [ currentStepIndex == previousStepOverStepIndex ] ].
+		stepCondition := [ currentStepIndex = previousStepOverStepIndex ] ].
 
 	self doAndUpdateSessionAfter: [ 
 		self restart. "Ideally, we would restart from the closes context. TODO that"
