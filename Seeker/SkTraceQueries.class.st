@@ -40,6 +40,60 @@ SkTraceQueries >> forAliases [
 ]
 
 { #category : #'as yet unclassified' }
+SkTraceQueries >> forAssignments [
+
+	| table q |
+	table := tracer tables omniscientTable.
+	"The virtual table have this columns : 
+     #stepIndex
+     #receiverClass
+	  #methodSelector
+	  #bytecodeIndex
+	  #contextSize 
+	  #previousRow"
+
+	q := SkQuery
+		     from: table
+		     where: [ :row | row node isAssignment ]
+		     select: [ :row | 
+			     SkNew with: { 
+					     (#stepIndex -> row stepIndex).
+					     (#methodSelector -> row methodSelector).
+					     (#receiverClass -> row receiverClass).
+					     (#bytecodeIndex -> row bytecodeIndex).
+					     (#node -> row node).
+					     (#variable -> row node variable name) } ].
+	^ q
+]
+
+{ #category : #'as yet unclassified' }
+SkTraceQueries >> forContextSizeChanges [
+
+	| table q |
+	table := tracer tables tableOfContextSizes asTableWithMemory.
+	"The virtual table have this columns : 
+     #stepIndex
+     #receiverClass
+	  #methodSelector
+	  #bytecodeIndex
+	  #contextSize 
+	  #previousRow"
+
+	q := SkQuery
+		     from: table
+		     where: [ :row | row contextSize ~= row previousRow contextSize ]
+		     select: [ :row | 
+			     SkNew with: { 
+					     (#stepIndex -> row stepIndex).
+					     (#methodSelector -> row methodSelector).
+					     (#receiverClass -> row receiverClass).
+					     (#bytecodeIndex -> row bytecodeIndex).
+					     (#contextSizeBefore -> row previousRow contextSize).
+					     (#contextSizeNow -> row contextSize) } ].
+	^ q
+]
+
+{ #category : #'as yet unclassified' }
 SkTraceQueries >> forReturnValues [
 
 	| q table |
@@ -56,6 +110,28 @@ SkTraceQueries >> forReturnValues [
 	q := SkQuery
 		     from: table
 		     where: [ :row | row contextPC = row endPC ]
+		     select: [ :row | 
+			     SkNew with: { 
+					     (#stepIndex -> row stepIndex).
+					     (#methodSelector -> row methodSelector).
+					     (#receiverClass -> row receiverClass).
+					     (#returnValue -> row returnValue) } ].
+	^ q
+]
+
+{ #category : #'as yet unclassified' }
+SkTraceQueries >> forReturnValuesOfMethod2: aMethod [
+
+	| q queryOfAllReturns methodClass methodSelector |
+	methodClass := aMethod methodClass.
+	methodSelector := aMethod selector.
+	queryOfAllReturns := self forReturnValues.
+"ITHINK THIS DOESNT WORK. NEED TO UNDERSTAND WHY LATER"
+	q := SkQuery
+		     from: queryOfAllReturns
+		     where: [ :row | "The inner query only contains rows of method returns. Just need to check if it is the one we want"
+			     row methodSelector = methodSelector and: [ 
+				     row receiverClass = methodClass ] ]
 		     select: [ :row | 
 			     SkNew with: { 
 					     (#stepIndex -> row stepIndex).
@@ -86,6 +162,28 @@ SkTraceQueries >> forReturnValuesOfMethod: aMethod [
 			     row contextPC = row endPC and: [ 
 				     row methodSelector = methodSelector and: [ 
 					     row receiverClass = methodClass ] ] ]
+		     select: [ :row | 
+			     SkNew with: { 
+					     (#stepIndex -> row stepIndex).
+					     (#methodSelector -> row methodSelector).
+					     (#receiverClass -> row receiverClass).
+					     (#returnValue -> row returnValue) } ].
+	^ q
+]
+
+{ #category : #'as yet unclassified' }
+SkTraceQueries >> forReturnValuesOfMethodNestedQuery: aMethod [
+
+	| q queryOfAllReturns methodClass methodSelector |
+	methodClass := aMethod methodClass.
+	methodSelector := aMethod selector.
+	queryOfAllReturns := self forReturnValues.
+
+	q := SkQuery
+		     from: queryOfAllReturns
+		     where: [ :row | "The inner query only contains rows of method returns. Just need to check if it is the one we want"
+			     row methodSelector = methodSelector and: [ 
+				     row receiverClass = methodClass ] ]
 		     select: [ :row | 
 			     SkNew with: { 
 					     (#stepIndex -> row stepIndex).
