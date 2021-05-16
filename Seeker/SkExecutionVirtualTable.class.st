@@ -32,6 +32,17 @@ SkExecutionVirtualTable >> advanceToNextRow [
 	^ tracer stepInto "This is not good, I should use the bytecode step instead!"
 ]
 
+{ #category : #converting }
+SkExecutionVirtualTable >> asTableWithMemory [
+
+	| t |
+	t := SkExecutionVirtualTableWithMemory
+		     newWithRowReificationBlock: rowReificationBlock
+		     forTracer: tracer.
+
+	^ t
+]
+
 { #category : #'as yet unclassified' }
 SkExecutionVirtualTable >> currentRow [
 
@@ -48,10 +59,15 @@ SkExecutionVirtualTable >> dataSourceIsTracedExecution [
 SkExecutionVirtualTable >> do: aBlock [
 
 	"A specilized version of do:, made specifically to be used with queries"
-"Note that is used only because, at the moment, I have no bytecode stepping, so the preBytecodeStepHook is executed instead."
+
+	"Note that is used only because, at the moment, I have no bytecode stepping, so the preBytecodeStepHook is executed instead."
+
 	| originalStep preBytecodeStepHook |
 	originalStep := tracer currentStepDescriptor.
 	preBytecodeStepHook := [ aBlock value: self currentRow ].
+	tracer isMapped ifFalse: [ 
+		^ self error:
+			  'Time traveling needs to be enabled to execute Trace Queries' ].
 	tracer restart.
 	tracer addAstPreStepHook: preBytecodeStepHook.
 	[ tracer stepUntilConditionIsTrue: [ tracer isExecutionFinished ] ] 

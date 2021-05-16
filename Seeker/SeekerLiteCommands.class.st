@@ -69,12 +69,15 @@ SeekerLiteCommands >> registerCommands:stDebuggerInstance forRoot: rootCommandGr
 { #category : #'as yet unclassified' }
 SeekerLiteCommands >> stCodeCommandsTree [
 
-	^ { { 
+	^ { 
+		  SkGoToNodeUnderCursorLC.
+		  SkStepToNextStatementInSequenceLC.
+		  SkStepToNextInstanceCreationLC } "{ { 
 		  'Time-Travel'.
 		  { 
 			  SkGoToNodeUnderCursorLC.
 			  SkStepToNextStatementInSequenceLC.
-			  SkStepToNextInstanceCreationLC } } }
+			  SkStepToNextInstanceCreationLC } } }"
 	"{ 
 			  'Alias'.
 			  { 

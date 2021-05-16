@@ -86,6 +86,26 @@ SkExecutionVirtualTableCreator >> omniscientTable [
 	^ virtualTable
 ]
 
+{ #category : #'as yet unclassified' }
+SkExecutionVirtualTableCreator >> tableForTrackingChanges [
+
+	| csi virtualTable  |
+	csi := tracer currentStateInterface.
+	virtualTable := SkExecutionVirtualTableWithMemory
+		                newWithRowReificationBlock: [ 
+			                SkNew with: { 
+					                (#stepIndex -> csi tracedStatementStepIndex).
+					                (#receiverClass -> csi receiverClass).
+					                (#methodSelector -> csi methodSelector).
+					                (#bytecodeIndex -> csi bytecodeIndex).
+										 (#context -> csi context)
+					                "#previousRow -> execution previous Row" }
+			                "Tables with memory add an additional column called #previousRow" ]
+		                forTracer: tracer.
+
+	^ virtualTable
+]
+
 { #category : #accessing }
 SkExecutionVirtualTableCreator >> tableOfAliases [
 
@@ -111,6 +131,23 @@ SkExecutionVirtualTableCreator >> tableOfAliases [
 					                (#bytecodeIndex -> csi bytecodeIndex) } ]
 		                forTracer: tracer.
 
+	^ virtualTable
+]
+
+{ #category : #'as yet unclassified' }
+SkExecutionVirtualTableCreator >> tableOfContextSizes [
+
+	| csi virtualTable |
+	csi := tracer currentStateInterface.
+	virtualTable := SkExecutionVirtualTableWithMemory
+		                newWithRowReificationBlock: [ 
+			                SkNew with: { 
+					                (#stepIndex -> csi tracedStatementStepIndex).
+					                (#receiverClass -> csi receiverClass).
+					                (#methodSelector -> csi methodSelector).
+					                (#bytecodeIndex -> csi bytecodeIndex).
+					                (#contextSize -> csi context size) } ]
+		                forTracer: tracer.
 	^ virtualTable
 ]
 
@@ -168,6 +205,14 @@ SkExecutionVirtualTableCreator >> tableOfStatementSourceCode [
 		                forTracer: tracer.
 
 	^ virtualTable
+]
+
+{ #category : #'as yet unclassified' }
+SkExecutionVirtualTableCreator >> tableWithMemoryOfContextSizes [
+
+	"Tables with memory add an additional column called #previousRow"
+
+	^ self tableOfContextSizes asTableWithMemory
 ]
 
 { #category : #accessing }
