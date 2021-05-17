@@ -20,7 +20,7 @@ SkAnonymousTypeHelpers class >> compileCode: aString inContext: aContext [
 SkAnonymousTypeHelpers class >> compileNewSimplifiedBlockFor: aBlock withStatements: aCollection [
 
 	| templateBlockString innerArrayString newBlockSourceCode |
-	templateBlockString := [ SkNew with: { #replaceThis } ] asString.
+	templateBlockString := [ New with: { #replaceThis } ] asString.
 	innerArrayString := $. join:
 		                    (aCollection collect: [ :node | node sourceCode ]).
 	newBlockSourceCode := templateBlockString
@@ -112,7 +112,7 @@ SkAnonymousTypeHelpers class >> filterRemovingFields: aCollection ofInstantiatio
 	                           | receiver |
 	                           receiver := node receiver.
 	                           receiver isVariable and: [ 
-		                           receiver name = SkNew asString asSymbol 
+		                           receiver name = New asString asSymbol 
 			                           and: [ node selector value = #with: ] ] ].
 	ast := aBlock sourceNode. " ast"
 	anonInstantiationMessageNodes := ast sendNodes select:
@@ -171,7 +171,7 @@ SkAnonymousTypeHelpers class >> isAnonymousTypeInstantiationNode: anRBNode [
 
 	receiver := anRBNode receiver.
 	^ receiver isVariable and: [ 
-		  receiver name = SkNew asString asSymbol and: [ 
+		  receiver name = New asString asSymbol and: [ 
 			  anRBNode selector value = #with: ] ]
 ]
 
@@ -194,7 +194,7 @@ SkAnonymousTypeHelpers class >> listOfFieldsInAnonymousTypeBlock: aBlock [
 	blockNode body allVariables do: [ :var | 
 		| varValue |
 		varValue := aBlock asContext readVariableNamed: var variable name. "var variableValueInContext: aBlock asContext" "this might fail. should I try catch it?"
-		(varValue class inheritsFrom: BlockClosure) ifTrue: [ 
+		(varValue class inheritsFromOrSameAs: BlockClosure) ifTrue: [ 
 			setOfFields addAll:
 				(self listOfFieldsInAnonymousTypeBlock: varValue) ] ].
 	"c sourceNode allVariables first variableValueInContext: c outerContext sourceNode"

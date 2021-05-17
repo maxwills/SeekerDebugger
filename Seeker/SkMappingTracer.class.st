@@ -152,7 +152,8 @@ SkMappingTracer >> automapForUIExceptionScenario [
 	baseClasesOfUI := { Morph }.
 	inheritsFromUIClass := [ :aClass | 
 	                       baseClasesOfUI anySatisfy: [ :uiBaseClass | 
-		                       aClass inheritsFrom: uiBaseClass ] ].
+		                       aClass = uiBaseClass or: [ 
+			                       aClass inheritsFrom: uiBaseClass ] ] ].
 	initialRestartContext := SkContextHelpers
 		                         findContextInStack: [ :aContext | 
 			                         | senderContext |

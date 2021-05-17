@@ -12,7 +12,7 @@ SkTraceQueries >> baseQuery [
 
 	"returns a query upon the omniscientTable"
 
-	^ SkQuery from: tracer tables omniscientTable
+	^ Query from: tracer tables omniscientTable
 ]
 
 { #category : #'as yet unclassified' }
@@ -25,12 +25,12 @@ SkTraceQueries >> forAliases [
 	"aliasTable columns: #stepIndex #creationStep #bytecodeIndex "
 	"methodsTable columuns: #stepIndex #receiverClass #methodSelector #bytecodeIndex"
 
-	q := SkQuery
+	q := Query
 		     from: (methodsTable join: aliasesTable)
 		     where: [ :row | "row isFirstBytecode" 
 			     true "and: [ row methodSelector = #initialize ]" ]
 		     select: [ :row | 
-			     SkNew with: { 
+			     New with: { 
 					     (#stepIndex -> row stepIndex).
 					     (#receiverClass -> row receiverClass).
 					     (#methodSelector -> row methodSelector).
@@ -44,19 +44,12 @@ SkTraceQueries >> forAssignments [
 
 	| table q |
 	table := tracer tables omniscientTable.
-	"The virtual table have this columns : 
-     #stepIndex
-     #receiverClass
-	  #methodSelector
-	  #bytecodeIndex
-	  #contextSize 
-	  #previousRow"
 
-	q := SkQuery
+	q := Query
 		     from: table
 		     where: [ :row | row node isAssignment ]
 		     select: [ :row | 
-			     SkNew with: { 
+			     New with: { 
 					     (#stepIndex -> row stepIndex).
 					     (#methodSelector -> row methodSelector).
 					     (#receiverClass -> row receiverClass).
@@ -79,11 +72,11 @@ SkTraceQueries >> forContextSizeChanges [
 	  #contextSize 
 	  #previousRow"
 
-	q := SkQuery
+	q := Query
 		     from: table
 		     where: [ :row | row contextSize ~= row previousRow contextSize ]
 		     select: [ :row | 
-			     SkNew with: { 
+			     New with: { 
 					     (#stepIndex -> row stepIndex).
 					     (#methodSelector -> row methodSelector).
 					     (#receiverClass -> row receiverClass).
@@ -107,11 +100,11 @@ SkTraceQueries >> forReturnValues [
      #contextPC
      #endPC"
 
-	q := SkQuery
+	q := Query
 		     from: table
 		     where: [ :row | row contextPC = row endPC ]
 		     select: [ :row | 
-			     SkNew with: { 
+			     New with: { 
 					     (#stepIndex -> row stepIndex).
 					     (#methodSelector -> row methodSelector).
 					     (#receiverClass -> row receiverClass).
@@ -127,13 +120,13 @@ SkTraceQueries >> forReturnValuesOfMethod2: aMethod [
 	methodSelector := aMethod selector.
 	queryOfAllReturns := self forReturnValues.
 "ITHINK THIS DOESNT WORK. NEED TO UNDERSTAND WHY LATER"
-	q := SkQuery
+	q := Query
 		     from: queryOfAllReturns
 		     where: [ :row | "The inner query only contains rows of method returns. Just need to check if it is the one we want"
 			     row methodSelector = methodSelector and: [ 
 				     row receiverClass = methodClass ] ]
 		     select: [ :row | 
-			     SkNew with: { 
+			     New with: { 
 					     (#stepIndex -> row stepIndex).
 					     (#methodSelector -> row methodSelector).
 					     (#receiverClass -> row receiverClass).
@@ -156,14 +149,14 @@ SkTraceQueries >> forReturnValuesOfMethod: aMethod [
      #contextPC
      #endPC"
 
-	q := SkQuery
+	q := Query
 		     from: table
 		     where: [ :row | "the following translates as: when the current pc is the same as the last pc of the context (of the method)"
 			     row contextPC = row endPC and: [ 
 				     row methodSelector = methodSelector and: [ 
 					     row receiverClass = methodClass ] ] ]
 		     select: [ :row | 
-			     SkNew with: { 
+			     New with: { 
 					     (#stepIndex -> row stepIndex).
 					     (#methodSelector -> row methodSelector).
 					     (#receiverClass -> row receiverClass).
@@ -179,17 +172,72 @@ SkTraceQueries >> forReturnValuesOfMethodNestedQuery: aMethod [
 	methodSelector := aMethod selector.
 	queryOfAllReturns := self forReturnValues.
 
-	q := SkQuery
+	q := Query
 		     from: queryOfAllReturns
 		     where: [ :row | "The inner query only contains rows of method returns. Just need to check if it is the one we want"
 			     row methodSelector = methodSelector and: [ 
 				     row receiverClass = methodClass ] ]
 		     select: [ :row | 
-			     SkNew with: { 
+			     New with: { 
 					     (#stepIndex -> row stepIndex).
 					     (#methodSelector -> row methodSelector).
 					     (#receiverClass -> row receiverClass).
 					     (#returnValue -> row returnValue) } ].
+	^ q
+]
+
+{ #category : #'as yet unclassified' }
+SkTraceQueries >> forVariables [
+	| q table|
+	table := tracer tables omniscientTable.
+
+	q := Query
+		     from: table
+		     select: [ :row | row nodeIsVariable ]
+		     collect: [ :row | 
+			     | variable |
+			     variable := row node variable.
+			     New with: { 
+					     (#stepIndex -> row stepIndex).
+					     (#methodSelector -> row methodSelector).
+					     (#receiverClass -> row receiverClass).
+					     (#bytecodeIndex -> row bytecodeIndex).
+					     (#node -> row node).
+					     (#variable -> variable).
+					     (#isTempVariable -> variable isTempVariable).
+					     (#isInstanceVariable -> variable isInstanceVariable).
+					     (#isLocalVariable -> variable isLocalVariable).
+					     (#isGlobalVariable -> variable isGlobalVariable).
+					     (#isSelfVariable -> variable isSelfVariable).
+					     (#isSuperVariable -> variable isSuperVariable).
+					     (#alias -> row creationStep).
+					     (#context -> row context) } ].
+	^ q
+]
+
+{ #category : #'as yet unclassified' }
+SkTraceQueries >> forVariablesValues [
+
+	| q variablesOnly |
+	variablesOnly := self forVariables.
+
+	q := Query from: variablesOnly select: #* collect: [ :row | 
+		     New with: { 
+				     (#stepIndex -> row stepIndex).
+				     (#methodSelector -> row methodSelector).
+				     (#receiverClass -> row receiverClass).
+				     (#bytecodeIndex -> row bytecodeIndex).
+				     (#node -> row node).
+				     (#variable -> row variable).
+				     (#isTempVariable -> row isTempVariable).
+				     (#isInstanceVariable -> row isInstanceVariable).
+				     (#isLocalVariable -> row isLocalVariable).
+				     (#isGlobalVariable -> row isGlobalVariable).
+				     (#isSelfVariable -> row isSelfVariable).
+				     (#isSuperVariable -> row isSuperVariable).
+				     (#alias -> row alias).
+				     (#context -> row context).
+				     (#value -> (row variable readInContext: row context)) } ].
 	^ q
 ]
 

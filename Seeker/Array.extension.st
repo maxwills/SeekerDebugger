@@ -2,7 +2,7 @@ Extension { #name : #Array }
 
 { #category : #'*Seeker' }
 Array >> asSkXAnonymousType [
-	SkAnonymousType newWith: self
+	AnonymousType newWith: self
 ]
 
 { #category : #'*Seeker' }

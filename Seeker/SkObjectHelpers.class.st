@@ -5,6 +5,12 @@ Class {
 }
 
 { #category : #testing }
+SkObjectHelpers class >> isClass: aClass sameOrInheritsFrom: aParentClass [
+
+	^ aClass = aParentClass or: [ aClass inheritsFrom: aParentClass ]
+]
+
+{ #category : #testing }
 SkObjectHelpers class >> isObject: anObject subclassOf: aClass [
 	|iterationClass|
 	iterationClass := anObject class.

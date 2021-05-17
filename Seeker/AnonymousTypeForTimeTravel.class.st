@@ -1,6 +1,6 @@
 Class {
-	#name : #SkAnonymousTypeForTimeTravel,
-	#superclass : #SkAnonymousType,
+	#name : #AnonymousTypeForTimeTravel,
+	#superclass : #AnonymousType,
 	#instVars : [
 		'privateTracer'
 	],
@@ -8,7 +8,7 @@ Class {
 }
 
 { #category : #'instance creation' }
-SkAnonymousTypeForTimeTravel class >> newWith: anAssocArray forTracer: tracer [
+AnonymousTypeForTimeTravel class >> newWith: anAssocArray forTracer: tracer [
 |annonymousObj|
 annonymousObj := self new.
 annonymousObj privateFields: anAssocArray asDictionary.
@@ -17,19 +17,19 @@ annonymousObj privateTracer: tracer.
 ]
 
 { #category : #accessing }
-SkAnonymousTypeForTimeTravel >> privateTracer [
+AnonymousTypeForTimeTravel >> privateTracer [
 
 	^ privateTracer
 ]
 
 { #category : #accessing }
-SkAnonymousTypeForTimeTravel >> privateTracer: anObject [
+AnonymousTypeForTimeTravel >> privateTracer: anObject [
 
 	privateTracer := anObject
 ]
 
 { #category : #'as yet unclassified' }
-SkAnonymousTypeForTimeTravel >> timeTravelToThis [
+AnonymousTypeForTimeTravel >> timeTravelToThis [
 
 	"Needs the stepIndex key"
 

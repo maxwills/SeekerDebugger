@@ -15,7 +15,7 @@ SkExecutionVirtualTableCreator >> omniscientSlimTable [
 	csi := tracer currentStateInterface.
 	virtualTable := SkExecutionVirtualTable
 		                newWithRowReificationBlock: [ 
-			                SkNew with: { 
+			                New with: { 
 					                (#stepIndex -> csi tracedStatementStepIndex).
 					                (#receiverClass -> csi receiverClass).
 					                "(#node -> csi node)."
@@ -49,7 +49,7 @@ SkExecutionVirtualTableCreator >> omniscientTable [
 	csi := tracer currentStateInterface.
 	virtualTable := SkExecutionVirtualTable
 		                newWithRowReificationBlock: [ 
-			                SkNew with: { 
+			                New with: { 
 					                (#bytecodeIndex -> csi bytecodeIndex).
 					                (#bytecodeStepInTracedStatement
 					                 -> csi bytecodeStepInTracedStatement).
@@ -64,6 +64,7 @@ SkExecutionVirtualTableCreator >> omniscientTable [
 
 					                (#methodSelector -> csi methodSelector).
 					                (#node -> csi node).
+					                (#nodeIsVariable -> csi isVariable).
 					                (#receiver -> csi receiver).
 					                (#receiverClass -> csi receiverClass).
 
@@ -93,7 +94,7 @@ SkExecutionVirtualTableCreator >> tableForTrackingChanges [
 	csi := tracer currentStateInterface.
 	virtualTable := SkExecutionVirtualTableWithMemory
 		                newWithRowReificationBlock: [ 
-			                SkNew with: { 
+			                New with: { 
 					                (#stepIndex -> csi tracedStatementStepIndex).
 					                (#receiverClass -> csi receiverClass).
 					                (#methodSelector -> csi methodSelector).
@@ -120,7 +121,7 @@ SkExecutionVirtualTableCreator >> tableOfAliases [
 	csi := tracer currentStateInterface.
 	virtualTable := SkExecutionVirtualTable
 		                newWithRowReificationBlock: [ 
-			                SkNew with: { 
+			                New with: { 
 					                (#stepIndex -> csi tracedStatementStepIndex).
 					                "(#receiverClass -> csi receiverClass).
 					                (#methodSelector -> csi methodSelector).
@@ -141,7 +142,7 @@ SkExecutionVirtualTableCreator >> tableOfContextSizes [
 	csi := tracer currentStateInterface.
 	virtualTable := SkExecutionVirtualTableWithMemory
 		                newWithRowReificationBlock: [ 
-			                SkNew with: { 
+			                New with: { 
 					                (#stepIndex -> csi tracedStatementStepIndex).
 					                (#receiverClass -> csi receiverClass).
 					                (#methodSelector -> csi methodSelector).
@@ -159,7 +160,7 @@ SkExecutionVirtualTableCreator >> tableOfMethods [
 	csi := tracer currentStateInterface.
 	virtualTable := SkExecutionVirtualTable
 		                newWithRowReificationBlock: [ 
-			                SkNew with: { 
+			                New with: { 
 					                (#stepIndex -> csi tracedStatementStepIndex).
 					                (#receiverClass -> csi receiverClass).
 					                (#methodSelector -> csi methodSelector).
@@ -176,7 +177,7 @@ SkExecutionVirtualTableCreator >> tableOfReturnValues [
 	csi := tracer currentStateInterface.
 	virtualTable := SkExecutionVirtualTable
 		                newWithRowReificationBlock: [ 
-			                SkNew with: { 
+			                New with: { 
 					                (#stepIndex -> csi tracedStatementStepIndex).
 					                (#receiverClass -> csi receiverClass).
 					                (#methodSelector -> csi methodSelector).
@@ -195,7 +196,7 @@ SkExecutionVirtualTableCreator >> tableOfStatementSourceCode [
 	csi := tracer currentStateInterface.
 	virtualTable := SkExecutionVirtualTable
 		                newWithRowReificationBlock: [ 
-			                SkNew with: { 
+			                New with: { 
 					                (#stepIndex -> csi tracedStatementStepIndex).
 					                (#statementSourceCode
 					                 -> csi sourceCodeOfStatement).
@@ -207,12 +208,24 @@ SkExecutionVirtualTableCreator >> tableOfStatementSourceCode [
 	^ virtualTable
 ]
 
-{ #category : #'as yet unclassified' }
-SkExecutionVirtualTableCreator >> tableWithMemoryOfContextSizes [
+{ #category : #accessing }
+SkExecutionVirtualTableCreator >> tableOfVariables [
 
-	"Tables with memory add an additional column called #previousRow"
+	| csi virtualTable |
+	csi := tracer currentStateInterface.
 
-	^ self tableOfContextSizes asTableWithMemory
+	virtualTable := SkExecutionVirtualTable
+		                newWithRowReificationBlock: [ 
+			                New with: { 
+					                (#bytecodeIndex -> csi bytecodeIndex).
+					                (#stepIndex -> csi tracedStatementStepIndex).
+					                (#receiverClass -> csi receiverClass).
+					                (#methodSelector -> csi methodSelector).
+					                (#node -> csi node).
+					                (#isVariable -> csi node isVariable) } ]
+		                forTracer: tracer.
+
+	^ virtualTable join: tracer tables tableOfAliases
 ]
 
 { #category : #accessing }

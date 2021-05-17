@@ -30,13 +30,13 @@ SkQueryExperimentalTracer >> createNestedQueryForReturnsOfMethod: aMethod [
 	methodClass := aMethod methodClass.
 	methodSelector := aMethod selector.
 
-	q := SkQuery
+	q := Query
 		     from: innerQuery
 		     where: [ :row | 
 			     row receiverClass = methodClass and: [ 
 				     row methodSelector = methodSelector ] ]
 		     select: [ :row | 
-			     SkNew with: { 
+			     New with: { 
 					     (#stepIndex -> row stepIndex).
 					     (#returnValue -> row returnValue) } ].
 	^ q
@@ -56,11 +56,11 @@ SkQueryExperimentalTracer >> createReturnValuesQueryNewNew [
      #contextPC
      #endPC"
 
-	q := SkQuery
+	q := Query
 		     from: table
 		     where: [ :row | row contextPC = row endPC ]
 		     select: [ :row | 
-			     SkNew with: { 
+			     New with: { 
 					     (#stepIndex -> row stepIndex).
 					     (#statementNotation -> row statementNotation).
 					     (#returnValue -> row returnValue) } ].
@@ -81,11 +81,11 @@ SkQueryExperimentalTracer >> createReturnValuesQueryNewNewUltimate [
      #contextPC
      #endPC"
 
-	q := SkQuery
+	q := Query
 		     from: table
 		     where: [ :row | row contextPC = row endPC ]
 		     select: [ :row | 
-			     SkNew with: { 
+			     New with: { 
 					     (#stepIndex -> row stepIndex).
 					     (#methodSelector -> row methodSelector).
 					     (#receiverClass -> row receiverClass).

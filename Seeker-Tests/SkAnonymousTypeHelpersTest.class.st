@@ -42,7 +42,7 @@ SkAnonymousTypeHelpersTest >> testNestedBlocksForOptimization [
 
 	| condition1 condition2 createRowBlock row row2 temp |
 	createRowBlock := [ 
-	                  SkNew with: { 
+	                  New with: { 
 			                  (#stepIndex -> 11).
 			                  (#receiverClass -> 12).
 			                  (#methodSelector -> 13).
@@ -67,7 +67,7 @@ SkAnonymousTypeHelpersTest >> testStatementFiltering [
 	| createRowBlock modifiedBlock createdRow secondCreatedRow |
 	chancho := 6.
 	createRowBlock := [ 
-	                  SkNew with: { 
+	                  New with: { 
 			                  (#stepIndex -> (11 + chancho)).
 			                  (#receiverClass -> 12).
 			                  (#methodSelector -> 13).
@@ -91,7 +91,7 @@ SkAnonymousTypeHelpersTest >> testStatementFilteringWithCapturedVariables [
 	aVariable := self personCreator.
 
 	createRowBlock := [ 
-	                  SkNew with: { 
+	                  New with: { 
 			                  (#stepIndex -> (11 + aVariable age)).
 			                  (#receiverClass -> (12 + aVariable age)).
 			                  (#methodSelector -> (13 + aVariable age)).

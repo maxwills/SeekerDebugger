@@ -12,7 +12,7 @@ SkTimeTravelQueries >> matchesInstanceCreation [
 
 	| q instanceCreationPrimitives isAboutToInstantiateClass |
 	q := tracer queries baseQuery collect: [ :row | 
-		     SkNew with: { 
+		     New with: { 
 				     (#receiver -> row receiver).
 				     (#node -> row node) } ].
 
@@ -48,18 +48,18 @@ SkTimeTravelQueries >> matchesInstanceCreationPretier [
 	                             receiverClass lookupSelector:
 		                             node selector ].
 
-	qMethod := SkQuery
+	qMethod := Query
 		           from: tracer tables omniscientTable
 		           select: [ :row | row node isMessage ]
 		           collect: [ :row | 
-			           SkNew with:
+			           New with:
 				           { (#methodAboutToExecute -> (findMethodAboutToBeCalled
 					            value: row receiverClass
 					            value: row node) )} ].
 
 	instanceCreationPrimitives := #( 70 71 79 148 160 ).
 
-	qIsPrimitive := (SkQuery from: qMethod) select: [ :row | 
+	qIsPrimitive := (Query from: qMethod) select: [ :row | 
 		                row methodAboutToExecute isNotNil and: [ 
 			                instanceCreationPrimitives includes:
 				                row methodAboutToExecute primitive ] ].
@@ -76,7 +76,7 @@ SkTimeTravelQueries >> matchesNextStatementInSequence [
 
 	| q inSameDynanimcSequence startingState |
 	q := tracer queries baseQuery collect: [ :row | 
-		     SkNew with: { 
+		     New with: { 
 				     (#context -> row context).
 				     (#stackDepth -> row stackDepth).
 				     (#statementIndex -> row statementIndex) } ].

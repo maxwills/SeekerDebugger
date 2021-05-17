@@ -1,5 +1,12 @@
+"
+Used for cases when objects require a given setter/getter interface. Useful for mocking.
+
+Wraps a dictionary and allows the wrapper object to reply to messages with selectors defined by the dictionary keys. The keys should be mandatory symbols.
+
+See AnonymousTypeTest class tests for examples.
+"
 Class {
-	#name : #SkAnonymousType,
+	#name : #AnonymousType,
 	#superclass : #Object,
 	#instVars : [
 		'privateFields'
@@ -8,20 +15,23 @@ Class {
 }
 
 { #category : #'instance creation' }
-SkAnonymousType class >> newWith: anAssocArray [
-|annonymousObj|
-annonymousObj := self new.
-annonymousObj privateFields: anAssocArray asDictionary.
-^annonymousObj 
+AnonymousType class >> newWith: aCollection [
+
+	"Instantiates an anonymousType object that wraps the collection"
+
+	| anonymousObj |
+	anonymousObj := self new.
+	anonymousObj privateFields: aCollection asDictionary.
+	^ anonymousObj
 ]
 
 { #category : #operations }
-SkAnonymousType >> @ aSymbol [
+AnonymousType >> @ aSymbol [
 	^privateFields at: aSymbol
 ]
 
 { #category : #'as yet unclassified' }
-SkAnonymousType >> asCsvPrintOn: aStream [
+AnonymousType >> asCsvPrintOn: aStream [
 
 	| keys |
 	keys := privateFields keys asSortedCollection.
@@ -36,13 +46,13 @@ SkAnonymousType >> asCsvPrintOn: aStream [
 ]
 
 { #category : #accessing }
-SkAnonymousType >> at: aSymbol put: aValue [
+AnonymousType >> at: aSymbol put: aValue [
 
 	^ privateFields at: aSymbol put: aValue
 ]
 
 { #category : #'reflective operations' }
-SkAnonymousType >> doesNotUnderstand: aMessage [
+AnonymousType >> doesNotUnderstand: aMessage [
 
 	| selector |
 	"Inspired from the pillar bug image from thomas"
@@ -61,13 +71,13 @@ SkAnonymousType >> doesNotUnderstand: aMessage [
 ]
 
 { #category : #accessing }
-SkAnonymousType >> fieldNames [
+AnonymousType >> fieldNames [
 
 	^ privateFields keys
 ]
 
 { #category : #'as yet unclassified' }
-SkAnonymousType >> headersAsCsvPrintOn: aStream [
+AnonymousType >> headersAsCsvPrintOn: aStream [
 
 	| keys |
 	keys := privateFields keys asSortedCollection.
@@ -82,12 +92,12 @@ SkAnonymousType >> headersAsCsvPrintOn: aStream [
 ]
 
 { #category : #initialization }
-SkAnonymousType >> initialize [
+AnonymousType >> initialize [
 
 ]
 
 { #category : #operations }
-SkAnonymousType >> mergeWith: anotherAnonymousTypeObject [
+AnonymousType >> mergeWith: anotherAnonymousTypeObject [
 
 	"The second anonymous objects takes priority on its values"
 
@@ -99,7 +109,7 @@ SkAnonymousType >> mergeWith: anotherAnonymousTypeObject [
 ]
 
 { #category : #printing }
-SkAnonymousType >> printOn: aStream [
+AnonymousType >> printOn: aStream [
 
 	| keys |
 	keys := privateFields keys.
@@ -117,19 +127,19 @@ SkAnonymousType >> printOn: aStream [
 ]
 
 { #category : #accessing }
-SkAnonymousType >> privateFields [
+AnonymousType >> privateFields [
 
 	^ privateFields
 ]
 
 { #category : #accessing }
-SkAnonymousType >> privateFields: anObject [
+AnonymousType >> privateFields: anObject [
 
 	privateFields := anObject
 ]
 
 { #category : #'as yet unclassified' }
-SkAnonymousType >> tryInPrivateFieldOrDelegateForGetter: getterSelector [
+AnonymousType >> tryInPrivateFieldOrDelegateForGetter: getterSelector [
 
 	(privateFields includesKey: getterSelector) ifTrue: [ 
 		^ privateFields at: getterSelector ].
@@ -137,7 +147,7 @@ SkAnonymousType >> tryInPrivateFieldOrDelegateForGetter: getterSelector [
 ]
 
 { #category : #'as yet unclassified' }
-SkAnonymousType >> tryInPrivateFieldOrDelegateForSetter: setterSelector argument: arg [
+AnonymousType >> tryInPrivateFieldOrDelegateForSetter: setterSelector argument: arg [
 
 	| selectorForGetter |
 	selectorForGetter := setterSelector
@@ -151,7 +161,7 @@ SkAnonymousType >> tryInPrivateFieldOrDelegateForSetter: setterSelector argument
 ]
 
 { #category : #accessing }
-SkAnonymousType >> value [
+AnonymousType >> value [
 
 	"Override so the selector can be used in the anonymousObject as a field"
 	"Just try to avoid overriding critical methods (initialize, error, etc)"
@@ -161,7 +171,7 @@ SkAnonymousType >> value [
 ]
 
 { #category : #accessing }
-SkAnonymousType >> value: anObject [
+AnonymousType >> value: anObject [
 
 	"Override (not really)so the selector can be used in the anonymousObject"
 

@@ -107,6 +107,12 @@ SkCurrentStateInterface >> isFirstBytecodeOfStatement [
 	^ tracer currentStepDescriptor astSteps = 1
 ]
 
+{ #category : #testing }
+SkCurrentStateInterface >> isVariable [
+
+	^ self node isVariable
+]
+
 { #category : #accessing }
 SkCurrentStateInterface >> methodClass [
 	^tracer currentContext methodClass
@@ -133,6 +139,12 @@ SkCurrentStateInterface >> methodSelector [
 { #category : #accessing }
 SkCurrentStateInterface >> node [
 	^tracer currentNode
+]
+
+{ #category : #'as yet unclassified' }
+SkCurrentStateInterface >> nodeIsVariable [
+
+	^ self node isVariable
 ]
 
 { #category : #'as yet unclassified' }
