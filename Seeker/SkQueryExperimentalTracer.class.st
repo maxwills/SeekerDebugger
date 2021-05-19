@@ -123,6 +123,12 @@ SkQueryExperimentalTracer >> removeAstPreStepHook: aBlock [
 	astPreStepHooks remove: aBlock
 ]
 
+{ #category : #accessing }
+SkQueryExperimentalTracer >> selectedCode [
+
+	^ stDebugger code selectedText
+]
+
 { #category : #'accessing context' }
 SkQueryExperimentalTracer >> selectedContext [
 
@@ -141,6 +147,11 @@ SkQueryExperimentalTracer >> selectedNode [
 SkQueryExperimentalTracer >> selectedSelector [
 
 	^ stDebugger code selectedSelector
+]
+
+{ #category : #accessing }
+SkQueryExperimentalTracer >> stepIndex [ 
+	^ self currentStepDescriptor executionIndex
 ]
 
 { #category : #'as yet unclassified' }

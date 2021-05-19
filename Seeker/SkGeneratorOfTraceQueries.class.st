@@ -78,6 +78,53 @@ SkGeneratorOfTraceQueries >> forAliasOfObjectReferredByVariableNode: aVariableNo
 ]
 
 { #category : #'as yet unclassified' }
+SkGeneratorOfTraceQueries >> forAliasOfObjectReferredByVariableNode: aVariableNode atContextOfStepPath: aStepDescriptorForContextOfVariable atExecutionStepIndex: aNumber [
+
+	"The logic here is that the execution must remember the context where the node is located, but the alias must be evaluated once the execution reaches the step aNumber"
+
+	| q table contextOfVariable |
+	contextOfVariable := nil.
+	table := tracer tables omniscientTableForAliases.
+	q := Query
+		     from: table
+		     where: [ :row | 
+			     (row tracedStatementDescriptor isSameDynamicSequenceAs:
+				      aStepDescriptorForContextOfVariable) ifTrue: [ 
+				     contextOfVariable := row context ].
+			     row stepIndex = aNumber ]
+		     select: [ :row | 
+			     | variableValue getAlias |
+			     variableValue := contextOfVariable readVariableNamed:
+				                      aVariableNode variable name.
+			     "Note: dont do this:
+				 getAlias := [:arg |
+			                 arg aliasesDictionary
+				                 at: variableValue
+				                 ifAbsent: [ nil ] ].
+				Since arg is not the argument of the select block, #aliasesDictionary will not be considered 
+				as a relevant field and will not be included in the input row. (unless it is protected).
+				Do this instead:
+				"
+			     getAlias := [ 
+			                 row aliasesDictionary
+				                 at: variableValue
+				                 ifAbsent: [ nil ] ].
+			     New with: { 
+					     (#stepIndex -> row stepIndex).
+					     (#receiverClass -> row receiverClass).
+					     (#methodSelector -> row methodSelector).
+					     (#bytecodeIndex -> row bytecodeIndex).
+					     (#node -> row node).
+					     (#valueClass -> variableValue class).
+					     (#variableName -> aVariableNode variable name).
+					     (#variableValue -> variableValue).
+					     (#variableValueAlias -> getAlias value).
+					     (#instance -> variableValue).
+					     (#aliases -> row aliasesDictionary) } ].
+	^ q
+]
+
+{ #category : #'as yet unclassified' }
 SkGeneratorOfTraceQueries >> forAliases [
 
 	| q aliasesTable methodsTable |
@@ -122,7 +169,7 @@ SkGeneratorOfTraceQueries >> forAssignments [
 ]
 
 { #category : #'as yet unclassified' }
-SkGeneratorOfTraceQueries >> forAssignmentsOfInstanceVariables [
+SkGeneratorOfTraceQueries >> forAssignmentsOfAnyVariable [
 
 	| table q |
 	table := tracer tables omniscientTableForAliases.
@@ -140,9 +187,36 @@ SkGeneratorOfTraceQueries >> forAssignmentsOfInstanceVariables [
 					     (#receiverAlias -> row receiverAlias).
 					     (#variableNode -> row node variable).
 					     (#variableName -> row node variable variable name).
-					     (#variableOldValue
+					     (#valueChangedFrom
 					      -> (row node variable variable readInContext: row context)).
-					     (#variableNewPost -> (row context at: row context basicSize)) } ].
+					     (#valueChangedTo -> (row context at: row context basicSize)) } ].
+	^ q
+]
+
+{ #category : #'as yet unclassified' }
+SkGeneratorOfTraceQueries >> forAssignmentsOfInstanceVariables [
+
+	| table q |
+	table := tracer tables omniscientTableForAliases.
+
+	q := Query
+		     from: table
+		     where: [ :row | 
+			     row node isAssignment and: [ 
+				     row node variable variable isInstanceVariable ] ]
+		     select: [ :row | 
+			     New with: { 
+					     (#stepIndex -> row stepIndex).
+					     (#methodSelector -> row methodSelector).
+					     (#receiverClass -> row receiverClass).
+					     (#bytecodeIndex -> row bytecodeIndex).
+					     (#node -> row node).
+					     (#receiverAlias -> row receiverAlias).
+					     (#variableNode -> row node variable).
+					     (#variableName -> row node variable variable name).
+					     (#valueChangedFrom
+					      -> (row node variable variable readInContext: row context)).
+					     (#valueChangedTo -> (row context at: row context basicSize)) } ].
 	^ q
 ]
 

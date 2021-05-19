@@ -80,7 +80,8 @@ SeekerLiteCommands >> stCodeCommandsTree [
 		  SkReturnValuesOfMethodWithSelectedSelectorLC.
 		  SkChangesOfSelfLC.
 		  SkChangesOfObjectLC.
-		  SkChangesOfInstanceVariableLC } "{ { 
+		  SkChangesOfInstanceVariableLC.
+		  SkChangesOfVariableByNameLC } "{ { 
 		  'Time-Travel'.
 		  { 
 			  SkGoToNodeUnderCursorLC.

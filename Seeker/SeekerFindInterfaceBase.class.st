@@ -10,30 +10,65 @@ Class {
 { #category : #'as yet unclassified' }
 SeekerFindInterfaceBase >> aliasOfVariableNode: aNode inContext: aContext [
 
-	| node nodeStepDescriptor aliasResult aliasQuery |
+	| node stepDescriptor aliasResult aliasQuery |
 	node := aNode.
 	node isVariable ifFalse: [ ^ self error: 'Not a variable node' ].
 
-	nodeStepDescriptor := SkStepDescriptor
+	"stepDescriptor := SkStepDescriptor
+		                      newFromNode: node
+		                      inContext: aContext
+		                      isTopContext: (tracer isTopContext: aContext)."
+	stepDescriptor := tracer currentStepDescriptor.
+	aliasQuery := self tracer queries
+		              forAliasOfObjectReferredByVariableNode: node
+		              atContextOfStepIndex: stepDescriptor executionIndex.
+
+	aliasResult := (aliasQuery asTable rows select: [ :row | 
+		                row variableValueAlias isNotNil ]) first.
+	(aliasResult isNil or: [ aliasResult variableValueAlias isNil ]) 
+		ifTrue: [ ^ self error: 'Unable to identify object instance' ].
+	^ aliasResult variableValueAlias
+]
+
+{ #category : #'as yet unclassified' }
+SeekerFindInterfaceBase >> aliasOfVariableNode: aNode inContext: aContext atStep: aNumber [
+
+	| node stepDescriptor aliasResult aliasQuery |
+	node := aNode.
+	node isVariable ifFalse: [ ^ self error: 'Not a variable node' ].
+
+	stepDescriptor := SkStepDescriptor
 		                      newFromNode: node
 		                      inContext: aContext
 		                      isTopContext: (tracer isTopContext: aContext).
-	aliasQuery := self tracer queries 
-		              forAliasOfObjectReferredByVariableNode: node.
-	"dont use aQuery select: for it breaks the optimization... use nested queries instead"
-	aliasQuery := Query
-		              from:
-		              (aliasQuery withExecutionColumns:
-			               { #tracedStatementDescriptor })
-		              select: [ :row | 
-			              row tracedStatementDescriptor hasSamePathAs:
-				              nodeStepDescriptor ]
-		              collect: #*.
+	aliasQuery := self tracer queries
+		              forAliasOfObjectReferredByVariableNode: aNode atContextOfStepPath: stepDescriptor atExecutionStepIndex: aNumber.
 
-	aliasResult := aliasQuery first.
+	aliasResult := (aliasQuery asTable rows select: [ :row | 
+		                row variableValueAlias isNotNil ]) first.
 	(aliasResult isNil or: [ aliasResult variableValueAlias isNil ]) 
-		ifTrue: [ 
-		^ self error: 'Unable to identify object instance' ].
+		ifTrue: [ ^ self error: 'Unable to identify object instance' ].
+	^ aliasResult variableValueAlias
+]
+
+{ #category : #'as yet unclassified' }
+SeekerFindInterfaceBase >> aliasOfVariableNode: aNode inContext: aContext atStepIndex: aNumber [
+
+	| node stepDescriptor aliasResult aliasQuery |
+	node := aNode.
+	node isVariable ifFalse: [ ^ self error: 'Not a variable node' ].
+
+	stepDescriptor := SkStepDescriptor
+		                      newFromNode: node
+		                      inContext: aContext
+		                      isTopContext: (tracer isTopContext: aContext).
+	aliasQuery := self tracer queries
+		              forAliasOfObjectReferredByVariableNode: aNode atContextOfStepPath: stepDescriptor atExecutionStepIndex: aNumber.
+
+	aliasResult := (aliasQuery asTable rows select: [ :row | 
+		                row variableValueAlias isNotNil ]) first.
+	(aliasResult isNil or: [ aliasResult variableValueAlias isNil ]) 
+		ifTrue: [ ^ self error: 'Unable to identify object instance' ].
 	^ aliasResult variableValueAlias
 ]
 

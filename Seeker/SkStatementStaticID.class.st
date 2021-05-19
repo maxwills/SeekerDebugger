@@ -93,6 +93,11 @@ SkStatementStaticID >> initialize [
 	isReturning := false.
 ]
 
+{ #category : #'as yet unclassified' }
+SkStatementStaticID >> isInSameSequenceAs: aStatementStaticID [
+	^ self sequenceStaticID equalTo: aStatementStaticID sequenceStaticID
+]
+
 { #category : #accessing }
 SkStatementStaticID >> isReturning [
 

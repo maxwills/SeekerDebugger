@@ -344,6 +344,24 @@ SkStepDescriptor >> isReturning: anObject [
 	isReturning := anObject
 ]
 
+{ #category : #'as yet unclassified' }
+SkStepDescriptor >> isSameDynamicSequenceAs: anSDStatementStepDescriptor [
+
+	self size == anSDStatementStepDescriptor size ifFalse: [ ^ false ].
+	1 to: self size do: [ :index | 
+		| lhsStatement rhsStatement |
+		lhsStatement := self at: index.
+		rhsStatement := anSDStatementStepDescriptor at: index.
+		index = self size
+			ifFalse: [ 
+			(lhsStatement equalTo: rhsStatement) ifFalse: [ ^ false ] ]
+			ifTrue: [ 
+				(lhsStatement isInSameSequenceAs: rhsStatement) ifFalse: [ 
+					^ false ] ] ].
+
+	^ true
+]
+
 { #category : #testing }
 SkStepDescriptor >> isSiblingOf: aStepDescriptor [
 
