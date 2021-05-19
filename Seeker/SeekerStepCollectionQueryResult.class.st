@@ -7,7 +7,7 @@ Class {
 		'descriptionLabel',
 		'result'
 	],
-	#category : #'Seeker-Queries-Result'
+	#category : #'Seeker-Deprecated'
 }
 
 { #category : #'instance creation' }

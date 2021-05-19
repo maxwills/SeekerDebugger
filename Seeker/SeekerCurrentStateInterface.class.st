@@ -1,27 +1,27 @@
 Class {
-	#name : #SkCurrentStateInterface,
+	#name : #SeekerCurrentStateInterface,
 	#superclass : #Object,
 	#instVars : [
 		'tracer',
 		'cachedValues'
 	],
-	#category : #'Seeker-Components-Experimental'
+	#category : #'Seeker-Interfaces'
 }
 
 { #category : #accessing }
-SkCurrentStateInterface >> bytecodeIndex [
+SeekerCurrentStateInterface >> bytecodeIndex [
 "Eachtime a bytecode is executed, the tracer counts it. this is that counter"
 	^ tracer bytecodeIndex
 ]
 
 { #category : #accessing }
-SkCurrentStateInterface >> bytecodeStepInTracedStatement [
+SeekerCurrentStateInterface >> bytecodeStepInTracedStatement [
 
 	^ tracer currentStepDescriptor astSteps + 1
 ]
 
 { #category : #'as yet unclassified' }
-SkCurrentStateInterface >> cached: aSymbol orGet: aBlock [
+SeekerCurrentStateInterface >> cached: aSymbol orGet: aBlock [
 
 	"Use this in cases where the returned value is not directly accessible. Specially if it needs to be calculated. By using this, the value will be cached for the current bytecode step"
 
@@ -41,53 +41,53 @@ SkCurrentStateInterface >> cached: aSymbol orGet: aBlock [
 ]
 
 { #category : #accessing }
-SkCurrentStateInterface >> compiledCode [
+SeekerCurrentStateInterface >> compiledCode [
 
 	^ tracer currentContext compiledCode
 ]
 
 { #category : #accessing }
-SkCurrentStateInterface >> compiledMethod [
+SeekerCurrentStateInterface >> compiledMethod [
 	^tracer currentContext compiledMethod
 ]
 
 { #category : #accessing }
-SkCurrentStateInterface >> context [
+SeekerCurrentStateInterface >> context [
 	^tracer currentContext
 ]
 
 { #category : #accessing }
-SkCurrentStateInterface >> contextPC [
+SeekerCurrentStateInterface >> contextPC [
 	^tracer currentContext pc
 ]
 
 { #category : #'as yet unclassified' }
-SkCurrentStateInterface >> contextStackSize [
+SeekerCurrentStateInterface >> contextStackSize [
 
 	^ tracer currentStepDescriptor size
 ]
 
 { #category : #'as yet unclassified' }
-SkCurrentStateInterface >> contextTop [ 
+SeekerCurrentStateInterface >> contextTop [ 
 	^(tracer currentContext stackPtr > 0
 					  ifTrue: [ tracer currentContext top ]
 					  ifFalse: [ #contextTopUnavailable ]) 
 ]
 
 { #category : #accessing }
-SkCurrentStateInterface >> endPC [
+SeekerCurrentStateInterface >> endPC [
 
 	^ tracer currentContext compiledCode endPC
 ]
 
 { #category : #'as yet unclassified' }
-SkCurrentStateInterface >> initialPC [
+SeekerCurrentStateInterface >> initialPC [
 
 	^ tracer currentContext compiledCode initialPC
 ]
 
 { #category : #initialization }
-SkCurrentStateInterface >> initialize [
+SeekerCurrentStateInterface >> initialize [
 
 	"initialize a dictionary with all the accessors(getters only) of this class"
 
@@ -97,40 +97,40 @@ SkCurrentStateInterface >> initialize [
 ]
 
 { #category : #'as yet unclassified' }
-SkCurrentStateInterface >> isFirstBytecodeOfMethod [
+SeekerCurrentStateInterface >> isFirstBytecodeOfMethod [
 	^self contextPC = self initialPC
 ]
 
 { #category : #'as yet unclassified' }
-SkCurrentStateInterface >> isFirstBytecodeOfStatement [
+SeekerCurrentStateInterface >> isFirstBytecodeOfStatement [
 
 	^ tracer currentStepDescriptor astSteps = 1
 ]
 
 { #category : #testing }
-SkCurrentStateInterface >> isMethodReturn [
+SeekerCurrentStateInterface >> isMethodReturn [
 
 	^ self contextPC = self endPC
 ]
 
 { #category : #testing }
-SkCurrentStateInterface >> isVariable [
+SeekerCurrentStateInterface >> isVariable [
 
 	^ self node isVariable
 ]
 
 { #category : #accessing }
-SkCurrentStateInterface >> methodClass [
+SeekerCurrentStateInterface >> methodClass [
 	^tracer currentContext methodClass
 ]
 
 { #category : #'as yet unclassified' }
-SkCurrentStateInterface >> methodNotation [
+SeekerCurrentStateInterface >> methodNotation [
 	^tracer currentContext method asSeekerOfflineExpressionString
 ]
 
 { #category : #'as yet unclassified' }
-SkCurrentStateInterface >> methodReturnValue [
+SeekerCurrentStateInterface >> methodReturnValue [
 
 	"Alias for context top"
 
@@ -138,34 +138,34 @@ SkCurrentStateInterface >> methodReturnValue [
 ]
 
 { #category : #accessing }
-SkCurrentStateInterface >> methodSelector [
+SeekerCurrentStateInterface >> methodSelector [
 	^tracer currentContext methodSelector
 ]
 
 { #category : #accessing }
-SkCurrentStateInterface >> node [
+SeekerCurrentStateInterface >> node [
 	^tracer currentNode
 ]
 
 { #category : #'as yet unclassified' }
-SkCurrentStateInterface >> nodeIsVariable [
+SeekerCurrentStateInterface >> nodeIsVariable [
 
 	^ self node isVariable
 ]
 
 { #category : #'as yet unclassified' }
-SkCurrentStateInterface >> receiver [
+SeekerCurrentStateInterface >> receiver [
 
 	^ tracer currentContext receiver
 ]
 
 { #category : #accessing }
-SkCurrentStateInterface >> receiverClass [
+SeekerCurrentStateInterface >> receiverClass [
 	^tracer currentContext receiver class
 ]
 
 { #category : #accessing }
-SkCurrentStateInterface >> sequenceNode [
+SeekerCurrentStateInterface >> sequenceNode [
 
 	^ self
 		  cached: thisContext methodSelector
@@ -174,7 +174,7 @@ SkCurrentStateInterface >> sequenceNode [
 ]
 
 { #category : #'as yet unclassified' }
-SkCurrentStateInterface >> sequenceStatementCount [
+SeekerCurrentStateInterface >> sequenceStatementCount [
 
 	^ self
 		  cached: thisContext methodSelector
@@ -182,62 +182,62 @@ SkCurrentStateInterface >> sequenceStatementCount [
 ]
 
 { #category : #'as yet unclassified' }
-SkCurrentStateInterface >> sourceCodeOfNode [
+SeekerCurrentStateInterface >> sourceCodeOfNode [
 
 	^ self node sourceCode
 ]
 
 { #category : #'as yet unclassified' }
-SkCurrentStateInterface >> sourceCodeOfStatement [
+SeekerCurrentStateInterface >> sourceCodeOfStatement [
 
 	^ self statementNode sourceCode
 ]
 
 { #category : #'as yet unclassified' }
-SkCurrentStateInterface >> stackDepth [
+SeekerCurrentStateInterface >> stackDepth [
 
 	^ tracer currentStepDescriptor size
 ]
 
 { #category : #accessing }
-SkCurrentStateInterface >> statementIndex [
+SeekerCurrentStateInterface >> statementIndex [
 	^tracer currentStepDescriptor topStatementID indexInSequence
 ]
 
 { #category : #accessing }
-SkCurrentStateInterface >> statementNode [
+SeekerCurrentStateInterface >> statementNode [
 
 	^ tracer currentStatementNode
 ]
 
 { #category : #'as yet unclassified' }
-SkCurrentStateInterface >> statementNotation [
+SeekerCurrentStateInterface >> statementNotation [
 	^tracer currentStatementNode statementNotation 
 ]
 
 { #category : #accessing }
-SkCurrentStateInterface >> tracedStatementDescriptor [
+SeekerCurrentStateInterface >> tracedStatementDescriptor [
 	^tracer currentStepDescriptor
 ]
 
 { #category : #accessing }
-SkCurrentStateInterface >> tracedStatementPath [
+SeekerCurrentStateInterface >> tracedStatementPath [
 	^tracer currentStepDescriptor
 ]
 
 { #category : #accessing }
-SkCurrentStateInterface >> tracedStatementStepIndex [
+SeekerCurrentStateInterface >> tracedStatementStepIndex [
 	^tracer currentStepDescriptor executionIndex
 ]
 
 { #category : #accessing }
-SkCurrentStateInterface >> tracer [
+SeekerCurrentStateInterface >> tracer [
 
 	^ tracer
 ]
 
 { #category : #accessing }
-SkCurrentStateInterface >> tracer: anObject [
+SeekerCurrentStateInterface >> tracer: anObject [
 
 	tracer := anObject
 ]

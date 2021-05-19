@@ -12,7 +12,7 @@ Class {
 { #category : #'accessing context' }
 SkOptimizedStatementStepper >> currentContext [
 
-	cachedCurrentContext ifNotNil: [ ^ cachedCurrentContext ].
+	"cachedCurrentContext ifNotNil: [ ^ cachedCurrentContext ]."
 	^ super currentContext
 ]
 

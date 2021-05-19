@@ -7,7 +7,7 @@ Class {
 		'queriesLibrary',
 		'executionVirtualTableCreator'
 	],
-	#category : #'Seeker-Components-Experimental'
+	#category : #'Seeker-Components'
 }
 
 { #category : #adding }
@@ -29,7 +29,7 @@ SkQueryExperimentalTracer >> currentStateAsRow [
 SkQueryExperimentalTracer >> currentStateInterface [
 
 	| csi |
-	csi := SkCurrentStateInterface new.
+	csi := SeekerCurrentStateInterface new.
 	csi tracer: self.
 	^ csi "currentStateInterfaceInstance"
 ]
@@ -72,11 +72,11 @@ SkQueryExperimentalTracer >> find [
 { #category : #initialization }
 SkQueryExperimentalTracer >> initialize [
 
-	currentStateInterfaceInstance := SkCurrentStateInterface new.
+	currentStateInterfaceInstance := SeekerCurrentStateInterface new.
 	currentStateInterfaceInstance tracer: self.
-	executionVirtualTableCreator := SkGeneratorOfExecutionVirtualTables new.
+	executionVirtualTableCreator := SeekerExecutionTablesInterface new.
 	executionVirtualTableCreator tracer: self.
-	queriesLibrary := SkGeneratorOfTraceQueries new.
+	queriesLibrary := SeekerTraceQueriesInterface new.
 	queriesLibrary tracer: self.
 	astPreStepHooks := OrderedCollection new.
 	^ super initialize
@@ -103,7 +103,7 @@ SkQueryExperimentalTracer >> queries [
 	"Should return the instance variable, but it works better like this when changint the libary class during a debug session (it is not updated)"
 
 	| lib |
-	lib := SkGeneratorOfTraceQueries new.
+	lib := SeekerTraceQueriesInterface new.
 	lib tracer: self.
 	^ lib
 ]
@@ -174,7 +174,7 @@ SkQueryExperimentalTracer >> tables [
 	"^ executionVirtualTableCreator"
 
 	| tableCreator |
-	tableCreator := SkGeneratorOfExecutionVirtualTables new.
+	tableCreator := SeekerExecutionTablesInterface new.
 	tableCreator tracer: self.
 	^ tableCreator
 ]

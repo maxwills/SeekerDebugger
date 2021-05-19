@@ -4,7 +4,7 @@ Class {
 	#instVars : [
 		'tracer'
 	],
-	#category : #'Seeker-Components-Experimental'
+	#category : #'Seeker-Experimental'
 }
 
 { #category : #testing }

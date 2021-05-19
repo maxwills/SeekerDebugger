@@ -5,7 +5,7 @@ Class {
 		'name',
 		'age'
 	],
-	#category : #'Seeker-DescriptorExplanation'
+	#category : #'Seeker-BugCollection-Tests'
 }
 
 { #category : #accessing }

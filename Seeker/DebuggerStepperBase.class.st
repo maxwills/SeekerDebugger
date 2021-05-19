@@ -9,7 +9,8 @@ Class {
 	#traits : 'TDebuggerUpdateCoordinatorClient',
 	#classTraits : 'TDebuggerUpdateCoordinatorClient classTrait',
 	#instVars : [
-		'seeker'
+		'seeker',
+		'session'
 	],
 	#category : #'Seeker-Components'
 }
@@ -42,6 +43,18 @@ DebuggerStepperBase >> seeker [
 DebuggerStepperBase >> seeker: anObject [
 
 	seeker := anObject
+]
+
+{ #category : #accessing }
+DebuggerStepperBase >> session [
+
+	^ session
+]
+
+{ #category : #accessing }
+DebuggerStepperBase >> session: anObject [
+
+	session := anObject
 ]
 
 { #category : #initialization }

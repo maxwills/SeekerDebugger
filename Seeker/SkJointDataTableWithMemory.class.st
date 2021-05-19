@@ -3,5 +3,5 @@ Class {
 	#superclass : #SkJointDataTable,
 	#traits : 'TSeekerTableWithMemory',
 	#classTraits : 'TSeekerTableWithMemory classTrait',
-	#category : #'Seeker-Components-Experimental'
+	#category : #'Seeker-DataQuery'
 }

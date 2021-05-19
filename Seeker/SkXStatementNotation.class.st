@@ -5,7 +5,7 @@ Class {
 		'sequenceID',
 		'statementIndex'
 	],
-	#category : #'Seeker-Components-Experimental'
+	#category : #'Seeker-Experimental'
 }
 
 { #category : #compiling }

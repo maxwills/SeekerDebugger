@@ -12,7 +12,7 @@ Class {
 		'root',
 		'last'
 	],
-	#category : #'Seeker-Components-Experimental'
+	#category : #'Seeker-Experimental'
 }
 
 { #category : #'instance creation' }

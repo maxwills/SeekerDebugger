@@ -11,7 +11,7 @@ Class {
 	#instVars : [
 		'privateFields'
 	],
-	#category : #'Seeker-Components-Experimental'
+	#category : #'Seeker-DataQuery'
 }
 
 { #category : #'instance creation' }

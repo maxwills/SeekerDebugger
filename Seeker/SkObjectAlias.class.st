@@ -1,3 +1,6 @@
+"
+This will be removed. Use execution data queries instead
+"
 Class {
 	#name : #SkObjectAlias,
 	#superclass : #Object,
@@ -6,7 +9,7 @@ Class {
 		'objectClass',
 		'seeker'
 	],
-	#category : #'Seeker-Components'
+	#category : #'Seeker-Deprecated'
 }
 
 { #category : #'instance creation' }

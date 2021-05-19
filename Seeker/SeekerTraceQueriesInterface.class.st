@@ -1,14 +1,14 @@
 Class {
-	#name : #SkGeneratorOfTraceQueries,
+	#name : #SeekerTraceQueriesInterface,
 	#superclass : #Object,
 	#instVars : [
 		'tracer'
 	],
-	#category : #'Seeker-Components-Experimental'
+	#category : #'Seeker-Interfaces'
 }
 
 { #category : #'as yet unclassified' }
-SkGeneratorOfTraceQueries >> baseQuery [
+SeekerTraceQueriesInterface >> baseQuery [
 
 	"returns a query upon the omniscientTable"
 
@@ -16,7 +16,7 @@ SkGeneratorOfTraceQueries >> baseQuery [
 ]
 
 { #category : #'as yet unclassified' }
-SkGeneratorOfTraceQueries >> forAliasOfContextReceiverAtStepIndex: aNumber [
+SeekerTraceQueriesInterface >> forAliasOfContextReceiverAtStepIndex: aNumber [
 
 	"How to use it
 	 |step|
@@ -38,7 +38,7 @@ step :=  seeker currentIndexlessStepDescriptor .
 ]
 
 { #category : #'as yet unclassified' }
-SkGeneratorOfTraceQueries >> forAliasOfObjectReferredByVariableNode: aVariableNode [
+SeekerTraceQueriesInterface >> forAliasOfObjectReferredByVariableNode: aVariableNode [
 
 	| q table |
 	table := tracer tables omniscientTableForAliases.
@@ -78,7 +78,7 @@ SkGeneratorOfTraceQueries >> forAliasOfObjectReferredByVariableNode: aVariableNo
 ]
 
 { #category : #'as yet unclassified' }
-SkGeneratorOfTraceQueries >> forAliasOfObjectReferredByVariableNode: aVariableNode atContextOfStepPath: aStepDescriptorForContextOfVariable atExecutionStepIndex: aNumber [
+SeekerTraceQueriesInterface >> forAliasOfObjectReferredByVariableNode: aVariableNode atContextOfStepPath: aStepDescriptorForContextOfVariable atExecutionStepIndex: aNumber [
 
 	"The logic here is that the execution must remember the context where the node is located, but the alias must be evaluated once the execution reaches the step aNumber"
 
@@ -125,7 +125,7 @@ SkGeneratorOfTraceQueries >> forAliasOfObjectReferredByVariableNode: aVariableNo
 ]
 
 { #category : #'as yet unclassified' }
-SkGeneratorOfTraceQueries >> forAliases [
+SeekerTraceQueriesInterface >> forAliases [
 
 	| q aliasesTable methodsTable |
 	aliasesTable := tracer tables tableOfAliases.
@@ -149,7 +149,7 @@ SkGeneratorOfTraceQueries >> forAliases [
 ]
 
 { #category : #'as yet unclassified' }
-SkGeneratorOfTraceQueries >> forAssignments [
+SeekerTraceQueriesInterface >> forAssignments [
 
 	| table q |
 	table := tracer tables omniscientTableForAliases.
@@ -169,7 +169,7 @@ SkGeneratorOfTraceQueries >> forAssignments [
 ]
 
 { #category : #'as yet unclassified' }
-SkGeneratorOfTraceQueries >> forAssignmentsOfAnyVariable [
+SeekerTraceQueriesInterface >> forAssignmentsOfAnyVariable [
 
 	| table q |
 	table := tracer tables omniscientTableForAliases.
@@ -194,7 +194,7 @@ SkGeneratorOfTraceQueries >> forAssignmentsOfAnyVariable [
 ]
 
 { #category : #'as yet unclassified' }
-SkGeneratorOfTraceQueries >> forAssignmentsOfInstanceVariables [
+SeekerTraceQueriesInterface >> forAssignmentsOfInstanceVariables [
 
 	| table q |
 	table := tracer tables omniscientTableForAliases.
@@ -221,7 +221,7 @@ SkGeneratorOfTraceQueries >> forAssignmentsOfInstanceVariables [
 ]
 
 { #category : #'as yet unclassified' }
-SkGeneratorOfTraceQueries >> forContextSizeChanges [
+SeekerTraceQueriesInterface >> forContextSizeChanges [
 
 	| table q |
 	table := tracer tables tableOfContextSizes asTableWithMemory.
@@ -248,7 +248,7 @@ SkGeneratorOfTraceQueries >> forContextSizeChanges [
 ]
 
 { #category : #'as yet unclassified' }
-SkGeneratorOfTraceQueries >> forInstanceVariables [
+SeekerTraceQueriesInterface >> forInstanceVariables [
 
 	| q table |
 	table := tracer tables omniscientTableForAliases.
@@ -277,7 +277,7 @@ SkGeneratorOfTraceQueries >> forInstanceVariables [
 ]
 
 { #category : #'as yet unclassified' }
-SkGeneratorOfTraceQueries >> forReturnValues [
+SeekerTraceQueriesInterface >> forReturnValues [
 
 	| q table |
 	table := tracer tables omniscientTable.
@@ -295,7 +295,7 @@ SkGeneratorOfTraceQueries >> forReturnValues [
 ]
 
 { #category : #'as yet unclassified' }
-SkGeneratorOfTraceQueries >> forReturnValuesOfMethod: aMethod [
+SeekerTraceQueriesInterface >> forReturnValuesOfMethod: aMethod [
 
 	| q methodClass methodSelector |
 	methodClass := aMethod methodClass.
@@ -308,7 +308,7 @@ SkGeneratorOfTraceQueries >> forReturnValuesOfMethod: aMethod [
 ]
 
 { #category : #'as yet unclassified' }
-SkGeneratorOfTraceQueries >> forReturnValuesOfMethodWithSelector: aSymbol [
+SeekerTraceQueriesInterface >> forReturnValuesOfMethodWithSelector: aSymbol [
 
 	| q |
 	q := self forReturnValues select: [ :row | 
@@ -317,7 +317,7 @@ SkGeneratorOfTraceQueries >> forReturnValuesOfMethodWithSelector: aSymbol [
 ]
 
 { #category : #'as yet unclassified' }
-SkGeneratorOfTraceQueries >> forVariableValueChanges [
+SeekerTraceQueriesInterface >> forVariableValueChanges [
 
 	| q variablesValues |
 	variablesValues := self forVariableValues asQueryWithMemory.
@@ -344,7 +344,7 @@ SkGeneratorOfTraceQueries >> forVariableValueChanges [
 ]
 
 { #category : #'as yet unclassified' }
-SkGeneratorOfTraceQueries >> forVariableValues [
+SeekerTraceQueriesInterface >> forVariableValues [
 
 	| q variablesOnly |
 	variablesOnly := self forVariables.
@@ -370,7 +370,7 @@ SkGeneratorOfTraceQueries >> forVariableValues [
 ]
 
 { #category : #'as yet unclassified' }
-SkGeneratorOfTraceQueries >> forVariables [
+SeekerTraceQueriesInterface >> forVariables [
 
 	| q table |
 	table := tracer tables omniscientTableForAliases.
@@ -401,13 +401,13 @@ SkGeneratorOfTraceQueries >> forVariables [
 ]
 
 { #category : #accessing }
-SkGeneratorOfTraceQueries >> tracer [
+SeekerTraceQueriesInterface >> tracer [
 
 	^ tracer
 ]
 
 { #category : #accessing }
-SkGeneratorOfTraceQueries >> tracer: anObject [
+SeekerTraceQueriesInterface >> tracer: anObject [
 
 	tracer := anObject
 ]

@@ -4,7 +4,7 @@ Class {
 	#instVars : [
 		'tracer'
 	],
-	#category : #'Seeker-Components-Experimental'
+	#category : #'Seeker-Interfaces'
 }
 
 { #category : #starting }
@@ -16,7 +16,7 @@ SeekerPerformInterface >> restart [
 SeekerPerformInterface >> timeTravelToLastExecutedStatement [
 
 	tracer mapExecutionIfNotMappedAlready.
-	tracer stepUntilConditionIsTrue: [ false ]
+	tracer stepUntilConditionIsTrue: [ tracer isRiskyStep  ]
 ]
 
 { #category : #'as yet unclassified' }

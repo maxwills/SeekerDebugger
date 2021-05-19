@@ -7,7 +7,7 @@ Class {
 		'stepIndex',
 		'info'
 	],
-	#category : #'Seeker-Queries-Result'
+	#category : #'Seeker-Deprecated'
 }
 
 { #category : #'as yet unclassified' }

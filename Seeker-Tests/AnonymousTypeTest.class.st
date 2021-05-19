@@ -4,7 +4,7 @@ An AnonymousTypeTest is a test class for testing the behavior of AnonymousType
 Class {
 	#name : #AnonymousTypeTest,
 	#superclass : #TestCase,
-	#category : #'Seeker-Tests-Components-Experimental'
+	#category : #'Seeker-Tests-DataQuery'
 }
 
 { #category : #test }

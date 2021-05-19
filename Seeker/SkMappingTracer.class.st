@@ -109,29 +109,37 @@ SkMappingTracer >> automapForTestCaseScenario [
 
 	| recordingInitialContext testInitialContext endingContext |
 	"First, if the developer used the 'debugTest' command, the execution will begin interrupted at a breakpoint. In such case, we need to advance it one ast step, so it enters the appropriate statement for the analysis""true ifTrue: [ ^self ]."
-	recordingInitialContext := SkContextHelpers findContextInStack: [ :aContext | 
-		                           aContext methodSelector = #runCase ] startingContext: self currentContext.
+	recordingInitialContext := SkContextHelpers
+		                           findContextInStack: [ :aContext | 
+		                           aContext methodSelector = #runCase ]
+		                           startingContext: self currentContext.
 	recordingInitialContext ifNil: [ 
-		self error: 'Could not detect the initial context for recording.'. ^false].
+		self error: 'Could not detect the initial context for recording.'.
+		^ false ].
 	startingContextForRecord := recordingInitialContext.
 
-	testInitialContext := SkContextHelpers findContextInStack: [ :aContext | 
-		                      | senderContext |
-		                      senderContext := aContext sender.
-		                      senderContext isNotNil and: [ 
-			                      (senderContext receiver class inheritsFrom:
-				                       TestCase) and: [ 
-				                      senderContext methodSelector = #performTest ] ] ] startingContext: self currentContext.
+	testInitialContext := SkContextHelpers
+		                      findContextInStack: [ :aContext | 
+			                      | senderContext |
+			                      senderContext := aContext sender.
+			                      senderContext isNotNil and: [ 
+				                      (senderContext receiver class inheritsFrom:
+					                       TestCase) and: [ 
+					                      senderContext methodSelector = #performTest ] ] ]
+		                      startingContext: self currentContext.
 	testInitialContext ifNil: [ 
-		self error: 'Could not detect the initial context of the test.'. ^false ].
+		self error: 'Could not detect the initial context of the test.'.
+		^ false ].
 	startingIndexlessStepForNavigation := SkStepDescriptor 
 		                                      newFromCurrentNodeInContext:
 		                                      testInitialContext.
 	startingIndexlessStepForNavigation topStatementID indexInSequence: 1. "Force it to be the first statement"
 
-	endingContext := SkContextHelpers findContextInStack: [ :aContext | "We expect the exection will step in the method node of that context(because it doesn't have return node)"
-		                 (aContext receiver class inheritsFrom: TestCase) 
-			                 and: [ aContext methodSelector = #performTest ] ] startingContext: self currentContext.
+	endingContext := SkContextHelpers
+		                 findContextInStack: [ :aContext | "We expect the exection will step in the method node of that context(because it doesn't have return node)"
+			                 (aContext receiver class inheritsFrom: TestCase) 
+				                 and: [ aContext methodSelector = #performTest ] ]
+		                 startingContext: self currentContext.
 	"The last step it the last statement?"
 	pressumedEndStepForKnownScenario := SkStepDescriptor 
 		                                    newFromCurrentNodeInContext:
@@ -142,7 +150,7 @@ SkMappingTracer >> automapForTestCaseScenario [
 		                         pressumedEndStepForKnownScenario ].
 	self replayAndBuildExecutionMap.
 	isMapped := true.
-	^true
+	^ true
 ]
 
 { #category : #'as yet unclassified' }

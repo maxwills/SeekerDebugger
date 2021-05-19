@@ -10,16 +10,16 @@ You can create your own tables. The guidelines for the current ones are:
 - tables columns are named relative to the current executing context. So #context, is the currentContext of the observed process. #node is the current node of #context. #receiver is the #context receiver, etc.
 "
 Class {
-	#name : #SkGeneratorOfExecutionVirtualTables,
+	#name : #SeekerExecutionTablesInterface,
 	#superclass : #Object,
 	#instVars : [
 		'tracer'
 	],
-	#category : #'Seeker-Components-Experimental'
+	#category : #'Seeker-Interfaces'
 }
 
 { #category : #'as yet unclassified' }
-SkGeneratorOfExecutionVirtualTables >> omniscientSlimTable [
+SeekerExecutionTablesInterface >> omniscientSlimTable [
 
 	| csi virtualTable |
 
@@ -46,7 +46,7 @@ SkGeneratorOfExecutionVirtualTables >> omniscientSlimTable [
 ]
 
 { #category : #'as yet unclassified' }
-SkGeneratorOfExecutionVirtualTables >> omniscientTable [
+SeekerExecutionTablesInterface >> omniscientTable [
 
 	| csi virtualTable instancesDictionary getCreationStep |
 	instancesDictionary := IdentityDictionary new. "TODO add an onFinish to the table so I can clear the dictionary"
@@ -98,7 +98,7 @@ SkGeneratorOfExecutionVirtualTables >> omniscientTable [
 ]
 
 { #category : #'as yet unclassified' }
-SkGeneratorOfExecutionVirtualTables >> omniscientTableForAliases [
+SeekerExecutionTablesInterface >> omniscientTableForAliases [
 
 	"If aliases need to be queried, it is recomended to use this table instead of the ominisienTable. Object aliases need to be registered, and this registration is performed when querying certain rows of the omniscient table (#aliasOfReceiver). This table ensures that those rows will not be optimized out of the query"
 
@@ -109,7 +109,7 @@ SkGeneratorOfExecutionVirtualTables >> omniscientTableForAliases [
 ]
 
 { #category : #'as yet unclassified' }
-SkGeneratorOfExecutionVirtualTables >> tableForTrackingChanges [
+SeekerExecutionTablesInterface >> tableForTrackingChanges [
 
 	| csi virtualTable  |
 	csi := tracer currentStateInterface.
@@ -129,7 +129,7 @@ SkGeneratorOfExecutionVirtualTables >> tableForTrackingChanges [
 ]
 
 { #category : #accessing }
-SkGeneratorOfExecutionVirtualTables >> tableOfAliases [
+SeekerExecutionTablesInterface >> tableOfAliases [
 
 	| csi virtualTable instancesDictionary getCreationStep |
 	instancesDictionary := IdentityDictionary new. "TODO add an onFinish to the table so I can clear the dictionary"
@@ -157,7 +157,7 @@ SkGeneratorOfExecutionVirtualTables >> tableOfAliases [
 ]
 
 { #category : #accessing }
-SkGeneratorOfExecutionVirtualTables >> tableOfAliasesForInstancesReferredByVariablesOfContext [
+SeekerExecutionTablesInterface >> tableOfAliasesForInstancesReferredByVariablesOfContext [
 
 	| csi virtualTable instancesDictionary getCreationStepOfReceiver getCreationStepOfVariable getVariableValue getVariableName getVariablesList |
 	instancesDictionary := IdentityDictionary new. "TODO add an onFinish to the table so I can clear the dictionary"
@@ -225,7 +225,7 @@ SkGeneratorOfExecutionVirtualTables >> tableOfAliasesForInstancesReferredByVaria
 ]
 
 { #category : #accessing }
-SkGeneratorOfExecutionVirtualTables >> tableOfAliasesForInstancesReferredByVariablesValues [
+SeekerExecutionTablesInterface >> tableOfAliasesForInstancesReferredByVariablesValues [
 
 	| csi virtualTable instancesDictionary getCreationStepOfReceiver getCreationStepOfVariable getVariableValue getVariableName |
 	instancesDictionary := IdentityDictionary new. "TODO add an onFinish to the table so I can clear the dictionary"
@@ -287,7 +287,7 @@ SkGeneratorOfExecutionVirtualTables >> tableOfAliasesForInstancesReferredByVaria
 ]
 
 { #category : #'as yet unclassified' }
-SkGeneratorOfExecutionVirtualTables >> tableOfContextSizes [
+SeekerExecutionTablesInterface >> tableOfContextSizes [
 
 	| csi virtualTable |
 	csi := tracer currentStateInterface.
@@ -304,7 +304,7 @@ SkGeneratorOfExecutionVirtualTables >> tableOfContextSizes [
 ]
 
 { #category : #accessing }
-SkGeneratorOfExecutionVirtualTables >> tableOfMethods [
+SeekerExecutionTablesInterface >> tableOfMethods [
 
 	| csi virtualTable |
 	
@@ -322,7 +322,7 @@ SkGeneratorOfExecutionVirtualTables >> tableOfMethods [
 ]
 
 { #category : #accessing }
-SkGeneratorOfExecutionVirtualTables >> tableOfReturnValues [
+SeekerExecutionTablesInterface >> tableOfReturnValues [
 
 	| csi virtualTable |
 	csi := tracer currentStateInterface.
@@ -342,7 +342,7 @@ SkGeneratorOfExecutionVirtualTables >> tableOfReturnValues [
 ]
 
 { #category : #accessing }
-SkGeneratorOfExecutionVirtualTables >> tableOfStatementSourceCode [
+SeekerExecutionTablesInterface >> tableOfStatementSourceCode [
 
 	| csi virtualTable |
 	csi := tracer currentStateInterface.
@@ -361,7 +361,7 @@ SkGeneratorOfExecutionVirtualTables >> tableOfStatementSourceCode [
 ]
 
 { #category : #accessing }
-SkGeneratorOfExecutionVirtualTables >> tableOfVariables [
+SeekerExecutionTablesInterface >> tableOfVariables [
 
 	| csi virtualTable |
 	csi := tracer currentStateInterface.
@@ -381,13 +381,13 @@ SkGeneratorOfExecutionVirtualTables >> tableOfVariables [
 ]
 
 { #category : #accessing }
-SkGeneratorOfExecutionVirtualTables >> tracer [
+SeekerExecutionTablesInterface >> tracer [
 
 	^ tracer
 ]
 
 { #category : #accessing }
-SkGeneratorOfExecutionVirtualTables >> tracer: anObject [
+SeekerExecutionTablesInterface >> tracer: anObject [
 
 	tracer := anObject
 ]

@@ -8,7 +8,7 @@ Class {
 		'hasResult',
 		'result'
 	],
-	#category : #'Seeker-Queries-Result'
+	#category : #'Seeker-Deprecated'
 }
 
 { #category : #'as yet unclassified' }

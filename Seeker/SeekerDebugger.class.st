@@ -135,6 +135,7 @@ SeekerDebugger >> quickSetup [
 	stDebugger ifNil: [ ^ self ].
 	process := stDebugger interruptedProcess.
 	process ifNil: [ ^ self ].
+	stepper session: stDebugger session.
 	isWatchedProcess := SeekerGlobals instance isWatchedProcess: process.
 	isWatchedProcess ifTrue: [ 
 		"[" stepper isQuickMapAvailable ifTrue: [ stepper quickMap ] "] "

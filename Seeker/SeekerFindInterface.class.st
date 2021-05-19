@@ -1,7 +1,7 @@
 Class {
 	#name : #SeekerFindInterface,
 	#superclass : #SeekerFindInterfaceBase,
-	#category : #'Seeker-Components-Experimental'
+	#category : #'Seeker-Interfaces'
 }
 
 { #category : #'as yet unclassified' }

@@ -1,7 +1,7 @@
 Class {
 	#name : #New,
 	#superclass : #Object,
-	#category : #'Seeker-Components-Experimental'
+	#category : #'Seeker-DataQuery'
 }
 
 { #category : #'instance creation' }

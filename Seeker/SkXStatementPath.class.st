@@ -4,7 +4,7 @@ Class {
 	#instVars : [
 		'rootPathNode'
 	],
-	#category : #'Seeker-Components-Experimental'
+	#category : #'Seeker-Experimental'
 }
 
 { #category : #arithmetic }

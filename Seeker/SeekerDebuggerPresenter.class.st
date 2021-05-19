@@ -155,26 +155,30 @@ SeekerDebuggerPresenter >> initializePresenters [
 { #category : #initialization }
 SeekerDebuggerPresenter >> initializeToolbar [
 
+	"For icons inspect next line"
+
+	"Smalltalk ui icons"
+
 	toolbar := self newToolbar
 		           addItem: (self newToolbarButton
-				            label: 'Into';
+				            label: 'Advance Down';
+				            icon: (self application iconNamed: #glamorousDown);
+				            action: [ self stepOverHandler ];
+				            yourself);
+		           addItem: (self newToolbarButton
+				            label: 'Back Up';
+				            icon: (self application iconNamed: #glamorousUp);
+				            action: [ self stepBackOverHandler ];
+				            yourself);
+		           addItem: (self newToolbarButton
+				            label: 'Advance In';
 				            icon: (self application iconNamed: #glamorousInto);
 				            action: [ self stepIntoHandler ];
 				            yourself);
 		           addItem: (self newToolbarButton
-				            label: 'Over';
+				            label: 'Back In';
 				            icon: (self application iconNamed: #glamorousOver);
-				            action: [ self stepOverHandler ];
-				            yourself);
-		           addItem: (self newToolbarButton
-				            label: 'BackInto';
-				            icon: (self application iconNamed: #glamorousUndo);
 				            action: [ self stepBackIntoHandler ];
-				            yourself);
-		           addItem: (self newToolbarButton
-				            label: 'BackOver';
-				            icon: (self application iconNamed: #back);
-				            action: [ self stepBackOverHandler ];
 				            yourself);
 		           addItem: (self newToolbarButton
 				            label: 'Restart';
@@ -183,7 +187,7 @@ SeekerDebuggerPresenter >> initializeToolbar [
 				            yourself);
 		           addItem: (self newToolbarButton
 				            label: 'To End';
-				            icon: (self application iconNamed: #glamorousRight);
+				            icon: (self application iconNamed: #glamorousSpawn);
 				            action: [ self stepToEndHandler ];
 				            yourself);
 		           "addItem: (self newToolbarButton
@@ -316,7 +320,7 @@ self doAndUpdateSessionAfter: [ self seekerDebugger stepper pushNavigationHistor
 { #category : #'as yet unclassified' }
 SeekerDebuggerPresenter >> stepToEndHandler [
 	self seekerDebugger stepper mapExecutionIfNotMappedAlready.
-	self seekerDebugger stepper stepUntilConditionIsTrue: [ false ].
+	self seekerDebugger stepper stepUntilConditionIsTrue: [ self seekerDebugger stepper isRiskyStep ].
 ]
 
 { #category : #'as yet unclassified' }

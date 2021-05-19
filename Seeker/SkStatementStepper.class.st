@@ -90,8 +90,7 @@ SkStatementStepper >> createIndexlessStepDescriptorForContext: aContext [
 SkStatementStepper >> currentContext [
 
 	| context |
-	
-	context := stDebugger interruptedProcess suspendedContext  "debuggerActionModel session interruptedContext".
+	context := session interruptedProcess suspendedContext. "debuggerActionModel session interruptedContext"
 	^ context
 ]
 
@@ -208,9 +207,11 @@ SkStatementStepper >> initialize [
 
 { #category : #testing }
 SkStatementStepper >> isExecutionFinished [
+
 	"Returns whether the debugged execution is finished"
 
-	^ stDebugger interruptedContext sender isNil or: [stDebugger interruptedProcess isTerminating].
+	^ self currentContext sender isNil or: [ 
+		  session interruptedProcess isTerminating ]
 ]
 
 { #category : #testing }
@@ -294,6 +295,25 @@ SkStatementStepper >> oldBlockAliasImplementationstepAstWithoutSkipping [
 		instancesDictionary addBlock: blockNode toStep: currentStepIndex.
 		 ].
 	debuggerActionModel session updateContextTo: context step
+]
+
+{ #category : #'as yet unclassified' }
+SkStatementStepper >> oldStepUntilConditionIsTrue: aBlock [
+
+	"Steps into statements until condition is true"
+
+	"I can't refactor the next code and I don't know why (whenver I do it, the debugger acts weird (and I can't automap)"
+
+	self doAndUpdateSessionAfter: [ 
+		| shouldStop |
+		shouldStop := false.
+		[ shouldStop ] whileFalse: [ 
+			(self isExecutionFinished or: [ self isRiskyStep ])
+				ifTrue: [ shouldStop := true ]
+				ifFalse: [ 
+					shouldStop := aBlock value.
+					shouldStop ifFalse: [ self stepInto ifFalse: [ ^ false ] ] ] ] ].
+	^ true
 ]
 
 { #category : #'debug - stepping' }
@@ -441,31 +461,24 @@ SkStatementStepper >> stepAstWithoutSkipping [
 
 	"You must ensure that execution is not finished before callig this method."
 
-	| debuggerActionModel context startingNode |
+	| debuggerActionModel context contextAfter startingNode |
 	(self isExecutionFinished or: [ self isRiskyStep ]) ifTrue: [ "self inform: 'Reached execution safe end point'" 
 		^ false ].
-	"self signalExceptionIfDebuggedExecutionHasSignalledUnhandledException.
-	self signalExceptionIfDebuggedExecutionIsFinished."
 
-	astStepCounter := astStepCounter + 1. "Note that the counter increases just before actually executing the AST. So Ast nodes pre and post process takes place for the same current ast"
-	debuggerActionModel := stDebugger debuggerActionModel.
-	"InterruptedContext can be a CompiledBlock"
-	context := debuggerActionModel session interruptedContext.
-	context compiledCode class = CompiledBlock ifFalse: [ "I think there is an error in the first call of context stepIntoQuickMethod. My suspicious is that the message isBlock doesn't do what the developer thought it did. This ifFalse prevent reaching that case." 
-		context stepIntoQuickMethod: true ].
-	"Next line comes from the stdebugger"
+	astStepCounter := astStepCounter + 1. "Note that the counter increases just before actually executing the AST. So Ast nodes pre and post process takes place for the same current ast step"
+	"debuggerActionModel := stDebugger debuggerActionModel."
+
+	"context := debuggerActionModel session interruptedContext."
+	context := self currentContext.
+	context stepIntoQuickMethod: true.
+
 	startingNode := self currentNode.
 	self doAstStepPreProcess.
-
-	self stDebugger interruptedProcess step.
+	contextAfter := session interruptedProcess step.
+	"self stDebugger interruptedProcess step."
 	byteCountCounter := byteCountCounter + 1.
 	stepBC := stepBC + 1.
-
-
-
-	"	debuggerActionModel stepInto: self currentContext."
-
-
+	context stepIntoQuickMethod: false.
 	self doAstStepPostProcess: startingNode.
 	^ true
 	"next line was a patch"
@@ -508,17 +521,17 @@ SkStatementStepper >> stepInto [
 
 	"returns false if reached the end of the execution (or any type of end)"
 
-	| canContinueStepping |
-	canContinueStepping := false.
 	"Safety checking is done at ast stepping level"
+
+	| res |
 	self doAndUpdateSessionAfter: [ 
 		astStepCounter := 0.
 		stepBC := 1.
-		self doStepIntoBeginProcess.
-		canContinueStepping := self stepAstIntoStatement.
+		"self doStepIntoBeginProcess."
+		res := self stepAstIntoStatement
 		"self pushCurrentStepDescriptor."
-		self doStepIntoFinishProcess ].
-	^ canContinueStepping
+		"self doStepIntoFinishProcess " ].
+	^ res
 ]
 
 { #category : #'debug - stepping' }

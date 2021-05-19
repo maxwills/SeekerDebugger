@@ -4,7 +4,7 @@ Class {
 	#instVars : [
 		'stepIndex'
 	],
-	#category : #'Seeker-Components-Experimental'
+	#category : #'Seeker-Experimental'
 }
 
 { #category : #converting }

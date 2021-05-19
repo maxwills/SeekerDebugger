@@ -9,7 +9,7 @@ Class {
 		'excludedFields',
 		'protectedColumns'
 	],
-	#category : #'Seeker-Components-Experimental'
+	#category : #'Seeker-DataQuery'
 }
 
 { #category : #'instance creation' }
