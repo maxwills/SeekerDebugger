@@ -108,6 +108,12 @@ SkCurrentStateInterface >> isFirstBytecodeOfStatement [
 ]
 
 { #category : #testing }
+SkCurrentStateInterface >> isMethodReturn [
+
+	^ self contextPC = self endPC
+]
+
+{ #category : #testing }
 SkCurrentStateInterface >> isVariable [
 
 	^ self node isVariable

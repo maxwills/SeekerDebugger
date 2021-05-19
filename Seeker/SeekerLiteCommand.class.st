@@ -66,6 +66,12 @@ SeekerLiteCommand >> name [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerLiteCommand >> nodeUnderCursor [
+
+	^ context nodeUnderCursor
+]
+
+{ #category : #'as yet unclassified' }
 SeekerLiteCommand >> pushesNavigation [
 	^false
 ]
@@ -80,4 +86,23 @@ SeekerLiteCommand >> seekerDebuggerPresenter [
 	context extensionTools do: [ :each|  (each class = SeekerDebuggerPresenter) ifTrue: [
 		^each
 		]].^nil
+]
+
+{ #category : #'accessing context' }
+SeekerLiteCommand >> selectedContext [
+
+	^ self seeker stDebugger selectedContext
+]
+
+{ #category : #'accessing context' }
+SeekerLiteCommand >> selectedContextIsTopContext [
+
+	^ self seeker stDebugger interruptedContext
+	  = self seeker stDebugger selectedContext
+]
+
+{ #category : #accessing }
+SeekerLiteCommand >> tracer [
+
+	^ self seeker stepper
 ]

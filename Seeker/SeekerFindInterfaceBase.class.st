@@ -1,0 +1,147 @@
+Class {
+	#name : #SeekerFindInterfaceBase,
+	#superclass : #Object,
+	#instVars : [
+		'tracer'
+	],
+	#category : #'Seeker-Components-Experimental'
+}
+
+{ #category : #'as yet unclassified' }
+SeekerFindInterfaceBase >> aliasOfVariableNode: aNode inContext: aContext [
+
+	| node nodeStepDescriptor aliasResult aliasQuery |
+	node := aNode.
+	node isVariable ifFalse: [ ^ self error: 'Not a variable node' ].
+
+	nodeStepDescriptor := SkStepDescriptor
+		                      newFromNode: node
+		                      inContext: aContext
+		                      isTopContext: (tracer isTopContext: aContext).
+	aliasQuery := self tracer queries 
+		              forAliasOfObjectReferredByVariableNode: node.
+	"dont use aQuery select: for it breaks the optimization... use nested queries instead"
+	aliasQuery := Query
+		              from:
+		              (aliasQuery withExecutionColumns:
+			               { #tracedStatementDescriptor })
+		              select: [ :row | 
+			              row tracedStatementDescriptor hasSamePathAs:
+				              nodeStepDescriptor ]
+		              collect: #*.
+
+	aliasResult := aliasQuery first.
+	(aliasResult isNil or: [ aliasResult variableValueAlias isNil ]) 
+		ifTrue: [ 
+		^ self error: 'Unable to identify object instance' ].
+	^ aliasResult variableValueAlias
+]
+
+{ #category : #'as yet unclassified' }
+SeekerFindInterfaceBase >> receiverAliasOfContext: aContext [
+
+	"This is mostly unnecessary since the omniscientTableForAliases already includes receiverAlias in every row. Avoid using this if you can"
+
+	| stepDescriptor query |
+	stepDescriptor := SkStepDescriptor newFromCurrentNodeInContext:
+		                  aContext.
+	stepDescriptor topStatementID indexInSequence: 1.
+
+	query := Query
+		         from: tracer tables omniscientTableForAliases
+		         select: [ :row | 
+		         row tracedStatementDescriptor hasSamePathAs: stepDescriptor ]
+		         collect: [ :row | 
+		         New with: { (#receiverAlias -> row receiverAlias) } ].
+
+	^ query first receiverAlias
+]
+
+{ #category : #'as yet unclassified' }
+SeekerFindInterfaceBase >> receiverAliasOfMessageNode: aNode inContext: aContext [
+
+	aNode isMessage ifFalse: [ ^ self error: 'Not a message node' ].
+	aNode receiver isVariable ifFalse: [ 
+		^ self error:
+			  'Only messages with a receiverof type variable node are supported. ' ].
+
+	^ self
+		  aliasOfVariableNode: aNode receiver
+		  inContext: aContext
+]
+
+{ #category : #'as yet unclassified' }
+SeekerFindInterfaceBase >> returnValuesOfMessageSendNode: aMessageNode inContext: aContext [
+
+	| node messageReceiverAlias returnValuesQuery messageReceiverClass methodSelectorOfMessage result |
+	node := aMessageNode.
+	node isMessage ifFalse: [ ^ self error: 'Not a message node' ].
+	node receiver isVariable ifFalse: [ 
+		^ self error:
+			  'Only messages with a receiverof type variable node are supported. ' ].
+	messageReceiverClass := (node receiver variable readInContext:
+		                         aContext) class.
+	methodSelectorOfMessage := node selector value.
+	"first, Get the alias of the receiver instance"
+
+	messageReceiverAlias := self
+		                        receiverAliasOfMessageNode: node
+		                        inContext: aContext.
+	"then, get all return values where the context receiver has the target alias"
+	returnValuesQuery := Query
+		                     from:
+			                     (self tracer tables omniscientTableForAliases 
+				                      join:
+					                      (self tracer queries forReturnValues 
+						                       withExecutionColumns:
+						                       { #methodReturnValue }))
+		                     select: [ :row | 
+			                     row receiverAlias = messageReceiverAlias and: [ 
+				                     row receiverClass = messageReceiverClass 
+					                     and: [ 
+						                     row methodSelector
+						                     = methodSelectorOfMessage and: [ 
+							                     row isMethodReturn ] ] ] ]
+		                     collect: #*.
+	returnValuesQuery ensureReceiverAliases.
+
+	result := returnValuesQuery asTableForTimeTravel.
+	^ result rows
+]
+
+{ #category : #'as yet unclassified' }
+SeekerFindInterfaceBase >> returnValuesOfMethodOfSameReceiverAsContext: aContext [
+
+	| node receiverAlias returnValuesQuery receiverClass methodSelector result |
+	node := aContext methodNode.
+	node isMethod ifFalse: [ ^ self error: 'Not a method node' ].
+	receiverClass := aContext receiver class.
+	methodSelector := aContext methodSelector.
+	"first, Get the alias of the receiver instance"
+	receiverAlias := self receiverAliasOfContext: aContext.
+	"then, get all return values where the context receiver has the target alias"
+	returnValuesQuery := Query
+		                     from:
+		                     self tracer tables omniscientTableForAliases
+		                     select: [ :row | 
+			                     row receiverAlias = receiverAlias and: [ 
+				                     row receiverClass = receiverClass and: [ 
+					                     row methodSelector = methodSelector and: [ 
+						                     row isMethodReturn ] ] ] ]
+		                     collect: #*.
+	
+	returnValuesQuery ensureReceiverAliases.
+
+	result := returnValuesQuery asTableForTimeTravel.
+	^ result rows
+]
+
+{ #category : #accessing }
+SeekerFindInterfaceBase >> tracer [
+	^tracer
+]
+
+{ #category : #accessing }
+SeekerFindInterfaceBase >> tracer: anObject [
+	tracer := anObject
+]

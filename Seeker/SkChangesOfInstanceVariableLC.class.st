@@ -1,22 +1,23 @@
 Class {
-	#name : #SkPrintTraceToClipboardLC,
+	#name : #SkChangesOfInstanceVariableLC,
 	#superclass : #SeekerLiteCommand,
 	#category : #'Seeker-Commands'
 }
 
 { #category : #accessing }
-SkPrintTraceToClipboardLC >> description [
+SkChangesOfInstanceVariableLC >> description [
+
 	^'MyCommand description'
 ]
 
 { #category : #executing }
-SkPrintTraceToClipboardLC >> executeCommand [
+SkChangesOfInstanceVariableLC >> executeCommand [
 
-	Clipboard clipboardText: self seeker stepper trace asString
+	self tracer find changesOfSelectedInstanceVariable inspect
 ]
 
 { #category : #accessing }
-SkPrintTraceToClipboardLC >> icon [
+SkChangesOfInstanceVariableLC >> icon [
 
 "Inspect the following line and choose an icon for the command
 
@@ -28,6 +29,7 @@ SkPrintTraceToClipboardLC >> icon [
 ]
 
 { #category : #accessing }
-SkPrintTraceToClipboardLC >> name [
-	^'Print Trace to the Clipboard'
+SkChangesOfInstanceVariableLC >> name [
+
+	^ 'Changes of Instance Variable'
 ]

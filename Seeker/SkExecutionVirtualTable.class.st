@@ -6,7 +6,8 @@ Class {
 		'tracer',
 		'justRestarted',
 		'optimizedRowReificationBlock',
-		'excludedFields'
+		'excludedFields',
+		'protectedColumns'
 	],
 	#category : #'Seeker-Components-Experimental'
 }
@@ -39,7 +40,7 @@ SkExecutionVirtualTable >> asTableWithMemory [
 	t := SkExecutionVirtualTableWithMemory
 		     newWithRowReificationBlock: rowReificationBlock
 		     forTracer: tracer.
-
+	t excluding: self excluding.
 	^ t
 ]
 
@@ -116,12 +117,14 @@ SkExecutionVirtualTable >> findTracer [
 { #category : #'as yet unclassified' }
 SkExecutionVirtualTable >> getRelevantFields [
 
-	^ {  }
+	^ protectedColumns
 ]
 
 { #category : #initialization }
 SkExecutionVirtualTable >> initialize [
-excludedFields := {  }
+
+	excludedFields := {  }.
+	protectedColumns := {  }
 ]
 
 { #category : #'as yet unclassified' }
@@ -132,6 +135,18 @@ SkExecutionVirtualTable >> optimizeRowAcquisitionForFields: aCollection [
 		                                andExcluding: excludedFields
 		                                ofInstantiationBlock:
 		                                rowReificationBlock
+]
+
+{ #category : #accessing }
+SkExecutionVirtualTable >> protectedColumns [
+
+	^ protectedColumns
+]
+
+{ #category : #accessing }
+SkExecutionVirtualTable >> protectedColumns: anObject [
+
+	protectedColumns := anObject
 ]
 
 { #category : #'as yet unclassified' }

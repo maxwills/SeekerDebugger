@@ -8,5 +8,5 @@ Class {
 SkExecutionFields class >> nonCsvFriendlyFields [
 
 	^ { #node. #statementNode. #sequenceNode. #sourceCodeOfNode.
-	  #sourceCodeOfStatementNode }
+	  #sourceCodeOfStatementNode. #aliasesDictionary }
 ]

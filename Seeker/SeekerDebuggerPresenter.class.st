@@ -154,48 +154,54 @@ SeekerDebuggerPresenter >> initializePresenters [
 
 { #category : #initialization }
 SeekerDebuggerPresenter >> initializeToolbar [
+
 	toolbar := self newToolbar
 		           addItem: (self newToolbarButton
 				            label: 'Into';
 				            icon: (self application iconNamed: #glamorousInto);
 				            action: [ self stepIntoHandler ];
 				            yourself);
-				addItem: (self newToolbarButton
+		           addItem: (self newToolbarButton
 				            label: 'Over';
 				            icon: (self application iconNamed: #glamorousOver);
-				            action: [self stepOverHandler ];
+				            action: [ self stepOverHandler ];
 				            yourself);
 		           addItem: (self newToolbarButton
 				            label: 'BackInto';
 				            icon: (self application iconNamed: #glamorousUndo);
-				            action: [self stepBackIntoHandler ];
+				            action: [ self stepBackIntoHandler ];
 				            yourself);
-				addItem: (self newToolbarButton
+		           addItem: (self newToolbarButton
 				            label: 'BackOver';
 				            icon: (self application iconNamed: #back);
-				            action: [self stepBackOverHandler ];
+				            action: [ self stepBackOverHandler ];
 				            yourself);
-				addItem: (self newToolbarButton
+		           addItem: (self newToolbarButton
 				            label: 'Restart';
 				            icon: (self application iconNamed: #smallHome);
-				            action: [self restartHandler ];
+				            action: [ self restartHandler ];
 				            yourself);
-				"addItem: (self newToolbarButton
+		           addItem: (self newToolbarButton
+				            label: 'To End';
+				            icon: (self application iconNamed: #glamorousRight);
+				            action: [ self stepToEndHandler ];
+				            yourself);
+		           "addItem: (self newToolbarButton
 				            label: 'Set Restart Point';
 				            icon: (self application iconNamed: #smallHome);
 				            action: [self setSelectedContexAsStartingPointHandler  ];
 				            yourself);"
-				addItem: (self newToolbarButton
+		           addItem: (self newToolbarButton
 				            label: 'Enable Time Travel';
 				            icon: (self application iconNamed: #smallProfile);
-				            action: [self enableTimeTravelingHandler  ];
+				            action: [ self enableTimeTravelingHandler ];
 				            yourself);
-				"addItem: (self newToolbarButton
+		           "addItem: (self newToolbarButton
 				            label: 'Mark end statement';
 				            icon: (self application iconNamed: #protocolPrivate);
 				            action: [self setEndHandler ];
 				            yourself);"
-		           yourself .
+			           yourself
 ]
 
 { #category : #initialization }
@@ -305,6 +311,12 @@ SeekerDebuggerPresenter >> stepOverHandler [
 self mapExecutionIfNotMappedAlready.
 self doAndUpdateSessionAfter: [ self seekerDebugger stepper pushNavigationHistory .	self seekerDebugger stepOver ]
 	
+]
+
+{ #category : #'as yet unclassified' }
+SeekerDebuggerPresenter >> stepToEndHandler [
+	self seekerDebugger stepper mapExecutionIfNotMappedAlready.
+	self seekerDebugger stepper stepUntilConditionIsTrue: [ false ].
 ]
 
 { #category : #'as yet unclassified' }

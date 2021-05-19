@@ -53,20 +53,6 @@ QueriesExamplesTests >> test3AmIInARecursiveCall [
 ]
 
 { #category : #tests }
-QueriesExamplesTests >> test4ComplexVariableChange [
-
-	| dog person |
-	dog := SkDog new.
-	person := SkPerson new.
-	dog name: 'dogname'.
-	person name: 'person name'.
-	dog name: 'renamed dog'.
-	person name: 'renamed person'.
-
-	self assert: person name equals: 'unnamed'
-]
-
-{ #category : #tests }
 QueriesExamplesTests >> test4SimpleVariableChange [
 
 	| aCol aNumber |
@@ -86,15 +72,14 @@ QueriesExamplesTests >> test4SimpleVariableChange [
 { #category : #tests }
 QueriesExamplesTests >> test5ComplexVariableChange [
 
-	|name dog person |
-	
+	| name dog person |
 	name := 'temporaryVariable name'.
 	dog := SkDog new.
 	dog name: 'dog name'.
-	
+
 	person := SkPerson new.
 	person name: 'person name'.
-	
+
 	dog name: 'renamed dog'.
 	person name: 'renamed person'.
 	name := 'renamed temporary'.

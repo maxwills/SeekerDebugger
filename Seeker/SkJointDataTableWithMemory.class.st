@@ -1,6 +1,6 @@
 Class {
-	#name : #SkExecutionVirtualTableWithMemory,
-	#superclass : #SkExecutionVirtualTable,
+	#name : #SkJointDataTableWithMemory,
+	#superclass : #SkJointDataTable,
 	#traits : 'TSeekerTableWithMemory',
 	#classTraits : 'TSeekerTableWithMemory classTrait',
 	#category : #'Seeker-Components-Experimental'

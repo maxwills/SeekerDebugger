@@ -39,3 +39,29 @@ commands := (Pragma allNamed: #seekerDebuggerCodeExtensionCommand:) collect: [
 	""commands do: [ :c | toolbarSindarinGroup register: c ].		 ""
 		"	
 ]
+
+{ #category : #'*Seeker' }
+StDebugger >> nodeUnderCursor [
+
+	| selectedContext methodNode caretPosition |
+	caretPosition := self code selectionInterval first.
+
+	"Should first get the node in the appropriate context (the selected one)"
+	selectedContext := self selectedContext.
+	selectedContext ifNil: [ ^ nil ].
+	methodNode := selectedContext method sourceNode.
+
+	^ methodNode bestNodeForPosition: caretPosition
+]
+
+{ #category : #'*Seeker' }
+StDebugger >> nodeUnderSelection [
+
+	| selectedContext methodNode |
+	"Should first get the node in the appropriate context (the selected one)"
+	selectedContext := self selectedContext.
+	selectedContext ifNil: [ ^ nil ].
+	methodNode := selectedContext method sourceNode.
+
+	^ methodNode bestNodeFor: code selectionInterval
+]

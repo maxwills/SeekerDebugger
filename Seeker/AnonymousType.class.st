@@ -34,11 +34,16 @@ AnonymousType >> @ aSymbol [
 AnonymousType >> asCsvPrintOn: aStream [
 
 	| keys |
+	aStream ifNil: [ ^ self ].
 	keys := privateFields keys asSortedCollection.
-	keys ifEmpty: [ ^ aStream nextPutAll: '-' ].
+	keys ifEmpty: [ 
+		^ aStream
+			  nextPutAll: '-';
+			  nextPutAll: String cr ].
 	1 to: keys size do: [ :keyIndex | 
 		| value |
 		value := privateFields at: (keys at: keyIndex).
+		value ifNil: [ value := '' ].
 		aStream nextPutAll: value asString.
 		keyIndex = keys size ifFalse: [ "I am sure there is better code for this" 
 			aStream nextPutAll: ';' ] ].
@@ -80,8 +85,12 @@ AnonymousType >> fieldNames [
 AnonymousType >> headersAsCsvPrintOn: aStream [
 
 	| keys |
+	aStream ifNil:[^self].
 	keys := privateFields keys asSortedCollection.
-	keys ifEmpty: [ ^ aStream nextPutAll: '-' ].
+	keys ifEmpty: [ 
+		^ aStream
+			  nextPutAll: '-';
+			  nextPutAll: String cr ].
 	1 to: keys size do: [ :keyIndex | 
 		| key |
 		key := keys at: keyIndex.
@@ -121,7 +130,8 @@ AnonymousType >> printOn: aStream [
 		aStream
 			nextPutAll: key asString;
 			nextPutAll: ': ';
-			nextPutAll: value asString.
+			
+			nextPutAll: (value ifNil:[''] ifNotNil:[value asString]).
 		keyIndex = keys size ifFalse: [ "I am sure there is better code for this" 
 			aStream nextPutAll: ' | ' ] ]
 ]

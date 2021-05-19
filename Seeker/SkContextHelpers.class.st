@@ -25,6 +25,14 @@ SkContextHelpers class >> countStackDepthFrom: aContext [
 ]
 
 { #category : #'as yet unclassified' }
+SkContextHelpers class >> createStepDescriptorForContext: aContext [
+
+	| sd |
+	sd := SkStepDescriptor newFromCurrentNodeInContext: aContext.
+	sd topStatementID indexInSequence: 1
+]
+
+{ #category : #'as yet unclassified' }
 SkContextHelpers class >> currentNodeOf: aContext isTopContext: aBoolean [
 
 	^ aContext method sourceNodeForPC: aContext pc + (aBoolean

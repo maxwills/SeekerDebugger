@@ -42,6 +42,12 @@ SkIterableDataTableBase >> endOfTableReached [
 	self subclassResponsibility
 ]
 
+{ #category : #'as yet unclassified' }
+SkIterableDataTableBase >> findTracer [
+
+	^ nil
+]
+
 { #category : #splitjoin }
 SkIterableDataTableBase >> join: anIterableDataSet [
 
@@ -63,4 +69,26 @@ SkIterableDataTableBase >> resetTableTraversing [
 	"Puts the table traversing cursor 'before the first row'. one advanceToNextRow is necessary to enter the first row. A reseted table should reply currentRow nil always."
 
 	self subclassResponsibility
+]
+
+{ #category : #enumerating }
+SkIterableDataTableBase >> selfAndChildrenDo: aBlock [
+
+	"aBlock that receives one argument, which will be the self, and will be called recursivelly for every children datasource"
+
+	aBlock value: self
+]
+
+{ #category : #'as yet unclassified' }
+SkIterableDataTableBase >> withExecutionColumns: aCollection [
+
+	| rightTable tracer columns |
+	self dataSourceIsTracedExecution ifFalse: [ ^ self ].
+
+	tracer := self findTracer.
+	rightTable := tracer tables omniscientTable.
+	columns := aCollection asSet.
+	columns add: #bytecodeIndex.
+	rightTable protectedColumns: columns.
+	^ self join: rightTable
 ]

@@ -1,22 +1,23 @@
 Class {
-	#name : #SkHistoryGoBackLC,
+	#name : #SkBackToTheBeginningLC,
 	#superclass : #SeekerLiteCommand,
 	#category : #'Seeker-Commands'
 }
 
 { #category : #accessing }
-SkHistoryGoBackLC >> description [
+SkBackToTheBeginningLC >> description [
+
 	^'MyCommand description'
 ]
 
 { #category : #executing }
-SkHistoryGoBackLC >> executeCommand [
+SkBackToTheBeginningLC >> executeCommand [
 
-	self seeker stepper navigateBack
+	self tracer perform restart
 ]
 
 { #category : #accessing }
-SkHistoryGoBackLC >> icon [
+SkBackToTheBeginningLC >> icon [
 
 "Inspect the following line and choose an icon for the command
 
@@ -28,6 +29,7 @@ SkHistoryGoBackLC >> icon [
 ]
 
 { #category : #accessing }
-SkHistoryGoBackLC >> name [
-	^'Navigate back'
+SkBackToTheBeginningLC >> name [
+
+	^'Restart'
 ]

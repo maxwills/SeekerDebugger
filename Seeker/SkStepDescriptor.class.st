@@ -73,24 +73,29 @@ SkStepDescriptor class >> newFromNode: aRBNode inContext: aContext isTopContext:
 
 	"returns a SDStatementStepDescriptor with all the statement static IDs which lead to the nodenode"
 
-	| stepDescriptor sourceCode contexts firstIteration |
+	| stepDescriptor sourceCode contexts lastIteration |
 	aContext ifNil: [ Exception new signal ].
 
 	stepDescriptor := self new.
 	"current context (top) is the last one"
 	contexts := SkContextHelpers contextStackAsListFrom: aContext.
-	firstIteration := true.
-	contexts do: [ :iterationContext | 
-		| statementID iterationNode |
-		iterationNode := SkContextHelpers
-			                 currentNodeOf: iterationContext
-			                 isTopContext: firstIteration.
+	lastIteration := false.
+	1 to: contexts size do: [ :cIndex | 
+		| iterationContext statementID iterationNode |
+		iterationContext := contexts at: cIndex.
+		lastIteration := cIndex = contexts size.
+		iterationNode := lastIteration
+			                 ifTrue: [ aRBNode ]
+			                 ifFalse: [ 
+				                 SkContextHelpers
+					                 currentNodeOf: iterationContext
+					                 isTopContext: false ].
 		statementID := SkStatementStaticID
 			               newFromAstNode: iterationNode
 			               inContext: iterationContext
-			               isTopContext: firstIteration.
-		stepDescriptor add: statementID.
-		firstIteration := false ].
+			               isTopContext: lastIteration.
+		stepDescriptor add: statementID ].
+
 
 	sourceCode := ''. "aRBNode statementNode
 		              ifNil: [ '""no statement for node""' ]

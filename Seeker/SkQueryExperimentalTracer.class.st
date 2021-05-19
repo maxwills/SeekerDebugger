@@ -16,84 +16,6 @@ SkQueryExperimentalTracer >> addAstPreStepHook: aBlock [
 ]
 
 { #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> createNestedQueryForReturnsOfMethod: aMethod [
-
-	| q innerQuery methodClass methodSelector |
-	innerQuery := self createReturnValuesQueryNewNewUltimate.
-	"
-	Inner query columns are:
-	  #stepIndex
-	  #receiverClass
-	  #methodSelector
-	  #returnValue 
-	"
-	methodClass := aMethod methodClass.
-	methodSelector := aMethod selector.
-
-	q := Query
-		     from: innerQuery
-		     where: [ :row | 
-			     row receiverClass = methodClass and: [ 
-				     row methodSelector = methodSelector ] ]
-		     select: [ :row | 
-			     New with: { 
-					     (#stepIndex -> row stepIndex).
-					     (#returnValue -> row returnValue) } ].
-	^ q
-]
-
-{ #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> createReturnValuesQueryNewNew [
-
-	| q table |
-	table := self createVirtualExecutionTableForReturnValues.
-	"The virtual table have this columns : 
-     #stepIndex
-     #receiverClass 
-     #methodSelector
-     #statementNotation
-     #returnValue
-     #contextPC
-     #endPC"
-
-	q := Query
-		     from: table
-		     where: [ :row | row contextPC = row endPC ]
-		     select: [ :row | 
-			     New with: { 
-					     (#stepIndex -> row stepIndex).
-					     (#statementNotation -> row statementNotation).
-					     (#returnValue -> row returnValue) } ].
-	^ q
-]
-
-{ #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> createReturnValuesQueryNewNewUltimate [
-
-	| q table |
-	table := self createVirtualExecutionTableForReturnValues.
-	"The virtual table have this columns : 
-     #stepIndex
-     #receiverClass 
-     #methodSelector
-     #statementNotation
-     #returnValue
-     #contextPC
-     #endPC"
-
-	q := Query
-		     from: table
-		     where: [ :row | row contextPC = row endPC ]
-		     select: [ :row | 
-			     New with: { 
-					     (#stepIndex -> row stepIndex).
-					     (#methodSelector -> row methodSelector).
-					     (#receiverClass -> row receiverClass).
-					     (#returnValue -> row returnValue) } ].
-	^ q
-]
-
-{ #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> currentStateAsRow [
 
 	"Debug help. Don't use this. No filtering or optimizations. Create a baseQuery instead and use it with select: collect:"
@@ -138,17 +60,41 @@ SkQueryExperimentalTracer >> doStepIntoBeginProcess [
 	queriesForPass do: [ :each | each privateOpeningStepProcessBlock value: self ]"
 ]
 
+{ #category : #'menu messages' }
+SkQueryExperimentalTracer >> find [
+
+	| interface |
+	interface := SeekerFindInterface new.
+	interface tracer: self.
+	^ interface 
+]
+
 { #category : #initialization }
 SkQueryExperimentalTracer >> initialize [
 
 	currentStateInterfaceInstance := SkCurrentStateInterface new.
 	currentStateInterfaceInstance tracer: self.
-	executionVirtualTableCreator := SkExecutionVirtualTableCreator new.
+	executionVirtualTableCreator := SkGeneratorOfExecutionVirtualTables new.
 	executionVirtualTableCreator tracer: self.
-	queriesLibrary := SkTraceQueries new.
+	queriesLibrary := SkGeneratorOfTraceQueries new.
 	queriesLibrary tracer: self.
 	astPreStepHooks := OrderedCollection new.
 	^ super initialize
+]
+
+{ #category : #testing }
+SkQueryExperimentalTracer >> isTopContext: aContext [
+
+	^ stDebugger interruptedContext = aContext
+]
+
+{ #category : #actions }
+SkQueryExperimentalTracer >> perform [
+
+	| interface |
+	interface := SeekerPerformInterface new.
+	interface tracer: self.
+	^ interface
 ]
 
 { #category : #accessing }
@@ -157,7 +103,7 @@ SkQueryExperimentalTracer >> queries [
 	"Should return the instance variable, but it works better like this when changint the libary class during a debug session (it is not updated)"
 
 	| lib |
-	lib := SkTraceQueries new.
+	lib := SkGeneratorOfTraceQueries new.
 	lib tracer: self.
 	^ lib
 ]
@@ -175,6 +121,26 @@ SkQueryExperimentalTracer >> queriesForTimeTravel [
 SkQueryExperimentalTracer >> removeAstPreStepHook: aBlock [
 
 	astPreStepHooks remove: aBlock
+]
+
+{ #category : #'accessing context' }
+SkQueryExperimentalTracer >> selectedContext [
+
+	^ stDebugger selectedContext
+]
+
+{ #category : #accessing }
+SkQueryExperimentalTracer >> selectedNode [
+
+	"Returns the node under the StDebugger code presenter selection."
+
+	^ stDebugger nodeUnderSelection
+]
+
+{ #category : #accessing }
+SkQueryExperimentalTracer >> selectedSelector [
+
+	^ stDebugger code selectedSelector
 ]
 
 { #category : #'as yet unclassified' }
@@ -197,7 +163,7 @@ SkQueryExperimentalTracer >> tables [
 	"^ executionVirtualTableCreator"
 
 	| tableCreator |
-	tableCreator := SkExecutionVirtualTableCreator new.
+	tableCreator := SkGeneratorOfExecutionVirtualTables new.
 	tableCreator tracer: self.
 	^ tableCreator
 ]

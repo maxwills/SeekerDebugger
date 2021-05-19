@@ -72,7 +72,15 @@ SeekerLiteCommands >> stCodeCommandsTree [
 	^ { 
 		  SkGoToNodeUnderCursorLC.
 		  SkStepToNextStatementInSequenceLC.
-		  SkStepToNextInstanceCreationLC } "{ { 
+		  SkStepToNextInstanceCreationLC.
+		  SkAliasOfSelectedVariableTestLC.
+		  SkNodeUnderCursorTestLC.
+		  SkStepToEndLC.
+		  SkRecursionsReturnValuesOfMethodUnderSelectionLC.
+		  SkReturnValuesOfMethodWithSelectedSelectorLC.
+		  SkChangesOfSelfLC.
+		  SkChangesOfObjectLC.
+		  SkChangesOfInstanceVariableLC } "{ { 
 		  'Time-Travel'.
 		  { 
 			  SkGoToNodeUnderCursorLC.

@@ -42,7 +42,8 @@ Class {
 		'onQueryRowMatch',
 		'operationType',
 		'disableOptimization',
-		'timeIt'
+		'timeIt',
+		'customPreparationBlock'
 	],
 	#classInstVars : [
 		'identityProjection',
@@ -109,6 +110,11 @@ Query >> advanceToNextRow [
 ]
 
 { #category : #converting }
+Query >> asCollection [
+  ^ self asTableForTimeTravel rows
+]
+
+{ #category : #converting }
 Query >> asCsvFile [
 
 	| aFileReference |
@@ -156,6 +162,18 @@ Query >> asCsvInClipboard [
 	Clipboard clipboardText: result.
 
 	^ self result
+]
+
+{ #category : #converting }
+Query >> asQueryWithMemory [
+
+	| q |
+	q := QueryWithMemory
+		     from: fromDataSource
+		     select: whereBlock
+		     collect: selectBlock.
+	q excluding: self excluding.
+	^ q
 ]
 
 { #category : #operation }
@@ -261,6 +279,16 @@ Query >> currentRow [
 	^ selectBlock cull: fromDataSource currentRow
 ]
 
+{ #category : #accessing }
+Query >> customPreparationBlock [
+	^ self customPreparationBlock 
+]
+
+{ #category : #accessing }
+Query >> customPreparationBlock: aBlock [
+	customPreparationBlock 
+]
+
 { #category : #'as yet unclassified' }
 Query >> dataSourceIsTracedExecution [
 	^fromDataSource dataSourceIsTracedExecution 
@@ -288,6 +316,7 @@ Query >> do: aBlock [
 	"Ablock is a method that takes orgument (the iteration row). Hoever, OnQueryRow match is a block that receives no arguments. (might change this in the future)"
 	onQueryRowMatch := [ aBlock value: self currentRow ].
 	"The idea here is to simulate that we will iterate over the datasources filtered items. So aBlock will only be executed for the items that matchnthe where clause"
+	customPreparationBlock value."Beware here"
 	[ fromDataSource do: [ :row | self doQueryOnRow: row ] ] ensure: [ 
 		onQueryRowMatch := originalOnQueryRowMatch ]
 ]
@@ -321,6 +350,18 @@ Query >> endOfTableReached [
 	"returns true if the table has no more rows (and advanceToNextRow will return false)"
 
 	^ fromDataSource endOfTableReached
+]
+
+{ #category : #'as yet unclassified' }
+Query >> ensureReceiverAliases [
+
+	self selfAndChildrenDo: [ :t | 
+		(t class inheritsFromOrSameAs: SkExecutionVirtualTable) ifTrue: [ 
+			| protectedColumns |
+			protectedColumns := Set new.
+			protectedColumns addAll: t protectedColumns.
+			protectedColumns add: #receiverAlias.
+			t protectedColumns: protectedColumns ] ]
 ]
 
 { #category : #accessing }
@@ -396,6 +437,7 @@ Query >> initialize [
 	operationType := #defaultOperation.
 	disableOptimization := false.
 	timeIt := #dontTimeIt.
+	customPreparationBlock := [  ].
 	super initialize
 ]
 
@@ -476,6 +518,7 @@ Query >> resolve [
 			         | startingTime originalProjectionBlock |
 			         originalProjectionBlock := selectBlock.
 			         startingTime := Time now.
+			         customPreparationBlock value. "Beware here"
 			         self optimizeRowAcquisitionForFields:
 				         self getRelevantFields.
 			         "TODO: modify the select so it adds the time rows. Need to track time since starting time and row time (so I need the time whene every row query started)"
@@ -486,6 +529,7 @@ Query >> resolve [
 			         self processResult ] ]
 		         ifFalse: [ 
 			         [ 
+			         customPreparationBlock value. "Beware here"
 			         self optimizeRowAcquisitionForFields:
 				         self getRelevantFields.
 			         fromDataSource do: [ :row | self doQueryOnRow: row ].
@@ -545,8 +589,16 @@ Query >> selectBlock [
 { #category : #'as yet unclassified' }
 Query >> selectBlock: anObject [
 
-	selectBlock := anObject.
+	selectBlock := anObject = #*
+		               ifTrue: [ Query identityProjection ]
+		               ifFalse: [ anObject ].
 	self optimizeRowAcquisitionForFields: self getRelevantFields
+]
+
+{ #category : #enumerating }
+Query >> selfAndChildrenDo: aBlock [
+	aBlock value: self.
+	fromDataSource ifNotNil: [ fromDataSource selfAndChildrenDo: aBlock ]
 ]
 
 { #category : #accessing }

@@ -1,22 +1,23 @@
 Class {
-	#name : #SkHistoryGoForwardLC,
+	#name : #SkNodeUnderCursorTestLC,
 	#superclass : #SeekerLiteCommand,
 	#category : #'Seeker-Commands'
 }
 
 { #category : #accessing }
-SkHistoryGoForwardLC >> description [
+SkNodeUnderCursorTestLC >> description [
+
 	^'MyCommand description'
 ]
 
 { #category : #executing }
-SkHistoryGoForwardLC >> executeCommand [
-	 
-	self seeker stepper navigateForward
+SkNodeUnderCursorTestLC >> executeCommand [
+
+	context nodeUnderSelection inspect
 ]
 
 { #category : #accessing }
-SkHistoryGoForwardLC >> icon [
+SkNodeUnderCursorTestLC >> icon [
 
 "Inspect the following line and choose an icon for the command
 
@@ -28,6 +29,7 @@ SkHistoryGoForwardLC >> icon [
 ]
 
 { #category : #accessing }
-SkHistoryGoForwardLC >> name [
-	^'Navigate forward'
+SkNodeUnderCursorTestLC >> name [
+
+	^'Node Under Cursor'
 ]

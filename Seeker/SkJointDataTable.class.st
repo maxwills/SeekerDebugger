@@ -20,6 +20,17 @@ SkJointDataTable >> advanceToNextRow [
 	^ leftTable advanceToNextRow
 ]
 
+{ #category : #converting }
+SkJointDataTable >> asTableWithMemory [
+
+	| t |
+	t := SkJointDataTableWithMemory new.
+	t leftTable: leftTable.
+	t rightTable: rightTable.
+	t excluding: self excluding .
+	^ t
+]
+
 { #category : #'as yet unclassified' }
 SkJointDataTable >> currentRow [
 
@@ -41,7 +52,9 @@ SkJointDataTable >> do: aBlock [
 	"A specilized version of do:, made specifically to be used with queries"
 
 	leftTable do: [ :row | 
-		aBlock value: (rightTable currentRow mergeWith: row) ]
+		| rightRow |
+		rightRow := rightTable currentRow.
+		aBlock value: (rightRow mergeWith: row) ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -76,7 +89,10 @@ SkJointDataTable >> findTracer [
 { #category : #'as yet unclassified' }
 SkJointDataTable >> getRelevantFields [
 
-	^ {  }
+	| fields |
+	fields := leftTable getRelevantFields asSet.
+	fields addAll: rightTable getRelevantFields.
+	^ fields
 ]
 
 { #category : #accessing }
@@ -113,4 +129,11 @@ SkJointDataTable >> rightTable [
 SkJointDataTable >> rightTable: anObject [
 
 	rightTable := anObject
+]
+
+{ #category : #enumerating }
+SkJointDataTable >> selfAndChildrenDo: aBlock [
+
+	leftTable ifNotNil: [ leftTable selfAndChildrenDo: aBlock ].
+	rightTable ifNotNil: [ rightTable selfAndChildrenDo: aBlock ]
 ]
