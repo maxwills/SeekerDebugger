@@ -117,12 +117,7 @@ SkStepDescriptor >> asIndexlessDescriptor [
 { #category : #converting }
 SkStepDescriptor >> asString [
 
-	| str source|
-	str := $> join: (self collect: [ :aEsnToken | ' ', aEsnToken asString ]).
-	"self isUnwinding isNotNil and: [ 
-		self isUnwinding ifTrue: [ str := str , '+u' ] ]."
-	source := self sourceCode ifNil: [ '' ] ifNotNil: [ self sourceCode ].
-	^ self executionIndex asString, '.- ', str, ' - ', source, ' ', (extraInfo ifNil:[''] ifNotNil: [extraInfo])
+	^self asStringForCsv
 ]
 
 { #category : #converting }
