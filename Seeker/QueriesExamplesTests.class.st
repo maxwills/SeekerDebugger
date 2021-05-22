@@ -26,7 +26,7 @@ QueriesExamplesTests >> return100SkipRestOfTheMethod [
 	| var |
 	[ 
 	var := 400.
-	^ 100 ] ensure2: [ 
+	^ 100 ] ensure: [ 
 		10 + 30].
 	self assert: false. "This should not be reached"
 ]
@@ -37,7 +37,7 @@ QueriesExamplesTests >> return40SkipRestOfTheMethodExecutingEnsure [
 	| var |
 	[ 
 	var := 400.
-	^ 100 ] ensure2: [
+	^ 100 ] ensure: [
 	^10 + 30].
 	self assert: false. "This should not be reached"
 ]
@@ -48,7 +48,7 @@ QueriesExamplesTests >> returnSkipRestOfTheMethod [
 	| var |
 	[ 
 	var := 400.
-	^ 100 ] ensure2: [ 
+	^ 100 ] ensure: [ 
 		10 + 30].
 	self assert: false. "This should not be reached"
 ]
@@ -59,7 +59,7 @@ QueriesExamplesTests >> returns100 [
 	| var |
 	[ 
 	var := 400.
-	^ 100 ] ensure2: [ 
+	^ 100 ] ensure: [ 
 		10 + 30]
 ]
 
@@ -69,7 +69,7 @@ QueriesExamplesTests >> returns200WithExceptionInOriginalBlock [
 	| var |
 	[ 
 	var := 400.
-	^ 4 / 0 ] ensure2: [ 
+	^ 4 / 0 ] ensure: [ 
 		10 + 30.
 		^ 200 ]
 ]
@@ -80,7 +80,7 @@ QueriesExamplesTests >> returns200WithInEnsure [
 	| var |
 	[ 
 	var := 400.
-	^ 100 ] ensure2: [ 
+	^ 100 ] ensure: [ 
 		10 + 30.
 		^ 200 ]
 ]
@@ -187,12 +187,8 @@ QueriesExamplesTests >> testEnsure2 [
 
 	self assert: self returns100 equals: 100.
 	self assert: self returns200WithInEnsure equals: 200.
-	self
-		should: [ 
-			self
-				assert: self returns200WithExceptionInOriginalBlock
-				equals: 200 ]
-		raise: ZeroDivide.
+
+	self assert: self returns200WithExceptionInOriginalBlock equals: 200.
 	self assert: self return100SkipRestOfTheMethod equals: 100.
 	self
 		assert: self return40SkipRestOfTheMethodExecutingEnsure

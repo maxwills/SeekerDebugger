@@ -5,6 +5,16 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
+SkNodeHelpers class >> calculateNodesOrdinalIndexFor: node [
+
+	"this method assign indices to all children of the given node. relies on the trait TSeekerOrdinatedNode"
+
+	| sortedChildren |
+	sortedChildren := node allChildren sort: [ :left :right | 
+		                  left ordinationValue < right ordinationValue ].
+]
+
+{ #category : #'as yet unclassified' }
 SkNodeHelpers class >> getBlockNodeOfStatementNode: aStatementNode [
 "If a statement node is part of sequence that directly belongs to a block, it returns said block. Returns nil otherwise"
 "Must give a statement Node as input"
@@ -16,6 +26,12 @@ SkNodeHelpers class >> getBlockNodeOfStatementNode: aStatementNode [
 	blockNode ifNil: [^nil ].
 	(blockNode isBlock) ifFalse: [ ^nil ].
 	^ blockNode
+]
+
+{ #category : #'as yet unclassified' }
+SkNodeHelpers class >> nodeOrdinalIndex: node [
+	"returns the ordinal index of the node in its hierarchy".
+	
 ]
 
 { #category : #'as yet unclassified' }

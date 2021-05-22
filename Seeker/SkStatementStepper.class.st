@@ -48,7 +48,8 @@ Class {
 		'astStepCounter',
 		'startingIndexlessStepForNavigation',
 		'byteCountCounter',
-		'stepBC'
+		'stepBC',
+		'nodesRegistry'
 	],
 	#category : #'Seeker-Components'
 }
@@ -199,10 +200,12 @@ SkStatementStepper >> initialize [
 
 	"scope: class-variables  &  instance-variables"
 
+	astStepCounter := 0.
 	trace := SkTrace new.
 	currentStepIndex := 1.
 	byteCountCounter := 1.
-	stepBC := 1
+	stepBC := 1.
+	nodesRegistry := SeekerNodesRegistry new
 ]
 
 { #category : #testing }
@@ -211,7 +214,8 @@ SkStatementStepper >> isExecutionFinished [
 	"Returns whether the debugged execution is finished"
 
 	^ self currentContext sender isNil or: [ 
-		  session interruptedProcess isTerminating ]
+		  self currentContext isDead or: [ 
+			  session interruptedProcess isTerminating ] ]
 ]
 
 { #category : #testing }
@@ -246,6 +250,12 @@ SkStatementStepper >> isRiskyStep [
 				  contextInsideSubclassOfException value or:
 					  contextInsideAssertionFailure ]
 			  ifFalse: contextInsideInstanceOfExceptionSubclass ]"
+]
+
+{ #category : #accessing }
+SkStatementStepper >> nodesRegistry [
+
+	^ nodesRegistry
 ]
 
 { #category : #'as yet unclassified' }
@@ -366,6 +376,8 @@ SkStatementStepper >> restart [
 
 	startingContextForRecord ifNil: [ self error ].
 	byteCountCounter := 1.
+	astStepCounter := 0.
+	astStepCounter := 1.
 	trace removeAll.
 	currentStepIndex := 0.
 	"Placing stDebugger relaed code at the end, so the triggered update include the step index changes"
@@ -500,6 +512,24 @@ SkStatementStepper >> stepBackInto [
 			self currentStepDescriptor executionIndex >= targetStepIndex ] ]
 ]
 
+{ #category : #'as yet unclassified' }
+SkStatementStepper >> stepBackOneBytecode [
+
+	self doAndUpdateSessionAfter: [ 
+		| currentStep nodeOrdinalIndex targetNodeIndex targetNode |
+		nodeOrdinalIndex := self currentNode ordinalIndex.
+		currentStep := self currentStepDescriptor.
+		targetNodeIndex := nodeOrdinalIndex - 1.
+		targetNodeIndex <= 1 ifTrue: [ targetNodeIndex := 1 ].
+		targetNode := self currentNode ordinatedChildren at: targetNodeIndex.
+		self restart.
+		self stepUntilConditionIsTrue: [ 
+			self currentStepDescriptor isSameDynamicSequenceAs: currentStep ].
+
+		self stepAstUntilConditionIsTrue: [ 
+			self currentNode == targetNode ] ]
+]
+
 { #category : #'debug - stepping' }
 SkStatementStepper >> stepBackOver [
 
@@ -525,8 +555,8 @@ SkStatementStepper >> stepInto [
 
 	| res |
 	self doAndUpdateSessionAfter: [ 
-		astStepCounter := 0.
-		stepBC := 1.
+		"astStepCounter := 0.
+		stepBC := 1."
 		"self doStepIntoBeginProcess."
 		res := self stepAstIntoStatement
 		"self pushCurrentStepDescriptor."

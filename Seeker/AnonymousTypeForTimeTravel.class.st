@@ -11,7 +11,7 @@ Class {
 AnonymousTypeForTimeTravel class >> newWith: anAssocArray forTracer: tracer [
 |annonymousObj|
 annonymousObj := self new.
-annonymousObj privateFields: anAssocArray asDictionary.
+annonymousObj mergeWith: anAssocArray asDictionary.
 annonymousObj privateTracer: tracer.
 ^annonymousObj 
 ]

@@ -5,6 +5,16 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
+SeekerFindInterface >> allInstanceCreations [
+
+	| query result |
+	query := tracer queries forInstancesCreation.
+
+	result := query asTableForTimeTravel.
+	^ result
+]
+
+{ #category : #'as yet unclassified' }
 SeekerFindInterface >> changesOfAllVariablesNamed: aSymbol [
 
 	| query result |

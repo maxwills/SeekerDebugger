@@ -45,6 +45,7 @@ SkOptimizedStatementStepper >> doAstStepPostProcess: preProcessAstNode [
 		                     currentContext ~= cachedCurrentContext ])
 		                    ifTrue: [ 
 			                    astStepCounter := 0.
+			                    stepBC := 1.
 			                    cachedCurrentContext := currentContext.
 			                    cachedCurrentStatementNode := currentStatementNode.
 			                    self pushCurrentStepDescriptor ]

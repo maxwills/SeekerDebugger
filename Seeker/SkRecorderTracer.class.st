@@ -78,49 +78,6 @@ SkRecorderTracer >> createObjectAliasForCurrentReceiver [
 ]
 
 { #category : #'as yet unclassified' }
-SkRecorderTracer >> createObjectAliasForExpression: aString [
-
-	| currentStep creationStep alias expressionResult|
-	
-	currentStep := self currentStepDescriptor.
-	objectOfClassTrackingEnabled := true.
-	self restartAndStepToIndex: currentStep executionIndex.
-	objectOfClassTrackingEnabled := false.
-	expressionResult := self evaluateExpressionInCurrentContext: aString.
-	creationStep := trackedObjectOfClassCollection 
-		                getCreationStepOfObject:
-		                expressionResult.
-	alias := SkObjectAlias new.
-	alias stepIndex: creationStep.
-	alias objectClass: expressionResult class.
-	alias seeker: self seeker.
-	^ alias
-]
-
-{ #category : #'as yet unclassified' }
-SkRecorderTracer >> doFullpassAndReturnWithStepActionsForBeginning: aBlockForBegin andForFinish: aBlockForFinish [
-
-	"Requires a mapped execution"
-
-	"Automation used mainly for queries. The execution is restarted from the beginning, and stepped forward to the end, while performing stephooks"
-
-	"Note that probalbly I will want to specify some action to take at each step here."
-
-	| originalStepIndex |
-	originalStepIndex := currentStepIndex.
-	customStepBeginHook := aBlockForBegin.
-	customStepFinishHook := aBlockForFinish.
-	self restart.
-	self stepUntilConditionIsTrue: [ self isExecutionFinished ].
-	customStepBeginHook := nil.
-	customStepFinishHook := nil.
-	variableTrackingEnabled := false.
-	blockTrackingEnabled := false.
-	returnsRecordingEnabled := false.
-	self restartAndStepToIndex: originalStepIndex
-]
-
-{ #category : #'as yet unclassified' }
 SkRecorderTracer >> evaluateExpressionInCurrentContext: aString [
 ^self evaluateWithoutErrorsExpression: aString inContext: self currentContext.
 ]

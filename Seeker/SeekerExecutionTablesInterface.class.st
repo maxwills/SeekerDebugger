@@ -92,7 +92,13 @@ SeekerExecutionTablesInterface >> omniscientTable [
 					                 -> csi tracedStatementDescriptor).
 					                (#sourceCodeOfNode -> csi node sourceCode).
 					                (#sourceCodeOfStatementNode
-					                 -> csi statementNode sourceCode) } ]
+					                 -> csi statementNode sourceCode).
+					                (#nodeOrdinalIndex -> csi nodeOrdinalIndex).
+					                (#previousNoi -> csi previousNoi).
+					                (#nodeStart -> csi node start).
+					                (#isInstantiationMessage
+					                 -> csi isInstantiationMessage).
+					                (#nodeStop -> csi node stop) } ]
 		                forTracer: tracer.
 	^ virtualTable
 ]

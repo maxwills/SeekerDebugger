@@ -277,6 +277,24 @@ SeekerTraceQueriesInterface >> forInstanceVariables [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerTraceQueriesInterface >> forInstancesCreation [
+
+	| table q |
+	table := tracer tables omniscientTableForAliases.
+
+	q := Query
+		     from: table
+		     select: [ :row | row isInstantiationMessage ]
+		     collect: [ :row | 
+			     New with: { 
+					     (#bytecodeIndex -> row bytecodeIndex).
+					     (#receiverClass -> row receiverClass).
+					     (#receiverAlias -> row receiverAlias).
+					     (#stepIndex -> row stepIndex) } ].
+	^ q
+]
+
+{ #category : #'as yet unclassified' }
 SeekerTraceQueriesInterface >> forReturnValues [
 
 	| q table |

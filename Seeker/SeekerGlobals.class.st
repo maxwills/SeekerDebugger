@@ -6,13 +6,20 @@ Class {
 		'auxiliaryTempStorage1',
 		'auxiliaryTempStorage2',
 		'defaultStepperClass',
-		'watchedProcesses'
+		'watchedProcesses',
+		'ordinatedNodesDictionary'
 	],
 	#classVars : [
 		'instance'
 	],
 	#category : #'Seeker-Helpers'
 }
+
+{ #category : #'as yet unclassified' }
+SeekerGlobals class >> forceInstanceRefresh [
+
+	instance := nil
+]
 
 { #category : #accessing }
 SeekerGlobals class >> instance [

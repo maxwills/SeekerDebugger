@@ -7,10 +7,7 @@ See AnonymousTypeTest class tests for examples.
 "
 Class {
 	#name : #AnonymousType,
-	#superclass : #Object,
-	#instVars : [
-		'privateFields'
-	],
+	#superclass : #Dictionary,
 	#category : #'Seeker-DataQuery'
 }
 
@@ -21,13 +18,13 @@ AnonymousType class >> newWith: aCollection [
 
 	| anonymousObj |
 	anonymousObj := self new.
-	anonymousObj privateFields: aCollection asDictionary.
+	anonymousObj mergeWith: aCollection asDictionary.
 	^ anonymousObj
 ]
 
 { #category : #operations }
 AnonymousType >> @ aSymbol [
-	^privateFields at: aSymbol
+	^self at: aSymbol
 ]
 
 { #category : #'as yet unclassified' }
@@ -35,14 +32,14 @@ AnonymousType >> asCsvPrintOn: aStream [
 
 	| keys |
 	aStream ifNil: [ ^ self ].
-	keys := privateFields keys asSortedCollection.
+	keys := self keys asSortedCollection.
 	keys ifEmpty: [ 
 		^ aStream
 			  nextPutAll: '-';
 			  nextPutAll: String cr ].
 	1 to: keys size do: [ :keyIndex | 
 		| value |
-		value := privateFields at: (keys at: keyIndex).
+		value := self at: (keys at: keyIndex).
 		value ifNil: [ value := '' ].
 		aStream nextPutAll: value asString.
 		keyIndex = keys size ifFalse: [ "I am sure there is better code for this" 
@@ -50,26 +47,17 @@ AnonymousType >> asCsvPrintOn: aStream [
 	aStream nextPutAll: String cr
 ]
 
-{ #category : #accessing }
-AnonymousType >> at: aSymbol put: aValue [
-
-	^ privateFields at: aSymbol put: aValue
-]
-
 { #category : #'reflective operations' }
 AnonymousType >> doesNotUnderstand: aMessage [
 
 	| selector |
-	"Inspired from the pillar bug image from thomas"
 	selector := aMessage selector.
 	^ [ aMessage arguments size ] switchCase: { 
-			  (0 -> [ "this is a getter" privateFields at: selector ]).
+			  (0 -> [ "this is a getter" self at: selector ]).
 			  (1 -> [ "a setter"
 			   | selectorForGetter |
 			   selectorForGetter := selector copyFrom: 1 to: selector size - 1.
-			   privateFields
-				   at: selectorForGetter
-				   put: (aMessage arguments at: 1) ]).
+			   self at: selectorForGetter put: (aMessage arguments at: 1) ]).
 			  (#defaultCase -> [ 
 			   self error:
 				   'AnonymousTypes interface is composed only by getters (0 arguments) and setters (1 argument)' ]) }
@@ -78,15 +66,15 @@ AnonymousType >> doesNotUnderstand: aMessage [
 { #category : #accessing }
 AnonymousType >> fieldNames [
 
-	^ privateFields keys
+	^ self keys
 ]
 
 { #category : #'as yet unclassified' }
 AnonymousType >> headersAsCsvPrintOn: aStream [
 
 	| keys |
-	aStream ifNil:[^self].
-	keys := privateFields keys asSortedCollection.
+	aStream ifNil: [ ^ self ].
+	keys := self keys asSortedCollection.
 	keys ifEmpty: [ 
 		^ aStream
 			  nextPutAll: '-';
@@ -100,20 +88,15 @@ AnonymousType >> headersAsCsvPrintOn: aStream [
 	aStream nextPutAll: String cr
 ]
 
-{ #category : #initialization }
-AnonymousType >> initialize [
-
-]
-
 { #category : #operations }
 AnonymousType >> mergeWith: anotherAnonymousTypeObject [
 
 	"The second anonymous objects takes priority on its values"
 
-	anotherAnonymousTypeObject privateFields keysDo: [ :eachKey | 
-		privateFields
+	anotherAnonymousTypeObject keysDo: [ :eachKey | 
+		self
 			at: eachKey
-			put: (anotherAnonymousTypeObject privateFields at: eachKey) ].
+			put: (anotherAnonymousTypeObject at: eachKey) ].
 	^ self
 ]
 
@@ -121,12 +104,12 @@ AnonymousType >> mergeWith: anotherAnonymousTypeObject [
 AnonymousType >> printOn: aStream [
 
 	| keys |
-	keys := privateFields keys.
+	keys := self keys.
 	keys ifEmpty: [ ^ aStream nextPutAll: '-' ].
 	1 to: keys size do: [ :keyIndex | 
 		| key value |
 		key := keys at: keyIndex.
-		value := privateFields at: key.
+		value := self at: key.
 		aStream
 			nextPutAll: key asString;
 			nextPutAll: ': ';
@@ -136,23 +119,11 @@ AnonymousType >> printOn: aStream [
 			aStream nextPutAll: ' | ' ] ]
 ]
 
-{ #category : #accessing }
-AnonymousType >> privateFields [
-
-	^ privateFields
-]
-
-{ #category : #accessing }
-AnonymousType >> privateFields: anObject [
-
-	privateFields := anObject
-]
-
 { #category : #'as yet unclassified' }
 AnonymousType >> tryInPrivateFieldOrDelegateForGetter: getterSelector [
 
-	(privateFields includesKey: getterSelector) ifTrue: [ 
-		^ privateFields at: getterSelector ].
+	(self includesKey: getterSelector) ifTrue: [ 
+		^ self at: getterSelector ].
 	^ self perform: getterSelector
 ]
 
@@ -163,8 +134,8 @@ AnonymousType >> tryInPrivateFieldOrDelegateForSetter: setterSelector argument: 
 	selectorForGetter := setterSelector
 		                     copyFrom: 1
 		                     to: setterSelector size - 1.
-	(privateFields includesKey: selectorForGetter) ifTrue: [ 
-		^ privateFields at: selectorForGetter put: arg ].
+	(self includesKey: selectorForGetter) ifTrue: [ 
+		^ self at: selectorForGetter put: arg ].
 
 
 	^ self perform: setterSelector with: arg

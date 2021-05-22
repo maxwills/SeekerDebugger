@@ -161,6 +161,11 @@ SeekerDebuggerPresenter >> initializeToolbar [
 
 	toolbar := self newToolbar
 		           addItem: (self newToolbarButton
+				            label: 'previous Bytecode';
+				            icon: (self application iconNamed: #glamorousLeft);
+				            action: [ self stepBackOneByteCodeHandler ];
+				            yourself);
+		           addItem: (self newToolbarButton
 				            label: 'Advance Down';
 				            icon: (self application iconNamed: #glamorousDown);
 				            action: [ self stepOverHandler ];
@@ -270,6 +275,7 @@ SeekerDebuggerPresenter >> setModelBeforeInitialization: aStDebugger [
 	evaluatorDebugger := EvaluatorDebugger new.
 	evaluatorDebugger stDebugger: aStDebugger.
 	debuggerUpdateCoordinator := seekerDebugger debuggerUpdateCoordinator.
+	stDebugger debuggerActionModel tracer: seekerDebugger stepper.
 	seekerDebugger quickSetup
 ]
 
@@ -291,6 +297,13 @@ SeekerDebuggerPresenter >> stepBackIntoHandler [
 self mapExecutionIfNotMappedAlready.
 self doAndUpdateSessionAfter: [ self seekerDebugger stepper pushNavigationHistory .	self seekerDebugger stepBackInto ]
 	
+]
+
+{ #category : #'event handling' }
+SeekerDebuggerPresenter >> stepBackOneByteCodeHandler [
+
+	self mapExecutionIfNotMappedAlready.
+	self seekerDebugger stepper stepBackOneBytecode
 ]
 
 { #category : #'event handling' }

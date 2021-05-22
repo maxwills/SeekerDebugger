@@ -3,10 +3,18 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'tracer',
-		'cachedValues'
+		'cachedValues',
+		'instanceCreationPrimitives'
 	],
 	#category : #'Seeker-Interfaces'
 }
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> aboutToSwitchContext [
+
+	^ self willSend or: [ 
+		  self willReturn or: [ self willStore or: [ self willCreateBlock ] ] ]
+]
 
 { #category : #accessing }
 SeekerCurrentStateInterface >> bytecodeIndex [
@@ -48,7 +56,8 @@ SeekerCurrentStateInterface >> compiledCode [
 
 { #category : #accessing }
 SeekerCurrentStateInterface >> compiledMethod [
-	^tracer currentContext compiledMethod
+
+	^ tracer currentContext compiledCode
 ]
 
 { #category : #accessing }
@@ -93,7 +102,15 @@ SeekerCurrentStateInterface >> initialize [
 
 	cachedValues := Dictionary new.
 	self class methodDictionary keysDo: [ :selector | 
-		cachedValues at: selector put: -1 -> nil ]
+		cachedValues at: selector put: -1 -> nil ].
+	instanceCreationPrimitives := #( 70 71 79 148 160 ).
+
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> isDead [
+
+	^ self context isDead
 ]
 
 { #category : #'as yet unclassified' }
@@ -105,6 +122,22 @@ SeekerCurrentStateInterface >> isFirstBytecodeOfMethod [
 SeekerCurrentStateInterface >> isFirstBytecodeOfStatement [
 
 	^ tracer currentStepDescriptor astSteps = 1
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> isInstantiationMessage [
+
+	| methodAboutToExecute node messageReceiver messageReceiverClass |
+	node := self node.
+	node isMessage ifFalse: [ ^ false ].
+	messageReceiver := node receiver "variable readInContext: self context".
+	messageReceiverClass := messageReceiver class.
+
+	methodAboutToExecute := self receiverClass lookupSelector:
+		                        node selector. "messageReceiverClass"
+	^ methodAboutToExecute notNil and: [ 
+		  instanceCreationPrimitives includes:
+			  methodAboutToExecute primitive ]
 ]
 
 { #category : #testing }
@@ -148,9 +181,31 @@ SeekerCurrentStateInterface >> node [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerCurrentStateInterface >> nodeIndexInAst [
+
+	| astNodes |
+	astNodes := self compiledMethod sourceNode allChildren.
+	^ astNodes indexOf: self node
+]
+
+{ #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> nodeIsVariable [
 
 	^ self node isVariable
+]
+
+{ #category : #'as yet unclassified' }
+SeekerCurrentStateInterface >> nodeOrdinalIndex [
+
+	^ self node ordinalIndex
+]
+
+{ #category : #'as yet unclassified' }
+SeekerCurrentStateInterface >> previousNoi [
+
+	"The calculated ordinal index for the previous bytecode"
+
+	^ 0
 ]
 
 { #category : #'as yet unclassified' }
@@ -240,4 +295,28 @@ SeekerCurrentStateInterface >> tracer [
 SeekerCurrentStateInterface >> tracer: anObject [
 
 	tracer := anObject
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> willCreateBlock [
+
+	^ self context willCreateBlock
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> willReturn [
+
+	^ self context willReturn
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> willSend [
+
+	^ self context willSend
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> willStore [
+
+	^ self context willStore
 ]

@@ -97,6 +97,24 @@ AutomatedDebugSessionTests >> debug: aCompiledMethod receiver: anObject in: eval
 		submit
 ]
 
+{ #category : #'as yet unclassified' }
+AutomatedDebugSessionTests >> replaceVar: aBlock [
+
+	| thisBlock |
+	thisBlock := [ 
+	             | asd |
+	             asd := 'funciona?'.
+	             aBlock outerContext astScope tempVars removeKey: #xvar.
+	             aBlock outerContext astScope copiedVars removeKey: #xvar.
+	             aBlock outerContext astScope copiedVars
+		             at: #xvar
+		             put: ((thisBlock sourceNode scope tempVars at: #asd) 
+				              createCopiedVariableFor:
+				              aBlock outerContext astScope).
+	             asd := 'funciona?2' ].
+	thisBlock value
+]
+
 { #category : #tests }
 AutomatedDebugSessionTests >> testABlockDebugSession [
 
@@ -174,4 +192,13 @@ AutomatedDebugSessionTests >> testABlockDebugSession3 [
 		StDebugger debugSession: session.
 		
 	"That works, but not as cleanly as the Debug this context menu"
+]
+
+{ #category : #tests }
+AutomatedDebugSessionTests >> testReadThing [
+
+	| xvar |
+	self replaceVar: [ xvar ].
+	Transcript show: xvar
+	"self xpropAt: 1 mapTo:[xvar]."
 ]
