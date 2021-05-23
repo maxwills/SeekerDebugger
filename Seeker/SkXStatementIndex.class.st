@@ -5,11 +5,17 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
-SkXStatementIndex >> findIn: aCompiledCode [
+SkXStatementIndex >> findIn: aCompiledCodeOrNode [
+
+	| node |
+	node := (aCompiledCodeOrNode class inheritsFromOrSameAs:
+		         RBProgramNode)
+		        ifTrue: [ aCompiledCodeOrNode ]
+		        ifFalse: [ aCompiledCodeOrNode ast ].
 
 	^ index = 0
-		  ifTrue: [ aCompiledCode ast ]
-		  ifFalse: [ aCompiledCode ast statements at: index ]
+		  ifTrue: [ node ]
+		  ifFalse: [ node statements at: index ]
 ]
 
 { #category : #testing }

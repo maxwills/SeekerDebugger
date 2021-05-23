@@ -5,11 +5,17 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
-SkXBytecodeIndex >> findIn: aCompiledCode [
+SkXBytecodeIndex >> findIn: aCompiledCodeOrNode [
+
+	| node |
+	node := (aCompiledCodeOrNode class inheritsFromOrSameAs:
+		         RBProgramNode)
+		        ifTrue: [ aCompiledCodeOrNode ]
+		        ifFalse: [ aCompiledCodeOrNode ast ].
 
 	^ index = 0
-		  ifTrue: [ aCompiledCode ast ]
-		  ifFalse: [ aCompiledCode ast ordinatedChildren at: index ]
+		  ifTrue: [ node ]
+		  ifFalse: [ node ordinatedChildren at: index ]
 ]
 
 { #category : #testing }
