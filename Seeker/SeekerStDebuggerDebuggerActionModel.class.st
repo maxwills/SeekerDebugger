@@ -50,7 +50,7 @@ SeekerStDebuggerDebuggerActionModel >> stepInto: aContext [
 			"self session stepInto: aContext."
 
 			(self session isContextPostMortem: aContext) ifFalse: [ "self session interruptedProcess step: aContext."
-				tracer stepAstWithoutSkipping.
+				tracer stepBytecode.
 				self session updateContextTo:
 					self doStepToFirstInterestingBytecode.
 				"(self session stepToFirstInterestingBytecodeIn:

@@ -289,6 +289,7 @@ SeekerTraceQueriesInterface >> forInstancesCreation [
 			     New with: { 
 					     (#bytecodeIndex -> row bytecodeIndex).
 					     (#receiverClass -> row receiverClass).
+					     (#receiver -> row receiver).
 					     (#receiverAlias -> row receiverAlias).
 					     (#stepIndex -> row stepIndex) } ].
 	^ q

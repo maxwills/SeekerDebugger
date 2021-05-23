@@ -16,6 +16,16 @@ SkQueryExperimentalTracer >> addAstPreStepHook: aBlock [
 ]
 
 { #category : #'as yet unclassified' }
+SkQueryExperimentalTracer >> currentNic [
+
+	| nic |
+	nic := SkXNodeInCompiledCode new.
+	nic compiledCode: self currentContext compiledCode.
+	nic nodeIndex: self currentNode ordinalIndex.
+	^ nic
+]
+
+{ #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> currentStateAsRow [
 
 	"Debug help. Don't use this. No filtering or optimizations. Create a baseQuery instead and use it with select: collect:"

@@ -7,7 +7,7 @@ Class {
 { #category : #testing }
 SkObjectHelpers class >> isClass: aClass sameOrInheritsFrom: aParentClass [
 
-	^ aClass = aParentClass or: [ aClass inheritsFrom: aParentClass ]
+	^ aClass == aParentClass or: [ aClass inheritsFrom: aParentClass ]
 ]
 
 { #category : #testing }

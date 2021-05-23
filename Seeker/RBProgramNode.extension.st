@@ -3,13 +3,22 @@ Extension { #name : #RBProgramNode }
 { #category : #'*Seeker' }
 RBProgramNode >> ordinalIndex [
 
-	^ self methodNode bcToASTCache ordinalIndexOf: self
+	^ self ownerCCNode bcToASTCache ordinalIndexOf: self
 ]
 
 { #category : #'*Seeker' }
-RBProgramNode >> ordinatedMethodNodeChildren [
+RBProgramNode >> ordinatedChildren [
 
-	^ self methodNode bcToASTCache ordinatedNodes
+	^ self ownerCCNode bcToASTCache ordinatedNodes
+]
+
+{ #category : #'*Seeker' }
+RBProgramNode >> ownerCCNode [
+
+	"The owner 'compiledCode-Node' of this Node."
+
+	parent ifNil: [ ^ self "Case for the method node" ].
+	^ parent methodOrBlockNode
 ]
 
 { #category : #'*Seeker' }

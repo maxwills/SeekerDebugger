@@ -44,14 +44,6 @@ SeekerLiteCommands >> addTree: aCollection toGroup: commandGroup [
 ]
 
 { #category : #'as yet unclassified' }
-SeekerLiteCommands >> class: aSubclass isSubclassOf: aClass [
-(aClass = Object) ifTrue: [ ^true ].
-	(aSubclass superclass = Object) ifTrue: [ ^false ].
-	(aSubclass superclass = aClass) ifTrue: [ ^true ].
-	^ self class: aSubclass superclass isSubclassOf: aClass.
-]
-
-{ #category : #'as yet unclassified' }
 SeekerLiteCommands >> registerCommands:stDebuggerInstance forRoot: rootCommandGroup [
 "This method is called from the stDebugger"
 	|codeGroup seekerGroup |
@@ -83,7 +75,8 @@ SeekerLiteCommands >> stCodeCommandsTree [
 		  SkChangesOfInstanceVariableLC.
 		  SkChangesOfVariableByNameLC.
 		  SkNodeBeforeOrAfterCurrentLC.
-		  SkAllInstanceCreationsLC } "{ { 
+		  SkAllInstanceCreationsLC.
+		  SkAllInstanceCreationsOfClassLC } "{ { 
 		  'Time-Travel'.
 		  { 
 			  SkGoToNodeUnderCursorLC.

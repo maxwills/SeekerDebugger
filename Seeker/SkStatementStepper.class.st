@@ -444,30 +444,64 @@ SkStatementStepper >> stDebugger: anObject [
 ]
 
 { #category : #'as yet unclassified' }
-SkStatementStepper >> stepAstIntoStatement [
-
-	"No recording, no updates"
-
-	| currentStatementNode previousContext |
-	currentStatementNode := self currentStatementNode.
-	previousContext := self currentContext.
-	^self stepAstUntilConditionIsTrue: [ 
-		self currentStatementNode ~= currentStatementNode or: [ previousContext ~= self currentContext ] ]
-]
-
-{ #category : #'as yet unclassified' }
 SkStatementStepper >> stepAstUntilConditionIsTrue: aBlock [
 
 	"Steps the AST. No skipping. No recording. No Updates
 TODO: Add error management. There are two kind, one from the executed code, and the other is from the debugger code"
 
 	aBlock whileFalse: [ 
-		self stepAstWithoutSkipping ifFalse: [ ^ false ] ].
+		self stepBytecode ifFalse: [ ^ false ] ].
 	^ true
 ]
 
 { #category : #'debug - stepping' }
-SkStatementStepper >> stepAstWithoutSkipping [
+SkStatementStepper >> stepBackInto [
+
+	self doAndUpdateSessionAfter: [ 
+		| targetStepIndex "targetStep" currentStep |
+		currentStep := self currentStepDescriptor.
+		targetStepIndex := currentStep executionIndex - 1.
+		targetStepIndex <= 0 ifTrue: [ ^ self ].
+		"targetStep := trace at: targetStepIndex."
+		self restart. "Ideally, we would restart from the closes context. TODO that"
+		self stepUntilConditionIsTrue: [ 
+			self currentStepDescriptor executionIndex >= targetStepIndex ] ]
+]
+
+{ #category : #'as yet unclassified' }
+SkStatementStepper >> stepBackOneBytecode [
+
+	self doAndUpdateSessionAfter: [ 
+		| currentStep nodeOrdinalIndex targetNodeIndex targetNode |
+		nodeOrdinalIndex := self currentNode ordinalIndex.
+		currentStep := self currentStepDescriptor.
+		targetNodeIndex := nodeOrdinalIndex - 1.
+		targetNodeIndex <= 1 ifTrue: [ targetNodeIndex := 1 ].
+		targetNode := self currentNode ordinatedMethodNodeChildren at: targetNodeIndex.
+		self restart.
+		self stepUntilConditionIsTrue: [ 
+			self currentStepDescriptor isSameDynamicSequenceAs: currentStep ].
+
+		self stepAstUntilConditionIsTrue: [ 
+			self currentNode == targetNode ] ]
+]
+
+{ #category : #'debug - stepping' }
+SkStatementStepper >> stepBackOver [
+
+	| startingStepDescriptor previousStepOverStepIndex |
+	startingStepDescriptor := self currentStepDescriptor.
+	previousStepOverStepIndex := self previousBackOverStepIndex: startingStepDescriptor.
+	(previousStepOverStepIndex =0) ifTrue: [ self  error:'There are no more "StepBackOver" step candidates'  ].
+	self doAndUpdateSessionAfter: [ 
+		self restart. "Ideally, we would restart from the closes context. TODO that"
+		self stepUntilConditionIsTrue: [ 
+			currentStepIndex = previousStepOverStepIndex ] ]
+	
+]
+
+{ #category : #'debug - stepping' }
+SkStatementStepper >> stepBytecode [
 
 	"Steps the debugger. No skipping. No recording. No updates (rememeber to force update after)"
 
@@ -498,50 +532,16 @@ SkStatementStepper >> stepAstWithoutSkipping [
 debuggerActionModel updateTopContext"
 ]
 
-{ #category : #'debug - stepping' }
-SkStatementStepper >> stepBackInto [
-
-	self doAndUpdateSessionAfter: [ 
-		| targetStepIndex "targetStep" currentStep |
-		currentStep := self currentStepDescriptor.
-		targetStepIndex := currentStep executionIndex - 1.
-		targetStepIndex <= 0 ifTrue: [ ^ self ].
-		"targetStep := trace at: targetStepIndex."
-		self restart. "Ideally, we would restart from the closes context. TODO that"
-		self stepUntilConditionIsTrue: [ 
-			self currentStepDescriptor executionIndex >= targetStepIndex ] ]
-]
-
 { #category : #'as yet unclassified' }
-SkStatementStepper >> stepBackOneBytecode [
+SkStatementStepper >> stepBytecodeUntilStatementJump [
 
-	self doAndUpdateSessionAfter: [ 
-		| currentStep nodeOrdinalIndex targetNodeIndex targetNode |
-		nodeOrdinalIndex := self currentNode ordinalIndex.
-		currentStep := self currentStepDescriptor.
-		targetNodeIndex := nodeOrdinalIndex - 1.
-		targetNodeIndex <= 1 ifTrue: [ targetNodeIndex := 1 ].
-		targetNode := self currentNode ordinatedChildren at: targetNodeIndex.
-		self restart.
-		self stepUntilConditionIsTrue: [ 
-			self currentStepDescriptor isSameDynamicSequenceAs: currentStep ].
+	"No recording, no updates"
 
-		self stepAstUntilConditionIsTrue: [ 
-			self currentNode == targetNode ] ]
-]
-
-{ #category : #'debug - stepping' }
-SkStatementStepper >> stepBackOver [
-
-	| startingStepDescriptor previousStepOverStepIndex |
-	startingStepDescriptor := self currentStepDescriptor.
-	previousStepOverStepIndex := self previousBackOverStepIndex: startingStepDescriptor.
-	(previousStepOverStepIndex =0) ifTrue: [ self  error:'There are no more "StepBackOver" step candidates'  ].
-	self doAndUpdateSessionAfter: [ 
-		self restart. "Ideally, we would restart from the closes context. TODO that"
-		self stepUntilConditionIsTrue: [ 
-			currentStepIndex = previousStepOverStepIndex ] ]
-	
+	| currentStatementNode previousContext |
+	currentStatementNode := self currentStatementNode.
+	previousContext := self currentContext.
+	^self stepAstUntilConditionIsTrue: [ 
+		self currentStatementNode ~= currentStatementNode or: [ previousContext ~= self currentContext ] ]
 ]
 
 { #category : #'debug - stepping' }
@@ -554,14 +554,20 @@ SkStatementStepper >> stepInto [
 	"Safety checking is done at ast stepping level"
 
 	| res |
-	self doAndUpdateSessionAfter: [ 
-		"astStepCounter := 0.
-		stepBC := 1."
-		"self doStepIntoBeginProcess."
-		res := self stepAstIntoStatement
-		"self pushCurrentStepDescriptor."
-		"self doStepIntoFinishProcess " ].
+	self doAndUpdateSessionAfter: [ res := self stepIntoNoUpdateGuard ].
 	^ res
+]
+
+{ #category : #'debug - stepping' }
+SkStatementStepper >> stepIntoNoUpdateGuard [
+
+	"This is the basic stepping at statement abstraction."
+
+	"returns false if reached the end of the execution (or any type of end)"
+
+	"Safety checking is done at ast stepping level"
+
+	^ self stepBytecodeUntilStatementJump
 ]
 
 { #category : #'debug - stepping' }
@@ -588,16 +594,17 @@ SkStatementStepper >> stepUntilConditionIsTrue: aBlock [
 
 	"I can't refactor the next code and I don't know why (whenver I do it, the debugger acts weird (and I can't automap)"
 
+	| conditionReached |
+	conditionReached := false.
 	self doAndUpdateSessionAfter: [ 
 		| shouldStop |
 		shouldStop := false.
 		[ shouldStop ] whileFalse: [ 
-			(self isExecutionFinished or: [ self isRiskyStep ])
-				ifTrue: [ shouldStop := true ]
-				ifFalse: [ 
-					shouldStop := aBlock value.
-					shouldStop ifFalse: [ self stepInto ifFalse: [ ^ false ] ] ] ] ].
-	^ true
+			shouldStop := aBlock value.
+			shouldStop
+				ifFalse: [ shouldStop := self stepIntoNoUpdateGuard not ]
+				ifTrue: [ conditionReached := true ] ] ].
+	^ conditionReached
 ]
 
 { #category : #accessing }

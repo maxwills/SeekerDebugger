@@ -27,6 +27,16 @@ ExtendedProperties class >> allPropertiesDictionary [
 ]
 
 { #category : #'as yet unclassified' }
+ExtendedProperties class >> assocOn: anObject at: propName [
+
+	^ (self propertiesOf: anObject) associationAt: propName ifAbsent: [ 
+		  | objProp |
+		  objProp := self propertiesOf: anObject.
+		  objProp at: propName put: nil.
+		  ^ objProp associationAt: propName ]
+]
+
+{ #category : #'as yet unclassified' }
 ExtendedProperties class >> on: anObject at: propName [
 
 	^ (self propertiesOf: anObject) at: propName ifAbsent: [ nil ]

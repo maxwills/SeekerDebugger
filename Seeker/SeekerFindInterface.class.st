@@ -15,6 +15,25 @@ SeekerFindInterface >> allInstanceCreations [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerFindInterface >> allInstanceCreationsOfClassNamed: aSymbol [
+
+	| query result |
+	query := tracer queries forInstancesCreation.
+	query := Query
+		         from: query
+		         select: [ :row | row receiver name = aSymbol ]
+		         collect: #*.
+	result := query asTableForTimeTravel.
+	^ result
+]
+
+{ #category : #'as yet unclassified' }
+SeekerFindInterface >> allInstanceCreationsOfClassNamedAsSelectedCode [
+
+	^ self allInstanceCreationsOfClassNamed: tracer selectedCode
+]
+
+{ #category : #'as yet unclassified' }
 SeekerFindInterface >> changesOfAllVariablesNamed: aSymbol [
 
 	| query result |
