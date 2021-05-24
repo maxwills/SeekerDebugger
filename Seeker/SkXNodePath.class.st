@@ -9,7 +9,14 @@ SkXNodePath >> @ aNodeOrNodePath [
 
 	(aNodeOrNodePath class inheritsFromOrSameAs: SkXNodePath)
 		ifTrue: [ self addAll: aNodeOrNodePath ]
-		ifFalse: [ self add: aNodeOrNodePath ].
+		ifFalse: [ 
+			| inlined |
+			inlined := false.
+			(aNodeOrNodePath isBlock or: [ aNodeOrNodePath isMessage ]) 
+				ifTrue: [ inlined := aNodeOrNodePath isInlined ].
+			inlined := false.
+			inlined ifFalse: [ 
+				self add: aNodeOrNodePath "Only count them as sequence if they are not inlined" ] ].
 
 	^ self
 ]
@@ -18,7 +25,9 @@ SkXNodePath >> @ aNodeOrNodePath [
 SkXNodePath >> asExpression [
 
 	self ifEmpty: [ '' ].
-	^ ' ' join: (self collect: [ :node | node localPathNotation ])
+	^ ' ' join:
+		  ((self collect: [ :node | node localPathNotation ]) select: [ :str | 
+			   str notEmpty ])
 ]
 
 { #category : #printing }

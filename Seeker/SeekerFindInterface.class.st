@@ -21,7 +21,10 @@ SeekerFindInterface >> allInstanceCreationsOfClassNamed: aSymbol [
 	query := tracer queries forInstancesCreation.
 	query := Query
 		         from: query
-		         select: [ :row | row receiver name = aSymbol ]
+		         select: [ :row | 
+			         row receiver isClass
+				         ifTrue: [ row receiver name = aSymbol ]
+				         ifFalse: [ row receiver class name = aSymbol ] ]
 		         collect: #*.
 	result := query asTableForTimeTravel.
 	^ result

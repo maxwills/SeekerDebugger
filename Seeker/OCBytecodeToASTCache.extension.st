@@ -4,9 +4,7 @@ Extension { #name : #OCBytecodeToASTCache }
 OCBytecodeToASTCache >> ordinalIndexOf: node [
 
 	(self xpropAt: #ordinalIndices) ifNil: [ self ordinatedNodes ].
-	^ (self xpropAt: #ordinalIndices)
-		  at: node
-		  ifAbsent: nil
+	^ (self xpropAt: #ordinalIndices) at: node ifAbsent: nil "This happens when a block is inlined (The is no bytecode for the BlockNode)"
 ]
 
 { #category : #'*Seeker' }

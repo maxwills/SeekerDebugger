@@ -48,8 +48,7 @@ Class {
 		'astStepCounter',
 		'startingIndexlessStepForNavigation',
 		'byteCountCounter',
-		'stepBC',
-		'nodesRegistry'
+		'stepBC'
 	],
 	#category : #'Seeker-Components'
 }
@@ -205,7 +204,6 @@ SkStatementStepper >> initialize [
 	currentStepIndex := 1.
 	byteCountCounter := 1.
 	stepBC := 1.
-	nodesRegistry := SeekerNodesRegistry new
 ]
 
 { #category : #testing }
@@ -250,12 +248,6 @@ SkStatementStepper >> isRiskyStep [
 				  contextInsideSubclassOfException value or:
 					  contextInsideAssertionFailure ]
 			  ifFalse: contextInsideInstanceOfExceptionSubclass ]"
-]
-
-{ #category : #accessing }
-SkStatementStepper >> nodesRegistry [
-
-	^ nodesRegistry
 ]
 
 { #category : #'as yet unclassified' }

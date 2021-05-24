@@ -220,6 +220,16 @@ SeekerCurrentStateInterface >> receiverClass [
 ]
 
 { #category : #accessing }
+SeekerCurrentStateInterface >> receiverPackage [
+
+	| rcvr |
+	rcvr := self receiver.
+	^ rcvr isClass
+		  ifTrue: [ rcvr package ]
+		  ifFalse: [ rcvr class package ]
+]
+
+{ #category : #accessing }
 SeekerCurrentStateInterface >> sequenceNode [
 
 	^ self

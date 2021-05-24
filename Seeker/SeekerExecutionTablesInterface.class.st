@@ -67,6 +67,7 @@ SeekerExecutionTablesInterface >> omniscientTable [
 					                 -> csi bytecodeStepInTracedStatement).
 					                (#context -> csi context).
 					                (#contextPC -> csi contextPC).
+					                (#contextTop -> csi contextTop).
 					                (#isMethodReturn -> csi isMethodReturn).
 					                (#initialPC -> csi initialPC).
 					                (#endPC -> csi endPC).
@@ -79,6 +80,7 @@ SeekerExecutionTablesInterface >> omniscientTable [
 						                  value: csi receiver
 						                  value: csi tracedStatementStepIndex)).
 					                (#receiverClass -> csi receiverClass).
+					                (#receiverPackage -> csi receiverPackage).
 					                (#statementIndex -> csi statementIndex).
 					                (#statementNode -> csi statementNode).
 					                (#statementNotation

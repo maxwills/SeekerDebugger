@@ -296,6 +296,33 @@ SeekerTraceQueriesInterface >> forInstancesCreation [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerTraceQueriesInterface >> forMessageSends [
+
+	| q table |
+	table := tracer tables omniscientTableForAliases.
+
+	q := Query
+		     from: table
+		     select: [ :row | row node isMessage ]
+		     collect: [ :row | 
+			     | msgRcvrNode msgRcvrValue |
+			     msgRcvrNode := row node receiver.
+			     msgRcvrValue := msgRcvrNode isVariable
+				                     ifTrue: [ 
+				                     msgRcvrNode variable readInContext:
+					                     row context ]
+				                     ifFalse: [ row contextTop ].
+			     New with: { 
+					     (#stepIndex -> row stepIndex).
+					     (#methodSelector -> row methodSelector).
+					     (#receiverClass -> row receiverClass).
+
+					     (#messageReceiverClass -> msgRcvrValue class).
+					     (#messageSelector -> row node selector) } ].
+	^ q
+]
+
+{ #category : #'as yet unclassified' }
 SeekerTraceQueriesInterface >> forReturnValues [
 
 	| q table |
