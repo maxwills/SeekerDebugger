@@ -21,6 +21,12 @@ CompiledCode >> bytecodeNodes [
 ]
 
 { #category : #'*Seeker' }
+CompiledCode >> ordinatedNodes [
+
+	^ self sourceNode ordinatedChildren
+]
+
+{ #category : #'*Seeker' }
 CompiledCode >> statementNodes [
 
 	"Don't modify this. Should return a copy instead?"

@@ -268,9 +268,7 @@ seekerDebugger setEndFromCurrentStep
 { #category : #'accessing model' }
 SeekerDebuggerPresenter >> setModelBeforeInitialization: aStDebugger [
 
-	| sindarin |
 	stDebugger := aStDebugger.
-	sindarin := aStDebugger sindarinDebugger.
 	seekerDebugger := SeekerDebugger newFor: aStDebugger.
 	evaluatorDebugger := EvaluatorDebugger new.
 	evaluatorDebugger stDebugger: aStDebugger.

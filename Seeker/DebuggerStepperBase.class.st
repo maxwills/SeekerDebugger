@@ -45,6 +45,14 @@ DebuggerStepperBase >> seeker: anObject [
 	seeker := anObject
 ]
 
+{ #category : #'as yet unclassified' }
+DebuggerStepperBase >> seekerResultsPresenter [
+
+	"Returns the result presenter. Or Nil"
+
+	^ seeker stDebugger seekerResultsPresenter
+]
+
 { #category : #accessing }
 DebuggerStepperBase >> session [
 

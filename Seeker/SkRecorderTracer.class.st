@@ -334,21 +334,3 @@ SkRecorderTracer >> trackedVariableValues: anObject [
 
 	trackedVariableValues := anObject
 ]
-
-{ #category : #'as yet unclassified' }
-SkRecorderTracer >> updatePreviousStepFromBuffers [
-
-	"See comment on super implementation"
-
-	trace size <= 1 ifTrue: [ "No previous step" ^ self ].
-	returnsRecordingEnabled ifTrue: [ 
-		stepReturnBufferAvailableFlag ifTrue: [ 
-			| previousStepDescriptor |
-			previousStepDescriptor := trace at: trace size - 1.
-			"Could update the descriptor itself or modify the dicitonary.. I am doing the dictionary option for now (closer to SPU design)"
-			returnsDictionary
-				at: previousStepDescriptor executionIndex
-				put: stepReturnBuffer.
-			stepReturnBuffer := nil.
-			stepReturnBufferAvailableFlag := false ] ]
-]

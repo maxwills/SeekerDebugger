@@ -48,7 +48,8 @@ Class {
 		'astStepCounter',
 		'startingIndexlessStepForNavigation',
 		'byteCountCounter',
-		'stepBC'
+		'stepBC',
+		'interruptedProcess'
 	],
 	#category : #'Seeker-Components'
 }
@@ -90,7 +91,7 @@ SkStatementStepper >> createIndexlessStepDescriptorForContext: aContext [
 SkStatementStepper >> currentContext [
 
 	| context |
-	context := session interruptedProcess suspendedContext. "debuggerActionModel session interruptedContext"
+	context := interruptedProcess suspendedContext.
 	^ context
 ]
 
@@ -206,14 +207,27 @@ SkStatementStepper >> initialize [
 	stepBC := 1.
 ]
 
+{ #category : #accessing }
+SkStatementStepper >> interruptedProcess [ 
+	^interruptedProcess 
+
+]
+
+{ #category : #accessing }
+SkStatementStepper >> interruptedProcess: anObject [
+
+	interruptedProcess := anObject
+]
+
 { #category : #testing }
 SkStatementStepper >> isExecutionFinished [
 
 	"Returns whether the debugged execution is finished"
 
-	^ self currentContext sender isNil or: [ 
-		  self currentContext isDead or: [ 
-			  session interruptedProcess isTerminating ] ]
+	| context |
+	context := self currentContext.
+	^ context sender isNil or: [ 
+		  context isDead or: [ interruptedProcess isTerminating ] ]
 ]
 
 { #category : #testing }
@@ -342,7 +356,6 @@ SkStatementStepper >> pushCurrentStepDescriptor [
 	currentStepIndex := currentStepIndex + 1.
 	currentStepDescriptor := self currentStepDescriptor.
 	trace add: currentStepDescriptor.
-	self updatePreviousStepFromBuffers.
 ]
 
 { #category : #'as yet unclassified' }
@@ -366,22 +379,29 @@ SkStatementStepper >> restart [
 
 	"Restart a record and debug session from the stored startingContextForRecord"
 
-	startingContextForRecord ifNil: [ self error ].
+	self doAndUpdateSessionAfter: [ 
+		self restartAtBytecodeOne.
+		startingIndexlessStepForNavigation ifNotNil: [ 
+			self stepUntilConditionIsTrue: [ 
+				self currentStepDescriptor hasSamePathAs:
+					startingIndexlessStepForNavigation ] ] ]
+]
+
+{ #category : #starting }
+SkStatementStepper >> restartAtBytecodeOne [
+
+	"Restart a record and debug session from the stored startingContextForRecord"
+
+	startingContextForRecord ifNil: [ 
+		^ self error: 'Must specify a starting context for record' ].
 	byteCountCounter := 1.
 	astStepCounter := 0.
 	astStepCounter := 1.
 	trace removeAll.
 	currentStepIndex := 0.
-	"Placing stDebugger relaed code at the end, so the triggered update include the step index changes"
-	stDebugger session restart: startingContextForRecord.
 	self doAndUpdateSessionAfter: [ 
-		currentStepIndex := 0.
-		self pushCurrentStepDescriptor ].
-	self doStepIntoBeginProcess.
-	startingIndexlessStepForNavigation ifNotNil: [ 
-		self stepUntilConditionIsTrue: [ 
-			self currentStepDescriptor hasSamePathAs:
-				startingIndexlessStepForNavigation ] ]
+		stDebugger session restart: startingContextForRecord.
+		self pushCurrentStepDescriptor ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -499,29 +519,34 @@ SkStatementStepper >> stepBytecode [
 
 	"You must ensure that execution is not finished before callig this method."
 
-	| debuggerActionModel context contextAfter startingNode |
+	| context contextAfter startingNode |
 	(self isExecutionFinished or: [ self isRiskyStep ]) ifTrue: [ "self inform: 'Reached execution safe end point'" 
 		^ false ].
 
 	astStepCounter := astStepCounter + 1. "Note that the counter increases just before actually executing the AST. So Ast nodes pre and post process takes place for the same current ast step"
-	"debuggerActionModel := stDebugger debuggerActionModel."
 
-	"context := debuggerActionModel session interruptedContext."
 	context := self currentContext.
 	context stepIntoQuickMethod: true.
 
 	startingNode := self currentNode.
 	self doAstStepPreProcess.
 	contextAfter := session interruptedProcess step.
-	"self stDebugger interruptedProcess step."
+
 	byteCountCounter := byteCountCounter + 1.
 	stepBC := stepBC + 1.
 	context stepIntoQuickMethod: false.
 	self doAstStepPostProcess: startingNode.
 	^ true
-	"next line was a patch"
-	"debuggerActionModel session updateContextTo: context step.
-debuggerActionModel updateTopContext"
+]
+
+{ #category : #'as yet unclassified' }
+SkStatementStepper >> stepBytecodeToExecutionEnd [
+
+	"Steps the AST. No skipping. No recording. No Updates
+TODO: Add error management. There are two kind, one from the executed code, and the other is from the debugger code"
+
+	[ false ] whileFalse: [ self stepBytecode ifFalse: [ ^ false ] ].
+	^ true
 ]
 
 { #category : #'as yet unclassified' }
@@ -603,11 +628,4 @@ SkStatementStepper >> stepUntilConditionIsTrue: aBlock [
 SkStatementStepper >> trace [
 	"Returns the collection of steps signatures"
 	^trace
-]
-
-{ #category : #'as yet unclassified' }
-SkStatementStepper >> updatePreviousStepFromBuffers [
-	self subclassResponsibility
-	"This is a bad design implmenetation. Ideally, the current working step descriptor should be 'open' for modifications... it should be in the trace as a reference, from when the control enters it, and while the execution continues its ASTs, it is modified until we enter the next step"
-	"For the moment, I have no option but to update the previous step if a flag or condition is met. For the moment, such condition is the presence of seomthing in step buffers"
 ]

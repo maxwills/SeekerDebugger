@@ -55,12 +55,6 @@ SeekerCurrentStateInterface >> compiledCode [
 ]
 
 { #category : #accessing }
-SeekerCurrentStateInterface >> compiledMethod [
-
-	^ tracer currentContext compiledCode
-]
-
-{ #category : #accessing }
 SeekerCurrentStateInterface >> context [
 	^tracer currentContext
 ]
@@ -183,8 +177,10 @@ SeekerCurrentStateInterface >> node [
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> nodeIndexInAst [
 
+	"This is not useful"
+
 	| astNodes |
-	astNodes := self compiledMethod sourceNode allChildren.
+	astNodes := self compiledCode sourceNode allChildren.
 	^ astNodes indexOf: self node
 ]
 

@@ -37,6 +37,44 @@ SeekerFindInterface >> allInstanceCreationsOfClassNamedAsSelectedCode [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerFindInterface >> allMessageSends [
+
+	| query result |
+	query := tracer queries forMessageSends.
+
+	result := query asTableForTimeTravel.
+	^ result
+]
+
+{ #category : #'as yet unclassified' }
+SeekerFindInterface >> allMessageSendsOfMethod: aCompiledMethod [
+
+	| query result |
+	query := tracer queries forMessageSends.
+
+	result := query asTableForTimeTravel.
+	^ result
+]
+
+{ #category : #'as yet unclassified' }
+SeekerFindInterface >> allMessageSendsWithSelectedSelector [
+
+	^ self allMessageSendsWithSelector: tracer selectedSelector
+]
+
+{ #category : #'as yet unclassified' }
+SeekerFindInterface >> allMessageSendsWithSelector: aSymbol [
+
+	| query result |
+	query := Query
+		         from: tracer queries forMessageSends
+		         select: [ :row | row messageSelector = aSymbol ]
+		         collect: #*.
+	result := query asTableForTimeTravel.
+	^ result
+]
+
+{ #category : #'as yet unclassified' }
 SeekerFindInterface >> changesOfAllVariablesNamed: aSymbol [
 
 	| query result |

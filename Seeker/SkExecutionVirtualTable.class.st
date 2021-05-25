@@ -69,12 +69,11 @@ SkExecutionVirtualTable >> do: aBlock [
 	tracer isMapped ifFalse: [ 
 		^ self error:
 			  'Time traveling needs to be enabled to execute Trace Queries' ].
-	tracer restart.
+	tracer restartAtBytecodeOne.
 	tracer addAstPreStepHook: preBytecodeStepHook.
-	[ tracer stepUntilConditionIsTrue: [ tracer isExecutionFinished ] ] 
-		ensure: [ 
-			tracer removeAstPreStepHook: preBytecodeStepHook.
-			tracer restartAndStepToIndex: originalStep executionIndex ]
+	[ tracer stepBytecodeToExecutionEnd ] ensure: [ 
+		tracer removeAstPreStepHook: preBytecodeStepHook.
+		tracer restartAndStepToIndex: originalStep executionIndex ]
 ]
 
 { #category : #enumerating }
@@ -155,7 +154,7 @@ SkExecutionVirtualTable >> resetTableTraversing [
 	"Puts the table traversing cursor 'before the first row'. one advanceToNextRow is necessary to enter the first row. getting currentRow of a reseted table has unspecified behavior"
 
 	justRestarted := true.
-	tracer restart
+	tracer restartAtBytecodeOne
 ]
 
 { #category : #accessing }

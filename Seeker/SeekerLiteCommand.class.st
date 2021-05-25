@@ -101,6 +101,16 @@ SeekerLiteCommand >> selectedContextIsTopContext [
 	  = self seeker stDebugger selectedContext
 ]
 
+{ #category : #'UI specific' }
+SeekerLiteCommand >> showResult: anObject [
+
+	| resultsUI |
+	resultsUI := self tracer seekerResultsPresenter.
+	resultsUI
+		ifNil: [ anObject inspect ]
+		ifNotNil: [ resultsUI showResult: anObject ]
+]
+
 { #category : #accessing }
 SeekerLiteCommand >> tracer [
 

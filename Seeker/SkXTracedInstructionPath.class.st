@@ -1,6 +1,6 @@
 Class {
 	#name : #SkXTracedInstructionPath,
-	#superclass : #OrderedCollection,
+	#superclass : #Object,
 	#instVars : [
 		'contextPath',
 		'nodePath'

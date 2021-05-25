@@ -71,6 +71,7 @@ SeekerExecutionTablesInterface >> omniscientTable [
 					                (#isMethodReturn -> csi isMethodReturn).
 					                (#initialPC -> csi initialPC).
 					                (#endPC -> csi endPC).
+					                (#method -> csi method).
 					                (#methodSelector -> csi methodSelector).
 					                (#methodReturnValue -> csi methodReturnValue).
 					                (#node -> csi node).

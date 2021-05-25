@@ -65,3 +65,28 @@ StDebugger >> nodeUnderSelection [
 
 	^ methodNode bestNodeFor: code selectionInterval
 ]
+
+{ #category : #'*Seeker' }
+StDebugger >> seekerDebugger [
+
+	self extensionTools do: [ :each | 
+		each class = SeekerDebuggerPresenter ifTrue: [ 
+			^ each seekerDebugger ] ].
+	^ nil
+]
+
+{ #category : #'*Seeker' }
+StDebugger >> seekerDebuggerPresenter [
+
+	self extensionTools do: [ :each | 
+		each class = SeekerDebuggerPresenter ifTrue: [ ^ each ] ].
+	^ nil
+]
+
+{ #category : #'*Seeker' }
+StDebugger >> seekerResultsPresenter [
+
+	self extensionTools do: [ :each | 
+		each class = SeekerResultsPresenter ifTrue: [ ^ each ] ].
+	^ nil "self error: 'SeekerResults extension not loaded'"
+]

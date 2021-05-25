@@ -316,7 +316,7 @@ SeekerTraceQueriesInterface >> forMessageSends [
 					     (#stepIndex -> row stepIndex).
 					     (#methodSelector -> row methodSelector).
 					     (#receiverClass -> row receiverClass).
-
+					     (#messageArguments -> row node arguments).
 					     (#messageReceiverClass -> msgRcvrValue class).
 					     (#messageSelector -> row node selector) } ].
 	^ q

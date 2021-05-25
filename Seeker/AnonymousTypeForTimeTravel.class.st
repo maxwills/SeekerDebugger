@@ -16,6 +16,23 @@ annonymousObj privateTracer: tracer.
 ^annonymousObj 
 ]
 
+{ #category : #'as yet unclassified' }
+AnonymousTypeForTimeTravel >> anyFieldContains: aString [
+
+	^ self values anySatisfy: [ :val | 
+		  (val asString includesSubstring: aString) ]
+]
+
+{ #category : #converting }
+AnonymousTypeForTimeTravel >> asSeekerTracedProgramState [
+
+	| tps |
+	tps := SeekerTracedProgramState new.
+	tps mergeWith: self.
+	tps privateTracer: privateTracer.
+	^ tps
+]
+
 { #category : #accessing }
 AnonymousTypeForTimeTravel >> privateTracer [
 

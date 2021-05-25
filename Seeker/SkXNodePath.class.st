@@ -1,8 +1,21 @@
+"
+Basically a list of nodes.
+"
 Class {
 	#name : #SkXNodePath,
 	#superclass : #OrderedCollection,
 	#category : #'Seeker-Experimental-NodeNotation'
 }
+
+{ #category : #arithmetic }
+SkXNodePath >> = anotherNodePath [
+
+	self == anotherNodePath ifTrue: [ ^ true ].
+	(self isEmpty and: [ anotherNodePath isEmpty ]) ifTrue: [ ^ true ].
+	"Even though this notation support nodes in nested subsequences, the path are equal only if the last node is the same"
+
+	^ self last == anotherNodePath last
+]
 
 { #category : #arithmetic }
 SkXNodePath >> @ aNodeOrNodePath [

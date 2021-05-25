@@ -1,23 +1,23 @@
 Class {
-	#name : #SkAllInstanceCreationsLC,
+	#name : #SkAllMessageSendsLC,
 	#superclass : #SeekerLiteCommand,
 	#category : #'Seeker-Commands'
 }
 
 { #category : #accessing }
-SkAllInstanceCreationsLC >> description [
+SkAllMessageSendsLC >> description [
 
 	^'MyCommand description'
 ]
 
 { #category : #executing }
-SkAllInstanceCreationsLC >> executeCommand [
+SkAllMessageSendsLC >> executeCommand [
 
-	self showResult: self tracer find allInstanceCreations
+	self tracer find allMessageSends inspect
 ]
 
 { #category : #accessing }
-SkAllInstanceCreationsLC >> icon [
+SkAllMessageSendsLC >> icon [
 
 "Inspect the following line and choose an icon for the command
 
@@ -29,7 +29,7 @@ SkAllInstanceCreationsLC >> icon [
 ]
 
 { #category : #accessing }
-SkAllInstanceCreationsLC >> name [
+SkAllMessageSendsLC >> name [
 
-	^'All Instances Creation'
+	^'All Message Sends'
 ]

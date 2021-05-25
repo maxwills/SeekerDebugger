@@ -53,8 +53,9 @@ SeekerDebugger class >> newFor: aStDebugger [
 	updateCoordinator stDebugger: aStDebugger.
 
 	"Initialize the DebuggerStepperBase subclass to be injected in the seeker debugger"
-	stepper := SeekerGlobals instance defaultStepperClass new.
+	stepper := SkQueryableTracer new. "SeekerGlobals instance defaultStepperClass new"
 	stepper stDebugger: aStDebugger.
+	stepper interruptedProcess: aStDebugger interruptedProcess.
 	stepper debuggerUpdateCoordinator: updateCoordinator.
 
 	debugger := SeekerDebugger new.
