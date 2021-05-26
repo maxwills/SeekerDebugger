@@ -9,13 +9,6 @@ Class {
 	#category : #'Seeker-Components'
 }
 
-{ #category : #'accessing context' }
-SkOptimizedStatementStepper >> currentContext [
-
-	"cachedCurrentContext ifNotNil: [ ^ cachedCurrentContext ]."
-	^ super currentContext
-]
-
 { #category : #'as yet unclassified' }
 SkOptimizedStatementStepper >> currentNode [
 
@@ -30,29 +23,27 @@ SkOptimizedStatementStepper >> currentStatementNode [
 	^ super currentStatementNode
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #accessing }
 SkOptimizedStatementStepper >> doAstStepPostProcess: preProcessAstNode [
 
-	| currentNode currentStatementNode currentContext statementChanged |
+	| currentNode currentStatementNode statementChanged context |
+	context := self currentContext.
 	"Dont do a super call here!"
-	currentContext := stDebugger interruptedProcess suspendedContext.
-	currentNode := currentContext method sourceNodeForPC:
-		               currentContext pc.
+	currentNode := context method sourceNodeForPC: context pc.
 	cachedCurrentNode := currentNode.
 	currentStatementNode := currentNode statementNode.
 	statementChanged := (currentStatementNode
-	                     ~= cachedCurrentStatementNode or: [ 
-		                     currentContext ~= cachedCurrentContext ])
+	                     ~~ cachedCurrentStatementNode or: [ 
+		                     (context == cachedCurrentContext) not ])
 		                    ifTrue: [ 
 			                    astStepCounter := 0.
 			                    stepBC := 1.
-			                    cachedCurrentContext := currentContext.
+			                    cachedCurrentContext := context.
 			                    cachedCurrentStatementNode := currentStatementNode.
-			                    self pushCurrentStepDescriptor ]
+			                    currentStepIndex := currentStepIndex + 1 ]
 		                    ifFalse: [ 
-			                    cachedCurrentContext := currentContext.
-			                    cachedCurrentStatementNode := currentStatementNode ].
-	self currentStepDescriptor astSteps: astStepCounter
+			                    cachedCurrentContext := context.
+			                    cachedCurrentStatementNode := currentStatementNode ]
 ]
 
 { #category : #initialization }

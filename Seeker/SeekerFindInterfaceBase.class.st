@@ -14,10 +14,7 @@ SeekerFindInterfaceBase >> aliasOfVariableNode: aNode inContext: aContext [
 	node := aNode.
 	node isVariable ifFalse: [ ^ self error: 'Not a variable node' ].
 
-	"stepDescriptor := SkStepDescriptor
-		                      newFromNode: node
-		                      inContext: aContext
-		                      isTopContext: (tracer isTopContext: aContext)."
+"
 	stepDescriptor := tracer currentStepDescriptor.
 	aliasQuery := self tracer queries
 		              forAliasOfObjectReferredByVariableNode: node
@@ -27,7 +24,7 @@ SeekerFindInterfaceBase >> aliasOfVariableNode: aNode inContext: aContext [
 		                row variableValueAlias isNotNil ]) first.
 	(aliasResult isNil or: [ aliasResult variableValueAlias isNil ]) 
 		ifTrue: [ ^ self error: 'Unable to identify object instance' ].
-	^ aliasResult variableValueAlias
+	^ aliasResult variableValueAlias"
 ]
 
 { #category : #'as yet unclassified' }

@@ -49,7 +49,8 @@ Class {
 		'startingIndexlessStepForNavigation',
 		'byteCountCounter',
 		'stepBC',
-		'interruptedProcess'
+		'interruptedProcess',
+		'currentContext'
 	],
 	#category : #'Seeker-Components'
 }
@@ -90,25 +91,14 @@ SkStatementStepper >> createIndexlessStepDescriptorForContext: aContext [
 { #category : #'as yet unclassified' }
 SkStatementStepper >> currentContext [
 
-	| context |
-	context := interruptedProcess suspendedContext.
-	^ context
+	^ currentContext ifNil: [ 
+		  currentContext := session interruptedProcess suspendedContext ]
 ]
 
 { #category : #'as yet unclassified' }
 SkStatementStepper >> currentFastTracedInstructionPath [
 
 	^ self currentContext currentFastTracedInstructionPath
-]
-
-{ #category : #accessing }
-SkStatementStepper >> currentIndexlessStepDescriptor [
-
-	"Returns the full path to the current statement, with its execution index set to 0"
-
-	| step |
-	step := self currentStepDescriptor clone.
-	^ step executionIndex: 0
 ]
 
 { #category : #'as yet unclassified' }
@@ -130,30 +120,10 @@ SkStatementStepper >> currentStepBC [
 	^ stepBC
 ]
 
-{ #category : #accessing }
-SkStatementStepper >> currentStepDescriptor [
-
-	"Returns the full path to the statement, including the execution index"
-
-	| currentStatementDescriptor |
-	(trace notEmpty and: [ trace size = currentStepIndex ])
-		ifTrue: [ currentStatementDescriptor := trace last ]
-		ifFalse: [ "To create a new one, we start copying the previous one"
-			| previousStep |
-			previousStep := trace ifEmpty: [ nil ] ifNotEmpty: [ trace last ].
-			currentStatementDescriptor := SkStepDescriptor
-				                              newFromContext: self currentContext
-				                              withPrevious: previousStep.
-			currentStatementDescriptor executionIndex: currentStepIndex.
-			currentStatementDescriptor astSteps: astStepCounter ].
-
-	^ currentStatementDescriptor
-]
-
 { #category : #'as yet unclassified' }
 SkStatementStepper >> doAstStepPostProcess: preProcessAstNode [
 
-	self currentStepDescriptor  astSteps: astStepCounter.
+	"self currentStepDescriptor  astSteps: astStepCounter."
 	"Note that this method is completely overriden by the optimized stepper (dont do a super call there!)"
 	
 ]
@@ -162,18 +132,6 @@ SkStatementStepper >> doAstStepPostProcess: preProcessAstNode [
 SkStatementStepper >> doAstStepPreProcess [ 
 "subclasses shoudl reimplement this"
 	
-]
-
-{ #category : #'as yet unclassified' }
-SkStatementStepper >> doStepIntoBeginProcess [ 
-"subclasses shoudl reimplement this"
-	^self
-]
-
-{ #category : #'as yet unclassified' }
-SkStatementStepper >> doStepIntoFinishProcess [ 
-"subclasses shoudl reimplement this" "Note that the current step is the next than the one that has been closed."
-	^self
 ]
 
 { #category : #'as yet unclassified' }
@@ -236,10 +194,8 @@ SkStatementStepper >> isExecutionFinished [
 
 	"Returns whether the debugged execution is finished"
 
-	| context |
-	context := self currentContext.
-	^ context sender isNil or: [ 
-		  context isDead or: [ interruptedProcess isTerminating ] ]
+	^ self currentContext sender isNil or: [ 
+		  currentContext isDead or: [ interruptedProcess isTerminating ] ]
 ]
 
 { #category : #testing }
@@ -262,18 +218,11 @@ SkStatementStepper >> isRiskyStep [
 		                                   and: [ 
 		                                   context receiver class 
 			                                   inheritsFrom: Exception ] ].
-	primitiveFailed := [ 
-	                   context methodSelector = #primitiveFailed ].
+	primitiveFailed := [ context methodSelector = #primitiveFailed ].
 	^ primitiveFailed value or: [ 
 		  receiver isClass
 			  ifTrue: contextInsideAssertionFailure
 			  ifFalse: contextInsideUnhandledException ]
-	"^ primitiveFailed value or: [ 
-		  receiver isClass
-			  ifTrue: [ 
-				  contextInsideSubclassOfException value or:
-					  contextInsideAssertionFailure ]
-			  ifFalse: contextInsideInstanceOfExceptionSubclass ]"
 ]
 
 { #category : #'as yet unclassified' }
@@ -360,26 +309,15 @@ SkStatementStepper >> previousBackOverStepIndex: aStepDescriptor [
 ]
 
 { #category : #'as yet unclassified' }
-SkStatementStepper >> pushCurrentStepDescriptor [
-
-	"Adds the statement descriptor of the current one to the trace"
-
-	| currentStepDescriptor |
-	currentStepIndex := currentStepIndex + 1.
-	"currentStepDescriptor := self currentStepDescriptor.
-	trace add: currentStepDescriptor."
-]
-
-{ #category : #'as yet unclassified' }
-SkStatementStepper >> replayAndBuildExecutionMap [
+SkStatementStepper >> recountExecutedBytecodes [
 
 	"Should have an initial context set first"
 
 	| currentStep |
-	currentStep := self currentFastTracedInstructionPath.
+	currentStep := self currentContext currentTracedInstructionBcp.
 	self restartAtBytecodeOne.
 	self stepAstUntilConditionIsTrue: [ 
-		currentStep = self currentFastTracedInstructionPath ]
+		currentStep = self currentContext currentTracedInstructionBcp ]
 ]
 
 { #category : #starting }
@@ -391,7 +329,7 @@ SkStatementStepper >> restart [
 		self restartAtBytecodeOne.
 		startingIndexlessStepForNavigation ifNotNil: [ 
 			self stepAstUntilConditionIsTrue: [ 
-				self currentFastTracedInstructionPath
+				self currentContext currentTracedInstructionBcp
 				= startingIndexlessStepForNavigation ] ] ]
 ]
 
@@ -402,6 +340,8 @@ SkStatementStepper >> restartAtBytecodeOne [
 
 	startingContextForRecord ifNil: [ 
 		^ self error: 'Must specify a starting context for record' ].
+	currentContext := session interruptedProcess suspendedContext.
+	ObjectExtension reset.
 	byteCountCounter := 1.
 	astStepCounter := 0.
 	astStepCounter := 1.
@@ -409,7 +349,8 @@ SkStatementStepper >> restartAtBytecodeOne [
 	currentStepIndex := 0.
 	self doAndUpdateSessionAfter: [ 
 		stDebugger session restart: startingContextForRecord.
-		self pushCurrentStepDescriptor ]
+		currentStepIndex := currentStepIndex + 1.
+		currentContext := session interruptedProcess suspendedContext ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -418,11 +359,6 @@ SkStatementStepper >> restartRecordFromContext: aContext [
    startingContextForRecord:= aContext.
 	self restart.
 	
-]
-
-{ #category : #initialization }
-SkStatementStepper >> setEndFromCurrentStep [ 
-	endStatementDescriptor := self currentStepDescriptor 
 ]
 
 { #category : #initialization }
@@ -469,8 +405,11 @@ SkStatementStepper >> stepAstUntilConditionIsTrue: aBlock [
 	"Steps the AST. No skipping. No recording. No Updates
 TODO: Add error management. There are two kind, one from the executed code, and the other is from the debugger code"
 
-	aBlock whileFalse: [ 
-		self stepBytecode ifFalse: [ ^ false ] ].
+	aBlock
+		whileFalseAlt: [ self stepBytecode ifFalse: [ ^ false ] ]
+		lvl: 8.
+
+	"aBlock whileFalse: [ self stepBytecode ifFalse: [ ^ false ] ]."
 	^ true
 ]
 
@@ -524,22 +463,21 @@ SkStatementStepper >> stepBytecode [
 
 	"You must ensure that execution is not finished before callig this method."
 
-	| context contextAfter startingNode |
+	| previousContext startingNode |
 	(self isExecutionFinished or: [ self isRiskyStep ]) ifTrue: [ "self inform: 'Reached execution safe end point'" 
 		^ false ].
 
 	astStepCounter := astStepCounter + 1. "Note that the counter increases just before actually executing the AST. So Ast nodes pre and post process takes place for the same current ast step"
 
-	context := self currentContext.
-	context stepIntoQuickMethod: true.
-
+	currentContext stepIntoQuickMethod: true.
+	previousContext := currentContext.
 	startingNode := self currentNode.
 	self doAstStepPreProcess.
-	contextAfter := session interruptedProcess step.
+	currentContext := session interruptedProcess step.
 
 	byteCountCounter := byteCountCounter + 1.
 	stepBC := stepBC + 1.
-	context stepIntoQuickMethod: false.
+	previousContext stepIntoQuickMethod: false.
 	self doAstStepPostProcess: startingNode.
 	^ true
 ]
@@ -607,6 +545,13 @@ SkStatementStepper >> stepOver [
 				                (currentStepDescriptor hasSamePathAs:
 					                 startingStepDescriptor) not ].
 			  shouldStop ] ]
+]
+
+{ #category : #'debug - stepping' }
+SkStatementStepper >> stepToEnd [
+
+	self doAndUpdateSessionAfter: [ 
+		self stepAstUntilConditionIsTrue: [ false ] ]
 ]
 
 { #category : #'as yet unclassified' }

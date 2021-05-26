@@ -79,14 +79,16 @@ SeekerDebuggerPresenter >> enableTimeTravelingHandler [
 
 	self seekerDebugger stepper isMapped
 		ifTrue: [ 
-			| context descriptor |
-			context := self seekerDebugger stDebugger interruptedContext.
+			| context bcp |
+			context := self seekerDebugger stepper currentContext.
 
-			descriptor := self seekerDebugger stepper 
-				              createIndexlessStepDescriptorForContext: context.
-			self seekerDebugger stepper restartAndStepToCondition: [ 
-				self seekerDebugger stepper currentStepDescriptor hasSamePathAs:
-					descriptor ] ]
+			bcp := context currentTracedInstructionBcp.
+			self seekerDebugger stepper doAndUpdateSessionAfter: [ 
+				| tracer |
+				tracer := self seekerDebugger stepper.
+				tracer restartAtBytecodeOne.
+				tracer stepAstUntilConditionIsTrue: [ 
+					tracer currentContext currentTracedInstructionBcp = bcp ] ] ]
 		ifFalse: [ self mapExecutionIfNotMappedAlready ]
 ]
 
@@ -330,8 +332,10 @@ self doAndUpdateSessionAfter: [ self seekerDebugger stepper pushNavigationHistor
 
 { #category : #'as yet unclassified' }
 SeekerDebuggerPresenter >> stepToEndHandler [
-	self seekerDebugger stepper mapExecutionIfNotMappedAlready.
-	self seekerDebugger stepper stepUntilConditionIsTrue: [ self seekerDebugger stepper isRiskyStep ].
+
+	self seekerDebugger stepper doAndUpdateSessionAfter: [ 
+		self seekerDebugger stepper mapExecutionIfNotMappedAlready.
+		self seekerDebugger stepper stepToEnd ]
 ]
 
 { #category : #'as yet unclassified' }

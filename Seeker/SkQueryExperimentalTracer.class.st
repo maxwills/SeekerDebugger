@@ -1,6 +1,6 @@
 Class {
 	#name : #SkQueryExperimentalTracer,
-	#superclass : #SkRecorderTracer,
+	#superclass : #SkMappingTracer,
 	#instVars : [
 		'astPreStepHooks',
 		'currentStateInterfaceInstance',
@@ -13,16 +13,6 @@ Class {
 { #category : #adding }
 SkQueryExperimentalTracer >> addAstPreStepHook: aBlock [
 	astPreStepHooks add: aBlock
-]
-
-{ #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> currentNic [
-
-	| nic |
-	nic := SkXNodeInCompiledCode new.
-	nic compiledCode: self currentContext compiledCode.
-	nic nodeIndex: self currentNode ordinalIndex.
-	^ nic
 ]
 
 { #category : #'as yet unclassified' }
@@ -45,29 +35,9 @@ SkQueryExperimentalTracer >> currentStateInterface [
 ]
 
 { #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> doAndComeBack: aBlock [
-
-	| result currentStep |
-	self doAndUpdateSessionAfter: [ "At this point I should declare the data retrievers. For the momoent, they are all available"
-		currentStep := self currentStepDescriptor.
-		self restart.
-		result := aBlock value.
-		self restartAndStepToIndex: currentStep executionIndex.
-		^ result ]
-]
-
-{ #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> doAstStepPreProcess [
 
 	astPreStepHooks do: [ :each | each value ]
-]
-
-{ #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> doStepIntoBeginProcess [
-
-	super doStepIntoBeginProcess.
-	"queriesForPass ifNil: [ ^ self ].
-	queriesForPass do: [ :each | each privateOpeningStepProcessBlock value: self ]"
 ]
 
 { #category : #'menu messages' }
@@ -96,6 +66,20 @@ SkQueryExperimentalTracer >> initialize [
 SkQueryExperimentalTracer >> isTopContext: aContext [
 
 	^ stDebugger interruptedContext = aContext
+]
+
+{ #category : #'as yet unclassified' }
+SkQueryExperimentalTracer >> oldStepUntilQueryMatch: aQuery [
+
+	| match bcstephook |
+	"Use the condition with the hook technique. Because The predicate block of stepUntilCondition as step granularity statement."
+	match := false.
+	aQuery optimizeRowAcquisitionForFields: aQuery getRelevantFields.
+	bcstephook := [ aQuery isCurrentRowAMatch ifTrue: [ match := true ].match  ].
+	self addAstPreStepHook: bcstephook.
+	"Note the double bcstephook check. This is because, the ast level checkin happens after initiating the step into, it will always stop one step later. By repeating the condition in the statemement stepping, the problem is solved. this will change when reworking the debugger granularity"
+	[ self stepUntilConditionIsTrue: bcstephook] ensure: [ 
+		self removeAstPreStepHook: bcstephook ]
 ]
 
 { #category : #actions }
@@ -157,20 +141,6 @@ SkQueryExperimentalTracer >> selectedNode [
 SkQueryExperimentalTracer >> selectedSelector [
 
 	^ stDebugger code selectedSelector
-]
-
-{ #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> stepUntilQueryMatch: aQuery [
-
-	| match bcstephook |
-	"Use the condition with the hook technique. Because The predicate block of stepUntilCondition as step granularity statement."
-	match := false.
-	aQuery optimizeRowAcquisitionForFields: aQuery getRelevantFields.
-	bcstephook := [ aQuery isCurrentRowAMatch ifTrue: [ match := true ].match  ].
-	self addAstPreStepHook: bcstephook.
-	"Note the double bcstephook check. This is because, the ast level checkin happens after initiating the step into, it will always stop one step later. By repeating the condition in the statemement stepping, the problem is solved. this will change when reworking the debugger granularity"
-	[ self stepUntilConditionIsTrue: bcstephook] ensure: [ 
-		self removeAstPreStepHook: bcstephook ]
 ]
 
 { #category : #accessing }

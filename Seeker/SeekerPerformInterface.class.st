@@ -22,23 +22,20 @@ SeekerPerformInterface >> timeTravelToLastExecutedStatement [
 { #category : #'as yet unclassified' }
 SeekerPerformInterface >> timeTravelToNode: aNode inContext: aContext [
 
-	| node descriptor selectedContext targetStatementNumber |
+	| node bcp selectedContext targetStatementNumber |
 	"get the code ast""Should first get the node in the appropriate context (the selected one)"
 	selectedContext := tracer selectedContext.
 	node := aNode.
 
-	descriptor := tracer createIndexlessStepDescriptorForContext:
-		              aContext.
+	bcp := aContext currentTracedInstructionBcp.
 	"Just need to replace the statement number and put the one under the cursor instead"
 	"Note that the source code part will not be updated, but it is unnecessary for the path comparison"
 	"THIS FAILS FOR NESTED SEQUENCES IN THE SAME AST (if that makes sense)"
-	targetStatementNumber := SkStatementStaticID 
-		                         countNodeStatementIndexInOwningSequence:
-		                         node.
-	descriptor topStatementID indexInSequence: targetStatementNumber.
-
-	tracer restartAndStepToCondition: [ 
-		tracer currentStepDescriptor hasSamePathAs: descriptor ]
+	tracer doAndUpdateSessionAfter: [ 
+		tracer restartAtBytecodeOne.
+		tracer stepAstUntilConditionIsTrue: [ 
+			(bcp sameContextAs: tracer currentContext bcp) and: [ 
+				node == tracer currentNode ] ] ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -53,14 +50,15 @@ SeekerPerformInterface >> timeTravelToSelectedNode [
 { #category : #'as yet unclassified' }
 SeekerPerformInterface >> timeTravelToStepIndex: aNumber [
 
-	tracer mapExecutionIfNotMappedAlready.
-	tracer currentStepDescriptor executionIndex > aNumber
-		ifTrue: [ 
-			tracer stepUntilConditionIsTrue: [ 
-				tracer currentStepDescriptor executionIndex = aNumber ] ]
-		ifFalse: [ 
+	tracer doAndUpdateSessionAfter: [ 
+		tracer mapExecutionIfNotMappedAlready.
+
+		tracer tracedStatementIndex > aNumber ifFalse: [ 
+			tracer restartAtBytecodeOne.
 			tracer restartAndStepToCondition: [ 
-				tracer currentStepDescriptor executionIndex = aNumber ] ]
+				tracer tracedStatementIndex = aNumber ] ].
+		tracer stepAstUntilConditionIsTrue: [ 
+			tracer tracedStatementIndex = aNumber ] ]
 ]
 
 { #category : #accessing }

@@ -15,13 +15,6 @@ Class {
 	#category : #'Seeker-Components'
 }
 
-{ #category : #accessing }
-DebuggerStepperBase >> currentStepDescriptor [
-	"Returns a signature for the current step. It is unique for this execution"
-	"The signature can be any type of object, but it must be Equalable (be able to know that two signature are equal without comparing their references"
-	^ self subclassResponsibility 
-]
-
 { #category : #starting }
 DebuggerStepperBase >> restart [
 	self subclassResponsibility 

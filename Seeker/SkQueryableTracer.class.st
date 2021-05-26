@@ -109,50 +109,6 @@ SkQueryableTracer >> doesNextReturnOfMethod: aMethod satisfiesPredicate: aPredic
 ]
 
 { #category : #timeDependant }
-SkQueryableTracer >> doesPreviousReturnOfMethod: aMethod satisfiesPredicate: aPredicateBlock [
-
-	"Q4.
-	Predicate is a block that receives one parameter. Once the target method returns, its result is passed as parameter of the predicate returning its value.
-	Returns nil if the method could not be found during the execution.
-	Returns true or false according to the evaluation of the predicate over the method return value.
-
-	"
-
-	"REMEMBER TO MAP THE EXECUTION (AND RESTART IF DONE MANUALLY)"
-
-	"Needs a mapped execution: (A starting point and indexed steps). "
-
-	| currentStep stepOfReturnNode methodSelector classOfReceiver methodReturnValue result |
-	currentStep := self currentStepDescriptor.
-	returnsRecordingEnabled := true.
-	self restartAndStepToIndex: currentStep executionIndex.
-	returnsRecordingEnabled := false.
-	methodSelector := aMethod selector.
-	classOfReceiver := aMethod methodClass.
-	stepOfReturnNode := self
-		                    reverseFindStep: [ :stepDescriptor | 
-			                    stepDescriptor receiverClass = classOfReceiver 
-				                    and: [ 
-					                    stepDescriptor methodSelector
-					                    = methodSelector and: [ 
-						                    returnsDictionary includesKey:
-							                    stepDescriptor executionIndex ] ] ]
-		                    startingIndex: currentStep executionIndex.
-	stepOfReturnNode = 0 ifTrue: [ 
-		self inform: 'Could not find specified method return value.'.
-		^ SeekerStepQueryResult noResult ].
-	methodReturnValue := returnsDictionary at: stepOfReturnNode.
-	result := SeekerStepQueryResult new.
-	result result: (aPredicateBlock value: methodReturnValue).
-	result stepIndex: stepOfReturnNode.
-	result info: { 
-			#returnOfTheMethodIs:.
-			methodReturnValue }.
-	result seeker: self seeker.
-	^ result
-]
-
-{ #category : #timeDependant }
 SkQueryableTracer >> getNextValuesAtEachRecursionOf: aMethod [
 
 	"Q1.

@@ -11,3 +11,21 @@ BlockClosure >> switchCase: anArrayOfCases [
 
 	^ anArrayOfCases doCase: self
 ]
+
+{ #category : #'*Seeker' }
+BlockClosure >> whileFalseAlt: aBlock lvl: aNumber [
+
+	1 to: aNumber do: [ :i | 
+		self value ifTrue: [ ^ self ].
+		aBlock value ].
+	^ self whileFalseAlt: aBlock lvl: aNumber * 2
+]
+
+{ #category : #'*Seeker' }
+BlockClosure >> whileTrueAlt: aBlock lvl: aNumber [
+
+	1 to: aNumber do: [ :i | 
+		self value ifFalse: [ ^ self ].
+		aBlock value ].
+	^ self whileTrueAlt: aBlock lvl: aNumber + 1
+]

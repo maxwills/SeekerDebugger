@@ -7,6 +7,12 @@ Context >> @ aNumber [
 ]
 
 { #category : #'*Seeker' }
+Context >> bcp [
+
+	^ self extensionObject bcp
+]
+
+{ #category : #'*Seeker' }
 Context >> contextFastPath [
 
 	"I could cache the path, but I am not sure if the sender are changed weirdly"
@@ -35,6 +41,16 @@ Context >> currentFastTracedInstructionPath [
 ]
 
 { #category : #'*Seeker' }
+Context >> currentTracedInstructionBcp [
+
+	| tip |
+	tip := SkXTracedInstructionBcp new.
+	tip contextBcp: self bcp.
+	tip bc: self executedPC.
+	^ tip
+]
+
+{ #category : #'*Seeker' }
 Context >> currentTracedInstructionPath [
 
 	| tip |
@@ -42,4 +58,35 @@ Context >> currentTracedInstructionPath [
 	tip contextPath: self contextPath.
 	tip nodePath: self sourceNodeExecuted fullPath.
 	^ tip
+]
+
+{ #category : #'*Seeker' }
+Context >> defaultObjectExtensionClass [
+
+	^ SkExtContext
+]
+
+{ #category : #'*Seeker' }
+Context >> hasMatchingBcp: aBcp [
+
+	sender ifNil: [ ^ false ].
+	^ sender hasMatchingBcp: aBcp atIndex: aBcp size
+]
+
+{ #category : #'*Seeker' }
+Context >> hasMatchingBcp: aBcp atIndex: aNumber [
+
+	(aNumber = 1 and: [ sender isNil ]) ifTrue: [ 
+		^ self executedPC = (aBcp at: 1) ].
+	sender ifNil: [ ^ false ].
+	aNumber = 1 ifTrue: [ ^ false ].
+	self executedPC = (aBcp at: aNumber) ifFalse: [ ^ false ].
+	^ sender hasMatchingBcp: aBcp atIndex: aNumber - 1
+]
+
+{ #category : #'*Seeker' }
+Context >> hasMatchingTracedInsturctionBcp: aTracedInstructionBcp [
+
+	aTracedInstructionBcp bc = pc ifFalse: [ ^ false ].
+	^ self hasMatchingBcp: aTracedInstructionBcp bcp
 ]

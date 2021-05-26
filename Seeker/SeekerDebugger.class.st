@@ -71,11 +71,6 @@ SeekerDebugger >> currentContext [
 ^stepper currentContext
 ]
 
-{ #category : #accessing }
-SeekerDebugger >> currentStepDescriptor [
-	^ stepper currentStepDescriptor
-]
-
 { #category : #'as yet unclassified' }
 SeekerDebugger >> evaluateExpression: aStream inContext: aContext [
    "Evaluates the expression coming from a stream. Uses the current context of the StDebugger"
@@ -107,7 +102,9 @@ SeekerDebugger >> getContextOfStep: aNumber [
 
 { #category : #initialization }
 SeekerDebugger >> initialize [
-^super initialize 
+
+	ObjectExtension reset.
+	^ super initialize
 ]
 
 { #category : #initialization }

@@ -88,7 +88,7 @@ SkMappingTracer >> automapForDoItScenario [
 				                         ifTrue: [ self currentNode isReturn ]
 				                         ifFalse: [ false ] ] ].
 
-	self replayAndBuildExecutionMap.
+	self recountExecutedBytecodes.
 	isMapped := true.
 	^ true
 ]
@@ -120,7 +120,7 @@ SkMappingTracer >> automapForTestCaseScenario [
 		self error: 'Could not detect the initial context of the test.'.
 		^ false ].
 	startingIndexlessStepForNavigation := testInitialContext
-		                                      currentFastTracedInstructionPath.
+		                                      currentTracedInstructionBcp.
 	endingContext := SkContextHelpers
 		                 findContextInStack: [ :aContext | "We expect the exection will step in the method node of that context(because it doesn't have return node)"
 			                 (aContext receiver class inheritsFrom: TestCase) 
@@ -128,13 +128,13 @@ SkMappingTracer >> automapForTestCaseScenario [
 		                 startingContext: self currentContext.
 	"The last step it the last statement?"
 	pressumedEndStepForKnownScenario := endingContext
-		                                    currentFastTracedInstructionPath.
-	pressumedEndStepForKnownScenario node:
-		pressumedEndStepForKnownScenario node methodOrBlockNode.
+		                                    currentTracedInstructionBcp.
+	pressumedEndStepForKnownScenario bc: endingContext endPC.
 	pressumedEndCondition := [ 
-	                         self currentFastTracedInstructionPath
-	                         = pressumedEndStepForKnownScenario ].
-	self doAndUpdateSessionAfter: [ self replayAndBuildExecutionMap ].
+	                         self currentContext 
+		                         hasMatchingTracedInsturctionBcp:
+		                         pressumedEndStepForKnownScenario ].
+	self doAndUpdateSessionAfter: [ self recountExecutedBytecodes ].
 	isMapped := true.
 	^ true
 ]
@@ -190,7 +190,7 @@ SkMappingTracer >> automapForUIExceptionScenario [
 				                         ifTrue: [ self currentNode isReturn ]
 				                         ifFalse: [ false ] ] ].
 
-	self replayAndBuildExecutionMap.
+	self recountExecutedBytecodes.
 	isMapped := true.
 	^ true
 ]
@@ -423,8 +423,8 @@ SkMappingTracer >> isDoItScenario [
 	
 		|stepDescriptor|
 		"Check if this is a DoIt scenario"
-		stepDescriptor := self currentStepDescriptor.
-		(SkStepDescriptorHelpers descriptor: stepDescriptor containsSequenceByMethodSelector: #DoIt startingAt: 1) ifTrue: [ ^true ].
+		"stepDescriptor := self currentStepDescriptor.
+		(SkStepDescriptorHelpers descriptor: stepDescriptor containsSequenceByMethodSelector: #DoIt startingAt: 1) ifTrue: [ ^true ]."
 		^false
 	
 

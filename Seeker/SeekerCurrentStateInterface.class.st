@@ -278,13 +278,8 @@ SeekerCurrentStateInterface >> statementNotation [
 ]
 
 { #category : #accessing }
-SeekerCurrentStateInterface >> tracedStatementDescriptor [
-	^tracer currentStepDescriptor
-]
-
-{ #category : #accessing }
 SeekerCurrentStateInterface >> tracedStatementPath [
-	^tracer currentStepDescriptor
+	^nil
 ]
 
 { #category : #accessing }
