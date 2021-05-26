@@ -2,7 +2,8 @@ Class {
 	#name : #AnonymousTypeForTimeTravel,
 	#superclass : #AnonymousType,
 	#instVars : [
-		'privateTracer'
+		'privateTracer',
+		'stepIndex'
 	],
 	#category : #'Seeker-DataQuery'
 }
@@ -30,6 +31,7 @@ AnonymousTypeForTimeTravel >> asSeekerTracedProgramState [
 	tps := SeekerTracedProgramState new.
 	tps mergeWith: self.
 	tps privateTracer: privateTracer.
+	tps stepIndex: self stepIndex.
 	^ tps
 ]
 
@@ -43,6 +45,18 @@ AnonymousTypeForTimeTravel >> privateTracer [
 AnonymousTypeForTimeTravel >> privateTracer: anObject [
 
 	privateTracer := anObject
+]
+
+{ #category : #accessing }
+AnonymousTypeForTimeTravel >> stepIndex [
+
+	^ stepIndex
+]
+
+{ #category : #accessing }
+AnonymousTypeForTimeTravel >> stepIndex: anObject [
+
+	stepIndex := anObject
 ]
 
 { #category : #'as yet unclassified' }

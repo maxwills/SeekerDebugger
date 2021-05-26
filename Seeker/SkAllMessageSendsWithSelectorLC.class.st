@@ -13,7 +13,13 @@ SkAllMessageSendsWithSelectorLC >> description [
 { #category : #executing }
 SkAllMessageSendsWithSelectorLC >> executeCommand [
 
-	self tracer find allMessageSendsWithSelectedSelector inspect
+	self showResult:
+		(self tracer find allMessageSendsWithSelectedSelector 
+			 cullFieldsWithMapping: { 
+					 (#bytecodeIndex -> #ebc).
+					 (#messageSelector -> #sel).
+					 (#messageReceiverClass -> #class).
+					 (#messageArguments -> #args) } asDictionary)
 ]
 
 { #category : #accessing }

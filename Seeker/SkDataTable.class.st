@@ -46,6 +46,21 @@ SkDataTable >> columnLabels: anObject [
 ]
 
 { #category : #'as yet unclassified' }
+SkDataTable >> cullFieldsWithMapping: aDictionary [
+
+	data do: [ :each | 
+		| assocs |
+		assocs := each associations select: [ :assoc | 
+			          aDictionary includesKey: assoc key ].
+		each removeAll.
+		assocs do: [ :as | 
+			| newKey |
+			newKey := aDictionary at: as key.
+			each at: newKey put: as value ] ].
+	^ self
+]
+
+{ #category : #'as yet unclassified' }
 SkDataTable >> getRelevantFields [
 
 	^ {  }

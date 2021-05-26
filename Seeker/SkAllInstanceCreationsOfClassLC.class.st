@@ -13,8 +13,8 @@ SkAllInstanceCreationsOfClassLC >> description [
 { #category : #executing }
 SkAllInstanceCreationsOfClassLC >> executeCommand [
 
-	self tracer find allInstanceCreationsOfClassNamedAsSelectedCode
-		inspect
+	self showResult:
+		self tracer find allInstanceCreationsOfClassNamedAsSelectedCode
 ]
 
 { #category : #accessing }

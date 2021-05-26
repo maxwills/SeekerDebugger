@@ -13,7 +13,12 @@ SkAllMessageSendsLC >> description [
 { #category : #executing }
 SkAllMessageSendsLC >> executeCommand [
 
-	self tracer find allMessageSends inspect
+	self showResult:
+		(self tracer find allMessageSends cullFieldsWithMapping: { 
+				 (#bytecodeIndex -> #ebc).
+				 (#messageSelector -> #sel).
+				 (#messageReceiverClass -> #class).
+				 (#messageArguments -> #args) } asDictionary)
 ]
 
 { #category : #accessing }
