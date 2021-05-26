@@ -159,11 +159,6 @@ SkQueryExperimentalTracer >> selectedSelector [
 	^ stDebugger code selectedSelector
 ]
 
-{ #category : #accessing }
-SkQueryExperimentalTracer >> stepIndex [ 
-	^ self currentStepDescriptor executionIndex
-]
-
 { #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> stepUntilQueryMatch: aQuery [
 

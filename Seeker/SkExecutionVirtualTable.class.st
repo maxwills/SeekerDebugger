@@ -64,7 +64,7 @@ SkExecutionVirtualTable >> do: aBlock [
 	"Note that is used only because, at the moment, I have no bytecode stepping, so the preBytecodeStepHook is executed instead."
 
 	| originalStep preBytecodeStepHook |
-	originalStep := tracer currentStepDescriptor.
+	originalStep := tracer bytecodeIndex.
 	preBytecodeStepHook := [ aBlock value: self currentRow ].
 	tracer isMapped ifFalse: [ 
 		^ self error:
@@ -73,7 +73,9 @@ SkExecutionVirtualTable >> do: aBlock [
 	tracer addAstPreStepHook: preBytecodeStepHook.
 	[ tracer stepBytecodeToExecutionEnd ] ensure: [ 
 		tracer removeAstPreStepHook: preBytecodeStepHook.
-		tracer restartAndStepToIndex: originalStep executionIndex ]
+		tracer restartAtBytecodeOne.
+		tracer stepAstUntilConditionIsTrue: [ 
+			tracer bytecodeIndex >= originalStep ] ]
 ]
 
 { #category : #enumerating }

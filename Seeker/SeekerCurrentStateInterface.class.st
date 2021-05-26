@@ -25,7 +25,7 @@ SeekerCurrentStateInterface >> bytecodeIndex [
 { #category : #accessing }
 SeekerCurrentStateInterface >> bytecodeStepInTracedStatement [
 
-	^ tracer currentStepDescriptor astSteps + 1
+	^ tracer executedBytecodesInTracedStatement + 1
 ]
 
 { #category : #'as yet unclassified' }
@@ -67,7 +67,7 @@ SeekerCurrentStateInterface >> contextPC [
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> contextStackSize [
 
-	^ tracer currentStepDescriptor size
+	^ tracer currentFastTracedInstructionPath contextFastPath size + 1
 ]
 
 { #category : #'as yet unclassified' }
@@ -115,7 +115,7 @@ SeekerCurrentStateInterface >> isFirstBytecodeOfMethod [
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> isFirstBytecodeOfStatement [
 
-	^ tracer currentStepDescriptor astSteps = 1
+	^ tracer executedBytecodesInTracedStatement = 1
 ]
 
 { #category : #testing }
@@ -257,12 +257,13 @@ SeekerCurrentStateInterface >> sourceCodeOfStatement [
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> stackDepth [
 
-	^ tracer currentStepDescriptor size
+	^ tracer currentFastTracedInstructionPath contextFastPath size + 1
 ]
 
 { #category : #accessing }
 SeekerCurrentStateInterface >> statementIndex [
-	^tracer currentStepDescriptor topStatementID indexInSequence
+
+	^ tracer currentNode statementIndex
 ]
 
 { #category : #accessing }
@@ -288,7 +289,8 @@ SeekerCurrentStateInterface >> tracedStatementPath [
 
 { #category : #accessing }
 SeekerCurrentStateInterface >> tracedStatementStepIndex [
-	^tracer currentStepDescriptor executionIndex
+
+	^ tracer tracedStatementIndex
 ]
 
 { #category : #accessing }

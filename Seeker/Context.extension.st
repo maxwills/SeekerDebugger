@@ -1,6 +1,12 @@
 Extension { #name : #Context }
 
 { #category : #'*Seeker' }
+Context >> @ aNumber [
+
+	^ self sourceNode @ aNumber
+]
+
+{ #category : #'*Seeker' }
 Context >> contextFastPath [
 
 	"I could cache the path, but I am not sure if the sender are changed weirdly"

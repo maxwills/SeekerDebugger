@@ -376,15 +376,20 @@ SeekerDebuggerPresenter >> updatePresenter [
 	code interactionModel context: stDebugger currentContext.
 	code interactionModel bindings
 		at: #seeker
-		put: (WorkspaceVariable key: #seeker value: self seekerDebugger stepper).
+		put:
+		(WorkspaceVariable key: #seeker value: self seekerDebugger stepper).
 	code interactionModel bindings
 		at: #executeQuery
-		put: (WorkspaceVariable key: #executeQuery value: self seekerDebugger stepper).
+		put: (WorkspaceVariable
+				 key: #executeQuery
+				 value: self seekerDebugger stepper).
 	stepLabel := 'TracedStatement: '.
 	self seekerDebugger isExecutionFinished ifTrue: [ 
 		stepLabel := '(Finished) ' , stepLabel ].
 	currentStepLabel label:
-		stepLabel , (seekerDebugger currentStepDescriptor executionIndex asString), ' / BytecodeIndex: ',(seekerDebugger stepper bytecodeIndex asString).
+		stepLabel , seekerDebugger stepper tracedStatementIndex asString
+		, ' / BytecodeIndex: '
+		, seekerDebugger stepper bytecodeIndex asString.
 
 	self updateEvaluatorCode.
 	self updateExpressionValueDisplayed.

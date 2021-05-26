@@ -31,3 +31,29 @@ OCBytecodeToASTCache >> ordinatedNodes [
 		self xpropAt: #ordinatedNodes put: ordinatedNodes.
 		^ ordinatedNodes ]
 ]
+
+{ #category : #'*Seeker' }
+OCBytecodeToASTCache >> statementIndexOf: node [
+
+	(self xpropAt: #statementIndices) ifNil: [ self statements ].
+	^ (self xpropAt: #statementIndices)
+		  at: node statementNode
+		  ifAbsent: nil ""
+]
+
+{ #category : #'*Seeker' }
+OCBytecodeToASTCache >> statements [
+
+	| statements |
+	statements := self xpropAt: #statementIndices.
+	statements ifNotNil: [ ^ statements ] ifNil: [ 
+		| actualStatements |
+		statements := WeakIdentityKeyDictionary new.
+		actualStatements := methodOrBlockNode statements.
+		"generating the reverse index"
+		actualStatements ifNotEmpty: [ 
+			1 to: actualStatements size do: [ :index | 
+			statements at: (actualStatements at: index) put: index ] ].
+		self xpropAt: #statementIndices put: statements.
+		^ statements ]
+]

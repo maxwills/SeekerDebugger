@@ -95,6 +95,12 @@ SkStatementStepper >> currentContext [
 	^ context
 ]
 
+{ #category : #'as yet unclassified' }
+SkStatementStepper >> currentFastTracedInstructionPath [
+
+	^ self currentContext currentFastTracedInstructionPath
+]
+
 { #category : #accessing }
 SkStatementStepper >> currentIndexlessStepDescriptor [
 
@@ -183,6 +189,12 @@ SkStatementStepper >> doesAnyContextsInTheStackStatisfies: aPredicateBlock [
 		context := context sender.
 		context ifNil: [ ^ false ] ].
 	^ true
+]
+
+{ #category : #'as yet unclassified' }
+SkStatementStepper >> executedBytecodesInTracedStatement [
+
+	^ astStepCounter
 ]
 
 { #category : #testing }
@@ -354,8 +366,8 @@ SkStatementStepper >> pushCurrentStepDescriptor [
 
 	| currentStepDescriptor |
 	currentStepIndex := currentStepIndex + 1.
-	currentStepDescriptor := self currentStepDescriptor.
-	trace add: currentStepDescriptor.
+	"currentStepDescriptor := self currentStepDescriptor.
+	trace add: currentStepDescriptor."
 ]
 
 { #category : #'as yet unclassified' }
@@ -363,15 +375,11 @@ SkStatementStepper >> replayAndBuildExecutionMap [
 
 	"Should have an initial context set first"
 
-	| currentStep context |
-	context := self stDebugger selectedContext.
-	context ifNil: [ context := self stDebugger interruptedContext ].
-
-	currentStep := self seeker stepper 
-		               createIndexlessStepDescriptorForContext: context.
-	self restart.
-	self stepUntilConditionIsTrue: [ 
-		currentStep hasSameIndexlessSignatureAs: self currentStepDescriptor ]
+	| currentStep |
+	currentStep := self currentFastTracedInstructionPath.
+	self restartAtBytecodeOne.
+	self stepAstUntilConditionIsTrue: [ 
+		currentStep = self currentFastTracedInstructionPath ]
 ]
 
 { #category : #starting }
@@ -382,9 +390,9 @@ SkStatementStepper >> restart [
 	self doAndUpdateSessionAfter: [ 
 		self restartAtBytecodeOne.
 		startingIndexlessStepForNavigation ifNotNil: [ 
-			self stepUntilConditionIsTrue: [ 
-				self currentStepDescriptor hasSamePathAs:
-					startingIndexlessStepForNavigation ] ] ]
+			self stepAstUntilConditionIsTrue: [ 
+				self currentFastTracedInstructionPath
+				= startingIndexlessStepForNavigation ] ] ]
 ]
 
 { #category : #starting }
@@ -484,18 +492,15 @@ SkStatementStepper >> stepBackInto [
 SkStatementStepper >> stepBackOneBytecode [
 
 	self doAndUpdateSessionAfter: [ 
-		| currentStep nodeOrdinalIndex targetNodeIndex targetNode |
+		| currentStep nodeOrdinalIndex targetNodeIndex |
 		nodeOrdinalIndex := self currentNode ordinalIndex.
-		currentStep := self currentStepDescriptor.
+		currentStep := self bytecodeIndex.
 		targetNodeIndex := nodeOrdinalIndex - 1.
 		targetNodeIndex <= 1 ifTrue: [ targetNodeIndex := 1 ].
-		targetNode := self currentNode ordinatedMethodNodeChildren at: targetNodeIndex.
-		self restart.
-		self stepUntilConditionIsTrue: [ 
-			self currentStepDescriptor isSameDynamicSequenceAs: currentStep ].
 
+		self restartAtBytecodeOne.
 		self stepAstUntilConditionIsTrue: [ 
-			self currentNode == targetNode ] ]
+			self bytecodeIndex = targetNodeIndex ] ]
 ]
 
 { #category : #'debug - stepping' }
@@ -628,4 +633,10 @@ SkStatementStepper >> stepUntilConditionIsTrue: aBlock [
 SkStatementStepper >> trace [
 	"Returns the collection of steps signatures"
 	^trace
+]
+
+{ #category : #'as yet unclassified' }
+SkStatementStepper >> tracedStatementIndex [
+
+	^ currentStepIndex
 ]

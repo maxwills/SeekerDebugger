@@ -186,8 +186,7 @@ SeekerResultsPresenter >> updatePresenter [
 	t := self tracer.
 	t ifNotNil: [ 
 		currentStepLabel label:
-			stepLabel
-			, self tracer currentStepDescriptor executionIndex asString
+			stepLabel , self tracer tracedStatementIndex asString
 			, ' / BytecodeIndex: ' , self tracer bytecodeIndex asString ].
 	super updatePresenter
 ]

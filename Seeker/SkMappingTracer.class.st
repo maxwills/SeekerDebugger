@@ -23,17 +23,6 @@ SkMappingTracer >> autoMapFromStartingPoint [
 ]
 
 { #category : #'as yet unclassified' }
-SkMappingTracer >> autoSetupForTest [
-"If a debugger is opened automatically in a failing test, this method helps to map the execution by automatically detect the starting and ending point for the recording."
-	|testInitialContext|
-	testInitialContext := SkContextHelpers findContextInStack: [:aContext| aContext methodSelector = #runCase ] startingContext: self currentContext.
-	testInitialContext ifNil:[^self error: 'Could not detect the initial context for the test.'].
-	startingContextForRecord := testInitialContext.
-	self restartTestAndStopAtCurrentStep.
-	self setEndFromCurrentStep.
-]
-
-{ #category : #'as yet unclassified' }
 SkMappingTracer >> autoSetupForTestForUnhandledException [
 "If a debugger is opened automatically in a failing test, this method helps to map the execution by automatically detect the starting and ending point for the recording." "This handles a debugger oppened by an unhandled exception within a test"
 	|testInitialContext|
@@ -130,25 +119,22 @@ SkMappingTracer >> automapForTestCaseScenario [
 	testInitialContext ifNil: [ 
 		self error: 'Could not detect the initial context of the test.'.
 		^ false ].
-	startingIndexlessStepForNavigation := SkStepDescriptor 
-		                                      newFromCurrentNodeInContext:
-		                                      testInitialContext.
-	startingIndexlessStepForNavigation topStatementID indexInSequence: 1. "Force it to be the first statement"
-
+	startingIndexlessStepForNavigation := testInitialContext
+		                                      currentFastTracedInstructionPath.
 	endingContext := SkContextHelpers
 		                 findContextInStack: [ :aContext | "We expect the exection will step in the method node of that context(because it doesn't have return node)"
 			                 (aContext receiver class inheritsFrom: TestCase) 
 				                 and: [ aContext methodSelector = #performTest ] ]
 		                 startingContext: self currentContext.
 	"The last step it the last statement?"
-	pressumedEndStepForKnownScenario := SkStepDescriptor 
-		                                    newFromCurrentNodeInContext:
-		                                    endingContext.
-	pressumedEndStepForKnownScenario topStatementID indexInSequence: 0. "Method Node"
+	pressumedEndStepForKnownScenario := endingContext
+		                                    currentFastTracedInstructionPath.
+	pressumedEndStepForKnownScenario node:
+		pressumedEndStepForKnownScenario node methodOrBlockNode.
 	pressumedEndCondition := [ 
-	                         self currentStepDescriptor hasSamePathAs:
-		                         pressumedEndStepForKnownScenario ].
-	self replayAndBuildExecutionMap.
+	                         self currentFastTracedInstructionPath
+	                         = pressumedEndStepForKnownScenario ].
+	self doAndUpdateSessionAfter: [ self replayAndBuildExecutionMap ].
 	isMapped := true.
 	^ true
 ]
@@ -808,6 +794,15 @@ self stepUntilConditionIsTrue: [
 SkMappingTracer >> stepToFinalStep [
 "This requires an execution to be mapped"
 self stepUntilConditionIsTrue: [self isRiskyStep].
+]
+
+{ #category : #'as yet unclassified' }
+SkMappingTracer >> stepToNavigationStartingStep [
+
+	startingIndexlessStepForNavigation ifNil: [ ^ nil ].
+	self stepAstUntilConditionIsTrue: [ 
+		self currentFastTracedInstructionPath
+		= startingIndexlessStepForNavigation ]
 ]
 
 { #category : #'as yet unclassified' }
