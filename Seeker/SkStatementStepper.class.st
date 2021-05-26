@@ -405,11 +405,11 @@ SkStatementStepper >> stepAstUntilConditionIsTrue: aBlock [
 	"Steps the AST. No skipping. No recording. No Updates
 TODO: Add error management. There are two kind, one from the executed code, and the other is from the debugger code"
 
-	aBlock
+	"aBlock
 		whileFalseAlt: [ self stepBytecode ifFalse: [ ^ false ] ]
-		lvl: 8.
+		lvl: 8."
 
-	"aBlock whileFalse: [ self stepBytecode ifFalse: [ ^ false ] ]."
+	aBlock whileFalse: [ self stepBytecode ifFalse: [ ^ false ] ].
 	^ true
 ]
 
