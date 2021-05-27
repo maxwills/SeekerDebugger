@@ -306,7 +306,7 @@ SkStatementStepper >> safeTimeTravelToTraceTime: aTraceTime [
 
 	self doAndUpdateSessionAfter: [ 
 		self restartAtBytecodeOne andThen stepBytecodeUntilConditionIsTrue: [ 
-			self traceTime @>= aTraceTime ] ]
+			aTraceTime referencesTheLocalPastOrPresent: self ] ]
 ]
 
 { #category : #initialization }

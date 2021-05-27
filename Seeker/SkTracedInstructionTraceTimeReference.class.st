@@ -50,6 +50,18 @@ SkTracedInstructionTraceTimeReference >> referencesTheLocalPast: tracer [
 ]
 
 { #category : #testing }
+SkTracedInstructionTraceTimeReference >> referencesTheLocalPastOrPresent: tracer [
+
+	"Is this trace time a reference to the past in the same sequence?"
+
+	| context |
+	context := tracer currentContext.
+	^ context pc >= tracedInstructionPC pc and: [ 
+		  context matchesTracedContextPC:
+			  tracedInstructionPC tracedContextPC ]
+]
+
+{ #category : #testing }
 SkTracedInstructionTraceTimeReference >> referencesThePast: tracer [
 
 	^ tracedInstructionPC @< tracer currentContext tracedInstructionPC
@@ -60,6 +72,18 @@ SkTracedInstructionTraceTimeReference >> referencesThePresent: tracer [
 
 	^ tracer currentContext matchesTracedInstructionPC:
 		  tracedInstructionPC
+]
+
+{ #category : #testing }
+SkTracedInstructionTraceTimeReference >> referencesThePresentOrLocalFuture: tracer [
+
+	"Is this trace time a reference to the future in the same sequence?"
+
+	| context |
+	context := tracer currentContext.
+	^ context pc <= tracedInstructionPC pc and: [ 
+		  context matchesTracedContextPC:
+			  tracedInstructionPC tracedContextPC ]
 ]
 
 { #category : #accessing }

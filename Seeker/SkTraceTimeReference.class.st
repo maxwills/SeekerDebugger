@@ -67,17 +67,6 @@ SkTraceTimeReference >> isOfCurrentTraceTimeClass [
 ]
 
 { #category : #testing }
-SkTraceTimeReference >> referenceThePresentOrLocalFuture: tracer [
-
-	"Answer if the current trace time is in the same traced context as the one denoted by self"
-
-	"For contexts, local future and local pasts are the same as present"
-
-	^ (self referencesThePresent: tracer) or: [ 
-		  self referencesTheLocalFuture: tracer ]
-]
-
-{ #category : #testing }
 SkTraceTimeReference >> referencesTheFuture: tracer [
 
 	"Does this trace time reference the future?"
@@ -141,4 +130,15 @@ SkTraceTimeReference >> referencesThePresent: tracer [
 SkTraceTimeReference >> referencesThePresentOrFuture: tracer [
 
 	^ (self referencesThePresent: tracer) or: [ self referencesTheFuture: tracer ]
+]
+
+{ #category : #testing }
+SkTraceTimeReference >> referencesThePresentOrLocalFuture: tracer [
+
+	"Answer if the current trace time is in the same traced context as the one denoted by self"
+
+	"For contexts, local future and local pasts are the same as present"
+
+	^ (self referencesThePresent: tracer) or: [ 
+		  self referencesTheLocalFuture: tracer ]
 ]

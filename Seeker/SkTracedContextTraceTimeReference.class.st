@@ -38,6 +38,12 @@ SkTracedContextTraceTimeReference >> referencesTheLocalPast: tracer [
 ]
 
 { #category : #testing }
+SkTracedContextTraceTimeReference >> referencesTheLocalPastOrPresent: tracer [
+
+	^ self referencesThePresent: tracer
+]
+
+{ #category : #testing }
 SkTracedContextTraceTimeReference >> referencesThePast: tracer [
 
 	^ tracedContextPC @< tracer currentContext tracedContextPC
@@ -45,6 +51,12 @@ SkTracedContextTraceTimeReference >> referencesThePast: tracer [
 
 { #category : #testing }
 SkTracedContextTraceTimeReference >> referencesThePresent: tracer [
+
+	^ tracer currentContext matchesTracedContextPC: tracedContextPC
+]
+
+{ #category : #testing }
+SkTracedContextTraceTimeReference >> referencesThePresentOrLocalFuture: tracer [
 
 	^ tracer currentContext matchesTracedContextPC: tracedContextPC
 ]

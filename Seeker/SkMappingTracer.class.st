@@ -132,7 +132,9 @@ SkMappingTracer >> automapForTestCaseScenario [
 	endTracedInstructionPC := endingContext tracedInstructionPC.
 	endTracedInstructionPC pc: endingContext endPC. "The last step is the endPC?"
 	endTraceTime := endTracedInstructionPC asTraceTimeReference.
-	pressumedEndCondition := [ self traceTime @>= endTraceTime ].
+	pressumedEndCondition := [ "self traceTime @>=" 
+	                         endTraceTime 
+		                         referencesTheLocalPastOrPresent: self ].
 	self doAndUpdateSessionAfter: [ self recountExecutedBytecodes ].
 	isMapped := true.
 	^ true
