@@ -50,7 +50,8 @@ Class {
 		'interruptedProcess',
 		'currentContext',
 		'userStartTraceTime',
-		'contextOfExecutedBytecodeOne'
+		'contextOfExecutedBytecodeOne',
+		'currentTraceTimeReference'
 	],
 	#category : #'Seeker-Components'
 }
@@ -147,6 +148,8 @@ SkStatementStepper >> initialize [
 
 	"scope: class-variables  &  instance-variables"
 
+	currentTraceTimeReference := SkCurrentTraceTimeReference new tracer:
+		                             self.
 	maxExecutedBytecode := 1.
 	astStepCounter := 0.
 	trace := SkTrace new.
@@ -302,8 +305,8 @@ SkStatementStepper >> safeTimeTravelToTraceTime: aTraceTime [
 	"time trave with breaks. Not fully safe though. If the target time is skipped for some reson, the travel can detect it while in the same sequence(local trace time) and step"
 
 	self doAndUpdateSessionAfter: [ 
-		self restartAtBytecodeOne andThen stepAstUntilConditionIsTrue: [ 
-			aTraceTime referencesTheLocalPastOrPresent: self ] ]
+		self restartAtBytecodeOne andThen stepBytecodeUntilConditionIsTrue: [ 
+			self traceTime >= aTraceTime ] ]
 ]
 
 { #category : #initialization }
@@ -344,20 +347,6 @@ SkStatementStepper >> stDebugger: anObject [
 	stDebugger := anObject
 ]
 
-{ #category : #'as yet unclassified' }
-SkStatementStepper >> stepAstUntilConditionIsTrue: aBlock [
-
-	"Steps the AST. No skipping. No recording. No Updates
-TODO: Add error management. There are two kind, one from the executed code, and the other is from the debugger code"
-
-	"aBlock
-		whileFalseAlt: [ self stepBytecode ifFalse: [ ^ false ] ]
-		lvl: 8."
-
-	aBlock whileFalse: [ self stepBytecode ifFalse: [ ^ false ] ].
-	^ true
-]
-
 { #category : #'debug - stepping' }
 SkStatementStepper >> stepBackInto [
 
@@ -383,7 +372,7 @@ SkStatementStepper >> stepBackOneBytecode [
 		targetNodeIndex <= 1 ifTrue: [ targetNodeIndex := 1 ].
 
 		self restartAtBytecodeOne.
-		self stepAstUntilConditionIsTrue: [ 
+		self stepBytecodeUntilConditionIsTrue: [ 
 			self bytecodeIndex = targetNodeIndex ] ]
 ]
 
@@ -437,6 +426,20 @@ TODO: Add error management. There are two kind, one from the executed code, and 
 ]
 
 { #category : #'as yet unclassified' }
+SkStatementStepper >> stepBytecodeUntilConditionIsTrue: aBlock [
+
+	"Steps the AST. No skipping. No recording. No Updates
+TODO: Add error management. There are two kind, one from the executed code, and the other is from the debugger code"
+
+	"aBlock
+		whileFalseAlt: [ self stepBytecode ifFalse: [ ^ false ] ]
+		lvl: 8."
+
+	aBlock whileFalse: [ self stepBytecode ifFalse: [ ^ false ] ].
+	^ true
+]
+
+{ #category : #'as yet unclassified' }
 SkStatementStepper >> stepBytecodeUntilStatementJump [
 
 	"No recording, no updates"
@@ -444,7 +447,7 @@ SkStatementStepper >> stepBytecodeUntilStatementJump [
 	| currentStatementNode previousContext |
 	currentStatementNode := self currentStatementNode.
 	previousContext := self currentContext.
-	^self stepAstUntilConditionIsTrue: [ 
+	^self stepBytecodeUntilConditionIsTrue: [ 
 		self currentStatementNode ~= currentStatementNode or: [ previousContext ~= self currentContext ] ]
 ]
 
@@ -495,7 +498,7 @@ SkStatementStepper >> stepOver [
 SkStatementStepper >> stepToEnd [
 
 	self doAndUpdateSessionAfter: [ 
-		self stepAstUntilConditionIsTrue: [ false ] ]
+		self stepBytecodeUntilConditionIsTrue: [ false ] ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -524,8 +527,8 @@ SkStatementStepper >> timeTravelToTraceTime: aTraceTime [
 	""
 
 	self doAndUpdateSessionAfter: [ 
-		self restartAtBytecodeOne andThen stepAstUntilConditionIsTrue: [ 
-			aTraceTime referencesThePresent: self ] ]
+		self restartAtBytecodeOne andThen stepBytecodeUntilConditionIsTrue: [ 
+			self traceTime = aTraceTime ] ]
 ]
 
 { #category : #starting }
@@ -538,6 +541,12 @@ SkStatementStepper >> timeTravelToUserStart [
 SkStatementStepper >> trace [
 	"Returns the collection of steps signatures"
 	^trace
+]
+
+{ #category : #'as yet unclassified' }
+SkStatementStepper >> traceTime [
+
+	^ currentTraceTimeReference
 ]
 
 { #category : #'as yet unclassified' }

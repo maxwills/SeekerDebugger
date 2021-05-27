@@ -132,9 +132,7 @@ SkMappingTracer >> automapForTestCaseScenario [
 	endTracedInstructionPC := endingContext tracedInstructionPC.
 	endTracedInstructionPC pc: endingContext endPC. "The last step is the endPC?"
 	endTraceTime := endTracedInstructionPC asTraceTimeReference.
-	pressumedEndCondition := [ 
-	                         endTraceTime 
-		                         referencesTheLocalPastOrPresent: self ].
+	pressumedEndCondition := [ self traceTime >= endTraceTime ].
 	self doAndUpdateSessionAfter: [ self recountExecutedBytecodes ].
 	isMapped := true.
 	^ true
@@ -800,7 +798,7 @@ self stepUntilConditionIsTrue: [self isRiskyStep].
 SkMappingTracer >> stepToNavigationStartingStep [
 
 	userStartTraceTime ifNil: [ ^ nil ].
-	self stepAstUntilConditionIsTrue: [ 
+	self stepBytecodeUntilConditionIsTrue: [ 
 		self currentFastTracedInstructionPath
 		= userStartTraceTime ]
 ]

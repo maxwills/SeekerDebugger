@@ -7,10 +7,22 @@ Class {
 	#category : #'Seeker-TraceTime'
 }
 
+{ #category : #'as yet unclassified' }
+SkTracedInstructionTraceTimeReference >> comparableObject [
+
+	^ tracedInstructionPC
+]
+
+{ #category : #'as yet unclassified' }
+SkTracedInstructionTraceTimeReference >> comparableObjectFromTracer: tracer [
+
+	^ tracer currentContext tracedInstructionPC
+]
+
 { #category : #testing }
 SkTracedInstructionTraceTimeReference >> referencesTheFuture: tracer [
 
-	^ self error: 'to be implemented'
+	^ tracedInstructionPC > tracer currentContext tracedInstructionPC
 ]
 
 { #category : #testing }
@@ -40,7 +52,7 @@ SkTracedInstructionTraceTimeReference >> referencesTheLocalPast: tracer [
 { #category : #testing }
 SkTracedInstructionTraceTimeReference >> referencesThePast: tracer [
 
-	^ self error: 'to be implemented'
+	^ tracedInstructionPC < tracer currentContext tracedInstructionPC
 ]
 
 { #category : #testing }

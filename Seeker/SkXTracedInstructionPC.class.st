@@ -26,6 +26,46 @@ SkXTracedInstructionPC class >> compileSource: aString [
 ]
 
 { #category : #comparing }
+SkXTracedInstructionPC >> < anotherTiBcpPath [
+
+	"This method is not that slow, but the generation of tracedInstructionPC might be slightly slow.
+	 For faster comparisons, consider using faster methods like Context>>#matchesTracedInstructionPC: for example,
+	which avoids creating a full TracedPC"
+
+	| sizeDiff sum1 sum2 |
+	self == anotherTiBcpPath ifTrue: [ ^ false ].
+	sum1 := pc + (self tracedContextPC bitShiftedSum: 4).
+	sum2 := anotherTiBcpPath pc
+	        + (anotherTiBcpPath tracedContextPC bitShiftedSum: 4).
+	sizeDiff := self tracedContextPC size
+	            - anotherTiBcpPath tracedContextPC size.
+	sizeDiff = 0 ifTrue: [ ^ sum1 < sum2 ].
+	^ sizeDiff < 0
+		  ifTrue: [ (sum1 bitShiftMagnitude: 4 * sizeDiff negated) < sum2 ]
+		  ifFalse: [ sum1 < (sum2 bitShiftMagnitude: 4 * sizeDiff) ]
+]
+
+{ #category : #comparing }
+SkXTracedInstructionPC >> <= anotherTiBcpPath [
+
+	"This method is not that slow, but the generation of tracedInstructionPC might be slightly slow.
+	 For faster comparisons, consider using faster methods like Context>>#matchesTracedInstructionPC: for example,
+	which avoids creating a full TracedPC"
+
+	| sizeDiff sum1 sum2 |
+	self == anotherTiBcpPath ifTrue: [ ^ false ].
+	sum1 := pc + (self tracedContextPC bitShiftedSum: 4).
+	sum2 := anotherTiBcpPath pc
+	        + (anotherTiBcpPath tracedContextPC bitShiftedSum: 4).
+	sizeDiff := self tracedContextPC size
+	            - anotherTiBcpPath tracedContextPC size.
+	sizeDiff = 0 ifTrue: [ ^ sum1 <= sum2 ].
+	^ sizeDiff < 0
+		  ifTrue: [ (sum1 bitShiftMagnitude: 4 * sizeDiff negated) <= sum2 ]
+		  ifFalse: [ sum1 <= (sum2 bitShiftMagnitude: 4 * sizeDiff) ]
+]
+
+{ #category : #comparing }
 SkXTracedInstructionPC >> = anotherTiBcpPath [
 
 	"This method is not that slow, but the generation of tracedInstructionPC might be slightly slow.
@@ -36,6 +76,46 @@ SkXTracedInstructionPC >> = anotherTiBcpPath [
 
 	self pc = anotherTiBcpPath pc ifFalse: [ ^ false ].
 	^ self tracedContextPC = anotherTiBcpPath tracedContextPC
+]
+
+{ #category : #comparing }
+SkXTracedInstructionPC >> > anotherTiBcpPath [
+
+	"This method is not that slow, but the generation of tracedInstructionPC might be slightly slow.
+	 For faster comparisons, consider using faster methods like Context>>#matchesTracedInstructionPC: for example,
+	which avoids creating a full TracedPC"
+
+	| sizeDiff sum1 sum2 |
+	self == anotherTiBcpPath ifTrue: [ ^ false ].
+	sum1 := pc + (self tracedContextPC bitShiftedSum: 4).
+	sum2 := anotherTiBcpPath pc
+	        + (anotherTiBcpPath tracedContextPC bitShiftedSum: 4).
+	sizeDiff := self tracedContextPC size
+	            - anotherTiBcpPath tracedContextPC size.
+	sizeDiff = 0 ifTrue: [ ^ sum1 > sum2 ].
+	^ sizeDiff < 0
+		  ifTrue: [ (sum1 bitShiftMagnitude: 4 * sizeDiff negated) > sum2 ]
+		  ifFalse: [ sum1 > (sum2 bitShiftMagnitude: 4 * sizeDiff) ]
+]
+
+{ #category : #comparing }
+SkXTracedInstructionPC >> >= anotherTiBcpPath [
+
+	"This method is not that slow, but the generation of tracedInstructionPC might be slightly slow.
+	 For faster comparisons, consider using faster methods like Context>>#matchesTracedInstructionPC: for example,
+	which avoids creating a full TracedPC"
+
+	| sizeDiff sum1 sum2 |
+	self == anotherTiBcpPath ifTrue: [ ^ false ].
+	sum1 := pc + (self tracedContextPC bitShiftedSum: 4).
+	sum2 := anotherTiBcpPath pc
+	        + (anotherTiBcpPath tracedContextPC bitShiftedSum: 4).
+	sizeDiff := self tracedContextPC size
+	            - anotherTiBcpPath tracedContextPC size.
+	sizeDiff = 0 ifTrue: [ ^ sum1 >= sum2 ].
+	^ sizeDiff < 0
+		  ifTrue: [ (sum1 bitShiftMagnitude: 4 * sizeDiff negated) >= sum2 ]
+		  ifFalse: [ sum1 >= (sum2 bitShiftMagnitude: 4 * sizeDiff) ]
 ]
 
 { #category : #converting }

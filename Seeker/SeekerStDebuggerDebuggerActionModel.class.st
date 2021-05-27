@@ -21,7 +21,7 @@ SeekerStDebuggerDebuggerActionModel >> doStepToFirstInterestingBytecode [
 
 	"advances and returns the current context"
 
-	tracer stepAstUntilConditionIsTrue: [ 
+	tracer stepBytecodeUntilConditionIsTrue: [ 
 		currentState aboutToSwitchContext ].
 	^ currentState context
 ]

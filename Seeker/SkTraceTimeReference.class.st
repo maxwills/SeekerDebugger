@@ -4,6 +4,68 @@ Class {
 	#category : #'Seeker-TraceTime'
 }
 
+{ #category : #comparing }
+SkTraceTimeReference >> < another [
+
+	another isOfCurrentTraceTimeClass ifFalse: [ 
+		^ self error: 'can only compare with CurrentTraceTime objects' ].
+	^ self comparableObject
+	  < (self comparableObjectFromTracer: another tracer)
+]
+
+{ #category : #comparing }
+SkTraceTimeReference >> <= another [
+
+	another isOfCurrentTraceTimeClass ifFalse: [ 
+		^ self error: 'can only compare with CurrentTraceTime objects' ].
+	^ self comparableObject
+	  <= (self comparableObjectFromTracer: another tracer)
+]
+
+{ #category : #comparing }
+SkTraceTimeReference >> = another [
+
+	another isOfCurrentTraceTimeClass ifFalse: [ 
+		^ super = another "self error: 'can only compare with CurrentTraceTime objects'" ].
+	^ self comparableObject
+	  = (self comparableObjectFromTracer: another tracer)
+]
+
+{ #category : #comparing }
+SkTraceTimeReference >> > another [
+
+	another isOfCurrentTraceTimeClass ifFalse: [ 
+		^ self error: 'can only compare with CurrentTraceTime objects' ].
+	^ self comparableObject
+	  > (self comparableObjectFromTracer: another tracer)
+]
+
+{ #category : #comparing }
+SkTraceTimeReference >> >= another [
+
+	another isOfCurrentTraceTimeClass ifFalse: [ 
+		^ self error: 'can only compare with CurrentTraceTime objects' ].
+	^ self comparableObject
+	  >= (self comparableObjectFromTracer: another tracer)
+]
+
+{ #category : #'as yet unclassified' }
+SkTraceTimeReference >> comparableObject [
+
+	^ self subclassResponsibility
+]
+
+{ #category : #'as yet unclassified' }
+SkTraceTimeReference >> comparableObjectFromTracer: atracer [
+
+	^ self subclassResponsibility
+]
+
+{ #category : #testing }
+SkTraceTimeReference >> isOfCurrentTraceTimeClass [
+	^ false
+]
+
 { #category : #testing }
 SkTraceTimeReference >> referenceThePresentOrLocalFuture: tracer [
 
@@ -20,7 +82,7 @@ SkTraceTimeReference >> referencesTheFuture: tracer [
 
 	"Does this trace time reference the future?"
 
-	^ self subclassResponsibility
+	^ self comparableObject > (self comparableObjectFromTracer: tracer)
 ]
 
 { #category : #testing }
@@ -58,7 +120,7 @@ SkTraceTimeReference >> referencesThePast: tracer [
 
 	"Does this trace time reference the past ?"
 
-	^ self subclassResponsibility
+	^ self comparableObject < (self comparableObjectFromTracer: tracer)
 ]
 
 { #category : #testing }
@@ -72,7 +134,7 @@ SkTraceTimeReference >> referencesThePresent: tracer [
 
 	"Does this trace time reference the present?"
 
-	^ self subclassResponsibility
+	^ self comparableObject = (self comparableObjectFromTracer: tracer)
 ]
 
 { #category : #testing }

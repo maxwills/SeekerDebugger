@@ -47,7 +47,7 @@ Context >> currentTracedInstructionPath [
 { #category : #'*Seeker' }
 Context >> defaultSeekerCacheObjectClass [
 
-	^ SkCOContext
+	^ SkContextCacheObject
 ]
 
 { #category : #'*Seeker' }

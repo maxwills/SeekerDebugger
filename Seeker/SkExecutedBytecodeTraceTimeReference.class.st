@@ -7,6 +7,18 @@ Class {
 	#category : #'Seeker-TraceTime'
 }
 
+{ #category : #'as yet unclassified' }
+SkExecutedBytecodeTraceTimeReference >> comparableObject [
+
+	^ executedBytecode
+]
+
+{ #category : #'as yet unclassified' }
+SkExecutedBytecodeTraceTimeReference >> comparableObjectFromTracer: tracer [
+
+	^ tracer bytecodeIndex
+]
+
 { #category : #accessing }
 SkExecutedBytecodeTraceTimeReference >> executedBytecode [
 

@@ -74,7 +74,7 @@ SkExecutionVirtualTable >> do: aBlock [
 	[ tracer stepBytecodeToExecutionEnd ] ensure: [ 
 		tracer removeAstPreStepHook: preBytecodeStepHook.
 		tracer restartAtBytecodeOne.
-		tracer stepAstUntilConditionIsTrue: [ 
+		tracer stepBytecodeUntilConditionIsTrue: [ 
 			tracer bytecodeIndex >= originalStep ] ]
 ]
 

@@ -1,5 +1,5 @@
 Class {
-	#name : #SkCOContext,
+	#name : #SkContextCacheObject,
 	#superclass : #SeekerCacheObject,
 	#instVars : [
 		'contextBcp'
@@ -8,13 +8,13 @@ Class {
 }
 
 { #category : #initialization }
-SkCOContext >> initialize [
+SkContextCacheObject >> initialize [
 
 	super initialize
 ]
 
 { #category : #accessing }
-SkCOContext >> tracedContextPC [
+SkContextCacheObject >> tracedContextPC [
 
 	^ contextBcp ifNil: [ 
 		  | context |

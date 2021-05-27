@@ -33,7 +33,7 @@ SeekerPerformInterface >> timeTravelToNode: aNode inContext: aContext [
 	"THIS FAILS FOR NESTED SEQUENCES IN THE SAME AST (if that makes sense)"
 	tracer doAndUpdateSessionAfter: [ 
 		tracer restartAtBytecodeOne.
-		tracer stepAstUntilConditionIsTrue: [ 
+		tracer stepBytecodeUntilConditionIsTrue: [ 
 			(bcp sameContextAs: tracer currentContext tracedContextPC) and: [ 
 				node == tracer currentNode ] ] ]
 ]
@@ -57,7 +57,7 @@ SeekerPerformInterface >> timeTravelToStepIndex: aNumber [
 			tracer restartAtBytecodeOne.
 			tracer restartAndStepToCondition: [ 
 				tracer tracedStatementIndex = aNumber ] ].
-		tracer stepAstUntilConditionIsTrue: [ 
+		tracer stepBytecodeUntilConditionIsTrue: [ 
 			tracer tracedStatementIndex = aNumber ] ]
 ]
 
