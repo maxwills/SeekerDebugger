@@ -11,7 +11,7 @@ SkMapSessionFormSelectedStartingPointLC >> description [
 
 { #category : #executing }
 SkMapSessionFormSelectedStartingPointLC >> executeCommand [
-	 self seeker stepper setStartingPointAndMap: self seeker stDebugger selectedContext
+	 self seeker tracer setStartingPointAndMap: self seeker stDebugger selectedContext
 ]
 
 { #category : #accessing }

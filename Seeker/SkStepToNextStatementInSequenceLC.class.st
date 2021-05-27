@@ -13,7 +13,7 @@ SkStepToNextStatementInSequenceLC >> description [
 { #category : #executing }
 SkStepToNextStatementInSequenceLC >> executeCommand [
 
-	self seeker stepper timeTravel toNextStatementInSequence
+	self seeker tracer timeTravel toNextStatementInSequence
 ]
 
 { #category : #accessing }

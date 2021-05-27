@@ -19,8 +19,8 @@ SkAliasOfSelectedVariableTestLC >> executeCommand [
 
 	nodeUnderCursor := self nodeUnderCursor.
 	isTopContext := self selectedContextIsTopContext.
-	aStepDescriptor := self seeker stepper currentStepDescriptor.
-	query := self seeker stepper queries 
+	aStepDescriptor := self seeker tracer currentStepDescriptor.
+	query := self seeker tracer queries 
 		         forAliasOfObjectReferredByVariableNode: nodeUnderCursor.
 	query := Query
 		         from: (query withExecutionColumns: { #stepIndex })

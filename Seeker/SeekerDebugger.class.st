@@ -35,9 +35,8 @@ Class {
 	#traits : 'TDebuggerUpdateCoordinatorClient',
 	#classTraits : 'TDebuggerUpdateCoordinatorClient classTrait',
 	#instVars : [
-		'stepper',
 		'stDebugger',
-		'sindarin'
+		'tracer'
 	],
 	#category : #'Seeker-Core'
 }
@@ -55,11 +54,11 @@ SeekerDebugger class >> newFor: aStDebugger [
 	"Initialize the DebuggerStepperBase subclass to be injected in the seeker debugger"
 	stepper := SkQueryableTracer new. "SeekerGlobals instance defaultStepperClass new"
 	stepper stDebugger: aStDebugger.
-	stepper interruptedProcess: aStDebugger interruptedProcess.
+	stepper interruptedProcess: aStDebugger interruptedProcess. "aStDebugger session interruptedProcess"
 	stepper debuggerUpdateCoordinator: updateCoordinator.
 
 	debugger := SeekerDebugger new.
-	debugger initializeWithStepper: stepper.
+	debugger tracer: stepper.
 	debugger stDebugger: aStDebugger.
 	debugger debuggerUpdateCoordinator: updateCoordinator.
 	stepper seeker: debugger.
@@ -68,7 +67,7 @@ SeekerDebugger class >> newFor: aStDebugger [
 
 { #category : #'accessing context' }
 SeekerDebugger >> currentContext [
-^stepper currentContext
+^tracer currentContext
 ]
 
 { #category : #'as yet unclassified' }
@@ -95,32 +94,11 @@ SeekerDebugger >> evaluateExpression: aString inContext: aContext throws: anErro
         evaluate] on: anError do: [ :e| ^true ] . ^false
 ]
 
-{ #category : #'as yet unclassified' }
-SeekerDebugger >> getContextOfStep: aNumber [
-	^ (stepper trace at: aNumber) context
-]
-
 { #category : #initialization }
 SeekerDebugger >> initialize [
 
-	ObjectExtension reset.
+	SeekerCache reset.
 	^ super initialize
-]
-
-{ #category : #initialization }
-SeekerDebugger >> initializeWithStepper: aDebuggerStepper [
-	stepper := aDebuggerStepper
-]
-
-{ #category : #testing }
-SeekerDebugger >> isExecutionFinished [
-
-	^ stepper isExecutionFinished
-]
-
-{ #category : #printing }
-SeekerDebugger >> printTrace [
-	"Transcript show: stepper trace asString"
 ]
 
 { #category : #'as yet unclassified' }
@@ -129,49 +107,28 @@ SeekerDebugger >> quickSetup [
 	"Automatic initialization logic. Happens when chossing debugging option from context menu commands. Options are stored in globals for the moment"
 
 	| process isWatchedProcess |
-	stepper ifNil: [ ^ self ].
+	tracer ifNil: [ ^ self ].
 	stDebugger ifNil: [ ^ self ].
 	process := stDebugger interruptedProcess.
 	process ifNil: [ ^ self ].
-	stepper session: stDebugger session.
+	tracer session: stDebugger session.
 	isWatchedProcess := SeekerGlobals instance isWatchedProcess: process.
-	isWatchedProcess ifTrue: [ "["
-		stepper isQuickMapAvailable ifTrue: [ "] " "ensure: [ SeekerGlobals instance clearWatchedProcesses ] " 
-			stepper quickMap ] ]
+	isWatchedProcess ifTrue: [ 
+		[ tracer isQuickMapAvailable ifTrue: [ tracer quickMap ] ] ensure: [ 
+			SeekerGlobals instance stopWatchingProcess: process ] ]
 ]
 
 { #category : #starting }
 SeekerDebugger >> restart [
-	"restarts execution form selected context"	
-		stepper restart
-]
 
-{ #category : #starting }
-SeekerDebugger >> restartFromContext: aContext [
-	"restarts execution form selected context"	
-		stDebugger session restart: aContext
-]
+	"Restarts the execution from the UserStart trace time (not bytecode one)"
 
-{ #category : #initialization }
-SeekerDebugger >> setEndFromCurrentStep [
-stepper setEndFromCurrentStep
+	tracer timeTravelToUserStart
 ]
 
 { #category : #initialization }
 SeekerDebugger >> setSelectedContextAsStartingPoint: aContext [
-	stepper setSelectedContextAsStartingPoint: aContext
-]
-
-{ #category : #accessing }
-SeekerDebugger >> sindarin [
-
-	^ sindarin
-]
-
-{ #category : #accessing }
-SeekerDebugger >> sindarin: anObject [
-
-	sindarin := anObject
+	tracer setSelectedContextAsStartingPoint: aContext
 ]
 
 { #category : #accessing }
@@ -186,20 +143,15 @@ SeekerDebugger >> stDebugger: anObject [
 	stDebugger := anObject
 ]
 
-{ #category : #'as yet unclassified' }
-SeekerDebugger >> startRecordFromContext: aContext [
-	stepper restartRecordFromContext: aContext
-]
-
 { #category : #'debug - stepping' }
 SeekerDebugger >> stepBackInto [
 
-	stepper stepBackInto
+	tracer stepBackInto
 ]
 
 { #category : #'debug - stepping' }
 SeekerDebugger >> stepBackOver [
-	stepper stepBackOver.
+	tracer stepBackOver.
 	Transcript clear.
 	self printTrace
 ]
@@ -207,25 +159,30 @@ SeekerDebugger >> stepBackOver [
 { #category : #'debug - stepping' }
 SeekerDebugger >> stepInto [
 
-	stepper stepInto.
+	tracer stepInto.
 	"Transcript clear."
 	self printTrace
 ]
 
 { #category : #'debug - stepping' }
 SeekerDebugger >> stepOver [
-	stepper stepOver.
+	tracer stepOver.
 	"Transcript clear.
 	self printTrace"
 ]
 
 { #category : #'as yet unclassified' }
 SeekerDebugger >> stepUntilConditionIsTrue: aBlock [
-	stepper stepUntilConditionIsTrue: aBlock
+	tracer stepUntilConditionIsTrue: aBlock
 ]
 
 { #category : #accessing }
-SeekerDebugger >> stepper [
+SeekerDebugger >> tracer [
 
-	^ stepper
+	^ tracer
+]
+
+{ #category : #initialization }
+SeekerDebugger >> tracer: aDebuggerStepper [
+	tracer := aDebuggerStepper
 ]

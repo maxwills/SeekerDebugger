@@ -14,12 +14,12 @@ SkGoToNextCallOfCurrentMethodLC >> description [
 SkGoToNextCallOfCurrentMethodLC >> executeCommand [
 
 	| currentContext |
-	self seeker stepper mapExecutionIfNotMappedAlready ifFalse: [ ^self inform: 'Unable to execute Seeker command in unmapped execution' ].
-	currentContext := self seeker stepper currentContext.
-	self seeker stepper
+	self seeker tracer mapExecutionIfNotMappedAlready ifFalse: [ ^self inform: 'Unable to execute Seeker command in unmapped execution' ].
+	currentContext := self seeker tracer currentContext.
+	self seeker tracer
 		stepForwardToNextCallOfAMethodWithSelector:
 		currentContext methodSelector
-		ofClass: self seeker stepper currentContext receiver class
+		ofClass: self seeker tracer currentContext receiver class
 ]
 
 { #category : #accessing }

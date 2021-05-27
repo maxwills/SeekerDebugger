@@ -13,7 +13,7 @@ SkStepToNextInstanceCreationLC >> description [
 { #category : #executing }
 SkStepToNextInstanceCreationLC >> executeCommand [
 
-	self seeker stepper timeTravel toNextInstanceCreation
+	self seeker tracer timeTravel toNextInstanceCreation
 ]
 
 { #category : #accessing }

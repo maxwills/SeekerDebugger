@@ -99,6 +99,6 @@ SeekerStepQueryResult >> stepIndex: anObject [
 SeekerStepQueryResult >> timeTravelToThis [
 
 	self hasResult
-		ifTrue: [ seeker stepper restartAndStepToIndex: stepIndex ]
+		ifTrue: [ seeker tracer restartAndStepToIndex: stepIndex ]
 		ifFalse: [ self inform: 'Nowhere to go' ]
 ]

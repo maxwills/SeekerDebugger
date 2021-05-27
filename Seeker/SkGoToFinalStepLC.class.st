@@ -11,8 +11,8 @@ SkGoToFinalStepLC >> description [
 
 { #category : #executing }
 SkGoToFinalStepLC >> executeCommand [
-	self seeker stepper mapExecutionIfNotMappedAlready ifFalse: [ ^self inform: 'Unable to execute Seeker command in unmapped execution' ].
-	self seeker stepper stepToFinalStep
+	self seeker tracer mapExecutionIfNotMappedAlready ifFalse: [ ^self inform: 'Unable to execute Seeker command in unmapped execution' ].
+	self seeker tracer stepToFinalStep
 ]
 
 { #category : #accessing }

@@ -77,18 +77,14 @@ SeekerDebuggerPresenter >> debuggerExtensionToolName [
 { #category : #'as yet unclassified' }
 SeekerDebuggerPresenter >> enableTimeTravelingHandler [
 
-	self seekerDebugger stepper isMapped
+	self seekerDebugger tracer isMapped
 		ifTrue: [ 
-			| context bcp |
-			context := self seekerDebugger stepper currentContext.
+			| context currentTraceTime |
+			context := self seekerDebugger tracer currentContext.
 
-			bcp := context currentTracedInstructionBcp.
-			self seekerDebugger stepper doAndUpdateSessionAfter: [ 
-				| tracer |
-				tracer := self seekerDebugger stepper.
-				tracer restartAtBytecodeOne.
-				tracer stepAstUntilConditionIsTrue: [ 
-					tracer currentContext currentTracedInstructionBcp = bcp ] ] ]
+			currentTraceTime := context tracedInstructionPC asTraceTimeReference.
+			self seekerDebugger tracer doAndUpdateSessionAfter: [ 
+				self seekerDebugger tracer timeTravelToTraceTime: currentTraceTime ] ]
 		ifFalse: [ self mapExecutionIfNotMappedAlready ]
 ]
 
@@ -223,8 +219,8 @@ code text: (code text, aString)
 { #category : #'as yet unclassified' }
 SeekerDebuggerPresenter >> mapExecutionIfNotMappedAlready [
 "This function also notifies in the UI"
-	(self seekerDebugger stepper isMapped) ifTrue:[^self].
-	self seekerDebugger stepper quickMap ifTrue:[self inform: 'SEEKER: Time Traveling Enabled'] ifFalse: [ self inform: 'SEEKER: Could not enable Time Traveling' ]
+	(self seekerDebugger tracer isMapped) ifTrue:[^self].
+	self seekerDebugger tracer quickMap ifTrue:[self inform: 'SEEKER: Time Traveling Enabled'] ifFalse: [ self inform: 'SEEKER: Could not enable Time Traveling' ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -236,7 +232,7 @@ SeekerDebuggerPresenter >> onCodeTextChanged [
 SeekerDebuggerPresenter >> restartHandler [
 "Called when pressing the icon in the toolbar"
 self mapExecutionIfNotMappedAlready.
-self doAndUpdateSessionAfter: [ self seekerDebugger stepper pushNavigationHistory .	self seekerDebugger restart ]
+self doAndUpdateSessionAfter: [ self seekerDebugger tracer pushNavigationHistory .	self seekerDebugger restart ]
 	
 ]
 
@@ -275,7 +271,7 @@ SeekerDebuggerPresenter >> setModelBeforeInitialization: aStDebugger [
 	evaluatorDebugger := EvaluatorDebugger new.
 	evaluatorDebugger stDebugger: aStDebugger.
 	debuggerUpdateCoordinator := seekerDebugger debuggerUpdateCoordinator.
-	stDebugger debuggerActionModel tracer: seekerDebugger stepper.
+	stDebugger debuggerActionModel tracer: seekerDebugger tracer.
 	seekerDebugger quickSetup
 ]
 
@@ -295,7 +291,7 @@ SeekerDebuggerPresenter >> startRecordFromContextHandler [
 SeekerDebuggerPresenter >> stepBackIntoHandler [
 "Called when pressing the icon in the toolbar"
 self mapExecutionIfNotMappedAlready.
-self doAndUpdateSessionAfter: [ self seekerDebugger stepper pushNavigationHistory .	self seekerDebugger stepBackInto ]
+self doAndUpdateSessionAfter: [ self seekerDebugger tracer pushNavigationHistory .	self seekerDebugger stepBackInto ]
 	
 ]
 
@@ -303,14 +299,14 @@ self doAndUpdateSessionAfter: [ self seekerDebugger stepper pushNavigationHistor
 SeekerDebuggerPresenter >> stepBackOneByteCodeHandler [
 
 	self mapExecutionIfNotMappedAlready.
-	self seekerDebugger stepper stepBackOneBytecode
+	self seekerDebugger tracer stepBackOneBytecode
 ]
 
 { #category : #'event handling' }
 SeekerDebuggerPresenter >> stepBackOverHandler [
 "Called when pressing the icon in the toolbar"
 self mapExecutionIfNotMappedAlready.
-self doAndUpdateSessionAfter: [ self seekerDebugger stepper pushNavigationHistory .	self seekerDebugger stepBackOver ]
+self doAndUpdateSessionAfter: [ self seekerDebugger tracer pushNavigationHistory .	self seekerDebugger stepBackOver ]
      
 ]
 
@@ -318,7 +314,7 @@ self doAndUpdateSessionAfter: [ self seekerDebugger stepper pushNavigationHistor
 SeekerDebuggerPresenter >> stepIntoHandler [
 "Called when pressing the icon in the toolbar"
 self mapExecutionIfNotMappedAlready.
-self doAndUpdateSessionAfter: [ self seekerDebugger stepper pushNavigationHistory .	self seekerDebugger stepInto ]
+self doAndUpdateSessionAfter: [ self seekerDebugger tracer pushNavigationHistory .	self seekerDebugger stepInto ]
 
 ]
 
@@ -326,16 +322,16 @@ self doAndUpdateSessionAfter: [ self seekerDebugger stepper pushNavigationHistor
 SeekerDebuggerPresenter >> stepOverHandler [
 "Called when pressing the icon in the toolbar"
 self mapExecutionIfNotMappedAlready.
-self doAndUpdateSessionAfter: [ self seekerDebugger stepper pushNavigationHistory .	self seekerDebugger stepOver ]
+self doAndUpdateSessionAfter: [ self seekerDebugger tracer pushNavigationHistory .	self seekerDebugger stepOver ]
 	
 ]
 
 { #category : #'as yet unclassified' }
 SeekerDebuggerPresenter >> stepToEndHandler [
 
-	self seekerDebugger stepper doAndUpdateSessionAfter: [ 
-		self seekerDebugger stepper mapExecutionIfNotMappedAlready.
-		self seekerDebugger stepper stepToEnd ]
+	self seekerDebugger tracer doAndUpdateSessionAfter: [ 
+		self seekerDebugger tracer mapExecutionIfNotMappedAlready.
+		self seekerDebugger tracer stepToEnd ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -375,26 +371,18 @@ SeekerDebuggerPresenter >> updateExpressionValueDisplayed [
 { #category : #'accessing model' }
 SeekerDebuggerPresenter >> updatePresenter [
 
-	| stepLabel |
 	"Called automatically when the debugger updates its state after stepping""Your widgets should be updated here."
+
 	code interactionModel context: stDebugger currentContext.
 	code interactionModel bindings
 		at: #seeker
 		put:
-		(WorkspaceVariable key: #seeker value: self seekerDebugger stepper).
-	code interactionModel bindings
-		at: #executeQuery
-		put: (WorkspaceVariable
-				 key: #executeQuery
-				 value: self seekerDebugger stepper).
-	stepLabel := 'TracedStatement: '.
-	self seekerDebugger isExecutionFinished ifTrue: [ 
-		stepLabel := '(Finished) ' , stepLabel ].
-	currentStepLabel label:
-		stepLabel , seekerDebugger stepper tracedStatementIndex asString
-		, ' / BytecodeIndex: '
-		, seekerDebugger stepper bytecodeIndex asString.
+		(WorkspaceVariable key: #seeker value: self seekerDebugger tracer).
 
+	currentStepLabel label:
+		'ExecutedBytecode: ' , seekerDebugger tracer bytecodeIndex asString
+		, ' (' , (self seekerDebugger tracer executionProgress 
+			 printShowingDecimalPlaces: 2) , '% of know execution)'.
 	self updateEvaluatorCode.
 	self updateExpressionValueDisplayed.
 	super updatePresenter

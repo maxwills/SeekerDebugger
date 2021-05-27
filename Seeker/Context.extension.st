@@ -7,12 +7,6 @@ Context >> @ aNumber [
 ]
 
 { #category : #'*Seeker' }
-Context >> bcp [
-
-	^ self extensionObject bcp
-]
-
-{ #category : #'*Seeker' }
 Context >> contextFastPath [
 
 	"I could cache the path, but I am not sure if the sender are changed weirdly"
@@ -41,16 +35,6 @@ Context >> currentFastTracedInstructionPath [
 ]
 
 { #category : #'*Seeker' }
-Context >> currentTracedInstructionBcp [
-
-	| tip |
-	tip := SkXTracedInstructionBcp new.
-	tip contextBcp: self bcp.
-	tip bc: self executedPC.
-	^ tip
-]
-
-{ #category : #'*Seeker' }
 Context >> currentTracedInstructionPath [
 
 	| tip |
@@ -61,32 +45,50 @@ Context >> currentTracedInstructionPath [
 ]
 
 { #category : #'*Seeker' }
-Context >> defaultObjectExtensionClass [
+Context >> defaultSeekerCacheObjectClass [
 
-	^ SkExtContext
+	^ SkCOContext
 ]
 
 { #category : #'*Seeker' }
-Context >> hasMatchingBcp: aBcp [
+Context >> matchesTracedContextPC: aBcp [
 
 	sender ifNil: [ ^ false ].
-	^ sender hasMatchingBcp: aBcp atIndex: aBcp size
+	^ sender matchesTracedContextPC: aBcp atIndex: aBcp size
 ]
 
 { #category : #'*Seeker' }
-Context >> hasMatchingBcp: aBcp atIndex: aNumber [
+Context >> matchesTracedContextPC: aBcp atIndex: aNumber [
+
+	"Recursive call. It specifies at which index in the TracedContextPC we should look into for conparison"
 
 	(aNumber = 1 and: [ sender isNil ]) ifTrue: [ 
 		^ self executedPC = (aBcp at: 1) ].
 	sender ifNil: [ ^ false ].
 	aNumber = 1 ifTrue: [ ^ false ].
 	self executedPC = (aBcp at: aNumber) ifFalse: [ ^ false ].
-	^ sender hasMatchingBcp: aBcp atIndex: aNumber - 1
+	^ sender matchesTracedContextPC: aBcp atIndex: aNumber - 1
 ]
 
 { #category : #'*Seeker' }
-Context >> hasMatchingTracedInsturctionBcp: aTracedInstructionBcp [
+Context >> matchesTracedInstructionPC: aTracedInstructionBcp [
 
-	aTracedInstructionBcp bc = pc ifFalse: [ ^ false ].
-	^ self hasMatchingBcp: aTracedInstructionBcp bcp
+	aTracedInstructionBcp pc = pc ifFalse: [ ^ false ].
+	^ self matchesTracedContextPC: aTracedInstructionBcp tracedContextPC
+]
+
+{ #category : #'*Seeker' }
+Context >> tracedContextPC [
+
+	^ self seekerCache tracedContextPC
+]
+
+{ #category : #'*Seeker' }
+Context >> tracedInstructionPC [
+
+	| tip |
+	tip := SkXTracedInstructionPC new.
+	tip tracedContextPC: self tracedContextPC.
+	tip pc: self executedPC.
+	^ tip
 ]

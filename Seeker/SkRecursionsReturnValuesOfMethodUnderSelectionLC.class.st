@@ -13,7 +13,7 @@ SkRecursionsReturnValuesOfMethodUnderSelectionLC >> description [
 { #category : #executing }
 SkRecursionsReturnValuesOfMethodUnderSelectionLC >> executeCommand [
 
-	self seeker stepper find returnValuesOfSelection inspect
+	self seeker tracer find returnValuesOfSelection inspect
 ]
 
 { #category : #accessing }

@@ -75,5 +75,5 @@ SeekerStepCollectionItem >> stepIndex: anObject [
 
 { #category : #'as yet unclassified' }
 SeekerStepCollectionItem >> timeTravelToThis [
-	seeker stepper restartAndStepToIndex: stepIndex
+	seeker tracer restartAndStepToIndex: stepIndex
 ]

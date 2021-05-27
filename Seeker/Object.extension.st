@@ -1,21 +1,31 @@
 Extension { #name : #Object }
 
 { #category : #'*Seeker' }
-Object >> defaultObjectExtensionClass [
+Object class >> atSeekerAuxStorage1 [
 
-	^ self error: 'Must define a specific class to be used as extension'
+	^ SeekerGlobals instance auxiliaryTempStorage1
 ]
 
 { #category : #'*Seeker' }
-Object >> extensionObject [
+Object class >> atSeekerAuxStorage2 [
 
-	^ ObjectExtension propertiesOf: self
+	^ SeekerGlobals instance auxiliaryTempStorage2
 ]
 
 { #category : #'*Seeker' }
-Object >> findSeeker [
-	
+Object >> defaultSeekerCacheObjectClass [
 
+	^ SeekerCacheObject
+]
+
+{ #category : #'*Seeker' }
+Object >> putInSeekerAuxStorage1 [
+	SeekerGlobals instance auxiliaryTempStorage1: self
+]
+
+{ #category : #'*Seeker' }
+Object >> putInSeekerAuxStorage2 [
+	SeekerGlobals instance auxiliaryTempStorage2: self
 ]
 
 { #category : #'*Seeker' }
@@ -25,13 +35,7 @@ Object >> seekAllChangesOnSelf [
 ]
 
 { #category : #'*Seeker' }
-Object >> xpropAt: aSymbol [
+Object >> seekerCache [
 
-	^ ObjectExtension on: self at: aSymbol
-]
-
-{ #category : #'*Seeker' }
-Object >> xpropAt: aSymbol put: value [
-
-	^ ObjectExtension on: self at: aSymbol put: value
+	^ SeekerCache seekerCacheObjectOf: self
 ]

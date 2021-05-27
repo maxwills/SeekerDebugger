@@ -45,7 +45,7 @@ SeekerLiteCommand >> description [
 SeekerLiteCommand >> execute [
 
 	self pushesNavigation ifTrue: [ 
-		self seeker stepper pushNavigationHistory ].
+		self seeker tracer pushNavigationHistory ].
 
 	self executeCommand
 ]
@@ -114,5 +114,5 @@ SeekerLiteCommand >> showResult: anObject [
 { #category : #accessing }
 SeekerLiteCommand >> tracer [
 
-	^ self seeker stepper
+	^ self seeker tracer
 ]

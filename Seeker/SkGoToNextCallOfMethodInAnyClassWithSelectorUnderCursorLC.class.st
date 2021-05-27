@@ -14,10 +14,10 @@ SkGoToNextCallOfMethodInAnyClassWithSelectorUnderCursorLC >> description [
 SkGoToNextCallOfMethodInAnyClassWithSelectorUnderCursorLC >> executeCommand [
 
 	| selector |
-	self seeker stepper mapExecutionIfNotMappedAlready ifFalse: [ ^self inform: 'Unable to execute Seeker command in unmapped execution' ].
+	self seeker tracer mapExecutionIfNotMappedAlready ifFalse: [ ^self inform: 'Unable to execute Seeker command in unmapped execution' ].
 	selector := self codeSelectedSelector.
-	self seeker stepper stepUntilConditionIsTrue: [ 
-		self seeker stepper currentStepDescriptor methodSelector = selector ]
+	self seeker tracer stepUntilConditionIsTrue: [ 
+		self seeker tracer currentStepDescriptor methodSelector = selector ]
 ]
 
 { #category : #accessing }

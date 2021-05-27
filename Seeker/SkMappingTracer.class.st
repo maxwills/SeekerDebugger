@@ -5,7 +5,6 @@ Class {
 		'navigationHistory',
 		'navigationForward',
 		'isMapped',
-		'pressumedEndStepForKnownScenario',
 		'pressumedEndCondition'
 	],
 	#category : #'Seeker-Components'
@@ -28,7 +27,7 @@ SkMappingTracer >> autoSetupForTestForUnhandledException [
 	|testInitialContext|
 	testInitialContext := SkContextHelpers findContextInStack: [:aContext| aContext methodSelector = #runCase ] startingContext: self currentContext.
 	testInitialContext ifNil:[^self error: 'Could not detect the initial context for the test.'].
-	startingContextForRecord := testInitialContext.
+	contextOfExecutedBytecodeOne := testInitialContext.
 	self restartTestAndStopAtCurrentStepForUnhandledExceptionCase.
 	self setEndFromCurrentStep.
 ]
@@ -63,14 +62,14 @@ SkMappingTracer >> automapForDoItScenario [
 		self error:
 			'Could not detect the initial context for the DoIt Scenario.'.
 		^ false ].
-	startingContextForRecord := initialRestartContext.
+	contextOfExecutedBytecodeOne := initialRestartContext.
 	doItStep := SkStepDescriptor
 		            newFromNode:
 		            (SkContextHelpers currentNodeOf: doItContext isTopContext: false)
 		            inContext: doItContext
 		            isTopContext: false.
-	startingIndexlessStepForNavigation := doItStep.
-	pressumedEndStepForKnownScenario := startingIndexlessStepForNavigation
+	userStartTraceTime := doItStep.
+	pressumedEndStepForKnownScenario := userStartTraceTime
 		                                    getParentIndexlessDescriptor.
 	pressumedEndStepForKnownScenario isReturning: true.
 	pressumedEndStepForKnownScenario topStatementID isReturning: true.
@@ -96,8 +95,8 @@ SkMappingTracer >> automapForDoItScenario [
 { #category : #'as yet unclassified' }
 SkMappingTracer >> automapForTestCaseScenario [
 
-	| recordingInitialContext testInitialContext endingContext |
-	"First, if the developer used the 'debugTest' command, the execution will begin interrupted at a breakpoint. In such case, we need to advance it one ast step, so it enters the appropriate statement for the analysis""true ifTrue: [ ^self ]."
+	| recordingInitialContext testInitialContext endingContext endTracedInstructionPC endTraceTime |
+	"Only works if used the option: debug with Seeker"
 	recordingInitialContext := SkContextHelpers
 		                           findContextInStack: [ :aContext | 
 		                           aContext methodSelector = #runCase ]
@@ -105,7 +104,7 @@ SkMappingTracer >> automapForTestCaseScenario [
 	recordingInitialContext ifNil: [ 
 		self error: 'Could not detect the initial context for recording.'.
 		^ false ].
-	startingContextForRecord := recordingInitialContext.
+	contextOfExecutedBytecodeOne := recordingInitialContext.
 
 	testInitialContext := SkContextHelpers
 		                      findContextInStack: [ :aContext | 
@@ -119,21 +118,23 @@ SkMappingTracer >> automapForTestCaseScenario [
 	testInitialContext ifNil: [ 
 		self error: 'Could not detect the initial context of the test.'.
 		^ false ].
-	startingIndexlessStepForNavigation := testInitialContext
-		                                      currentTracedInstructionBcp.
+	userStartTraceTime := testInitialContext tracedContextPC
+		                      asTraceTimeReference. "Note this is a Context time and not an instruction time. 
+	The reason for this is that initially the debugged process could be suspended at a node that the debugger would never step into.
+	So, when testing for is present on that instruction, it will be skipped. This way, the is pressent will return true at any instruction
+	in that context"
 	endingContext := SkContextHelpers
-		                 findContextInStack: [ :aContext | "We expect the exection will step in the method node of that context(because it doesn't have return node)"
+		                 findContextInStack: [ :aContext | "We expect the execution will step in the method node of that context(because it doesn't have return node)"
 			                 (aContext receiver class inheritsFrom: TestCase) 
 				                 and: [ aContext methodSelector = #performTest ] ]
 		                 startingContext: self currentContext.
-	"The last step it the last statement?"
-	pressumedEndStepForKnownScenario := endingContext
-		                                    currentTracedInstructionBcp.
-	pressumedEndStepForKnownScenario bc: endingContext endPC.
+
+	endTracedInstructionPC := endingContext tracedInstructionPC.
+	endTracedInstructionPC pc: endingContext endPC. "The last step is the endPC?"
+	endTraceTime := endTracedInstructionPC asTraceTimeReference.
 	pressumedEndCondition := [ 
-	                         self currentContext 
-		                         hasMatchingTracedInsturctionBcp:
-		                         pressumedEndStepForKnownScenario ].
+	                         endTraceTime 
+		                         referencesTheLocalPastOrPresent: self ].
 	self doAndUpdateSessionAfter: [ self recountExecutedBytecodes ].
 	isMapped := true.
 	^ true
@@ -164,15 +165,15 @@ SkMappingTracer >> automapForUIExceptionScenario [
 		self error:
 			'Could not detect the initial context for this Generic Scenario.'.
 		^ false ].
-	startingContextForRecord := initialRestartContext.
+	contextOfExecutedBytecodeOne := initialRestartContext.
 	navInitialStep := SkStepDescriptor
 		                  newFromNode: (SkContextHelpers
 				                   currentNodeOf: initialRestartContext
 				                   isTopContext: false)
 		                  inContext: initialRestartContext
 		                  isTopContext: false.
-	startingIndexlessStepForNavigation := navInitialStep.
-	pressumedEndStepForKnownScenario := startingIndexlessStepForNavigation
+	userStartTraceTime := navInitialStep.
+	pressumedEndStepForKnownScenario := userStartTraceTime
 		                                    getParentIndexlessDescriptor.
 	pressumedEndStepForKnownScenario isReturning: true.
 	pressumedEndStepForKnownScenario topStatementID isReturning: true.
@@ -208,7 +209,7 @@ SkMappingTracer >> findContextInStackUntilStartingContextForRecord: aBlock [
 	^ SkContextHelpers
 		  findContextInStack: aBlock
 		  startingContext: self currentContext
-		  untilContext: startingContextForRecord
+		  untilContext: contextOfExecutedBytecodeOne
 ]
 
 { #category : #'as yet unclassified' }
@@ -368,7 +369,6 @@ SkMappingTracer >> goBackToTheBeginningOfLastMethodWithSelector: aSymbol ofClass
 SkMappingTracer >> initialize [
 
 	super initialize.
-	pressumedEndStepForKnownScenario := nil.
 	pressumedEndCondition := nil.
 	isMapped := false.
 	navigationHistory := OrderedCollection new.
@@ -664,11 +664,11 @@ SkMappingTracer >> stepBackOver [
 		self error: 'There are no more "StepBackOver" step candidates' ].
 
 	targetStep := trace at: previousStepOverStepIndex.
-	(targetStep comparePathTo: startingIndexlessStepForNavigation) < 0
+	(targetStep comparePathTo: userStartTraceTime) < 0
 		ifTrue: [ 
 			stepCondition := [ 
 			                 self currentStepDescriptor hasSamePathAs:
-				                 startingIndexlessStepForNavigation ] ]
+				                 userStartTraceTime ] ]
 		ifFalse: [ 
 		stepCondition := [ currentStepIndex = previousStepOverStepIndex ] ].
 
@@ -799,10 +799,10 @@ self stepUntilConditionIsTrue: [self isRiskyStep].
 { #category : #'as yet unclassified' }
 SkMappingTracer >> stepToNavigationStartingStep [
 
-	startingIndexlessStepForNavigation ifNil: [ ^ nil ].
+	userStartTraceTime ifNil: [ ^ nil ].
 	self stepAstUntilConditionIsTrue: [ 
 		self currentFastTracedInstructionPath
-		= startingIndexlessStepForNavigation ]
+		= userStartTraceTime ]
 ]
 
 { #category : #'as yet unclassified' }

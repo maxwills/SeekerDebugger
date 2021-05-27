@@ -18,8 +18,8 @@ SkTrackVariableValuesByNameLC >> executeCommand [
 	| variableName currentStepIndex |
 	variableName := self codeSelectedText.
 
-	self seeker stepper trackedVariableName: variableName.
-	currentStepIndex := self seeker stepper currentStepDescriptor
+	self seeker tracer trackedVariableName: variableName.
+	currentStepIndex := self seeker tracer currentStepDescriptor
 		                    executionIndex.
 		"TODO THIS NEEDS TO BE REPLACE BY THE ACTUAL QUERY. Remember to ensure mapping"
 		self error: 'Not implmenented method'

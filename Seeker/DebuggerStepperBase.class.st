@@ -16,8 +16,12 @@ Class {
 }
 
 { #category : #starting }
-DebuggerStepperBase >> restart [
-	self subclassResponsibility 
+DebuggerStepperBase >> andThen [
+
+	"A human friendly message conjunction. Basically higher level/less efficient/prettier cascade.
+	Don't use with message with arguments."
+
+	^ self
 ]
 
 { #category : #'as yet unclassified' }
@@ -101,6 +105,11 @@ DebuggerStepperBase >> stepOver [
 	"scope: class-variables  &  instance-variables"
 
 	self subclassResponsibility
+]
+
+{ #category : #starting }
+DebuggerStepperBase >> timeTravelToUserStart [
+	self subclassResponsibility 
 ]
 
 { #category : #accessing }

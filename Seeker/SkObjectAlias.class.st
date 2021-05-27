@@ -40,7 +40,7 @@ SkObjectAlias >> asCode [
 
 { #category : #'as yet unclassified' }
 SkObjectAlias >> getObject [
- ^seeker stepper getObject: self
+ ^seeker tracer getObject: self
 ]
 
 { #category : #accessing }

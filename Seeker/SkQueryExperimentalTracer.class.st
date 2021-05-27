@@ -5,7 +5,8 @@ Class {
 		'astPreStepHooks',
 		'currentStateInterfaceInstance',
 		'queriesLibrary',
-		'executionVirtualTableCreator'
+		'executionVirtualTableCreator',
+		'aliasesDictionary'
 	],
 	#category : #'Seeker-Components'
 }
@@ -59,6 +60,7 @@ SkQueryExperimentalTracer >> initialize [
 	queriesLibrary := SeekerTraceQueriesInterface new.
 	queriesLibrary tracer: self.
 	astPreStepHooks := OrderedCollection new.
+	aliasesDictionary := WeakIdentityKeyDictionary new.
 	^ super initialize
 ]
 
@@ -80,6 +82,12 @@ SkQueryExperimentalTracer >> oldStepUntilQueryMatch: aQuery [
 	"Note the double bcstephook check. This is because, the ast level checkin happens after initiating the step into, it will always stop one step later. By repeating the condition in the statemement stepping, the problem is solved. this will change when reworking the debugger granularity"
 	[ self stepUntilConditionIsTrue: bcstephook] ensure: [ 
 		self removeAstPreStepHook: bcstephook ]
+]
+
+{ #category : #'as yet unclassified' }
+SkQueryExperimentalTracer >> onTracedContextChanged [
+
+	self registerAliasFor: self currentContext receiver
 ]
 
 { #category : #actions }
@@ -111,10 +119,24 @@ SkQueryExperimentalTracer >> queriesForTimeTravel [
 	^ lib
 ]
 
+{ #category : #'as yet unclassified' }
+SkQueryExperimentalTracer >> registerAliasFor: anObject [
+
+	"aliasesDictionary at: anObject ifAbsentPut: self tracedStatementIndex" "This could be also the executed bytecode, but this might be good enough and it is a smaller number ( may be even consider counting context jump!)"
+]
+
 { #category : #adding }
 SkQueryExperimentalTracer >> removeAstPreStepHook: aBlock [
 
 	astPreStepHooks remove: aBlock
+]
+
+{ #category : #starting }
+SkQueryExperimentalTracer >> restartAtBytecodeOne [
+
+	super restartAtBytecodeOne.
+	aliasesDictionary removeAll.
+	aliasesDictionary := WeakIdentityKeyDictionary new
 ]
 
 { #category : #accessing }

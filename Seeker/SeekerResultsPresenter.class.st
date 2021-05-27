@@ -168,7 +168,7 @@ SeekerResultsPresenter >> tracer [
 	tracer ifNil: [ 
 		| sk |
 		sk := stDebugger seekerDebugger.
-		sk ifNotNil: [ tracer := sk stepper ] ].
+		sk ifNotNil: [ tracer := sk tracer ] ].
 	^ tracer
 ]
 

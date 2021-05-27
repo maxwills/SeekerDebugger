@@ -24,26 +24,23 @@ SkOptimizedStatementStepper >> currentStatementNode [
 ]
 
 { #category : #accessing }
-SkOptimizedStatementStepper >> doAstStepPostProcess: preProcessAstNode [
+SkOptimizedStatementStepper >> doAstStepPostProcessWithPrevNode: preProcessAstNode andPrevContext: preContext [
 
-	| currentNode currentStatementNode statementChanged context |
-	context := self currentContext.
+	| currentNode currentStatementNode contextChanged statementChanged |
 	"Dont do a super call here!"
-	currentNode := context method sourceNodeForPC: context pc.
-	cachedCurrentNode := currentNode.
+	currentNode := currentContext method sourceNodeForPC:
+		               currentContext pc.
 	currentStatementNode := currentNode statementNode.
-	statementChanged := (currentStatementNode
-	                     ~~ cachedCurrentStatementNode or: [ 
-		                     (context == cachedCurrentContext) not ])
-		                    ifTrue: [ 
-			                    astStepCounter := 0.
-			                    stepBC := 1.
-			                    cachedCurrentContext := context.
-			                    cachedCurrentStatementNode := currentStatementNode.
-			                    currentStepIndex := currentStepIndex + 1 ]
-		                    ifFalse: [ 
-			                    cachedCurrentContext := context.
-			                    cachedCurrentStatementNode := currentStatementNode ]
+	contextChanged := currentContext ~~ preContext.
+	statementChanged := contextChanged or: [ 
+		                    cachedCurrentStatementNode
+		                    ~~ currentStatementNode ].
+	"Note that during the OnXChanged, the cachedValues are the ones before the change"
+	contextChanged ifTrue: [ self onTracedContextChanged ].
+	statementChanged ifTrue: [ self onTracedStatementChanged ].
+	cachedCurrentContext := currentContext.
+	cachedCurrentNode := currentNode.
+	cachedCurrentStatementNode := currentStatementNode
 ]
 
 { #category : #initialization }
@@ -52,12 +49,12 @@ SkOptimizedStatementStepper >> initialize [
 ]
 
 { #category : #starting }
-SkOptimizedStatementStepper >> restart [
+SkOptimizedStatementStepper >> restartAtBytecodeOne [
 
 	cachedCurrentNode := nil.
 	cachedCurrentContext := nil.
 	cachedCurrentStatementNode := nil.
-	super restart
+	^ super restartAtBytecodeOne
 ]
 
 { #category : #'accessing context' }

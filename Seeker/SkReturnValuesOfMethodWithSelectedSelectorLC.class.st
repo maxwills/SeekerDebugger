@@ -13,8 +13,8 @@ SkReturnValuesOfMethodWithSelectedSelectorLC >> description [
 { #category : #executing }
 SkReturnValuesOfMethodWithSelectedSelectorLC >> executeCommand [
 
-	(self seeker stepper find returnValuesOfAnyMessageSendWithSelector:
-		 self seeker stepper selectedSelector) inspect
+	(self seeker tracer find returnValuesOfAnyMessageSendWithSelector:
+		 self seeker tracer selectedSelector) inspect
 ]
 
 { #category : #accessing }

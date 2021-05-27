@@ -1,11 +1,11 @@
 Class {
-	#name : #SkContextBCPath,
+	#name : #SkTracedContextPC,
 	#superclass : #OrderedCollection,
 	#category : #'Seeker-Experimental-NodeNotation'
 }
 
 { #category : #arithmetic }
-SkContextBCPath >> / aNumberOrCbcp [
+SkTracedContextPC >> / aNumberOrCbcp [
 
 	| copy |
 	copy := self class newFrom: self.
@@ -17,7 +17,7 @@ SkContextBCPath >> / aNumberOrCbcp [
 ]
 
 { #category : #comparing }
-SkContextBCPath >> = anotherPath [
+SkTracedContextPC >> = anotherPath [
 
 	"Returns if two context paths are equal (no necessarily the same instance)"
 
@@ -30,7 +30,13 @@ SkContextBCPath >> = anotherPath [
 ]
 
 { #category : #converting }
-SkContextBCPath >> asContextPath [
+SkTracedContextPC >> asContextPath [
 
 	^ self error: 'not implmented'
+]
+
+{ #category : #converting }
+SkTracedContextPC >> asTraceTimeReference [
+
+	^ SkTracedContextTraceTimeReference new tracedContextPC: self
 ]

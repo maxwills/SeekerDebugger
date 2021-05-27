@@ -25,6 +25,25 @@ RBProgramNode >> fullPath [
 ]
 
 { #category : #'*Seeker' }
+RBProgramNode >> localPC [
+
+	"returns the first pc that is associated to this node, read from the owner Node. 
+	This means that if this node is a BlockNode, it will the first pc associated to it in the parent method or block node.
+	This is a slightly slow method."
+
+	| cache |
+	cache := self ownerNode bcToASTCache.
+	cache firstBcOffset to: cache lastBcOffset do: [ :index | 
+	(cache bcToASTMap at: index) == self ifTrue: [ ^ index ] ].
+	^ cache firstBcOffset
+	"Why though. why not 0? If the node is not found in the bytecodes,
+	 then there trying to target it should return the first bytecode of that sequence.
+	Why? Imagine I want to time travel to a node by specifying its tracedPC. If the node has no PC, then the debugger needs to stop at some point.
+	It coudl be the first, or the last. However, I think we could do better, and find the parent node PC or something like that(too much heuristics
+	"
+]
+
+{ #category : #'*Seeker' }
 RBProgramNode >> localPath [
 
 	"The node local path, from the nearest method or block node, using the node path notation"
