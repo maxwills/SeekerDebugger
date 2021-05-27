@@ -22,7 +22,7 @@ SkTracedInstructionTraceTimeReference >> comparableObjectFromTracer: tracer [
 { #category : #testing }
 SkTracedInstructionTraceTimeReference >> referencesTheFuture: tracer [
 
-	^ tracedInstructionPC > tracer currentContext tracedInstructionPC
+	^ tracedInstructionPC @> tracer currentContext tracedInstructionPC
 ]
 
 { #category : #testing }
@@ -52,7 +52,7 @@ SkTracedInstructionTraceTimeReference >> referencesTheLocalPast: tracer [
 { #category : #testing }
 SkTracedInstructionTraceTimeReference >> referencesThePast: tracer [
 
-	^ tracedInstructionPC < tracer currentContext tracedInstructionPC
+	^ tracedInstructionPC @< tracer currentContext tracedInstructionPC
 ]
 
 { #category : #testing }

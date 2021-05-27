@@ -7,6 +7,12 @@ Class {
 	#category : #'Seeker-Experimental-NodeNotation'
 }
 
+{ #category : #'as yet unclassified' }
+SkTracedContextPC class >> shiftBitSize [
+
+	^ 8
+]
+
 { #category : #arithmetic }
 SkTracedContextPC >> / aNumberOrCbcp [
 
@@ -21,55 +27,41 @@ SkTracedContextPC >> / aNumberOrCbcp [
 ]
 
 { #category : #comparing }
-SkTracedContextPC >> < anotherPath [
+SkTracedContextPC >> @< anotherPath [
 
 	"when comparing traced paths, it is importat to match the path lengths, so the bytes in both paths represent the propriate order of magnitude "
 
-	| sizeDiff |
-	self size = anotherPath size ifTrue: [ ^ self sum < anotherPath sum ].
-	sizeDiff := self size - anotherPath size.
-	^ sizeDiff < 0
-		  ifTrue: [ 
-			  (self sum bitShiftMagnitude: 4 * sizeDiff negated)
-			  < anotherPath sum ]
-		  ifFalse: [ 
-			  self sum
-			  < (anotherPath sum bitShiftMagnitude: 4 * sizeDiff) ]
+	self == anotherPath ifTrue: [ ^ false ].
+	^ self compareTo: anotherPath usingOperator: #<
 ]
 
 { #category : #comparing }
-SkTracedContextPC >> <= anotherPath [
+SkTracedContextPC >> @<= anotherPath [
 
-	^ self = anotherPath or: [ self < anotherPath ]
+	self == anotherPath ifTrue: [ ^ true ].
+	^ self compareTo: anotherPath usingOperator: #<=
 ]
 
 { #category : #comparing }
-SkTracedContextPC >> = anotherPath [
+SkTracedContextPC >> @= anotherPath [
 
 	^ self sum = anotherPath sum
 ]
 
 { #category : #comparing }
-SkTracedContextPC >> > anotherPath [
+SkTracedContextPC >> @> anotherPath [
 
 	"when comparing traced paths, it is importat to match the path lengths, so the bytes in both paths represent the propriate order of magnitude "
 
-	| sizeDiff |
-	self size = anotherPath size ifTrue: [ ^ self sum > anotherPath sum ].
-	sizeDiff := self size - anotherPath size.
-	^ sizeDiff < 0
-		  ifTrue: [ 
-			  (self sum bitShiftMagnitude: 4 * sizeDiff negated)
-			  > anotherPath sum ]
-		  ifFalse: [ 
-			  self sum
-			  > (anotherPath sum bitShiftMagnitude: 4 * sizeDiff) ]
+	self == anotherPath ifTrue: [ ^ false ].
+	^ self compareTo: anotherPath usingOperator: #>
 ]
 
 { #category : #comparing }
-SkTracedContextPC >> >= anotherPath [
+SkTracedContextPC >> @>= anotherPath [
 
-	^ self = anotherPath or: [ self > anotherPath ]
+	self == anotherPath ifTrue: [ ^ true ].
+	^ self compareTo: anotherPath usingOperator: #>=
 ]
 
 { #category : #converting }
@@ -79,26 +71,29 @@ SkTracedContextPC >> asTraceTimeReference [
 ]
 
 { #category : #'as yet unclassified' }
-SkTracedContextPC >> bitShiftedSum: aNumber [
-
-	^ self sum bitShiftMagnitude: aNumber
-]
-
-{ #category : #'as yet unclassified' }
 SkTracedContextPC >> compareTo: anotherPath [
 
 	"negativeNumber if self is less than the other. 0 if are equal and postive if greater"
 
+	^ self compareTo: anotherPath usingOperator: #-
+]
+
+{ #category : #'as yet unclassified' }
+SkTracedContextPC >> compareTo: anotherPath usingOperator: aSymbol [
+
+	"negativeNumber if self is less than the other. 0 if are equal and postive if greater"
+
 	| sizeDiff |
-	self size = anotherPath size ifTrue: [ ^ self sum - anotherPath sum ].
+	self size = anotherPath size ifTrue: [ 
+		^ self sum perform: aSymbol with: anotherPath sum ].
 	sizeDiff := self size - anotherPath size.
 	^ sizeDiff < 0
 		  ifTrue: [ 
-			  (self sum bitShiftMagnitude: 4 * sizeDiff negated)
-			  - anotherPath sum ]
+			  (self shiftedSum: sizeDiff negated)
+				  perform: aSymbol
+				  with: anotherPath sum ]
 		  ifFalse: [ 
-			  self sum
-			  - (anotherPath sum bitShiftMagnitude: 4 * sizeDiff negated) ]
+		  self sum perform: aSymbol with: (anotherPath shiftedSum: sizeDiff) ]
 ]
 
 { #category : #comparing }
@@ -112,6 +107,15 @@ SkTracedContextPC >> oldEqual: anotherPath [
 	(1 to: self size) reverseDo: [ :index | 
 		(self at: index) = (anotherPath at: index) ifFalse: [ ^ false ] ].
 	^ true
+]
+
+{ #category : #'as yet unclassified' }
+SkTracedContextPC >> shiftedSum: aNumber [
+
+	"returns the sum value shifted by the default number of bits (8) times aNumber"
+
+	^ self sum bitShiftMagnitude:
+		  aNumber * SkTracedContextPC shiftBitSize
 ]
 
 { #category : #accessing }
@@ -135,5 +139,5 @@ SkTracedContextPC >> sum: aNumber [
 SkTracedContextPC >> updateSumStartingAt: aNumber [
 
 	aNumber to: self size do: [ :i | 
-	sum := (sum bitShiftMagnitude: 4) + (self at: i) ]
+	sum := (self shiftedSum: 1) + (self at: i) ]
 ]

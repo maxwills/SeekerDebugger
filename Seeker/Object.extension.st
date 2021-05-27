@@ -1,6 +1,36 @@
 Extension { #name : #Object }
 
 { #category : #'*Seeker' }
+Object >> @< another [
+
+	^ self < another
+]
+
+{ #category : #'*Seeker' }
+Object >> @<= another [
+
+	^ self <= another
+]
+
+{ #category : #'*Seeker' }
+Object >> @= another [
+
+	^ self = another
+]
+
+{ #category : #'*Seeker' }
+Object >> @> another [
+
+	^ self > another
+]
+
+{ #category : #'*Seeker' }
+Object >> @>= another [
+
+	^ self >= another
+]
+
+{ #category : #'*Seeker' }
 Object class >> atSeekerAuxStorage1 [
 
 	^ SeekerGlobals instance auxiliaryTempStorage1

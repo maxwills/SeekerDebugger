@@ -16,6 +16,15 @@ SeekerStDebuggerDebuggerActionModel class >> on: aDebugSession [
 		  initialize
 ]
 
+{ #category : #'debug - execution' }
+SeekerStDebuggerDebuggerActionModel >> clearDebugSession [
+
+	[ session interruptedProcess resume ]
+		on: Error
+		do: [ :e | "hide the error" ].
+	super clearDebugSession
+]
+
 { #category : #'as yet unclassified' }
 SeekerStDebuggerDebuggerActionModel >> doStepToFirstInterestingBytecode [
 

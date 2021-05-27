@@ -11,33 +11,33 @@ Class {
 }
 
 { #category : #comparing }
-SkCurrentTraceTimeReference >> < anotherTraceTime [
+SkCurrentTraceTimeReference >> @< anotherTraceTime [
 
-	^ anotherTraceTime > self
+	^ anotherTraceTime @> self
 ]
 
 { #category : #comparing }
-SkCurrentTraceTimeReference >> <= anotherTraceTime [
+SkCurrentTraceTimeReference >> @<= anotherTraceTime [
 
-	^ anotherTraceTime >= self
+	^ anotherTraceTime @>= self
 ]
 
 { #category : #comparing }
-SkCurrentTraceTimeReference >> = anotherTraceTime [
+SkCurrentTraceTimeReference >> @= anotherTraceTime [
 
-	^ anotherTraceTime = self
+	^ anotherTraceTime @= self
 ]
 
 { #category : #comparing }
-SkCurrentTraceTimeReference >> > anotherTraceTime [
+SkCurrentTraceTimeReference >> @> anotherTraceTime [
 
-	^ anotherTraceTime < self
+	^ anotherTraceTime @< self
 ]
 
 { #category : #comparing }
-SkCurrentTraceTimeReference >> >= anotherTraceTime [
+SkCurrentTraceTimeReference >> @>= anotherTraceTime [
 
-	^ anotherTraceTime <= self
+	^ anotherTraceTime @<= self
 ]
 
 { #category : #testing }

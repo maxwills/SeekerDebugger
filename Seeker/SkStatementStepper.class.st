@@ -306,7 +306,7 @@ SkStatementStepper >> safeTimeTravelToTraceTime: aTraceTime [
 
 	self doAndUpdateSessionAfter: [ 
 		self restartAtBytecodeOne andThen stepBytecodeUntilConditionIsTrue: [ 
-			self traceTime >= aTraceTime ] ]
+			self traceTime @>= aTraceTime ] ]
 ]
 
 { #category : #initialization }
@@ -528,7 +528,7 @@ SkStatementStepper >> timeTravelToTraceTime: aTraceTime [
 
 	self doAndUpdateSessionAfter: [ 
 		self restartAtBytecodeOne andThen stepBytecodeUntilConditionIsTrue: [ 
-			self traceTime = aTraceTime ] ]
+			self traceTime @= aTraceTime ] ]
 ]
 
 { #category : #starting }
