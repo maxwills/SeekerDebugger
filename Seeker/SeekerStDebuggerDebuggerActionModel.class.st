@@ -30,16 +30,17 @@ SeekerStDebuggerDebuggerActionModel >> doStepToFirstInterestingBytecode [
 
 	"advances and returns the current context"
 
-	tracer stepBytecodeUntilConditionIsTrue: [ 
-		currentState aboutToSwitchContext ].
-	^ currentState context
+	"returns false if the end of the execution is reached"
+
+	tracer stepBytecode ifFalse: [ ^ false ].
+	^ tracer stepBytecodeUntilConditionIsTrue: [ 
+		  currentState aboutToSwitchContext ]
 ]
 
 { #category : #accessing }
 SeekerStDebuggerDebuggerActionModel >> enabled [
 
-	"tracer ifNotNil: [ ^ tracer isMapped ]."
-
+	tracer ifNotNil: [ ^ tracer isMapped ].
 	^ false
 ]
 
@@ -55,19 +56,15 @@ SeekerStDebuggerDebuggerActionModel >> stepInto: aContext [
 	self enabled
 		ifTrue: [ 
 			filterStack := false.
-			aContext stepIntoQuickMethod: true.
-			"self session stepInto: aContext."
 
 			(self session isContextPostMortem: aContext) ifFalse: [ "self session interruptedProcess step: aContext."
-				tracer stepBytecode.
-				self session updateContextTo:
-					self doStepToFirstInterestingBytecode.
+				self doStepToFirstInterestingBytecode.
+				self session updateContextTo: currentState context.
 				"(self session stepToFirstInterestingBytecodeIn:
 						 self session interruptedProcess)."
 
 				self session triggerEvent: #stepInto ].
 
-			aContext stepIntoQuickMethod: false.
 			self updateTopContext ]
 		ifFalse: [ super stepInto: aContext ]
 ]
@@ -77,25 +74,38 @@ SeekerStDebuggerDebuggerActionModel >> stepOver: aContext [
 
 	self enabled
 		ifTrue: [ 
+			| startingNode startingTraceTime startingContext startingStackDepth shouldStop |
 			filterStack := (self topContext method hasPragmaNamed:
 				                #debuggerCompleteToSender)
 				               ifTrue: [ false ]
 				               ifFalse: [ self class shouldFilterStack ].
-			"self session stepOver: aContext."
 
-			(self session isContextPostMortem: aContext) ifTrue: [ 
-				| newContext |
-				newContext := self session interruptedProcess completeStep:
-					              aContext.
 
-				self session updateContextTo: (newContext == aContext
-						 ifTrue: [ 
-							 self doStepToFirstInterestingBytecode
-							 " self session stepToFirstInterestingBytecodeIn:
-							 self session interruptedProcess" ]
-						 ifFalse: [ newContext ]).
+			startingNode := tracer currentNode.
+			startingContext := tracer currentContext.
+			startingStackDepth := startingContext stackDepth.
+			startingTraceTime := startingContext tracedInstructionPC
+				                     asTraceTimeReference.
+			shouldStop := false.
+			[ shouldStop ] whileFalse: [ 
+				| currentContext currentStackDepth |
+				self doStepToFirstInterestingBytecode ifFalse: [ "The end of the execution was reached" 
+					shouldStop := true ].
 
-				self session triggerEvent: #stepOver ].
+				currentContext := currentState context.
+				currentStackDepth := currentContext stackDepth.
+				"Context returned"
+				currentStackDepth < startingStackDepth ifTrue: [ 
+					shouldStop := true ].
+				"Context jump at same depth"
+				(currentStackDepth = startingStackDepth and: [ 
+					 currentContext ~~ startingContext ]) ifTrue: [ 
+					shouldStop := true ].
+				"If we are back in the same sequence, but forward in time"
+				(startingTraceTime referencesTheLocalPast: tracer) ifTrue: [ 
+					shouldStop := true ] ].
+			self session updateContextTo: currentState context.
+			self session triggerEvent: #stepOver.
 			self updateTopContext ]
 		ifFalse: [ ^ super stepOver: aContext ]
 ]

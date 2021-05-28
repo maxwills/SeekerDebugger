@@ -51,7 +51,10 @@ Class {
 		'currentContext',
 		'userStartTraceTime',
 		'contextOfExecutedBytecodeOne',
-		'currentTraceTimeReference'
+		'currentTraceTimeReference',
+		'currentContextStackDepth',
+		'previousContextStackDepth',
+		'rememberContextStackDepth'
 	],
 	#category : #'Seeker-Components'
 }
@@ -150,6 +153,9 @@ SkStatementStepper >> initialize [
 
 	currentTraceTimeReference := SkCurrentTraceTimeReference new tracer:
 		                             self.
+	currentContextStackDepth := 0.
+	previousContextStackDepth := 0.
+	rememberContextStackDepth := false.
 	maxExecutedBytecode := 1.
 	astStepCounter := 0.
 	trace := SkTrace new.
@@ -227,7 +233,9 @@ SkStatementStepper >> oldStepUntilConditionIsTrue: aBlock [
 
 { #category : #'as yet unclassified' }
 SkStatementStepper >> onTracedContextChanged [
-
+"
+	previousContextStackDepth := currentContextStackDepth.
+	currentContextStackDepth := currentContext stackDepth"
 ]
 
 { #category : #'as yet unclassified' }
@@ -248,6 +256,12 @@ SkStatementStepper >> previousBackOverStepIndex: aStepDescriptor [
 			 (stepDescriptor hasSamePathAs: aStepDescriptor) not ]) ifTrue: [ 
 			^ index ] ].
 	^ 0 "There was no previousBackOverStep"
+]
+
+{ #category : #accessing }
+SkStatementStepper >> previousBytecodeContextStackDepth [
+
+	^ previousContextStackDepth
 ]
 
 { #category : #'as yet unclassified' }
@@ -287,6 +301,7 @@ SkStatementStepper >> restartAtBytecodeOne [
 	stDebugger session restart: contextOfExecutedBytecodeOne.
 	currentStepIndex := currentStepIndex + 1.
 	currentContext := session interruptedProcess suspendedContext.
+	currentContextStackDepth := currentContext stackDepth.
 	self onTracedContextChanged.
 	self onTracedStatementChanged
 ]
@@ -400,7 +415,6 @@ SkStatementStepper >> stepBytecode [
 	| previousContext startingNode |
 	(self isExecutionFinished or: [ self isRiskyStep ]) ifTrue: [ "self inform: 'Reached execution safe end point'" 
 		^ false ].
-
 	previousContext := currentContext.
 	startingNode := self currentNode.
 	self doAstStepPreProcess.

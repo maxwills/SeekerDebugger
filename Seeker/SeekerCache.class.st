@@ -1,9 +1,6 @@
 Class {
 	#name : #SeekerCache,
 	#superclass : #Object,
-	#instVars : [
-		'sourceObjWeakRef'
-	],
 	#classInstVars : [
 		'dictionary'
 	],
@@ -29,22 +26,4 @@ SeekerCache class >> seekerCacheObjectOf: anObject [
 		  at: anObject
 		  ifAbsentPut: [ 
 		  anObject defaultSeekerCacheObjectClass newFor: anObject ]
-]
-
-{ #category : #initialization }
-SeekerCache >> initialize [
-
-	sourceObjWeakRef := WeakArray new: 1
-]
-
-{ #category : #'as yet unclassified' }
-SeekerCache >> source [
-
-	^ sourceObjWeakRef at: 1
-]
-
-{ #category : #'as yet unclassified' }
-SeekerCache >> source: anObj [
-
-	sourceObjWeakRef at: 1 put: anObj
 ]

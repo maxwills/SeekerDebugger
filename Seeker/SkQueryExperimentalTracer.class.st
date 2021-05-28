@@ -87,7 +87,8 @@ SkQueryExperimentalTracer >> oldStepUntilQueryMatch: aQuery [
 { #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> onTracedContextChanged [
 
-	self registerAliasFor: self currentContext receiver
+	self registerAliasFor: self currentContext receiver.
+	super onTracedContextChanged
 ]
 
 { #category : #actions }

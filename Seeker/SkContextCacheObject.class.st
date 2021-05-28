@@ -2,7 +2,8 @@ Class {
 	#name : #SkContextCacheObject,
 	#superclass : #SeekerCacheObject,
 	#instVars : [
-		'contextBcp'
+		'stackDepth',
+		'tracedContextPC'
 	],
 	#category : #'Seeker-SeekerCache'
 }
@@ -14,12 +15,23 @@ SkContextCacheObject >> initialize [
 ]
 
 { #category : #accessing }
+SkContextCacheObject >> stackDepth [
+
+	^ stackDepth ifNil: [ 
+		  | sender |
+		  sender := self source sender.
+		  sender
+			  ifNil: [ stackDepth := 1 ]
+			  ifNotNil: [ stackDepth := 1 "sender stackDepth + " ] ]
+]
+
+{ #category : #accessing }
 SkContextCacheObject >> tracedContextPC [
 
-	^ contextBcp ifNil: [ 
+	^ tracedContextPC ifNil: [ 
 		  | context |
 		  context := self source.
 		  context sender ifNil: [ ^ SkTracedContextPC new ].
-		  contextBcp := context sender tracedContextPC / context sender executedPC.
-		  contextBcp ]
+		  tracedContextPC := context sender tracedContextPC / context sender executedPC.
+		  tracedContextPC ]
 ]

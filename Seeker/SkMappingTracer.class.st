@@ -368,11 +368,10 @@ SkMappingTracer >> goBackToTheBeginningOfLastMethodWithSelector: aSymbol ofClass
 { #category : #initialization }
 SkMappingTracer >> initialize [
 
-	super initialize.
-	pressumedEndCondition := nil.
 	isMapped := false.
 	navigationHistory := OrderedCollection new.
-	navigationForward := OrderedCollection new
+	navigationForward := OrderedCollection new.
+	super initialize
 ]
 
 { #category : #testing }

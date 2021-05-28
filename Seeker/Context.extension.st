@@ -78,6 +78,15 @@ Context >> matchesTracedInstructionPC: aTracedInstructionBcp [
 ]
 
 { #category : #'*Seeker' }
+Context >> stackDepth [
+
+	"the size of the stack. Not named stackSize to avoid possible conflicting naming issues"
+
+	^ sender ifNil: [ 1 ] ifNotNil: [ ^ sender stackDepth + 1 ]
+	"^ self seekerCache stackDepth"
+]
+
+{ #category : #'*Seeker' }
 Context >> tracedContextPC [
 
 	^ self seekerCache tracedContextPC
