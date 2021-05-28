@@ -50,14 +50,15 @@ SeekerStDebuggerDebuggerActionModel >> restartContext: aContext [
 
 	self enabled
 		ifTrue: [ 
-			| targetContextTraceTime |
-			targetContextTraceTime := aContext tracedContextPC
-				                          asTraceTimeReference.
-			tracer safeTimeTravelToTraceTime: targetContextTraceTime.
-			currentState aboutToSwitchContext ifFalse: [ 
-				self doStepToFirstInterestingBytecode ].
-			self session updateContextTo: currentState context.
-			self updateTopContext ]
+			tracer doAndUpdateSessionAfter: [ 
+				| targetContextTraceTime |
+				targetContextTraceTime := aContext tracedContextPC
+					                          asTraceTimeReference.
+				tracer safeTimeTravelToTraceTime: targetContextTraceTime.
+				currentState aboutToSwitchContext ifFalse: [ 
+					self doStepToFirstInterestingBytecode ].
+				self session updateContextTo: currentState context.
+				self updateTopContext ] ]
 		ifFalse: [ super restartContext: aContext ]
 ]
 
@@ -137,13 +138,13 @@ SeekerStDebuggerDebuggerActionModel >> stepOver: aContext [
 { #category : #'debugging actions' }
 SeekerStDebuggerDebuggerActionModel >> stepThrough: aContext [
 
-	super stepThrough: aContext.
-	self enabled ifTrue: [ 
+	super stepThrough: aContext
+	"self enabled ifTrue: [ 
 		tracer doAndUpdateSessionAfter: [ 
 			tracer recountExecutedBytecodes.
 			currentState aboutToSwitchContext ifFalse: [ 
 				self doStepToFirstInterestingBytecode ] ].
-		self session updateContextTo: currentState context ]
+		self session updateContextTo: currentState context ]"
 ]
 
 { #category : #accessing }

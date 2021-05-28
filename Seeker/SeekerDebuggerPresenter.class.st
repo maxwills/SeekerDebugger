@@ -335,6 +335,21 @@ SeekerDebuggerPresenter >> stepToEndHandler [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerDebuggerPresenter >> syncWithDebugSession [
+
+	| tracer |
+	tracer := self seekerDebugger tracer.
+	(tracer isMapped and: [ 
+		 self debuggerUpdateCoordinator preventingUpdates ]) ifFalse: [ 
+		tracer doAndUpdateSessionAfter: [ 
+			| context |
+			context := stDebugger interruptedContext.
+			tracer currentNode
+			~= (context compiledCode sourceNodeForPC: context pc) ifTrue: [ 
+				tracer recountExecutedBytecodes ] ] ]
+]
+
+{ #category : #'as yet unclassified' }
 SeekerDebuggerPresenter >> updateEvaluatorCode [
 	evaluatorCode interactionModel context: evaluatorDebugger stDebugger currentContext
 ]
@@ -373,6 +388,7 @@ SeekerDebuggerPresenter >> updatePresenter [
 
 	"Called automatically when the debugger updates its state after stepping""Your widgets should be updated here."
 
+	self syncWithDebugSession.
 	code interactionModel context: stDebugger currentContext.
 	code interactionModel bindings
 		at: #seeker
