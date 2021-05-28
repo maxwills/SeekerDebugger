@@ -41,13 +41,35 @@ SeekerStDebuggerDebuggerActionModel >> doStepToFirstInterestingBytecode [
 SeekerStDebuggerDebuggerActionModel >> enabled [
 
 	tracer ifNotNil: [ ^ tracer isMapped ].
+
 	^ false
 ]
 
 { #category : #'debugging actions' }
 SeekerStDebuggerDebuggerActionModel >> restartContext: aContext [
 
-	^ super restartContext: aContext
+	self enabled
+		ifTrue: [ 
+			| targetContextTraceTime |
+			targetContextTraceTime := aContext tracedContextPC
+				                          asTraceTimeReference.
+			tracer safeTimeTravelToTraceTime: targetContextTraceTime.
+			currentState aboutToSwitchContext ifFalse: [ 
+				self doStepToFirstInterestingBytecode ].
+			self session updateContextTo: currentState context.
+			self updateTopContext ]
+		ifFalse: [ super restartContext: aContext ]
+]
+
+{ #category : #'debugging actions' }
+SeekerStDebuggerDebuggerActionModel >> runToSelection: aSelectionInterval inContext: aContext [
+
+	self enabled
+		ifTrue: [ 
+			tracer perform timeTravelToSelectedNode.
+			self updateTopContext ]
+		ifFalse: [ 
+		super runToSelection: aSelectionInterval inContext: aContext ]
 ]
 
 { #category : #'debugging actions' }
@@ -104,6 +126,8 @@ SeekerStDebuggerDebuggerActionModel >> stepOver: aContext [
 				"If we are back in the same sequence, but forward in time"
 				(startingTraceTime referencesTheLocalPast: tracer) ifTrue: [ 
 					shouldStop := true ] ].
+			currentState aboutToSwitchContext ifFalse: [ 
+				self doStepToFirstInterestingBytecode ].
 			self session updateContextTo: currentState context.
 			self session triggerEvent: #stepOver.
 			self updateTopContext ]
@@ -113,7 +137,13 @@ SeekerStDebuggerDebuggerActionModel >> stepOver: aContext [
 { #category : #'debugging actions' }
 SeekerStDebuggerDebuggerActionModel >> stepThrough: aContext [
 
-	^ super stepThrough: aContext
+	super stepThrough: aContext.
+	self enabled ifTrue: [ 
+		tracer doAndUpdateSessionAfter: [ 
+			tracer recountExecutedBytecodes.
+			currentState aboutToSwitchContext ifFalse: [ 
+				self doStepToFirstInterestingBytecode ] ].
+		self session updateContextTo: currentState context ]
 ]
 
 { #category : #accessing }

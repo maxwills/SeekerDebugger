@@ -9,7 +9,8 @@ Class {
 
 { #category : #starting }
 SeekerPerformInterface >> restart [
-	tracer restart
+
+	tracer restartAtUserStart
 ]
 
 { #category : #'as yet unclassified' }
@@ -22,20 +23,29 @@ SeekerPerformInterface >> timeTravelToLastExecutedStatement [
 { #category : #'as yet unclassified' }
 SeekerPerformInterface >> timeTravelToNode: aNode inContext: aContext [
 
-	| node bcp selectedContext targetStatementNumber |
-	"get the code ast""Should first get the node in the appropriate context (the selected one)"
-	selectedContext := tracer selectedContext.
-	node := aNode.
-
-	bcp := aContext tracedInstructionPC.
-	"Just need to replace the statement number and put the one under the cursor instead"
-	"Note that the source code part will not be updated, but it is unnecessary for the path comparison"
-	"THIS FAILS FOR NESTED SEQUENCES IN THE SAME AST (if that makes sense)"
-	tracer doAndUpdateSessionAfter: [ 
-		tracer restartAtBytecodeOne.
-		tracer stepBytecodeUntilConditionIsTrue: [ 
-			(bcp sameContextAs: tracer currentContext tracedContextPC) and: [ 
-				node == tracer currentNode ] ] ]
+	| nodeTraceTime |
+	(aNode ownerNode isBlock and: [ 
+		 aContext compiledCode sourceNode ~= aNode ownerNode ])
+		ifTrue: [ "This is a special type of time travel""The user selected a node inside a block whose context is not in the stack.
+		 It is not possible to know if the user would like to go to that node in the future, or in the past.
+		So we assume it is the first time that node is executed."
+			tracer doAndUpdateSessionAfter: [ 
+				| targetOwner targetBC |
+				targetOwner := aNode ownerNode.
+				targetBC := aNode localPC.
+				tracer restartAtBytecodeOne.
+				tracer stepBytecodeUntilConditionIsTrue: [ 
+					tracer currentNode ownerNode = targetOwner and: [ 
+						tracer currentNode = aNode ] ] ] ]
+		ifFalse: [ 
+			nodeTraceTime := aNode isMethod
+				                 ifTrue: [ "If we don't consider this case, the execution will stop after the
+					 method is returned. Instead, we say that if the methodNode was selected, go to the beggining of the method" 
+					                 aContext tracedContextPC asTraceTimeReference ]
+				                 ifFalse: [ 
+				                 (aContext tracedInstructionPCForNode: aNode)
+					                 asTraceTimeReference ].
+			tracer safeTimeTravelToTraceTime: nodeTraceTime ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -45,20 +55,6 @@ SeekerPerformInterface >> timeTravelToSelectedNode [
 	selectedNode := tracer selectedNode.
 	tracer mapExecutionIfNotMappedAlready.
 	self timeTravelToNode: selectedNode inContext: tracer selectedContext
-]
-
-{ #category : #'as yet unclassified' }
-SeekerPerformInterface >> timeTravelToStepIndex: aNumber [
-
-	tracer doAndUpdateSessionAfter: [ 
-		tracer mapExecutionIfNotMappedAlready.
-
-		tracer tracedStatementIndex > aNumber ifFalse: [ 
-			tracer restartAtBytecodeOne.
-			tracer restartAndStepToCondition: [ 
-				tracer tracedStatementIndex = aNumber ] ].
-		tracer stepBytecodeUntilConditionIsTrue: [ 
-			tracer tracedStatementIndex = aNumber ] ]
 ]
 
 { #category : #accessing }

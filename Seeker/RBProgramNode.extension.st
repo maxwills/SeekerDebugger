@@ -31,10 +31,16 @@ RBProgramNode >> localPC [
 	This means that if this node is a BlockNode, it will the first pc associated to it in the parent method or block node.
 	This is a slightly slow method."
 
-	| cache |
-	cache := self ownerNode bcToASTCache.
+	| cache ownerNode |
+	ownerNode := self ownerNode.
+	cache := ownerNode bcToASTCache.
 	cache firstBcOffset to: cache lastBcOffset do: [ :index | 
 	(cache bcToASTMap at: index) == self ifTrue: [ ^ index ] ].
+	"If we reached here, it means that the node didn't have a bc. try with the parent node"
+	(parent isNotNil and: [ self ~~ ownerNode ]) ifTrue: [ 
+		^ parent localPC ]. "Why the parent? usually in assignments, variables have no bc.
+	In that case, we want to point to the assignment node instead.
+	"
 	^ cache firstBcOffset
 	"Why though. why not 0? If the node is not found in the bytecodes,
 	 then there trying to target it should return the first bytecode of that sequence.

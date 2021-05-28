@@ -24,6 +24,12 @@ SkTimeTravelInterface >> toNextStatementInSequence [
 	tracer stepUntilQueryMatch: q
 ]
 
+{ #category : #'as yet unclassified' }
+SkTimeTravelInterface >> toTraceTime: aTraceTimeReference [
+
+	tracer safeTimeTravelToTraceTime: aTraceTimeReference
+]
+
 { #category : #accessing }
 SkTimeTravelInterface >> tracer [
 

@@ -98,6 +98,15 @@ Context >> tracedInstructionPC [
 	| tip |
 	tip := SkXTracedInstructionPC new.
 	tip tracedContextPC: self tracedContextPC.
-	tip pc: self executedPC.
+	tip pc: self pc.
+	^ tip
+]
+
+{ #category : #'*Seeker' }
+Context >> tracedInstructionPCForNode: aNode [
+
+	| tip |
+	tip := self tracedInstructionPC.
+	tip pc: aNode localPC.
 	^ tip
 ]

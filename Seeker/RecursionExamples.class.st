@@ -83,17 +83,19 @@ RecursionExamples >> testFindFirstStatementInSequence [
 
 	| aCol block |
 	"Run the test, it will fail and open a window. set the initial context and do:
-	seeker stepper replayAndBuildExecutionMap.
+	seeker stepper replayAndBuildExecutionMap. 
 	seeker stepper goBackToTheBeginningOfLastMethodWithSelector: #add:"
 	aCol := OrderedCollection new.
+	aCol add: 1.  
 	aCol add: 1.
-	aCol add: 1.
-  
+	aCol size = 2 ifTrue: [ 
+		aCol add: 1.
+		aCol add: 1 ].
 	block := [ 
 	         aCol add: 'inblok1'.
 	         aCol add: 'inblock2' ].
 	aCol add: 3.
-	block value. 
+	block value.
 	self assert: false
 ]
 

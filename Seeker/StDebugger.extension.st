@@ -57,13 +57,13 @@ StDebugger >> nodeUnderCursor [
 { #category : #'*Seeker' }
 StDebugger >> nodeUnderSelection [
 
-	| selectedContext methodNode |
+	| selectedContext compiledCodeNode node |
 	"Should first get the node in the appropriate context (the selected one)"
 	selectedContext := self selectedContext.
 	selectedContext ifNil: [ ^ nil ].
-	methodNode := selectedContext method sourceNode.
-
-	^ methodNode bestNodeFor: code selectionInterval
+	compiledCodeNode := selectedContext methodNode. "sourceNode"
+	node := compiledCodeNode bestNodeFor: code selectionInterval.
+	^ node
 ]
 
 { #category : #'*Seeker' }

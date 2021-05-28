@@ -276,8 +276,8 @@ SkStatementStepper >> recountExecutedBytecodes [
 	| currentTraceTime |
 	contextOfExecutedBytecodeOne ifNil: [ "if there is no initial context, the restart will fail" 
 		self error: 'Initial context not set. (Is the execution mapped?)' ].
-
-	currentTraceTime := self currentContext tracedInstructionPC
+	currentContext := session interruptedProcess suspendedContext.
+	currentTraceTime := currentContext tracedInstructionPC
 		                    asTraceTimeReference.
 	self safeTimeTravelToTraceTime: currentTraceTime
 ]
