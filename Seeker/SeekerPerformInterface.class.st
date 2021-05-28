@@ -14,6 +14,12 @@ SeekerPerformInterface >> restart [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerPerformInterface >> stepToNextIteration [
+
+	tracer stepToNextIteration
+]
+
+{ #category : #'as yet unclassified' }
 SeekerPerformInterface >> timeTravelToLastExecutedStatement [
 
 	tracer mapExecutionIfNotMappedAlready.

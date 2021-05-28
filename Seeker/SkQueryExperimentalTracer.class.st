@@ -166,6 +166,32 @@ SkQueryExperimentalTracer >> selectedSelector [
 	^ stDebugger code selectedSelector
 ]
 
+{ #category : #'as yet unclassified' }
+SkQueryExperimentalTracer >> stepToNextIteration [
+
+	"we want to get to the same node of when the context receiver is the same as the current"
+
+	"only works when inside a block"
+
+	"or until control is at the next pc of the sender"
+
+	| node nodeOwner receiver outer senderContextPC outerNode senderContextStatement |
+	node := self currentNode.
+	nodeOwner := node ownerNode.
+	nodeOwner isBlock ifFalse: [ ^ false ].
+	receiver := self currentContext receiver.
+	outer := self currentContext outerContext.
+	outerNode := outer compiledCode sourceNodeForPC: outer executedPC.
+	self doAndUpdateSessionAfter: [ 
+		self stepBytecode.
+		self stepBytecodeUntilConditionIsTrue: [ 
+			(self currentContext == outer and: [ self currentNode ~= outerNode ]) 
+				or: [ 
+					self currentContext receiver == receiver and: [ 
+						self currentNode = node and: [ 
+							self currentNode ownerNode = nodeOwner ] ] ] ] ]
+]
+
 { #category : #accessing }
 SkQueryExperimentalTracer >> tables [
 

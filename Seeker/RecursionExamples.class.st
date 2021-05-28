@@ -86,7 +86,7 @@ RecursionExamples >> testFindFirstStatementInSequence [
 	seeker stepper replayAndBuildExecutionMap. 
 	seeker stepper goBackToTheBeginningOfLastMethodWithSelector: #add:"
 	aCol := OrderedCollection new.
-	aCol add: 1.  
+	aCol add: 1.
 	aCol add: 1.
 	aCol size = 2 ifTrue: [ 
 		aCol add: 1.
@@ -95,7 +95,8 @@ RecursionExamples >> testFindFirstStatementInSequence [
 	         aCol add: 'inblok1'.
 	         aCol add: 'inblock2' ].
 	aCol add: 3.
-	block value.
+	{ 1 . 3 } do: [ :each | block value ].
+
 	self assert: false
 ]
 

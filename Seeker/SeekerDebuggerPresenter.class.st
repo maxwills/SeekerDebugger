@@ -193,11 +193,11 @@ SeekerDebuggerPresenter >> initializeToolbar [
 				            icon: (self application iconNamed: #glamorousSpawn);
 				            action: [ self stepToEndHandler ];
 				            yourself);
-		           "addItem: (self newToolbarButton
-				            label: 'Set Restart Point';
-				            icon: (self application iconNamed: #smallHome);
-				            action: [self setSelectedContexAsStartingPointHandler  ];
-				            yourself);"
+		           addItem: (self newToolbarButton
+				            label: 'Next Iteration';
+				            icon: (self application iconNamed: #smallUpdate);
+				            action: [ self nextIterationHandler ];
+				            yourself);
 		           addItem: (self newToolbarButton
 				            label: 'Enable Time Travel';
 				            icon: (self application iconNamed: #smallProfile);
@@ -221,6 +221,12 @@ SeekerDebuggerPresenter >> mapExecutionIfNotMappedAlready [
 "This function also notifies in the UI"
 	(self seekerDebugger tracer isMapped) ifTrue:[^self].
 	self seekerDebugger tracer quickMap ifTrue:[self inform: 'SEEKER: Time Traveling Enabled'] ifFalse: [ self inform: 'SEEKER: Could not enable Time Traveling' ]
+]
+
+{ #category : #'as yet unclassified' }
+SeekerDebuggerPresenter >> nextIterationHandler [
+
+	self seekerDebugger tracer perform stepToNextIteration
 ]
 
 { #category : #'as yet unclassified' }
