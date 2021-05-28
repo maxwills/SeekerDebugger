@@ -69,6 +69,12 @@ SeekerDebuggerPresenter class >> defaultSpec [
 		  yourself
 ]
 
+{ #category : #'event handling' }
+SeekerDebuggerPresenter >> advanceDownHandler [
+
+	self seekerDebugger tracer perform advanceToNextStatement
+]
+
 { #category : #'debugger extension' }
 SeekerDebuggerPresenter >> debuggerExtensionToolName [
 	^ 'Seeker'
@@ -166,12 +172,12 @@ SeekerDebuggerPresenter >> initializeToolbar [
 		           addItem: (self newToolbarButton
 				            label: 'Advance Down';
 				            icon: (self application iconNamed: #glamorousDown);
-				            action: [ self stepOverHandler ];
+				            action: [ self advanceDownHandler ];
 				            yourself);
 		           addItem: (self newToolbarButton
 				            label: 'Back Up';
 				            icon: (self application iconNamed: #glamorousUp);
-				            action: [ self stepBackOverHandler ];
+				            action: [ self reverseUpHandler ];
 				            yourself);
 		           addItem: (self newToolbarButton
 				            label: 'Advance In';
@@ -240,6 +246,12 @@ SeekerDebuggerPresenter >> restartHandler [
 self mapExecutionIfNotMappedAlready.
 self doAndUpdateSessionAfter: [ self seekerDebugger tracer pushNavigationHistory .	self seekerDebugger restart ]
 	
+]
+
+{ #category : #'event handling' }
+SeekerDebuggerPresenter >> reverseUpHandler [
+
+	self seekerDebugger tracer perform reverseToPreviousStatement
 ]
 
 { #category : #accessing }
@@ -344,9 +356,10 @@ SeekerDebuggerPresenter >> stepToEndHandler [
 SeekerDebuggerPresenter >> syncWithDebugSession [
 
 	| tracer |
+	"true ifTrue: [ ^ self ]."
 	tracer := self seekerDebugger tracer.
 	(tracer isMapped and: [ 
-		 self debuggerUpdateCoordinator preventingUpdates ]) ifFalse: [ 
+		 self debuggerUpdateCoordinator preventingUpdates not ]) ifTrue: [ 
 		tracer doAndUpdateSessionAfter: [ 
 			| context |
 			context := stDebugger interruptedContext.
@@ -394,18 +407,18 @@ SeekerDebuggerPresenter >> updatePresenter [
 
 	"Called automatically when the debugger updates its state after stepping""Your widgets should be updated here."
 
-	self syncWithDebugSession.
-	code interactionModel context: stDebugger currentContext.
-	code interactionModel bindings
-		at: #seeker
-		put:
-		(WorkspaceVariable key: #seeker value: self seekerDebugger tracer).
+	[ self syncWithDebugSession ] ensure: [ 
+		code interactionModel context: stDebugger currentContext.
+		code interactionModel bindings
+			at: #seeker
+			put:
+			(WorkspaceVariable key: #seeker value: self seekerDebugger tracer).
 
-	currentStepLabel label:
-		'ExecutedBytecode: ' , seekerDebugger tracer bytecodeIndex asString
-		, ' (' , (self seekerDebugger tracer executionProgress 
-			 printShowingDecimalPlaces: 2) , '% of know execution)'.
-	self updateEvaluatorCode.
-	self updateExpressionValueDisplayed.
-	super updatePresenter
+		currentStepLabel label:
+			'ExecutedBytecode: ' , seekerDebugger tracer bytecodeIndex asString
+			, ' (' , (self seekerDebugger tracer executionProgress 
+				 printShowingDecimalPlaces: 2) , '% of know execution)'.
+		self updateEvaluatorCode.
+		self updateExpressionValueDisplayed.
+		super updatePresenter ]
 ]

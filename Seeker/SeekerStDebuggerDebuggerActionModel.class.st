@@ -51,10 +51,7 @@ SeekerStDebuggerDebuggerActionModel >> restartContext: aContext [
 	self enabled
 		ifTrue: [ 
 			tracer doAndUpdateSessionAfter: [ 
-				| targetContextTraceTime |
-				targetContextTraceTime := aContext tracedContextPC
-					                          asTraceTimeReference.
-				tracer safeTimeTravelToTraceTime: targetContextTraceTime.
+				tracer perform restartContext: aContext.
 				currentState aboutToSwitchContext ifFalse: [ 
 					self doStepToFirstInterestingBytecode ].
 				self session updateContextTo: currentState context.

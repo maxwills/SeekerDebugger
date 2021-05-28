@@ -175,21 +175,25 @@ SkQueryExperimentalTracer >> stepToNextIteration [
 
 	"or until control is at the next pc of the sender"
 
-	| node nodeOwner receiver outer senderContextPC outerNode senderContextStatement |
+	| node nodeOwner receiver stopContext senderContext senderNode |
 	node := self currentNode.
 	nodeOwner := node ownerNode.
 	nodeOwner isBlock ifFalse: [ ^ false ].
+	nodeOwner isInlined ifTrue: [ ^ false ].
 	receiver := self currentContext receiver.
-	outer := self currentContext outerContext.
-	outerNode := outer compiledCode sourceNodeForPC: outer executedPC.
+	senderContext := self currentContext sender.
+	stopContext := senderContext.
+	(senderContext receiver class inheritsFromOrSameAs: Collection) 
+		ifTrue: [ stopContext := stopContext sender ].
+	senderNode := stopContext compiledCode sourceNodeForPC:
+		              stopContext executedPC.
 	self doAndUpdateSessionAfter: [ 
 		self stepBytecode.
 		self stepBytecodeUntilConditionIsTrue: [ 
-			(self currentContext == outer and: [ self currentNode ~= outerNode ]) 
-				or: [ 
-					self currentContext receiver == receiver and: [ 
-						self currentNode = node and: [ 
-							self currentNode ownerNode = nodeOwner ] ] ] ] ]
+			self currentContext == stopContext or: [ 
+				self currentContext receiver == receiver and: [ 
+					self currentNode = node and: [ 
+						self currentNode ownerNode = nodeOwner ] ] ] "and: [ self currentNode ~= senderNode ]" ] ]
 ]
 
 { #category : #accessing }
