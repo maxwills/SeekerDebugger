@@ -1,6 +1,12 @@
 Class {
 	#name : #SeekerTracedProgramState,
 	#superclass : #AnonymousTypeForTimeTravel,
+	#instVars : [
+		'resultFields'
+	],
+	#classVars : [
+		'resultFieldLabels'
+	],
 	#category : #'Seeker-DataQuery'
 }
 
@@ -13,12 +19,9 @@ SeekerTracedProgramState >> asString [
 { #category : #printing }
 SeekerTracedProgramState >> displayStringOn: stream [
 
-	stream
-		nextPutAll: 'ebc: ';
-		nextPutAll: self bytecodeIndex asString;
-		nextPutAll: '   ';
-		nextPutAll: 'Instantiated Class: ';
-		nextPutAll: self receiver name
+	self keysDo: [ :key | 
+		stream nextPutAll:
+			(' | ' , key , ': ' , (self at: key) asString padRightTo: 30) ]
 ]
 
 { #category : #printing }
@@ -43,4 +46,10 @@ SeekerTracedProgramState >> printOn: aStream [
 SeekerTracedProgramState >> printString [
 
 	^ 'printString'
+]
+
+{ #category : #accessing }
+SeekerTracedProgramState >> resultFields: aCollection [
+
+	resultFields := aCollection
 ]

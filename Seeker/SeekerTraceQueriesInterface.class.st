@@ -310,6 +310,7 @@ SeekerTraceQueriesInterface >> forMessageSends [
 					                     row context ]
 				                     ifFalse: [ row contextTop ].
 			     New with: { 
+					     (#bytecodeIndex -> row bytecodeIndex).
 					     (#stepIndex -> row stepIndex).
 					     (#methodSelector -> row methodSelector).
 					     (#receiverClass -> row receiverClass).

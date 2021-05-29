@@ -206,7 +206,8 @@ Query >> asTableForTimeTravel [
 	                       t := AnonymousTypeForTimeTravel
 		                            newWith: {  }
 		                            forTracer: tracer.
-	                       t mergeWith: row ].
+	                       t mergeWith: row.
+	                       t stepIndex: row stepIndex ].
 	operationType := #asTable.
 	resultBuffer := OrderedCollection new.
 
