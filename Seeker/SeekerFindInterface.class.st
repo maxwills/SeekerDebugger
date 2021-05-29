@@ -1,6 +1,6 @@
 Class {
 	#name : #SeekerFindInterface,
-	#superclass : #SeekerFindInterfaceBase,
+	#superclass : #SeekerBasicFindInterface,
 	#category : #'Seeker-Interfaces'
 }
 

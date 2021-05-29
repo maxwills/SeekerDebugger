@@ -1,8 +1,38 @@
+"
+A Seeker Interface Object that expose methods for convenient access to the debugged execution data.
+
+At every executedBytecode, debugged program state can be queried using this object.
+
+Normally, to access information on the debugged execution, the interrupted process need to be accesses. From there, the suspended context is the base point to start querying data.
+The methods of this object provide a collection of methods that performs those data queries.
+
+Note: For efficiency reasons, not all methods are completely safe, and condition checking must be performed by the user (for example, using self variableName if the current node is not a variable Node might throw an exception.
+
+Example:
+
+Without using the interface:
+
+|currentContext currentNode assignmentOldValue assignmentNewValue|
+currentContext := interruptedProcess suspendedContext.
+currentNode := currentContext compiledCode bestNodeForPC: currentContext pc.
+ currentNode isAssignment ifTrue: [ 
+	assignmentOldValue := currentNode variable variable readInContext: currentContext.
+	assignmentNewValue := currentContext at: currentContext basicSize
+	 ]
+
+
+Using the interface:
+
+|csi assignmentOldValue assignmentNewValue|
+csi := SeekerCurrentStateInterface new tracer: aSeekerTracer
+csi node isAssignemnt ifTrue: [
+	 assignmentOldValue:= csi assignmentCurrentValue. 
+	assignmentNewValue := csi assignmentNextValue]
+"
 Class {
 	#name : #SeekerCurrentStateInterface,
-	#superclass : #Object,
+	#superclass : #SeekerInterfaceObject,
 	#instVars : [
-		'tracer',
 		'cachedValues',
 		'instanceCreationPrimitives'
 	],
@@ -14,6 +44,28 @@ SeekerCurrentStateInterface >> aboutToSwitchContext [
 
 	^ self willSend or: [ 
 		  self willReturn or: [ self willStore or: [ self willCreateBlock ] ] ]
+]
+
+{ #category : #'as yet unclassified' }
+SeekerCurrentStateInterface >> assignmentCurrentValue [
+
+	"returns the current value of the variable (that is, before the assignemt takes place) in the current assignement node"
+
+	"The developer must ensure this is called when the current node is an assigment"
+
+	^ self node variable variable readInContext: self context
+]
+
+{ #category : #'as yet unclassified' }
+SeekerCurrentStateInterface >> assignmentNextValue [
+
+	"returns the current value of the variable (that is, before the assignemt takes place) in the current assignement node"
+
+	"The developer must ensure this is called when the current node is an assigment"
+
+	| context |
+	context := self context.
+	^ context at: context basicSize
 ]
 
 { #category : #accessing }
@@ -286,18 +338,6 @@ SeekerCurrentStateInterface >> tracedStatementPath [
 SeekerCurrentStateInterface >> tracedStatementStepIndex [
 
 	^ tracer tracedStatementIndex
-]
-
-{ #category : #accessing }
-SeekerCurrentStateInterface >> tracer [
-
-	^ tracer
-]
-
-{ #category : #accessing }
-SeekerCurrentStateInterface >> tracer: anObject [
-
-	tracer := anObject
 ]
 
 { #category : #testing }

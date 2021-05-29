@@ -5,8 +5,8 @@ Class {
 	#name : #SkXTracedInstructionPC,
 	#superclass : #Object,
 	#instVars : [
-		'contextBcp',
-		'pc'
+		'pc',
+		'tracedContextPC'
 	],
 	#category : #'Seeker-Experimental-NodeNotation'
 }
@@ -123,17 +123,17 @@ SkXTracedInstructionPC >> shiftedSum: aNumber [
 { #category : #accessing }
 SkXTracedInstructionPC >> sum [
 
-	^ pc + (contextBcp shiftedSum: 1)
+	^ pc + (tracedContextPC shiftedSum: 1)
 ]
 
 { #category : #accessing }
 SkXTracedInstructionPC >> tracedContextPC [
 
-	^ contextBcp
+	^ tracedContextPC
 ]
 
 { #category : #accessing }
 SkXTracedInstructionPC >> tracedContextPC: anObject [
 
-	contextBcp := anObject
+	tracedContextPC := anObject
 ]

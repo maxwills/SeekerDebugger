@@ -5,8 +5,8 @@ Class {
 		'astPreStepHooks',
 		'currentStateInterfaceInstance',
 		'queriesLibrary',
-		'executionVirtualTableCreator',
-		'aliasesDictionary'
+		'aliasesDictionary',
+		'virtualTablesInterface'
 	],
 	#category : #'Seeker-Components'
 }
@@ -26,7 +26,7 @@ SkQueryExperimentalTracer >> currentStateAsRow [
 	^ q currentRow
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'object - api' }
 SkQueryExperimentalTracer >> currentStateInterface [
 
 	| csi |
@@ -41,7 +41,7 @@ SkQueryExperimentalTracer >> doAstStepPreProcess [
 	astPreStepHooks do: [ :each | each value ]
 ]
 
-{ #category : #'menu messages' }
+{ #category : #'object - api' }
 SkQueryExperimentalTracer >> find [
 
 	| interface |
@@ -50,15 +50,18 @@ SkQueryExperimentalTracer >> find [
 	^ interface 
 ]
 
+{ #category : #'object - api' }
+SkQueryExperimentalTracer >> findContextInStack [
+
+	| findContextInterface |
+	findContextInterface := SeekerFindContextInStackInterface new 
+		                        tracer: self.
+	^ findContextInterface
+]
+
 { #category : #initialization }
 SkQueryExperimentalTracer >> initialize [
 
-	currentStateInterfaceInstance := SeekerCurrentStateInterface new.
-	currentStateInterfaceInstance tracer: self.
-	executionVirtualTableCreator := SeekerExecutionTablesInterface new.
-	executionVirtualTableCreator tracer: self.
-	queriesLibrary := SeekerTraceQueriesInterface new.
-	queriesLibrary tracer: self.
 	astPreStepHooks := OrderedCollection new.
 	aliasesDictionary := WeakIdentityKeyDictionary new.
 	^ super initialize
@@ -91,7 +94,7 @@ SkQueryExperimentalTracer >> onTracedContextChanged [
 	super onTracedContextChanged
 ]
 
-{ #category : #actions }
+{ #category : #'object - api' }
 SkQueryExperimentalTracer >> perform [
 
 	| interface |
@@ -100,22 +103,13 @@ SkQueryExperimentalTracer >> perform [
 	^ interface
 ]
 
-{ #category : #accessing }
+{ #category : #'object - api' }
 SkQueryExperimentalTracer >> queries [
 
 	"Should return the instance variable, but it works better like this when changint the libary class during a debug session (it is not updated)"
 
 	| lib |
 	lib := SeekerTraceQueriesInterface new.
-	lib tracer: self.
-	^ lib
-]
-
-{ #category : #accessing }
-SkQueryExperimentalTracer >> queriesForTimeTravel [
-
-	| lib |
-	lib := SkTimeTravelQueries new.
 	lib tracer: self.
 	^ lib
 ]
@@ -171,13 +165,15 @@ SkQueryExperimentalTracer >> stepToNextIteration [
 
 	"we want to get to the same node of when the context receiver is the same as the current"
 
+	"Double check nonInlinedOwner vs ownerNode behavior"
+
 	"only works when inside a block"
 
 	"or until control is at the next pc of the sender"
 
 	| node nodeOwner receiver stopContext senderContext senderNode |
 	node := self currentNode.
-	nodeOwner := node ownerNode.
+	nodeOwner := node nonInlinedOwner.
 	nodeOwner isBlock ifFalse: [ ^ false ].
 	nodeOwner isInlined ifTrue: [ ^ false ].
 	receiver := self currentContext receiver.
@@ -190,13 +186,13 @@ SkQueryExperimentalTracer >> stepToNextIteration [
 	self doAndUpdateSessionAfter: [ 
 		self stepBytecode.
 		self stepBytecodeUntilConditionIsTrue: [ 
-			self currentContext == stopContext or: [ 
+			self currentContext == stopContext or: [ "and: [ self currentNode ~= senderNode ]"
 				self currentContext receiver == receiver and: [ 
 					self currentNode = node and: [ 
-						self currentNode ownerNode = nodeOwner ] ] ] "and: [ self currentNode ~= senderNode ]" ] ]
+						self currentNode nonInlinedOwner = nodeOwner ] ] ] ] ]
 ]
 
-{ #category : #accessing }
+{ #category : #'object - api' }
 SkQueryExperimentalTracer >> tables [
 
 	"^ executionVirtualTableCreator"
@@ -205,13 +201,4 @@ SkQueryExperimentalTracer >> tables [
 	tableCreator := SeekerExecutionTablesInterface new.
 	tableCreator tracer: self.
 	^ tableCreator
-]
-
-{ #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> timeTravel [
-
-	| timeTravelInterface |
-	timeTravelInterface := SkTimeTravelInterface new.
-	timeTravelInterface tracer: self.
-	^ timeTravelInterface
 ]

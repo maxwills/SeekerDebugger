@@ -1,14 +1,11 @@
 Class {
-	#name : #SeekerFindInterfaceBase,
-	#superclass : #Object,
-	#instVars : [
-		'tracer'
-	],
+	#name : #SeekerBasicFindInterface,
+	#superclass : #SeekerInterfaceObject,
 	#category : #'Seeker-Interfaces'
 }
 
 { #category : #'as yet unclassified' }
-SeekerFindInterfaceBase >> aliasOfVariableNode: aNode inContext: aContext [
+SeekerBasicFindInterface >> aliasOfVariableNode: aNode inContext: aContext [
 
 	| node stepDescriptor aliasResult aliasQuery |
 	node := aNode.
@@ -28,7 +25,7 @@ SeekerFindInterfaceBase >> aliasOfVariableNode: aNode inContext: aContext [
 ]
 
 { #category : #'as yet unclassified' }
-SeekerFindInterfaceBase >> aliasOfVariableNode: aNode inContext: aContext atStep: aNumber [
+SeekerBasicFindInterface >> aliasOfVariableNode: aNode inContext: aContext atStep: aNumber [
 
 	| node stepDescriptor aliasResult aliasQuery |
 	node := aNode.
@@ -49,7 +46,7 @@ SeekerFindInterfaceBase >> aliasOfVariableNode: aNode inContext: aContext atStep
 ]
 
 { #category : #'as yet unclassified' }
-SeekerFindInterfaceBase >> aliasOfVariableNode: aNode inContext: aContext atStepIndex: aNumber [
+SeekerBasicFindInterface >> aliasOfVariableNode: aNode inContext: aContext atStepIndex: aNumber [
 
 	| node stepDescriptor aliasResult aliasQuery |
 	node := aNode.
@@ -70,7 +67,7 @@ SeekerFindInterfaceBase >> aliasOfVariableNode: aNode inContext: aContext atStep
 ]
 
 { #category : #'as yet unclassified' }
-SeekerFindInterfaceBase >> receiverAliasOfContext: aContext [
+SeekerBasicFindInterface >> receiverAliasOfContext: aContext [
 
 	"This is mostly unnecessary since the omniscientTableForAliases already includes receiverAlias in every row. Avoid using this if you can"
 
@@ -90,7 +87,7 @@ SeekerFindInterfaceBase >> receiverAliasOfContext: aContext [
 ]
 
 { #category : #'as yet unclassified' }
-SeekerFindInterfaceBase >> receiverAliasOfMessageNode: aNode inContext: aContext [
+SeekerBasicFindInterface >> receiverAliasOfMessageNode: aNode inContext: aContext [
 
 	aNode isMessage ifFalse: [ ^ self error: 'Not a message node' ].
 	aNode receiver isVariable ifFalse: [ 
@@ -103,7 +100,7 @@ SeekerFindInterfaceBase >> receiverAliasOfMessageNode: aNode inContext: aContext
 ]
 
 { #category : #'as yet unclassified' }
-SeekerFindInterfaceBase >> returnValuesOfMessageSendNode: aMessageNode inContext: aContext [
+SeekerBasicFindInterface >> returnValuesOfMessageSendNode: aMessageNode inContext: aContext [
 
 	| node messageReceiverAlias returnValuesQuery messageReceiverClass methodSelectorOfMessage result |
 	node := aMessageNode.
@@ -142,7 +139,7 @@ SeekerFindInterfaceBase >> returnValuesOfMessageSendNode: aMessageNode inContext
 ]
 
 { #category : #'as yet unclassified' }
-SeekerFindInterfaceBase >> returnValuesOfMethodOfSameReceiverAsContext: aContext [
+SeekerBasicFindInterface >> returnValuesOfMethodOfSameReceiverAsContext: aContext [
 
 	| node receiverAlias returnValuesQuery receiverClass methodSelector result |
 	node := aContext methodNode.
@@ -166,14 +163,4 @@ SeekerFindInterfaceBase >> returnValuesOfMethodOfSameReceiverAsContext: aContext
 
 	result := returnValuesQuery asTableForTimeTravel.
 	^ result rows
-]
-
-{ #category : #accessing }
-SeekerFindInterfaceBase >> tracer [
-	^tracer
-]
-
-{ #category : #accessing }
-SeekerFindInterfaceBase >> tracer: anObject [
-	tracer := anObject
 ]

@@ -45,6 +45,38 @@ RecursionExamples >> directForwardCount: aCollection startingAt: aNumber [
 	^ 1+ (self directForwardCount: aCollection startingAt: aNumber + 1)
 ]
 
+{ #category : #accessing }
+RecursionExamples >> doNewRecursion: aNumber [
+
+	| depth context startingStackp |
+	context := thisContext.
+	depth := { 
+		         #acol.
+		         #withItems.
+		         context stackDepth } asSet.
+	context push: depth.
+	startingStackp := context stackPtr.
+
+	Transcript
+		show: 'Writen: ' , depth asString;
+		show: String cr.
+	aNumber = 0 ifTrue: [ ^ true ].
+	self doNewRecursion: aNumber - 1.
+
+	Transcript
+		show:
+			'Read: ' , (context at: startingStackp) asString , ' and was: '
+			, depth asString;
+		show: String cr
+]
+
+{ #category : #tests }
+RecursionExamples >> testContextStackSize [
+
+	self doNewRecursion: 5.
+	self assert: false
+]
+
 { #category : #tests }
 RecursionExamples >> testDirectRecursion [
 	|result|

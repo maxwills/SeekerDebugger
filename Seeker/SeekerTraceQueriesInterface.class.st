@@ -1,9 +1,6 @@
 Class {
 	#name : #SeekerTraceQueriesInterface,
-	#superclass : #Object,
-	#instVars : [
-		'tracer'
-	],
+	#superclass : #SeekerInterfaceObject,
 	#category : #'Seeker-Interfaces'
 }
 
@@ -444,16 +441,4 @@ SeekerTraceQueriesInterface >> forVariables [
 						  "(#ownerAlias -> (row aliasesDictionary at: row receiver ifAbsent: [nil]))."
 					     (#context -> row context) } ].
 	^ q
-]
-
-{ #category : #accessing }
-SeekerTraceQueriesInterface >> tracer [
-
-	^ tracer
-]
-
-{ #category : #accessing }
-SeekerTraceQueriesInterface >> tracer: anObject [
-
-	tracer := anObject
 ]

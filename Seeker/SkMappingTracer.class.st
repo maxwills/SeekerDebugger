@@ -95,26 +95,17 @@ SkMappingTracer >> automapForDoItScenario [
 { #category : #'as yet unclassified' }
 SkMappingTracer >> automapForTestCaseScenario [
 
-	| recordingInitialContext testInitialContext endingContext endTracedInstructionPC endTraceTime |
+	| recordingInitialContext testInitialContext endingContext endTracedInstructionPC endTraceTime findContext |
 	"Only works if used the option: debug with Seeker"
-	recordingInitialContext := SkContextHelpers
-		                           findContextInStack: [ :aContext | 
-		                           aContext methodSelector = #runCase ]
-		                           startingContext: self currentContext.
+	"findContext is a SeekerFindContextInStackInterface object"
+	findContext := self findContextInStack.
+	recordingInitialContext := findContext runCaseContextForTestCase.
 	recordingInitialContext ifNil: [ 
 		self error: 'Could not detect the initial context for recording.'.
 		^ false ].
 	contextOfExecutedBytecodeOne := recordingInitialContext.
 
-	testInitialContext := SkContextHelpers
-		                      findContextInStack: [ :aContext | 
-			                      | senderContext |
-			                      senderContext := aContext sender.
-			                      senderContext isNotNil and: [ 
-				                      (senderContext receiver class inheritsFrom:
-					                       TestCase) and: [ 
-					                      senderContext methodSelector = #performTest ] ] ]
-		                      startingContext: self currentContext.
+	testInitialContext := findContext userStartContextForTestCase.
 	testInitialContext ifNil: [ 
 		self error: 'Could not detect the initial context of the test.'.
 		^ false ].
@@ -202,17 +193,6 @@ SkMappingTracer >> clearStepBuffers [
 ]
 
 { #category : #'as yet unclassified' }
-SkMappingTracer >> findContextInStackUntilStartingContextForRecord: aBlock [
-
-	"returns the first context where the given predicate returns true. Or nil. The stack is traversed from top to bottom. The starting context is the interruptedContext"
-
-	^ SkContextHelpers
-		  findContextInStack: aBlock
-		  startingContext: self currentContext
-		  untilContext: contextOfExecutedBytecodeOne
-]
-
-{ #category : #'as yet unclassified' }
 SkMappingTracer >> findStepIndexOfFirstStatementInSameSequenceOfStep: aNumber [
 
 	| step |
@@ -288,19 +268,6 @@ SkMappingTracer >> findStepsWhereMethodSelectorIs: aSymbol [
 SkMappingTracer >> findStepsWhereMethodSelectorIs: aSymbol ofClass: aClass [
 ^ trace select: [ :eachStepDescriptor| (eachStepDescriptor methodSelector = aSymbol) and:[eachStepDescriptor receiverClass = aClass] ].
 	
-]
-
-{ #category : #'as yet unclassified' }
-SkMappingTracer >> findTestContext [
-
-	"returns the first context where the given predicate returns true. Or nil. The stack is traversed from top to bottom. The starting context is the interruptedContext"
-
-	| isTestContext |
-	isTestContext := [ :aContext | 
-	                 aContext receiver class inheritsFrom: TestCase "SkObjectHelpers isObject: aContext receiver subclassOf: TestCase" ].
-	^ SkContextHelpers
-		  findContextInStack: isTestContext
-		  startingContext: self currentContext
 ]
 
 { #category : #'as yet unclassified' }

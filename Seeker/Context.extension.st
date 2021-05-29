@@ -78,6 +78,18 @@ Context >> matchesTracedInstructionPC: aTracedInstructionBcp [
 ]
 
 { #category : #'*Seeker' }
+Context >> nodeForExecutedPC [
+
+	^ self compiledCode nodeForPC: self executedPC
+]
+
+{ #category : #'*Seeker' }
+Context >> nodeForPC [
+
+	^ self compiledCode sourceNodeForPC: pc
+]
+
+{ #category : #'*Seeker' }
 Context >> stackDepth [
 
 	"the size of the stack. Not named stackSize to avoid possible conflicting naming issues"

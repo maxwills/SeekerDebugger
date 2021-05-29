@@ -11,10 +11,7 @@ You can create your own tables. The guidelines for the current ones are:
 "
 Class {
 	#name : #SeekerExecutionTablesInterface,
-	#superclass : #Object,
-	#instVars : [
-		'tracer'
-	],
+	#superclass : #SeekerInterfaceObject,
 	#category : #'Seeker-Interfaces'
 }
 
@@ -451,16 +448,4 @@ SeekerExecutionTablesInterface >> tableOfVariables [
 		                forTracer: tracer.
 
 	^ virtualTable join: tracer tables tableOfAliases
-]
-
-{ #category : #accessing }
-SeekerExecutionTablesInterface >> tracer [
-
-	^ tracer
-]
-
-{ #category : #accessing }
-SeekerExecutionTablesInterface >> tracer: anObject [
-
-	tracer := anObject
 ]
