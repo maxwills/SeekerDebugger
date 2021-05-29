@@ -17,6 +17,14 @@ SkQueryExperimentalTracer >> addAstPreStepHook: aBlock [
 ]
 
 { #category : #'as yet unclassified' }
+SkQueryExperimentalTracer >> createContextCacheFor: aContext [
+
+	| contextVars |
+	contextVars := aContext temporaryVariables size.
+	^ aContext stackPtr = (contextVars + 1)
+]
+
+{ #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> currentStateAsRow [
 
 	"Debug help. Don't use this. No filtering or optimizations. Create a baseQuery instead and use it with select: collect:"
@@ -89,6 +97,8 @@ SkQueryExperimentalTracer >> oldStepUntilQueryMatch: aQuery [
 
 { #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> onTracedContextChanged [
+
+	"self createContextCacheFor: self currentContext."
 
 	self registerAliasFor: self currentContext receiver.
 	super onTracedContextChanged
