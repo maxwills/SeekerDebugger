@@ -54,3 +54,21 @@ SeekerWorldLiteCommands class >> menuBrowseSeekerTracerClass: aBuilder [
 		help: 'Opens the Seeker tracer class';
 		action: [ SkQueryExperimentalTracer  browse ] 
 ]
+
+{ #category : #'as yet unclassified' }
+SeekerWorldLiteCommands class >> menuBrowseStDebuggerActionModel: aBuilder [
+
+	<worldMenu>
+	(aBuilder item: #SeekerDevBrowseStDebuggerActionModel)
+		parent: #SeekerDev;
+		order: 2;
+		label: 'Go to StDebugger for override step';
+		icon: (self iconNamed: 'smallDebug');
+		help: 'Opens a browser on the method';
+		action: [ 
+			(StDebugger >> #debuggerActionModel) browse.
+			Clipboard clipboardText:
+					SeekerStDebuggerDebuggerActionModel name asString.
+			self inform:
+					'SeekerStDebuggerDebuggerActionModel ready in clipboard for overwriting' ]
+]
