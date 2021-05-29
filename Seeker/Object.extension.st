@@ -1,6 +1,22 @@
 Extension { #name : #Object }
 
 { #category : #'*Seeker' }
+Object >> ! anObject [
+
+	"self flag remember to remove this"
+
+	self value: anObject
+]
+
+{ #category : #'*Seeker' }
+Object >> ? aBlock [
+
+	"self flag remember to remove this"
+
+	aBlock value: self
+]
+
+{ #category : #'*Seeker' }
 Object >> @< another [
 
 	^ self < another

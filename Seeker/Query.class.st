@@ -207,7 +207,7 @@ Query >> asTableForTimeTravel [
 		                            newWith: {  }
 		                            forTracer: tracer.
 	                       t mergeWith: row.
-	                       t stepIndex: row stepIndex ].
+	                       t privateExecutedBytecode: row bytecodeIndex ].
 	operationType := #asTable.
 	resultBuffer := OrderedCollection new.
 

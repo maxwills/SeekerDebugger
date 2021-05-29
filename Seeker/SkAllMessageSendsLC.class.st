@@ -13,12 +13,16 @@ SkAllMessageSendsLC >> description [
 { #category : #executing }
 SkAllMessageSendsLC >> executeCommand [
 
-	self showResult:
-		(self tracer find allMessageSends cullFieldsWithMapping: { 
+	| res |
+	res := self tracer find allMessageSends asSeekerResultsCollection forMessageSends.
+	
+	self showResult: res
+	"	self showResult:
+		( cullFieldsWithMapping: { 
 				 (#bytecodeIndex -> #ebc).
 				 (#messageSelector -> #sel).
 				 (#messageReceiverClass -> #class).
-				 (#messageArguments -> #args) } asDictionary)
+				 (#messageArguments -> #args) } asDictionary)"
 ]
 
 { #category : #accessing }

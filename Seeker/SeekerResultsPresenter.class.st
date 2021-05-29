@@ -84,8 +84,8 @@ SeekerResultsPresenter >> initializePresenters [
 SeekerResultsPresenter >> initializeTable [
 
 	| col |
-	table := self newTable.
-	col := SpIndexTableColumn new
+	table := self newTable
+	"col := SpIndexTableColumn new
 		       width: 20;
 		       yourself.
 	table addColumn: col.
@@ -99,7 +99,7 @@ SeekerResultsPresenter >> initializeTable [
 		       title: 'method'
 		       evaluated: [ :row | row method ].
 	col beExpandable.
-	table addColumn: col
+	table addColumn: col"
 ]
 
 { #category : #initialization }
@@ -179,16 +179,29 @@ SeekerResultsPresenter >> setModelBeforeInitialization: aStDebugger [
 { #category : #'UI specific' }
 SeekerResultsPresenter >> showResult: anObject [
 
-	table items: { 
-			(New with: { 
-					 (#bytecode -> 123).
-					 (#method -> 'metodo1') }).
-			(New with: { 
-					 (#bytecode -> 124).
-					 (#method -> 'metodo4') }).
-			(New with: { 
-					 (#bytecode -> 1766).
-					 (#method -> 'metodo43') }) } asOrderedCollection
+	| cols |
+	anObject quickConsistencyCheck.
+	cols := OrderedCollection new.
+	cols add: (SpIndexTableColumn new width: 30).
+
+	anObject columns do: [ :each | 
+		| col |
+		col := each key = #bytecodeIndex
+			       ifTrue: [ "it's a link"
+				       SpLinkTableColumn
+					       title: each label
+					       evaluated: [ :row | each value: row ]
+					       action: [ :row | row timeTravelToThis ] ]
+			       ifFalse: [ 
+				       SpStringTableColumn
+					       title: each label
+					       evaluated: [ :row | each value: row ] ].
+		each expandable
+			ifTrue: [ col beExpandable ]
+			ifFalse: [ col width: each width ].
+		cols add: col ].
+	table columns: cols.
+	table items: anObject
 	"queryResults := anObject rows collect: [ :row | 
 		                row asSeekerTracedProgramState ].
 	self applyResultFilter.

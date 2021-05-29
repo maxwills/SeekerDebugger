@@ -3,7 +3,7 @@ Class {
 	#superclass : #AnonymousType,
 	#instVars : [
 		'privateTracer',
-		'stepIndex'
+		'privateExecutedBytecode'
 	],
 	#category : #'Seeker-DataQuery'
 }
@@ -24,15 +24,16 @@ AnonymousTypeForTimeTravel >> anyFieldContains: aString [
 		  (val asString includesSubstring: aString) ]
 ]
 
-{ #category : #converting }
-AnonymousTypeForTimeTravel >> asSeekerTracedProgramState [
+{ #category : #accessing }
+AnonymousTypeForTimeTravel >> privateExecutedBytecode [
 
-	| tps |
-	tps := SeekerTracedProgramState new.
-	tps mergeWith: self.
-	tps privateTracer: privateTracer.
-	tps stepIndex: self stepIndex.
-	^ tps
+	^ privateExecutedBytecode
+]
+
+{ #category : #accessing }
+AnonymousTypeForTimeTravel >> privateExecutedBytecode: anObject [
+
+	privateExecutedBytecode := anObject
 ]
 
 { #category : #accessing }
@@ -47,22 +48,11 @@ AnonymousTypeForTimeTravel >> privateTracer: anObject [
 	privateTracer := anObject
 ]
 
-{ #category : #accessing }
-AnonymousTypeForTimeTravel >> stepIndex [
-
-	^ stepIndex
-]
-
-{ #category : #accessing }
-AnonymousTypeForTimeTravel >> stepIndex: anObject [
-
-	stepIndex := anObject
-]
-
 { #category : #'as yet unclassified' }
 AnonymousTypeForTimeTravel >> timeTravelToThis [
 
 	"Needs the stepIndex key"
 
-	privateTracer restartAndStepToIndex: self stepIndex
+	privateTracer timeTravelToTraceTime:
+		privateExecutedBytecode asExecutedBytecodeTraceTime
 ]

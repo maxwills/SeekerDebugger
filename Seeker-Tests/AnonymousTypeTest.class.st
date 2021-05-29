@@ -10,7 +10,7 @@ Class {
 { #category : #test }
 AnonymousTypeTest >> testAnonymousType [
 
-	| myDictionary anAnonymousType wrappedByAnonymousType |
+	| myDictionary anAnonymousType |
 	"asAnonymousType"
 	myDictionary := { 
 		                (#firstname -> 'Dwayne').

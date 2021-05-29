@@ -85,6 +85,7 @@ SkStatementStepper >> currentNode [
 
 	| context |
 	context := self currentContext.
+	context pc ifNil: [ ^ nil ].
 	^ context method sourceNodeForPC: context pc
 ]
 

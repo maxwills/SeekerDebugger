@@ -17,8 +17,9 @@ SkDataTable class >> newForAnonymousTypeObjects: aCollectionOfAnonymousTypeObjec
 	| ds |
 	ds := self new.
 	aCollectionOfAnonymousTypeObjects ifNotEmpty: [ 
-		aCollectionOfAnonymousTypeObjects first fieldNames do: [ :each | 
-			ds columnLabels add: each ].
+		| fieldNames |
+		fieldNames := aCollectionOfAnonymousTypeObjects first fieldNames.
+		fieldNames do: [ :each | ds columnLabels add: each ].
 		aCollectionOfAnonymousTypeObjects do: [ :each | ds rows add: each ] ].
 
 	^ ds
@@ -33,6 +34,19 @@ SkDataTable class >> newWithColumns: aCollectionOfSymbols [
 	^ ds
 ]
 
+{ #category : #converting }
+SkDataTable >> asSeekerResultsCollection [
+
+	| res |
+	res := SeekerResultsCollection new.
+	self columnLabels do: [ :each | 
+		res addColumn
+			label: each;
+			key: each ].
+	self rows do: [ :each | res add: each ].
+	^ res
+]
+
 { #category : #accessing }
 SkDataTable >> columnLabels [
 
@@ -43,21 +57,6 @@ SkDataTable >> columnLabels [
 SkDataTable >> columnLabels: anObject [
 
 	columnLabels := anObject
-]
-
-{ #category : #'as yet unclassified' }
-SkDataTable >> cullFieldsWithMapping: aDictionary [
-
-	data do: [ :each | 
-		| assocs |
-		assocs := each associations select: [ :assoc | 
-			          aDictionary includesKey: assoc key ].
-		each removeAll.
-		assocs do: [ :as | 
-			| newKey |
-			newKey := aDictionary at: as key.
-			each at: newKey put: as value ] ].
-	^ self
 ]
 
 { #category : #'as yet unclassified' }

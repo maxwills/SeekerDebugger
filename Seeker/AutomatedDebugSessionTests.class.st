@@ -195,6 +195,22 @@ AutomatedDebugSessionTests >> testABlockDebugSession3 [
 ]
 
 { #category : #tests }
+AutomatedDebugSessionTests >> testInvertReceiverAndSender [
+
+	| creator calc |
+	creator := [ 
+	           | number |
+	           number := 0.
+	           New with: { 
+			           (#number -> [ number ]).
+			           (#subtract -> [ :a | number := number - a ]).
+			           (#add -> [ :a | number := number + a ]) } ].
+	calc := creator value.
+	calc add ! 1.
+	self assert: calc number value equals: 1
+]
+
+{ #category : #tests }
 AutomatedDebugSessionTests >> testReadThing [
 
 	| xvar |
