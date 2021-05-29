@@ -8,7 +8,7 @@ Class {
 		'tracer',
 		'toolbar',
 		'currentStepLabel',
-		'inspector',
+		'table',
 		'resultsFilter',
 		'queryResults',
 		'filteredResult'
@@ -33,9 +33,8 @@ SeekerResultsPresenter class >> defaultSpec [
       add: #evaluatorCode;
       add: 'Expression Value' expand: false fill: false padding: 5;
       add: #valueLabel expand: false fill: false padding: 5;"
-		  add: #inspector;
-		  yourself
-	" add: 'Traced Statement Steppping'
+		  add: #table;
+		  " add: 'Traced Statement Steppping'
 		  expand: false
 		  fill: false
 		  padding: 5;
@@ -43,6 +42,7 @@ SeekerResultsPresenter class >> defaultSpec [
 		  expand: false
 		  fill: false
 		  padding: 0;"
+			  yourself
 ]
 
 { #category : #'UI specific' }
@@ -72,11 +72,34 @@ SeekerResultsPresenter >> initializePresenters [
 
 	self initializeToolbar.
 	queryResults := { #empty }.
-	inspector := self instantiate: StInspector on: queryResults.
+	"inspector := self instantiate: StInspector on: queryResults."
+	self initializeTable.
 	currentStepLabel := self newLabel.
 	currentStepLabel label: 'Current Step: -'.
 	resultsFilter := self newSearchInput.
 	resultsFilter whenSubmitDo: [ self onResultsFilterSubmitHandler ]
+]
+
+{ #category : #initialization }
+SeekerResultsPresenter >> initializeTable [
+
+	| col |
+	table := self newTable.
+	col := SpIndexTableColumn new
+		       width: 20;
+		       yourself.
+	table addColumn: col.
+	col := SpLinkTableColumn
+		       title: 'bytecode'
+		       evaluated: [ :row | row bytecode asString ]
+		       action: [ :row | self inform: 'clicked' ].
+	col width: 40.
+	table addColumn: col.
+	col := SpStringTableColumn
+		       title: 'method'
+		       evaluated: [ :row | row method ].
+	col beExpandable.
+	table addColumn: col
 ]
 
 { #category : #initialization }
@@ -156,10 +179,20 @@ SeekerResultsPresenter >> setModelBeforeInitialization: aStDebugger [
 { #category : #'UI specific' }
 SeekerResultsPresenter >> showResult: anObject [
 
-	queryResults := anObject rows collect: [ :row | 
+	table items: { 
+			(New with: { 
+					 (#bytecode -> 123).
+					 (#method -> 'metodo1') }).
+			(New with: { 
+					 (#bytecode -> 124).
+					 (#method -> 'metodo4') }).
+			(New with: { 
+					 (#bytecode -> 1766).
+					 (#method -> 'metodo43') }) } asOrderedCollection
+	"queryResults := anObject rows collect: [ :row | 
 		                row asSeekerTracedProgramState ].
 	self applyResultFilter.
-	self updateDisplayedResults
+	self updateDisplayedResults"
 ]
 
 { #category : #accessing }
@@ -175,7 +208,9 @@ SeekerResultsPresenter >> tracer [
 { #category : #'UI specific' }
 SeekerResultsPresenter >> updateDisplayedResults [
 
-	inspector model: filteredResult
+	"inspector model: filteredResult"
+
+	
 ]
 
 { #category : #'accessing model' }
