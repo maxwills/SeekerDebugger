@@ -75,6 +75,16 @@ SeekerFindInterface >> allMessageSendsWithSelector: aSymbol [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerFindInterface >> allReceivedMessages [
+
+	| query result |
+	query := tracer queries forReceivedMessages.
+
+	result := query asTableForTimeTravel.
+	^ result
+]
+
+{ #category : #'as yet unclassified' }
 SeekerFindInterface >> changesOfAllVariablesNamed: aSymbol [
 
 	| query result |

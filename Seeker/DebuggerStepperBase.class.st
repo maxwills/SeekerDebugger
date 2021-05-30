@@ -47,7 +47,7 @@ DebuggerStepperBase >> seekerResultsPresenter [
 
 	"Returns the result presenter. Or Nil"
 
-	^ seeker stDebugger seekerResultsPresenter
+	^ seeker stDebugger seekerDebuggerPresenter 
 ]
 
 { #category : #accessing }

@@ -1,37 +1,3 @@
-"
-## Description
-
-### Ownership
-Keeps a reference to the StDebugger and doesn't own it. (Probably the opposite).
-
-## Pharo Comments
-Please comment me using the following template inspired by Class Responsibility Collaborator (CRC) design:
-
-For the Class part:  State a one line summary. For example, ""I represent a paragraph of text"".
-
-For the Responsibility part: Three sentences about my main responsibilities - what I do, what I know.
-
-For the Collaborators Part: State my main collaborators and one line about how I interact with them. 
-
-Public API and Key Messages
-
-- message one   
-- message two 
-- (for bonus points) how to create instances.
-
-   One simple example is simply gorgeous.
- 
-Internal Representation and Key Implementation Points.
-
-    Instance Variables
-	code:		<Object>
-	seekerDebugger:		<Object>
-	stDebugger:		<Object>
-	toolbar:		<Object>
-
-
-    Implementation Points
-"
 Class {
 	#name : #SeekerDebuggerPresenter,
 	#superclass : #SpPresenter,
@@ -47,26 +13,49 @@ Class {
 		'evaluatorCode',
 		'inspector',
 		'valueLabel',
-		'evaluatorDebugger'
+		'evaluatorDebugger',
+		'tabs',
+		'queriesPresenter'
 	],
 	#category : #'Seeker-UI'
 }
 
+{ #category : #'debugger extension' }
+SeekerDebuggerPresenter class >> defaultDisplayOrder [
+
+	^ 1
+]
+
 { #category : #specs }
 SeekerDebuggerPresenter class >> defaultSpec [
 
-	^ SpBoxLayout newVertical 
-	     add: 'Traced Statement Steppping' expand: false fill: false padding: 5;
-		  add: #toolbar expand: false fill: false padding: 0;
-		  add: #code expand: true;
-		  add: #currentStepLabel expand: false fill: false padding: 5;
-		"add: ' ------------- Evaluator ------------- ' expand: false fill: false padding: 5;
-		add: #evaluatorToolbar expand: false fill: false padding: 0;
-      add: #evaluatorCode;
-      add: 'Expression Value' expand: false fill: false padding: 5;
-      add: #valueLabel expand: false fill: false padding: 5;
-      add: #inspector;"
+	^ SpBoxLayout newVertical
+		  add: #currentStepLabel expand: false;
+		  add: #toolbar expand: false;
+		  add: #tabs expand: true;
 		  yourself
+]
+
+{ #category : #'debugger extension' }
+SeekerDebuggerPresenter class >> displayOrder [
+
+	^ debuggerExtensionDisplayOrder ifNil: [ 
+		  debuggerExtensionDisplayOrder := self defaultDisplayOrder ]
+]
+
+{ #category : #'debugger extension' }
+SeekerDebuggerPresenter class >> displayOrder: anInteger [
+	debuggerExtensionDisplayOrder := anInteger
+]
+
+{ #category : #'debugger extension' }
+SeekerDebuggerPresenter class >> showInDebugger [
+	^showDebuggerExtension ifNil: [showDebuggerExtension := false]
+]
+
+{ #category : #'debugger extension' }
+SeekerDebuggerPresenter class >> showInDebugger: aBoolean [
+	showDebuggerExtension := aBoolean
 ]
 
 { #category : #'event handling' }
@@ -78,6 +67,29 @@ SeekerDebuggerPresenter >> advanceDownHandler [
 { #category : #'debugger extension' }
 SeekerDebuggerPresenter >> debuggerExtensionToolName [
 	^ 'Seeker'
+]
+
+{ #category : #accessing }
+SeekerDebuggerPresenter >> debuggerUpdateCoordinator [
+
+	^ debuggerUpdateCoordinator
+]
+
+{ #category : #accessing }
+SeekerDebuggerPresenter >> debuggerUpdateCoordinator: anObject [
+
+	debuggerUpdateCoordinator := anObject
+]
+
+{ #category : #'debugger extension' }
+SeekerDebuggerPresenter >> displayOrder [
+	^self class displayOrder
+]
+
+{ #category : #accessing }
+SeekerDebuggerPresenter >> doAndUpdateSessionAfter: aBlock [
+
+	debuggerUpdateCoordinator coordinateUpdatesFor: aBlock
 ]
 
 { #category : #'as yet unclassified' }
@@ -147,13 +159,34 @@ SeekerDebuggerPresenter >> initializeEvaluatorToolbar [
 
 { #category : #'accessing model' }
 SeekerDebuggerPresenter >> initializePresenters [
-   "Called automatically by the Spec framework. This method describes how the widgets are initialized"
-   self initializeToolbar.
+
+	"Called automatically by the Spec framework. This method describes how the widgets are initialized"
+
+	self initializeToolbar.
 	self initializeCode.
+	self initializeTabs.
+	queriesPresenter := SeekerQueriesPresenter new
+		                    owner: self;
+		                    tracer: self seekerDebugger tracer;
+		                    yourself.
+	"progress := self newProgressBar.
+	progress
+		progress: [ 
+		(self seekerDebugger tracer executionProgress / 100.0) asFloat ]
+		every: 0.5 seconds."
 	currentStepLabel := self newLabel.
-   currentStepLabel label: 'Current Step: -'.
-	self initializeEvaluatorPresenters.
-	
+	currentStepLabel label: 'Current Step: -'.
+	self initializeEvaluatorPresenters
+]
+
+{ #category : #'accessing model' }
+SeekerDebuggerPresenter >> initializeTabs [
+
+	"Called automatically by the Spec framework. This method describes how the widgets are initialized"
+
+	tabs := self newNotebook.
+	tabs addPageTitle: 'Query' provider: [ queriesPresenter ].
+	tabs addPageTitle: 'Scripting' provider: [ code ]
 ]
 
 { #category : #initialization }
@@ -164,52 +197,52 @@ SeekerDebuggerPresenter >> initializeToolbar [
 	"Smalltalk ui icons"
 
 	toolbar := self newToolbar
-		           addItem: (self newToolbarButton
-				            label: 'previous Bytecode';
+		           beBoth;
+		           "add: (SpToolbarButtonPresenter new 
+			icon: (self iconNamed: #smallOk);
+			label: 'Simple';
+			action: [ UIManager default defer: [ self inform: 'Pressed' ] ];
+			yourself);"
+		           add: (self newToolbarButton
+				            label: 'PrevBytecode';
 				            icon: (self application iconNamed: #glamorousLeft);
 				            action: [ self stepBackOneByteCodeHandler ];
 				            yourself);
-		           addItem: (self newToolbarButton
+		           add: (self newToolbarButton
 				            label: 'Advance Down';
 				            icon: (self application iconNamed: #glamorousDown);
 				            action: [ self advanceDownHandler ];
 				            yourself);
-		           addItem: (self newToolbarButton
+		           add: (self newToolbarButton
 				            label: 'Back Up';
 				            icon: (self application iconNamed: #glamorousUp);
 				            action: [ self reverseUpHandler ];
 				            yourself);
-		           addItem: (self newToolbarButton
-				            label: 'Advance In';
+		           add: (self newToolbarButton
+				            label: 'NextBytecode';
 				            icon: (self application iconNamed: #glamorousInto);
 				            action: [ self stepIntoHandler ];
 				            yourself);
-		           addItem: (self newToolbarButton
-				            label: 'Back In';
-				            icon: (self application iconNamed: #glamorousOver);
-				            action: [ self stepBackIntoHandler ];
-				            yourself);
-		           addItem: (self newToolbarButton
+		           add: (self newToolbarButton
 				            label: 'Restart';
 				            icon: (self application iconNamed: #smallHome);
 				            action: [ self restartHandler ];
 				            yourself);
-		           addItem: (self newToolbarButton
+		           add: (self newToolbarButton
 				            label: 'To End';
 				            icon: (self application iconNamed: #glamorousSpawn);
 				            action: [ self stepToEndHandler ];
 				            yourself);
-		           addItem: (self newToolbarButton
+		           add: (self newToolbarButton
 				            label: 'Next Iteration';
 				            icon: (self application iconNamed: #smallUpdate);
 				            action: [ self nextIterationHandler ];
 				            yourself);
-		           addItem: (self newToolbarButton
+		           "add: (self newToolbarButton
 				            label: 'Enable Time Travel';
 				            icon: (self application iconNamed: #smallProfile);
 				            action: [ self enableTimeTravelingHandler ];
-				            yourself);
-		           "addItem: (self newToolbarButton
+				            yourself);""addItem: (self newToolbarButton
 				            label: 'Mark end statement';
 				            icon: (self application iconNamed: #protocolPrivate);
 				            action: [self setEndHandler ];
@@ -238,6 +271,13 @@ SeekerDebuggerPresenter >> nextIterationHandler [
 { #category : #'as yet unclassified' }
 SeekerDebuggerPresenter >> onCodeTextChanged [
 	SeekerGlobals instance seekerCodePresenterText: code text.
+]
+
+{ #category : #'as yet unclassified' }
+SeekerDebuggerPresenter >> onResultsFilterSubmitHandler [
+
+	self applyResultFilter.
+	self updateDisplayedResults
 ]
 
 { #category : #'event handling' }
@@ -299,6 +339,12 @@ SeekerDebuggerPresenter >> setSelectedContexAsStartingPointHandler [
 	self seekerDebugger setSelectedContextAsStartingPoint: stDebugger selectedContext
 ]
 
+{ #category : #'UI specific' }
+SeekerDebuggerPresenter >> showResult: anObject [
+
+	queriesPresenter showResult: anObject
+]
+
 { #category : #'event handling' }
 SeekerDebuggerPresenter >> startRecordFromContextHandler [
 "Called when pressing the icon in the toolbar"
@@ -330,10 +376,11 @@ self doAndUpdateSessionAfter: [ self seekerDebugger tracer pushNavigationHistory
 
 { #category : #'event handling' }
 SeekerDebuggerPresenter >> stepIntoHandler [
-"Called when pressing the icon in the toolbar"
-self mapExecutionIfNotMappedAlready.
-self doAndUpdateSessionAfter: [ self seekerDebugger tracer pushNavigationHistory .	self seekerDebugger stepInto ]
 
+	"Called when pressing the icon in the toolbar"
+
+	self doAndUpdateSessionAfter: [ "self seekerDebugger tracer pushNavigationHistory." 
+		self seekerDebugger tracer stepBytecode ]
 ]
 
 { #category : #'event handling' }
@@ -366,6 +413,12 @@ SeekerDebuggerPresenter >> syncWithDebugSession [
 			tracer currentNode
 			~= (context compiledCode sourceNodeForPC: context pc) ifTrue: [ 
 				tracer recountExecutedBytecodes ] ] ]
+]
+
+{ #category : #accessing }
+SeekerDebuggerPresenter >> tracer [
+
+	^ self seekerDebugger tracer
 ]
 
 { #category : #'as yet unclassified' }
@@ -414,11 +467,12 @@ SeekerDebuggerPresenter >> updatePresenter [
 			put:
 			(WorkspaceVariable key: #seeker value: self seekerDebugger tracer).
 
-		currentStepLabel label:
-			'ExecutedBytecode: ' , seekerDebugger tracer bytecodeIndex asString
-			, ' (' , (self seekerDebugger tracer executionProgress 
-				 printShowingDecimalPlaces: 2) , '% of know execution)'.
-		self updateEvaluatorCode.
-		self updateExpressionValueDisplayed.
+		currentStepLabel label: 'Trace Time Contol - ExecutedBytecode: '
+			, seekerDebugger tracer bytecodeIndex asString , ' ('
+			, (self seekerDebugger tracer executionProgress 
+					 printShowingDecimalPlaces: 2) , '% of known execution)'.
+		"	self updateEvaluatorCode."
+		"		self updateExpressionValueDisplayed."
+
 		super updatePresenter ]
 ]

@@ -63,19 +63,18 @@ SkExecutionVirtualTable >> do: aBlock [
 
 	"Note that is used only because, at the moment, I have no bytecode stepping, so the preBytecodeStepHook is executed instead."
 
-	| originalStep preBytecodeStepHook |
-	originalStep := tracer bytecodeIndex.
-	preBytecodeStepHook := [ aBlock value: self currentRow ].
+	| currentTracetime preBytecodeStepHook |
+	currentTracetime := tracer bytecodeIndex asExecutedBytecodeTraceTime.
 	tracer isMapped ifFalse: [ 
 		^ self error:
 			  'Time traveling needs to be enabled to execute Trace Queries' ].
-	tracer restartAtBytecodeOne.
-	tracer addAstPreStepHook: preBytecodeStepHook.
-	[ tracer stepBytecodeToExecutionEnd ] ensure: [ 
-		tracer removeAstPreStepHook: preBytecodeStepHook.
+	preBytecodeStepHook := [ aBlock value: self currentRow ].
+	tracer doAndUpdateSessionAfter: [ 
 		tracer restartAtBytecodeOne.
-		tracer stepBytecodeUntilConditionIsTrue: [ 
-			tracer bytecodeIndex >= originalStep ] ]
+		tracer addAstPreStepHook: preBytecodeStepHook.
+		[ tracer stepBytecodeToExecutionEnd ] ensure: [ 
+			tracer removeAstPreStepHook: preBytecodeStepHook.
+			tracer timeTravelToTraceTime: currentTracetime ] ]
 ]
 
 { #category : #enumerating }

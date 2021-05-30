@@ -302,21 +302,40 @@ SeekerTraceQueriesInterface >> forMessageSends [
 		     from: table
 		     select: [ :row | row node isMessage ]
 		     collect: [ :row | 
-			     | msgRcvrNode msgRcvrValue |
+			     | msgRcvrNode msgRcvrClass |
 			     msgRcvrNode := row node receiver.
-			     msgRcvrValue := msgRcvrNode isVariable
+			     msgRcvrClass := msgRcvrNode isVariable
 				                     ifTrue: [ 
-				                     msgRcvrNode variable readInContext:
-					                     row context ]
-				                     ifFalse: [ row contextTop ].
+				                     'a '
+				                     ,
+				                     (msgRcvrNode variable readInContext:
+					                      row context) className ]
+				                     ifFalse: [ msgRcvrNode sourceCode ].
 			     New with: { 
 					     (#bytecodeIndex -> row bytecodeIndex).
-					     (#stepIndex -> row stepIndex).
 					     (#methodSelector -> row methodSelector).
 					     (#receiverClass -> row receiverClass).
 					     (#messageArguments -> row node arguments).
-					     (#messageReceiverClass -> msgRcvrValue class).
+					     (#messageReceiverClass -> msgRcvrClass value).
 					     (#messageSelector -> row node selector) } ].
+	^ q
+]
+
+{ #category : #'as yet unclassified' }
+SeekerTraceQueriesInterface >> forReceivedMessages [
+
+	| q table |
+	table := tracer tables omniscientTableForAliases.
+
+	q := Query
+		     from: table
+		     select: [ :row | row contextPC = row initialPC ]
+		     collect: [ :row | 
+			     New with: { 
+					     (#bytecodeIndex -> row bytecodeIndex).
+					     (#methodSelector -> row methodSelector).
+					     (#receiverClass -> row receiverClass).
+					     (#arguments -> row context arguments) } ].
 	^ q
 ]
 

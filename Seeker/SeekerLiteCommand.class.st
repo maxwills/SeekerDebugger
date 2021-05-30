@@ -105,7 +105,7 @@ SeekerLiteCommand >> selectedContextIsTopContext [
 SeekerLiteCommand >> showResult: anObject [
 
 	| resultsUI |
-	resultsUI := self tracer seekerResultsPresenter.
+	resultsUI := self seekerDebuggerPresenter.
 	resultsUI
 		ifNil: [ anObject inspect ]
 		ifNotNil: [ resultsUI showResult: anObject ]

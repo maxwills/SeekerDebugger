@@ -391,15 +391,9 @@ SkStatementStepper >> stepBackInto [
 SkStatementStepper >> stepBackOneBytecode [
 
 	self doAndUpdateSessionAfter: [ 
-		| currentStep nodeOrdinalIndex targetNodeIndex |
-		nodeOrdinalIndex := self currentNode ordinalIndex.
-		currentStep := self bytecodeIndex.
-		targetNodeIndex := nodeOrdinalIndex - 1.
-		targetNodeIndex <= 1 ifTrue: [ targetNodeIndex := 1 ].
-
-		self restartAtBytecodeOne.
-		self stepBytecodeUntilConditionIsTrue: [ 
-			self bytecodeIndex = targetNodeIndex ] ]
+		| targetTime |
+		targetTime := 1 max: self bytecodeIndex - 1.
+		self timeTravelToTraceTime: targetTime asExecutedBytecodeTraceTime ]
 ]
 
 { #category : #'debug - stepping' }

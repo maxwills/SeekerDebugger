@@ -82,11 +82,3 @@ StDebugger >> seekerDebuggerPresenter [
 		each class = SeekerDebuggerPresenter ifTrue: [ ^ each ] ].
 	^ nil
 ]
-
-{ #category : #'*Seeker' }
-StDebugger >> seekerResultsPresenter [
-
-	self extensionTools do: [ :each | 
-		each class = SeekerResultsPresenter ifTrue: [ ^ each ] ].
-	^ nil "self error: 'SeekerResults extension not loaded'"
-]

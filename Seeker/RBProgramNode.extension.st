@@ -211,13 +211,9 @@ RBProgramNode >> sequenceNode [
 { #category : #'*Seeker' }
 RBProgramNode >> statementIndex [
 
-	"statement index in the ownin sequence. Block nodes return the statement where they are defined."
+	"statement index in the ownin sequence."
 
-	| st |
-	st := self statementNode.
-	^ st
-		  ifNil: [ ^ nil ]
-		  ifNotNil: [ ^ self ownerNode bcToASTCache statementIndexOf: st ]
+	^ SkNodeHelpers statementNodeIndexInSequence: self statementNode
 ]
 
 { #category : #'*Seeker' }

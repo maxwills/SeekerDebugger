@@ -72,11 +72,37 @@ SeekerResultsCollection >> forMessageSends [
 		width: 60.
 	self addColumn
 		key: #messageReceiverClass;
-		label: 'Receiver Class';
+		label: 'Receiver';
 		width: 170.
 	self addColumn
 		key: #messageSelector;
 		label: 'Selector';
+		width: 200;
+		expandable: true.
+
+	^ self
+]
+
+{ #category : #'as yet unclassified' }
+SeekerResultsCollection >> forReceivedMessages [
+
+	columns removeAll.
+	self addColumn
+		key: #bytecodeIndex;
+		label: 'ExecBC';
+		width: 60.
+	self addColumn
+		key: #receiverClass;
+		label: 'Receiver Class';
+		width: 170.
+	self addColumn
+		key: #methodSelector;
+		label: 'Selector';
+		width: 200;
+		expandable: true.
+	self addColumn
+		key: #arguments;
+		label: 'Arguments';
 		width: 200;
 		expandable: true.
 

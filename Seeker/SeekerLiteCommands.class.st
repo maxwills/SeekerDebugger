@@ -78,7 +78,8 @@ SeekerLiteCommands >> stCodeCommandsTree [
 		  SkAllInstanceCreationsLC.
 		  SkAllInstanceCreationsOfClassLC.
 		  SkAllMessageSendsLC.
-		  SkAllMessageSendsWithSelectorLC } "{ { 
+		  SkAllMessageSendsWithSelectorLC.
+		  SkAllReceivedMessagesLC } "{ { 
 		  'Time-Travel'.
 		  { 
 			  SkGoToNodeUnderCursorLC.

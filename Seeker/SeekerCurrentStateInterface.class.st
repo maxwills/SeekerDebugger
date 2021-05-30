@@ -309,7 +309,7 @@ SeekerCurrentStateInterface >> sourceCodeOfStatement [
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> stackDepth [
 
-	^ tracer currentFastTracedInstructionPath contextFastPath size + 1
+	^ tracer currentContext stackDepth
 ]
 
 { #category : #accessing }
