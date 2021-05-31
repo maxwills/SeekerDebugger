@@ -11,7 +11,8 @@ Class {
 	#name : #SeekerLiteCommand,
 	#superclass : #CmCommand,
 	#instVars : [
-		'queryTitle'
+		'queryTitle',
+		'time'
 	],
 	#category : #'Seeker-Commands'
 }
@@ -58,12 +59,14 @@ SeekerLiteCommand >> execute [
 	| logCommands |
 	queryTitle := self createQueryTitle.
 	logCommands := true.
+	time := Time millisecondClockValue.
 	self pushesNavigation ifTrue: [ 
 		self seeker tracer pushNavigationHistory ].
 	logCommands
 		ifTrue: [ 
 			[ 
 			self seeker notifyCommandExecution: self subEvent: #clicked.
+			time := Time millisecondClockValue.
 			self executeCommand.
 			self seeker notifyCommandExecution: self subEvent: #done ]
 				on: Exception
@@ -145,6 +148,7 @@ SeekerLiteCommand >> showResult: anObject [
 	resultsUI := self seekerDebuggerPresenter.
 	resultsUI ifNil: [ anObject inspect ] ifNotNil: [ 
 		anObject title: queryTitle.
+		anObject timeToRun: Time millisecondClockValue - time.
 		resultsUI showResult: anObject ]
 ]
 

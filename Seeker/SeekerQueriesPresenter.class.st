@@ -165,7 +165,8 @@ SeekerQueriesPresenter >> updateDisplayedResults [
 	table items: filteredResult.
 	summaryLabel label: 'Showing ' , filteredResult size asString
 		, ' results ( from a total of ' , queryResults size asString
-		, ' unfiltered results).'
+		, ' unfiltered results, fetched in: '
+		, queryResults timeToRun asString , 'ms).'
 ]
 
 { #category : #'as yet unclassified' }

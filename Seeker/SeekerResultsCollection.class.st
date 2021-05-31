@@ -8,7 +8,8 @@ Class {
 	#superclass : #OrderedCollection,
 	#instVars : [
 		'columns',
-		'title'
+		'title',
+		'timeToRun'
 	],
 	#category : #'Seeker-QueryData'
 }
@@ -255,6 +256,18 @@ SeekerResultsCollection >> quickConsistencyCheck [
 	self ifEmpty: [ ^ self ].
 	f := self first.
 	self columns do: [ :eachCol | eachCol value: f ]
+]
+
+{ #category : #accessing }
+SeekerResultsCollection >> timeToRun [
+
+	^ timeToRun
+]
+
+{ #category : #accessing }
+SeekerResultsCollection >> timeToRun: anObject [
+
+	timeToRun := anObject
 ]
 
 { #category : #accessing }
