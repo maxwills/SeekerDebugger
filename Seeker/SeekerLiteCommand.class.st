@@ -10,6 +10,9 @@ How to add more commands?
 Class {
 	#name : #SeekerLiteCommand,
 	#superclass : #CmCommand,
+	#instVars : [
+		'queryTitle'
+	],
 	#category : #'Seeker-Commands'
 }
 
@@ -28,12 +31,20 @@ SeekerLiteCommand >> codeCaretPosition [
 
 { #category : #'as yet unclassified' }
 SeekerLiteCommand >> codeSelectedSelector [
-	^context code selectedSelector
+
+	^ self tracer selectedSelector
 ]
 
 { #category : #'as yet unclassified' }
 SeekerLiteCommand >> codeSelectedText [
-	^context code selectedText
+
+	^ self tracer selectedCode
+]
+
+{ #category : #'as yet unclassified' }
+SeekerLiteCommand >> createQueryTitle [
+
+	^ 'Query for ' , self name , self selectionTitleString
 ]
 
 { #category : #accessing }
@@ -45,7 +56,8 @@ SeekerLiteCommand >> description [
 SeekerLiteCommand >> execute [
 
 	| logCommands |
-	logCommands := false.
+	queryTitle := self createQueryTitle.
+	logCommands := true.
 	self pushesNavigation ifTrue: [ 
 		self seeker tracer pushNavigationHistory ].
 	logCommands
@@ -118,14 +130,22 @@ SeekerLiteCommand >> selectedContextIsTopContext [
 	  = self seeker stDebugger selectedContext
 ]
 
+{ #category : #'as yet unclassified' }
+SeekerLiteCommand >> selectionTitleString [
+
+	"This will be appended to the query title. If the command relies on selected text, override this method"
+
+	^ ''
+]
+
 { #category : #'UI specific' }
 SeekerLiteCommand >> showResult: anObject [
 
 	| resultsUI |
 	resultsUI := self seekerDebuggerPresenter.
-	resultsUI
-		ifNil: [ anObject inspect ]
-		ifNotNil: [ resultsUI showResult: anObject ]
+	resultsUI ifNil: [ anObject inspect ] ifNotNil: [ 
+		anObject title: queryTitle.
+		resultsUI showResult: anObject ]
 ]
 
 { #category : #accessing }

@@ -8,7 +8,8 @@ Class {
 		'queryResults',
 		'filteredResult',
 		'summaryLabel',
-		'filterMatchBlockForHighlighting'
+		'filterMatchBlockForHighlighting',
+		'queryTitle'
 	],
 	#category : #'Seeker-UI'
 }
@@ -17,10 +18,11 @@ Class {
 SeekerQueriesPresenter class >> defaultSpec [
 
 	^ SpBoxLayout newVertical
+		  add: #queryTitle expand: false;
 		  add: #resultsFilter expand: false;
-		  add: #table expand: true "fill: true";
+		  add: #table expand: true;
 		  add: #summaryLabel expand: false;
-		  yourself
+		  "fill: true"yourself
 ]
 
 { #category : #'UI specific' }
@@ -60,6 +62,8 @@ SeekerQueriesPresenter >> initializePresenters [
 		'Case sensitive filter... (Press enter to apply)'.
 	summaryLabel := self newLabel.
 	summaryLabel label: 'Showing 0 results.'.
+	queryTitle  := self newLabel.
+	queryTitle label: 'No Query executed'.
 	super initializePresenters
 ]
 
@@ -87,12 +91,11 @@ SeekerQueriesPresenter >> notifyTimeTravel: row [
 SeekerQueriesPresenter >> showResult: anObject [
 
 	| cols trimBlock |
-	self flag: 'Left some comments for Esteban'.
 	anObject quickConsistencyCheck.
 	cols := OrderedCollection new.
 	cols add: (SpIndexTableColumn new width: 40).
 	queryResults := anObject.
-
+	queryTitle label: queryResults title.
 	trimBlock := [ :row :col | 
 	             col expandable
 		             ifTrue: [ col value: row ]

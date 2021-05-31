@@ -35,3 +35,9 @@ SkChangesOfObjectLC >> name [
 
 	^'Changes of object'
 ]
+
+{ #category : #'as yet unclassified' }
+SkChangesOfObjectLC >> selectionTitleString [
+
+	^ ' : (' , self codeSelectedText , ')'
+]

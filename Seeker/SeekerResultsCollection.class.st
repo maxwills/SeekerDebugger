@@ -1,12 +1,14 @@
 "
 columns is an OrderedCollection with SeekerResultsColumn objects.
 The results of the collection are expected to be display respecting the column order in this collection.
+Each element of the collection is a ""row"", which is a AnonymousType object that at least responds to bytecodeIndex message.
 "
 Class {
 	#name : #SeekerResultsCollection,
 	#superclass : #OrderedCollection,
 	#instVars : [
-		'columns'
+		'columns',
+		'title'
 	],
 	#category : #'Seeker-QueryData'
 }
@@ -66,22 +68,22 @@ SeekerResultsCollection >> filteredItems: aString [
 SeekerResultsCollection >> forAssignmentsOfAnyVariable [
 
 	columns removeAll.
-	self addColumn xs
+	self addColumn bc
 		key: #bytecodeIndex;
 		label: 'ExecBC'.
-	self addColumn xs
+	self addColumn md
 		key: #receiverClassAndPackage;
 		label: 'Method Class [Package]'.
-	self addColumn xs
+	self addColumn sm
 		key: #methodSelector;
 		label: 'Method Selector'.
-	self addColumn xs
+	self addColumn sm
 		key: #variableName;
 		label: 'Variable'.
-	self addColumn xs
+	self addColumn sm
 		key: #valueChangedFrom;
 		label: 'Current Value'.
-	self addColumn xs
+	self addColumn sm
 		key: #valueChangedTo;
 		label: 'To be Assigned'.
 	self addColumn xs
@@ -94,7 +96,7 @@ SeekerResultsCollection >> forAssignmentsOfAnyVariable [
 SeekerResultsCollection >> forAssignmentsOfInstanceVariables [
 
 	columns removeAll.
-	self addColumn xs
+	self addColumn bc
 		key: #bytecodeIndex;
 		label: 'ExecBC'.
 	self addColumn sm
@@ -103,7 +105,7 @@ SeekerResultsCollection >> forAssignmentsOfInstanceVariables [
 	self addColumn sm
 		key: #methodSelector;
 		label: 'Method Selector'.
-	self addColumn xs
+	self addColumn sm
 		key: #variableName;
 		label: 'Variable'.
 	self addColumn sm
@@ -122,7 +124,7 @@ SeekerResultsCollection >> forAssignmentsOfInstanceVariables [
 SeekerResultsCollection >> forAssignmentsOfInstanceVariablesWithPackage [
 
 	columns removeAll.
-	self addColumn xs
+	self addColumn bc
 		key: #bytecodeIndex;
 		label: 'ExecBC'.
 	self addColumn md
@@ -131,7 +133,7 @@ SeekerResultsCollection >> forAssignmentsOfInstanceVariablesWithPackage [
 	self addColumn sm
 		key: #methodSelector;
 		label: 'Method Selector'.
-	self addColumn xs
+	self addColumn sm
 		key: #variableName;
 		label: 'Variable'.
 	self addColumn sm
@@ -150,7 +152,7 @@ SeekerResultsCollection >> forAssignmentsOfInstanceVariablesWithPackage [
 SeekerResultsCollection >> forExceptionInstancesCreation [
 
 	columns removeAll.
-	self addColumn xs
+	self addColumn bc
 		key: #bytecodeIndex;
 		label: 'ExecBC'.
 	"self addColumn sm
@@ -169,13 +171,13 @@ SeekerResultsCollection >> forExceptionInstancesCreation [
 SeekerResultsCollection >> forInstancesCreation [
 
 	columns removeAll.
-	self addColumn xs
+	self addColumn bc
 		key: #bytecodeIndex;
 		label: 'ExecBC'.
 	"self addColumn sm
 		key: #messageReceiverPackage;
 		label: 'Package'."
-	self addColumn xp
+	self addColumn lg
 		key: #creationFormattedDescription;
 		label: 'About to instantiate a: '.
 	self addColumn md
@@ -188,13 +190,13 @@ SeekerResultsCollection >> forInstancesCreation [
 SeekerResultsCollection >> forMessageSends [
 
 	columns removeAll.
-	self addColumn xs
+	self addColumn bc
 		key: #bytecodeIndex;
 		label: 'ExecBC'.
 	self addColumn md
 		key: #messageReceiverClass;
 		label: 'Receiver'.
-	self addColumn lg
+	self addColumn md
 		key: #messageSelector;
 		label: 'Selector'.
 	^ self
@@ -204,24 +206,18 @@ SeekerResultsCollection >> forMessageSends [
 SeekerResultsCollection >> forReceivedMessages [
 
 	columns removeAll.
-	self addColumn
+	self addColumn bc
 		key: #bytecodeIndex;
-		label: 'ExecBC';
-		width: 60.
-	self addColumn
+		label: 'ExecBC'.
+	self addColumn md
 		key: #receiverClass;
-		label: 'Receiver Class';
-		width: 170.
-	self addColumn
+		label: 'Receiver Class'.
+	self addColumn md
 		key: #methodSelector;
-		label: 'Selector';
-		width: 200;
-		expandable: true.
-	self addColumn
+		label: 'Selector'.
+	self addColumn md
 		key: #arguments;
-		label: 'Arguments';
-		width: 200;
-		expandable: true.
+		label: 'Arguments'.
 
 	^ self
 ]
@@ -229,6 +225,7 @@ SeekerResultsCollection >> forReceivedMessages [
 { #category : #initialization }
 SeekerResultsCollection >> initialize [
 
+	title := ''.
 	columns := OrderedCollection new.
 	super initialize
 ]
@@ -258,4 +255,16 @@ SeekerResultsCollection >> quickConsistencyCheck [
 	self ifEmpty: [ ^ self ].
 	f := self first.
 	self columns do: [ :eachCol | eachCol value: f ]
+]
+
+{ #category : #accessing }
+SeekerResultsCollection >> title [
+
+	^ title
+]
+
+{ #category : #accessing }
+SeekerResultsCollection >> title: anObject [
+
+	title := anObject
 ]

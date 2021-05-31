@@ -17,6 +17,16 @@ SeekerResultsColumn class >> colWidthUnit [
 	^ 60
 ]
 
+{ #category : #'as yet unclassified' }
+SeekerResultsColumn >> bc [
+
+	"makes the column width of bytecode column"
+
+	self width: 70.
+	self expandable: false.
+	^ self
+]
+
 { #category : #accessing }
 SeekerResultsColumn >> expandable [
 

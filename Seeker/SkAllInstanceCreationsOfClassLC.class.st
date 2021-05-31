@@ -35,3 +35,9 @@ SkAllInstanceCreationsOfClassLC >> name [
 
 	^'All Instances Creation of Class named as selection'
 ]
+
+{ #category : #'as yet unclassified' }
+SkAllInstanceCreationsOfClassLC >> selectionTitleString [
+
+	^ ' : (' , self codeSelectedText , ')'
+]

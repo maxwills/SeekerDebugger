@@ -193,17 +193,24 @@ SeekerFindInterface >> changesOfSelectedInstanceVariable [
 		^ self error: 'Selection is not a variable' ].
 	node variable isInstanceVariable ifFalse: [ 
 		^ self error: 'Selection is not an Instance Variable' ].
+	[ 
 	^ self
 		  changesOfInstanceVariable: node variable name
-		  ofObject: tracer selectedContext receiver
+		  ofObject: tracer selectedContext receiver ]
+		on: Exception
+		do: [ :e | 
+			^ self error: 'Could not detect instance variable from selection' ]
 ]
 
 { #category : #'as yet unclassified' }
 SeekerFindInterface >> changesOfSelectedObject [
 
+	[ 
 	^ self
 		  changesOfObjectInVariableNode: tracer selectedNode
-		  inContext: tracer selectedContext
+		  inContext: tracer selectedContext ]
+		on: Exception
+		do: [ :e | ^ self error: 'Unable to detect object in selection' ]
 ]
 
 { #category : #'as yet unclassified' }

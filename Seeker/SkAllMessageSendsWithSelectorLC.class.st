@@ -37,3 +37,9 @@ SkAllMessageSendsWithSelectorLC >> name [
 
 	^'All Message Sends with selected selector'
 ]
+
+{ #category : #'as yet unclassified' }
+SkAllMessageSendsWithSelectorLC >> selectionTitleString [
+
+	^ ' : (' , self codeSelectedSelector asString , ')'
+]

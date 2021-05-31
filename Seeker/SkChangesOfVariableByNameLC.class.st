@@ -37,3 +37,9 @@ SkChangesOfVariableByNameLC >> name [
 
 	^ 'Changes of Variables with selected name'
 ]
+
+{ #category : #'as yet unclassified' }
+SkChangesOfVariableByNameLC >> selectionTitleString [
+
+	^ ' : (' , self codeSelectedText , ')'
+]
