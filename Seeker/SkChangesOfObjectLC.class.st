@@ -13,7 +13,9 @@ SkChangesOfObjectLC >> description [
 { #category : #executing }
 SkChangesOfObjectLC >> executeCommand [
 
-	self tracer find changesOfSelectedObject inspect
+	self showResult:
+		self tracer find changesOfSelectedObject asSeekerResultsCollection
+			forAssignmentsOfInstanceVariables
 ]
 
 { #category : #accessing }

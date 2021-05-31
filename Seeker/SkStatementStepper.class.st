@@ -54,7 +54,9 @@ Class {
 		'currentTraceTimeReference',
 		'currentContextStackDepth',
 		'previousContextStackDepth',
-		'rememberContextStackDepth'
+		'rememberContextStackDepth',
+		'contextJumpCount',
+		'tracedContextCount'
 	],
 	#category : #'Seeker-Components'
 }
@@ -71,6 +73,12 @@ SkStatementStepper >> bytecodeIndex [
 SkStatementStepper >> clearSeekerCache [
 
 	SeekerCache reset
+]
+
+{ #category : #'as yet unclassified' }
+SkStatementStepper >> contextJumpCount [
+
+	^ contextJumpCount
 ]
 
 { #category : #'as yet unclassified' }
@@ -148,12 +156,12 @@ SkStatementStepper >> hasSignalledUnhandledException [
 { #category : #initialization }
 SkStatementStepper >> initialize [
 
-	"comment stating purpose of instance-side method"
-
-	"scope: class-variables  &  instance-variables"
+	super initialize.
 
 	currentTraceTimeReference := SkCurrentTraceTimeReference new tracer:
 		                             self.
+	contextJumpCount := 0.
+	tracedContextCount := 0.
 	currentContextStackDepth := 0.
 	previousContextStackDepth := 0.
 	rememberContextStackDepth := false.
@@ -234,9 +242,12 @@ SkStatementStepper >> oldStepUntilConditionIsTrue: aBlock [
 
 { #category : #'as yet unclassified' }
 SkStatementStepper >> onTracedContextChanged [
-"
+
+	contextJumpCount := contextJumpCount + 1.
+	currentContext pc = currentContext startpc ifTrue: [ "
 	previousContextStackDepth := currentContextStackDepth.
-	currentContextStackDepth := currentContext stackDepth"
+	currentContextStackDepth := currentContext stackDepth" 
+		tracedContextCount := tracedContextCount + 1 ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -296,9 +307,11 @@ SkStatementStepper >> restartAtBytecodeOne [
 	byteCountCounter := 1.
 	astStepCounter := 0.
 	astStepCounter := 1.
+	contextJumpCount := 0.
 	trace removeAll.
 	currentStepIndex := 0.
 
+	tracedContextCount := 0.
 	stDebugger session restart: contextOfExecutedBytecodeOne.
 	currentStepIndex := currentStepIndex + 1.
 	currentContext := session interruptedProcess suspendedContext.

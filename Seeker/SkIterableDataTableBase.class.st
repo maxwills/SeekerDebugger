@@ -1,7 +1,7 @@
 Class {
 	#name : #SkIterableDataTableBase,
 	#superclass : #Object,
-	#category : #'Seeker-DataQuery'
+	#category : #'Seeker-QueryData'
 }
 
 { #category : #'as yet unclassified' }
@@ -44,6 +44,8 @@ SkIterableDataTableBase >> endOfTableReached [
 
 { #category : #'as yet unclassified' }
 SkIterableDataTableBase >> findTracer [
+
+	"Finds a tracer instance where any of the datasources get its rows"
 
 	^ nil
 ]

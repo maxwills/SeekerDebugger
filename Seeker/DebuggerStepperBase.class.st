@@ -10,7 +10,8 @@ Class {
 	#classTraits : 'TDebuggerUpdateCoordinatorClient classTrait',
 	#instVars : [
 		'seeker',
-		'session'
+		'session',
+		'isSessionActive'
 	],
 	#category : #'Seeker-Components'
 }
@@ -22,6 +23,24 @@ DebuggerStepperBase >> andThen [
 	Don't use with message with arguments."
 
 	^ self
+]
+
+{ #category : #initialization }
+DebuggerStepperBase >> initialize [
+
+	isSessionActive := true
+]
+
+{ #category : #'as yet unclassified' }
+DebuggerStepperBase >> isSessionActive [
+
+	^ isSessionActive
+]
+
+{ #category : #'as yet unclassified' }
+DebuggerStepperBase >> notifySessionEnd [
+
+	isSessionActive := false
 ]
 
 { #category : #'as yet unclassified' }

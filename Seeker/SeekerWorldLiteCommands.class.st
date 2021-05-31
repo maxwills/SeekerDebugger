@@ -72,3 +72,57 @@ SeekerWorldLiteCommands class >> menuBrowseStDebuggerActionModel: aBuilder [
 			self inform:
 					'SeekerStDebuggerDebuggerActionModel ready in clipboard for overwriting' ]
 ]
+
+{ #category : #'as yet unclassified' }
+SeekerWorldLiteCommands class >> menuEsteban: aBuilder [
+
+	<worldMenu> 
+	(aBuilder item: #SkEsteban)
+		parent: #SeekerDev;
+		order: 1;
+		label: 'UI bug for Esteban';
+		icon: (self iconNamed: 'smallDebug');
+		help: 'No label';
+		action: [ "Does Nothing" ]
+]
+
+{ #category : #'as yet unclassified' }
+SeekerWorldLiteCommands class >> menuEstebanColumnsCreation: aBuilder [
+
+	<worldMenu>
+	(aBuilder item: #SkEstebanGoToColumnsCreation)
+		parent: #SkEsteban;
+		order: 3;
+		label: 'Go to Seeker Columns Creation in custom presenter';
+		icon: (self iconNamed: 'smallDebug');
+		help: 'No label';
+		action: [ (SeekerQueriesPresenter >> #showResult:) browse ]
+]
+
+{ #category : #'as yet unclassified' }
+SeekerWorldLiteCommands class >> menuEstebanDebuggerExtensionPresenter: aBuilder [
+
+	<worldMenu>
+	(aBuilder item: #SkEstebanDebPresenter)
+		parent: #SkEsteban;
+		order: 2;
+		label:
+			'Browse debugger extesion Presenter (SeekerDebuggerPresenter)';
+		icon: (self iconNamed: 'smallDebug');
+		help: 'No label';
+		action: [ SeekerDebuggerPresenter browse ]
+]
+
+{ #category : #'as yet unclassified' }
+SeekerWorldLiteCommands class >> menuEstebanTestCase: aBuilder [
+
+	<worldMenu>
+	(aBuilder item: #SkEstebanGoToTestCase)
+		parent: #SkEsteban;
+		order: 1;
+		label: 'Test Case to reproduce issue';
+		icon: (self iconNamed: 'smallDebug');
+		help: 'No label';
+		action: [ 
+			(MetacelloVersionNumberTestCase >> #testApproxVersion02) browse ]
+]

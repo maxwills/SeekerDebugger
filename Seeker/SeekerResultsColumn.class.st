@@ -8,8 +8,14 @@ Class {
 		'expandable',
 		'width'
 	],
-	#category : #'Seeker-DataQuery'
+	#category : #'Seeker-QueryData'
 }
+
+{ #category : #'as yet unclassified' }
+SeekerResultsColumn class >> colWidthUnit [
+
+	^ 60
+]
 
 { #category : #accessing }
 SeekerResultsColumn >> expandable [
@@ -56,6 +62,34 @@ SeekerResultsColumn >> label: aString [
 	label := aString
 ]
 
+{ #category : #'as yet unclassified' }
+SeekerResultsColumn >> lg [
+	"makes the column large"
+	self width: self class colWidthUnit *4.
+	self expandable: false.
+	^ self
+]
+
+{ #category : #'as yet unclassified' }
+SeekerResultsColumn >> md [
+
+	"makes the column medium"
+
+	self width: self class colWidthUnit * 3.
+	self expandable: false.
+	^ self
+]
+
+{ #category : #'as yet unclassified' }
+SeekerResultsColumn >> sm [
+
+	"makes the column small"
+
+	self width: self class colWidthUnit * 2.
+	self expandable: false.
+	^ self
+]
+
 { #category : #accessing }
 SeekerResultsColumn >> value: aRow [
 
@@ -86,4 +120,33 @@ SeekerResultsColumn >> width [
 SeekerResultsColumn >> width: anObject [
 
 	width := anObject
+]
+
+{ #category : #'as yet unclassified' }
+SeekerResultsColumn >> xl [
+
+	"makes the column large"
+
+	self width: self class colWidthUnit * 5.
+	self expandable: false.
+	^ self
+]
+
+{ #category : #'as yet unclassified' }
+SeekerResultsColumn >> xp [
+
+	"makes the column expandable"
+
+	self expandable: true.
+	^ self
+]
+
+{ #category : #'as yet unclassified' }
+SeekerResultsColumn >> xs [
+
+	"makes the column extra small"
+
+	self width: self class colWidthUnit * 1.
+	self expandable: false.
+	^ self
 ]

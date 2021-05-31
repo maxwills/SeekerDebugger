@@ -8,7 +8,7 @@ See AnonymousTypeTest class tests for examples.
 Class {
 	#name : #AnonymousType,
 	#superclass : #Dictionary,
-	#category : #'Seeker-DataQuery'
+	#category : #'Seeker-QueryData'
 }
 
 { #category : #'instance creation' }

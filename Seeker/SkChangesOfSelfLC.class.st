@@ -13,7 +13,9 @@ SkChangesOfSelfLC >> description [
 { #category : #executing }
 SkChangesOfSelfLC >> executeCommand [
 
-	 self tracer find changesOfReceiverInstanceOfSelecetedContext inspect
+	 self showResult:
+		self tracer find changesOfSelf asSeekerResultsCollection
+			forAssignmentsOfInstanceVariables
 ]
 
 { #category : #accessing }

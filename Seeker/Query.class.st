@@ -49,7 +49,7 @@ Class {
 		'identityProjection',
 		'alwaysMatch'
 	],
-	#category : #'Seeker-DataQuery'
+	#category : #'Seeker-QueryData'
 }
 
 { #category : #accessing }

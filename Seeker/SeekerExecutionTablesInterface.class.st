@@ -45,20 +45,20 @@ SeekerExecutionTablesInterface >> omniscientSlimTable [
 { #category : #'as yet unclassified' }
 SeekerExecutionTablesInterface >> omniscientTable [
 
-	| csi virtualTable instancesDictionary getCreationStep |
+	| csi virtualTable instancesDictionary "getCreationStep" |
 	instancesDictionary := IdentityDictionary new. "TODO add an onFinish to the table so I can clear the dictionary"
-	getCreationStep := [ :objInst :stepIndex | 
+	"getCreationStep := [ :objInst :stepIndex | 
 	                   (instancesDictionary includesKey: objInst)
 		                   ifTrue: [ instancesDictionary at: objInst ]
 		                   ifFalse: [ 
 			                   instancesDictionary at: objInst put: stepIndex.
-			                   stepIndex ] ].
+			                   stepIndex ] ]."
 
 	csi := tracer currentStateInterface.
 	virtualTable := SkExecutionVirtualTable
 		                newWithRowReificationBlock: [ 
 			                New with: { 
-					                (#aliasesDictionary -> instancesDictionary).
+					                (#aliasesDictionary -> tracer aliasesDictionary).
 					                (#bytecodeIndex -> csi bytecodeIndex).
 					                (#bytecodeStepInTracedStatement
 					                 -> csi bytecodeStepInTracedStatement).
@@ -74,9 +74,9 @@ SeekerExecutionTablesInterface >> omniscientTable [
 					                (#node -> csi node).
 					                (#nodeIsVariable -> csi isVariable).
 					                (#receiver -> csi receiver).
-					                (#receiverAlias -> (getCreationStep
+					                (#receiverAlias -> csi receiverAlias). "(getCreationStep
 						                  value: csi receiver
-						                  value: csi tracedStatementStepIndex)).
+						                  value: csi tracedStatementStepIndex)"
 					                (#receiverClass -> csi receiverClass).
 					                (#receiverPackage -> csi receiverPackage).
 					                (#statementIndex -> csi statementIndex).
@@ -88,8 +88,7 @@ SeekerExecutionTablesInterface >> omniscientTable [
 					                (#sequenceNode -> csi sequenceNode).
 					                (#sequenceStatementCount
 					                 -> csi sequenceStatementCount).
-					                (#tracedStatementDescriptor
-					                 -> nil).
+					                (#tracedStatementDescriptor -> nil).
 					                (#sourceCodeOfNode -> csi node sourceCode).
 					                (#sourceCodeOfStatementNode
 					                 -> csi statementNode sourceCode).
@@ -116,6 +115,7 @@ SeekerExecutionTablesInterface >> omniscientTableForAliases [
 
 { #category : #'as yet unclassified' }
 SeekerExecutionTablesInterface >> programStates [
+"Dont remember the purpose of this table. I think this was the one to offer only the csi in every row. Maybe there is useful info in some comment too"
 
 	| csi virtualTable instancesDictionary getCreationStep |
 	instancesDictionary := WeakIdentityKeyDictionary  new. "TODO add an onFinish to the table so I can clear the dictionary"
@@ -201,14 +201,14 @@ SeekerExecutionTablesInterface >> tableForTrackingChanges [
 { #category : #accessing }
 SeekerExecutionTablesInterface >> tableOfAliases [
 
-	| csi virtualTable instancesDictionary getCreationStep |
+	| csi virtualTable instancesDictionary "getCreationStep" |
 	instancesDictionary := IdentityDictionary new. "TODO add an onFinish to the table so I can clear the dictionary"
-	getCreationStep := [ :objInst :stepIndex | 
+	"getCreationStep := [ :objInst :stepIndex | 
 	                   (instancesDictionary includesKey: objInst)
 		                   ifTrue: [ instancesDictionary at: objInst ]
 		                   ifFalse: [ 
 			                   instancesDictionary at: objInst put: stepIndex.
-			                   stepIndex ] ].
+			                   stepIndex ] ]."
 	csi := tracer currentStateInterface.
 	virtualTable := SkExecutionVirtualTable
 		                newWithRowReificationBlock: [ 
@@ -217,9 +217,9 @@ SeekerExecutionTablesInterface >> tableOfAliases [
 					                "(#receiverClass -> csi receiverClass).
 					                (#methodSelector -> csi methodSelector).
 					                (#isFirstBytecode -> csi isFirstBytecodeOfMethod)."
-					                (#receiverAlias -> (getCreationStep
+					                (#receiverAlias -> csi receiverAlias "(getCreationStep
 						                  value: csi receiver
-						                  value: csi tracedStatementStepIndex)).
+						                  value: csi tracedStatementStepIndex)").
 					                (#bytecodeIndex -> csi bytecodeIndex) } ]
 		                forTracer: tracer.
 
@@ -229,16 +229,18 @@ SeekerExecutionTablesInterface >> tableOfAliases [
 { #category : #accessing }
 SeekerExecutionTablesInterface >> tableOfAliasesForInstancesReferredByVariablesOfContext [
 
-	| csi virtualTable instancesDictionary getCreationStepOfReceiver getCreationStepOfVariable getVariableValue getVariableName getVariablesList |
-	instancesDictionary := IdentityDictionary new. "TODO add an onFinish to the table so I can clear the dictionary"
+	| csi virtualTable "instancesDictionary" "getCreationStepOfReceiver" getCreationStepOfVariable getVariableValue getVariableName getVariablesList |
+	"instancesDictionary := IdentityDictionary new.""TODO add an onFinish to the table so I can clear the dictionary"
+	csi := tracer currentStateInterface.
 	getCreationStepOfVariable := [ :objInst | 
 	                             objInst ifNil: [ nil ] ifNotNil: [ 
-		                             (instancesDictionary includesKey:
+		                             tracer readAliasOf: objInst
+		                             "(instancesDictionary includesKey:
 			                              objInst)
 			                             ifTrue: [ 
 			                             instancesDictionary at: objInst ]
-			                             ifFalse: [ nil ] ] ].
-	getCreationStepOfReceiver := [ :objInst :stepIndex | 
+			                             ifFalse: [ nil ] " ] ].
+	"getCreationStepOfReceiver := [ :objInst :stepIndex | 
 	                             (instancesDictionary includesKey:
 		                              objInst)
 		                             ifTrue: [ 
@@ -247,12 +249,12 @@ SeekerExecutionTablesInterface >> tableOfAliasesForInstancesReferredByVariablesO
 			                             instancesDictionary
 				                             at: objInst
 				                             put: stepIndex.
-			                             stepIndex ] ].
+			                             stepIndex ] ]."
 	getVariableName := [ :node | 
 	                   node isVariable
 		                   ifTrue: [ node variable name ]
 		                   ifFalse: [ nil ] ].
-	csi := tracer currentStateInterface.
+
 	getVariableValue := [ :aNode :aContext | 
 	                    aNode isVariable
 		                    ifFalse: [ nil ]
@@ -284,9 +286,9 @@ SeekerExecutionTablesInterface >> tableOfAliasesForInstancesReferredByVariablesO
 					                (#stepIndex -> csi tracedStatementStepIndex).
 					                (#context -> csi context).
 					                (#allVariables -> getVariablesList value).
-					                (#receiverAlias -> (getCreationStepOfReceiver
+					                (#receiverAlias -> csi receiverAlias). "(getCreationStepOfReceiver
 						                  value: csi receiver
-						                  value: csi tracedStatementStepIndex)).
+						                  value: csi tracedStatementStepIndex)"
 					                (#node -> csi node).
 					                (#bytecodeIndex -> csi bytecodeIndex) } ]
 		                forTracer: tracer.
@@ -297,16 +299,17 @@ SeekerExecutionTablesInterface >> tableOfAliasesForInstancesReferredByVariablesO
 { #category : #accessing }
 SeekerExecutionTablesInterface >> tableOfAliasesForInstancesReferredByVariablesValues [
 
-	| csi virtualTable instancesDictionary getCreationStepOfReceiver getCreationStepOfVariable getVariableValue getVariableName |
-	instancesDictionary := IdentityDictionary new. "TODO add an onFinish to the table so I can clear the dictionary"
+	| csi virtualTable "instancesDictionary" "getCreationStepOfReceiver" getCreationStepOfVariable getVariableValue getVariableName |
+	"instancesDictionary := IdentityDictionary new. ""TODO add an onFinish to the table so I can clear the dictionary"
 	getCreationStepOfVariable := [ :objInst :stepIndex | 
 	                             objInst ifNil: [ nil ] ifNotNil: [ 
-		                             (instancesDictionary includesKey:
+		                             tracer readAliasOf: objInst
+		                             "(instancesDictionary includesKey:
 			                              objInst)
 			                             ifTrue: [ 
 			                             instancesDictionary at: objInst ]
-			                             ifFalse: [ nil ] ] ].
-	getCreationStepOfReceiver := [ :objInst :stepIndex | 
+			                             ifFalse: [ nil ]" ] ].
+	"getCreationStepOfReceiver := [ :objInst :stepIndex | 
 	                             (instancesDictionary includesKey:
 		                              objInst)
 		                             ifTrue: [ 
@@ -315,7 +318,7 @@ SeekerExecutionTablesInterface >> tableOfAliasesForInstancesReferredByVariablesV
 			                             instancesDictionary
 				                             at: objInst
 				                             put: stepIndex.
-			                             stepIndex ] ].
+			                             stepIndex ] ]."
 	getVariableName := [ :node | 
 	                   node isVariable
 		                   ifTrue: [ node variable name ]
@@ -331,13 +334,13 @@ SeekerExecutionTablesInterface >> tableOfAliasesForInstancesReferredByVariablesV
 			                New with: { 
 					                (#stepIndex -> csi tracedStatementStepIndex).
 					                (#isVariable -> csi isVariable).
-					                (#receiverAlias -> (getCreationStepOfReceiver
+					                (#receiverAlias -> csi receiverAlias  "(getCreationStepOfReceiver
 						                  value: csi receiver
-						                  value: csi tracedStatementStepIndex)).
+						                  value: csi tracedStatementStepIndex)").
 					                (#node -> csi node).
 					                (#variableName
 					                 -> (getVariableName value: csi node)).
-					   					(#stepDescriptor -> csi tracedStatementDescriptor).
+					               " (#stepDescriptor -> csi tracedStatementDescriptor)."
 					                (#variableValue
 					                 ->
 					                 (getVariableValue
@@ -399,7 +402,7 @@ SeekerExecutionTablesInterface >> tableOfReturnValues [
 	virtualTable := SkExecutionVirtualTable
 		                newWithRowReificationBlock: [ 
 			                New with: { 
-					                (#stepIndex -> csi tracedStatementStepIndex).
+					                (#bytecodeIndex -> csi bytecodeIndex).
 					                (#receiverClass -> csi receiverClass).
 					                (#methodSelector -> csi methodSelector).
 					                (#isMethodReturn -> csi isMethodReturn).
@@ -415,6 +418,7 @@ SeekerExecutionTablesInterface >> tableOfReturnValues [
 SeekerExecutionTablesInterface >> tableOfStatementSourceCode [
 
 	| csi virtualTable |
+	"useless table. used for testing in the past"
 	csi := tracer currentStateInterface.
 	virtualTable := SkExecutionVirtualTable
 		                newWithRowReificationBlock: [ 
@@ -440,7 +444,6 @@ SeekerExecutionTablesInterface >> tableOfVariables [
 		                newWithRowReificationBlock: [ 
 			                New with: { 
 					                (#bytecodeIndex -> csi bytecodeIndex).
-					                (#stepIndex -> csi tracedStatementStepIndex).
 					                (#receiverClass -> csi receiverClass).
 					                (#methodSelector -> csi methodSelector).
 					                (#node -> csi node).

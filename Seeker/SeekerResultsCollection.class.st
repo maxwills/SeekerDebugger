@@ -8,7 +8,7 @@ Class {
 	#instVars : [
 		'columns'
 	],
-	#category : #'Seeker-DataQuery'
+	#category : #'Seeker-QueryData'
 }
 
 { #category : #'instance creation' }
@@ -60,6 +60,109 @@ SeekerResultsCollection >> filteredItems: aString [
 			                  filterTokens anySatisfy: [ :each | 
 				                  rowIncludesString value: r value: each ] ] ].
 	^ filteredResult
+]
+
+{ #category : #'as yet unclassified' }
+SeekerResultsCollection >> forAssignmentsOfAnyVariable [
+
+	columns removeAll.
+	self addColumn xs
+		key: #bytecodeIndex;
+		label: 'ExecBC'.
+	self addColumn xs
+		key: #receiverClassAndPackage;
+		label: 'Method Class [Package]'.
+	self addColumn xs
+		key: #methodSelector;
+		label: 'Method Selector'.
+	self addColumn xs
+		key: #variableName;
+		label: 'Variable'.
+	self addColumn xs
+		key: #valueChangedFrom;
+		label: 'Current Value'.
+	self addColumn xs
+		key: #valueChangedTo;
+		label: 'To be Assigned'.
+	self addColumn xs
+		key: #variableClass;
+		label: 'Var Class'.
+	^ self
+]
+
+{ #category : #'as yet unclassified' }
+SeekerResultsCollection >> forAssignmentsOfInstanceVariables [
+
+	columns removeAll.
+	self addColumn xs
+		key: #bytecodeIndex;
+		label: 'ExecBC'.
+	self addColumn sm
+		key: #receiverClass;
+		label: 'Object Class'.
+	self addColumn sm
+		key: #methodSelector;
+		label: 'Method Selector'.
+	self addColumn xs
+		key: #variableName;
+		label: 'Variable'.
+	self addColumn sm
+		key: #valueChangedFrom;
+		label: 'Current Value'.
+	self addColumn sm
+		key: #valueChangedTo;
+		label: 'To be Assigned'.
+	"self addColumn sm
+		key: #receiverPackage;
+		label: 'Object Package'."
+	^ self
+]
+
+{ #category : #'as yet unclassified' }
+SeekerResultsCollection >> forAssignmentsOfInstanceVariablesWithPackage [
+
+	columns removeAll.
+	self addColumn xs
+		key: #bytecodeIndex;
+		label: 'ExecBC'.
+	self addColumn md
+		key: #receiverClassAndPackage;
+		label: 'Object Class [Package]'.
+	self addColumn sm
+		key: #methodSelector;
+		label: 'Method Selector'.
+	self addColumn xs
+		key: #variableName;
+		label: 'Variable'.
+	self addColumn sm
+		key: #valueChangedFrom;
+		label: 'Current Value'.
+	self addColumn sm
+		key: #valueChangedTo;
+		label: 'To be Assigned'.
+	"self addColumn sm
+		key: #receiverPackage;
+		label: 'Object Package'."
+	^ self
+]
+
+{ #category : #'as yet unclassified' }
+SeekerResultsCollection >> forInstancesCreation [
+
+	columns removeAll.
+	self addColumn xs
+		key: #bytecodeIndex;
+		label: 'ExecBC'.
+	"self addColumn sm
+		key: #messageReceiverPackage;
+		label: 'Package'."
+	self addColumn xp
+		key: #creationFormattedDescription;
+		label: 'About to instantiate a: '.
+	self addColumn md
+		key: #receiverClass;
+		label: 'Sender''s Class'.
+	^ self
 ]
 
 { #category : #'as yet unclassified' }

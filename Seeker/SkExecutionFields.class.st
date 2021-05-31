@@ -1,7 +1,7 @@
 Class {
 	#name : #SkExecutionFields,
 	#superclass : #Object,
-	#category : #'Seeker-DataQuery'
+	#category : #'Seeker-QueryData'
 }
 
 { #category : #'as yet unclassified' }

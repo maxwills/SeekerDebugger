@@ -9,7 +9,7 @@ Class {
 		'leftTable',
 		'rightTable'
 	],
-	#category : #'Seeker-DataQuery'
+	#category : #'Seeker-QueryData'
 }
 
 { #category : #'as yet unclassified' }

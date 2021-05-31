@@ -3,5 +3,5 @@ Class {
 	#superclass : #SkExecutionVirtualTable,
 	#traits : 'TSeekerTableWithMemory',
 	#classTraits : 'TSeekerTableWithMemory classTrait',
-	#category : #'Seeker-DataQuery'
+	#category : #'Seeker-QueryData'
 }

@@ -16,6 +16,13 @@ SkQueryExperimentalTracer >> addAstPreStepHook: aBlock [
 	astPreStepHooks add: aBlock
 ]
 
+{ #category : #accessing }
+SkQueryExperimentalTracer >> aliasesDictionary [
+
+	^ aliasesDictionary
+	"For code transition only. This will be removed in the future"
+]
+
 { #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> createContextCacheFor: aContext [
 
@@ -125,9 +132,15 @@ SkQueryExperimentalTracer >> queries [
 ]
 
 { #category : #'as yet unclassified' }
+SkQueryExperimentalTracer >> readAliasOf: anObject [
+
+	^ aliasesDictionary at: anObject ifAbsent: nil
+]
+
+{ #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> registerAliasFor: anObject [
 
-	"aliasesDictionary at: anObject ifAbsentPut: self tracedStatementIndex" "This could be also the executed bytecode, but this might be good enough and it is a smaller number ( may be even consider counting context jump!)"
+	aliasesDictionary at: anObject ifAbsentPut: tracedContextCount "This could be also the executed bytecode, but this might be good enough and it is a smaller number ( may be even consider counting context jump!)"
 ]
 
 { #category : #adding }
@@ -139,9 +152,9 @@ SkQueryExperimentalTracer >> removeAstPreStepHook: aBlock [
 { #category : #starting }
 SkQueryExperimentalTracer >> restartAtBytecodeOne [
 
-	super restartAtBytecodeOne.
 	aliasesDictionary removeAll.
-	aliasesDictionary := WeakIdentityKeyDictionary new
+	aliasesDictionary := WeakIdentityKeyDictionary new.
+	super restartAtBytecodeOne
 ]
 
 { #category : #accessing }

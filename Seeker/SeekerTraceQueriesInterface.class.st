@@ -23,8 +23,8 @@ step :=  seeker currentIndexlessStepDescriptor .
 	| q |
 	q := Query
 		     from: tracer tables omniscientTableForAliases
-		     where: [ :row | row stepIndex = aNumber ]
-		     select: [ :row | 
+		     select: [ :row | row stepIndex = aNumber ]
+		     collect: [ :row | 
 			     New with: { 
 					     (#stepIndex -> row stepIndex).
 					     (#receiverAlias -> row receiverAlias).
@@ -146,26 +146,6 @@ SeekerTraceQueriesInterface >> forAliases [
 ]
 
 { #category : #'as yet unclassified' }
-SeekerTraceQueriesInterface >> forAssignments [
-
-	| table q |
-	table := tracer tables omniscientTableForAliases.
-
-	q := Query
-		     from: table
-		     where: [ :row | row node isAssignment ]
-		     select: [ :row | 
-			     New with: { 
-					     (#stepIndex -> row stepIndex).
-					     (#methodSelector -> row methodSelector).
-					     (#receiverClass -> row receiverClass).
-					     (#bytecodeIndex -> row bytecodeIndex).
-					     (#node -> row node).
-					     (#variable -> row node variable name) } ].
-	^ q
-]
-
-{ #category : #'as yet unclassified' }
 SeekerTraceQueriesInterface >> forAssignmentsOfAnyVariable [
 
 	| table q |
@@ -176,9 +156,11 @@ SeekerTraceQueriesInterface >> forAssignmentsOfAnyVariable [
 		     where: [ :row | row node isAssignment ]
 		     select: [ :row | 
 			     New with: { 
-					     (#stepIndex -> row stepIndex).
 					     (#methodSelector -> row methodSelector).
 					     (#receiverClass -> row receiverClass).
+					     (#receiverClassAndPackage
+					      ->
+					      (row receiverClass name, ' [' , row receiverPackage name , ']')).
 					     (#bytecodeIndex -> row bytecodeIndex).
 					     (#node -> row node).
 					     (#receiverAlias -> row receiverAlias).
@@ -186,7 +168,9 @@ SeekerTraceQueriesInterface >> forAssignmentsOfAnyVariable [
 					     (#variableName -> row node variable variable name).
 					     (#valueChangedFrom
 					      -> (row node variable variable readInContext: row context)).
-					     (#valueChangedTo -> (row context at: row context basicSize)) } ].
+					     (#valueChangedTo -> (row context at: row context basicSize)).
+					     (#receiverPackage -> row receiverPackage).
+					     (#variableClass -> row node variable variable class) } ].
 	^ q
 ]
 
@@ -203,7 +187,6 @@ SeekerTraceQueriesInterface >> forAssignmentsOfInstanceVariables [
 				     row node variable variable isInstanceVariable ] ]
 		     select: [ :row | 
 			     New with: { 
-					     (#stepIndex -> row stepIndex).
 					     (#methodSelector -> row methodSelector).
 					     (#receiverClass -> row receiverClass).
 					     (#bytecodeIndex -> row bytecodeIndex).
@@ -211,6 +194,11 @@ SeekerTraceQueriesInterface >> forAssignmentsOfInstanceVariables [
 					     (#receiverAlias -> row receiverAlias).
 					     (#variableNode -> row node variable).
 					     (#variableName -> row node variable variable name).
+					     (#receiverPackage -> row receiverPackage).
+					     (#receiverClassAndPackage
+					      ->
+					      (row receiverClass name , ' [' , row receiverPackage name
+					       , ']')).
 					     (#valueChangedFrom
 					      -> (row node variable variable readInContext: row context)).
 					     (#valueChangedTo -> (row context at: row context basicSize)) } ].
@@ -276,19 +264,42 @@ SeekerTraceQueriesInterface >> forInstanceVariables [
 { #category : #'as yet unclassified' }
 SeekerTraceQueriesInterface >> forInstancesCreation [
 
-	| table q |
+	| q table |
 	table := tracer tables omniscientTableForAliases.
 
 	q := Query
 		     from: table
 		     select: [ :row | row isInstantiationMessage ]
 		     collect: [ :row | 
+			     | msgRcvrNode msgRcvr msgRcvrClass msgRcvrPackage |
+			     msgRcvrNode := row node receiver.
+			     msgRcvr := msgRcvrNode isVariable
+				                ifTrue: [ 
+				                msgRcvrNode variable readInContext: row context ]
+				                ifFalse: [ nil ].
+			     msgRcvrClass := msgRcvr
+				                     ifNotNil: [ 
+					                     msgRcvr isClass
+						                     ifTrue: [ msgRcvr name ]
+						                     ifFalse: [ msgRcvr className ] ]
+				                     ifNil: [ #undefined ].
+			     msgRcvrPackage := msgRcvrNode isVariable
+				                       ifTrue: [ 
+					                       msgRcvr isClass
+						                       ifTrue: [ msgRcvr package name ]
+						                       ifFalse: [ msgRcvr class package name ] ]
+				                       ifFalse: [ '#undefined' ].
 			     New with: { 
 					     (#bytecodeIndex -> row bytecodeIndex).
+					     (#methodSelector -> row methodSelector).
 					     (#receiverClass -> row receiverClass).
-					     (#receiver -> row receiver).
-					     (#receiverAlias -> row receiverAlias).
-					     (#stepIndex -> row stepIndex) } ].
+					     (#messageReceiver -> msgRcvr).
+					     (#messageArguments -> row node arguments).
+					     (#messageReceiverClass -> msgRcvrClass).
+					     (#messageSelector -> row node selector).
+					     (#messageReceiverPackage -> msgRcvrPackage).
+					     (#creationFormattedDescription
+					      -> (msgRcvrClass , ' [' , msgRcvrPackage , ']')) } ].
 	^ q
 ]
 

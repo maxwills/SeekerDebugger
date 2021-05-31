@@ -13,7 +13,11 @@ SkChangesOfInstanceVariableLC >> description [
 { #category : #executing }
 SkChangesOfInstanceVariableLC >> executeCommand [
 
-	self tracer find changesOfSelectedInstanceVariable inspect
+	| res |
+	res := self tracer find changesOfSelectedInstanceVariable
+		       asSeekerResultsCollection forAssignmentsOfInstanceVariables.
+
+	self showResult: res
 ]
 
 { #category : #accessing }

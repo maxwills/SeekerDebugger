@@ -62,45 +62,33 @@ SeekerLiteCommands >> registerCommands:stDebuggerInstance forRoot: rootCommandGr
 SeekerLiteCommands >> stCodeCommandsTree [
 
 	^ { 
-		  SkGoToNodeUnderCursorLC.
-		  SkStepToNextStatementInSequenceLC.
-		  SkStepToNextInstanceCreationLC.
-		  SkAliasOfSelectedVariableTestLC.
-		  SkNodeUnderCursorTestLC.
-		  SkStepToEndLC.
-		  SkRecursionsReturnValuesOfMethodUnderSelectionLC.
-		  SkReturnValuesOfMethodWithSelectedSelectorLC.
-		  SkChangesOfSelfLC.
-		  SkChangesOfObjectLC.
-		  SkChangesOfInstanceVariableLC.
-		  SkChangesOfVariableByNameLC.
-		  SkNodeBeforeOrAfterCurrentLC.
-		  SkAllInstanceCreationsLC.
-		  SkAllInstanceCreationsOfClassLC.
-		  SkAllMessageSendsLC.
-		  SkAllMessageSendsWithSelectorLC.
-		  SkAllReceivedMessagesLC } "{ { 
-		  'Time-Travel'.
 		  { 
-			  SkGoToNodeUnderCursorLC.
-			  SkStepToNextStatementInSequenceLC.
-			  SkStepToNextInstanceCreationLC } } }"
-	"{ 
-			  'Alias'.
+			  'Messages'.
 			  { 
-				  SkObjectAliasFromSelectionLC.
-				  SkObjectAliasFromReceiverLC } }."
-	"{ 
-			  'History'.
+				  SkAllMessageSendsLC.
+				  SkAllMessageSendsWithSelectorLC.
+				  SkAllReceivedMessagesLC } }.
+		  { 
+			  'Instance Creations'.
 			  { 
-				  SkHistoryGoBackLC.
-				  SkHistoryGoForwardLC } }."
-	"SkQuickMapLC."
-	"{ 
-			  'Map Session'.
+				  SkAllInstanceCreationsLC.
+				  SkAllInstanceCreationsOfClassLC } }.
+		  { 
+			  'Changes - Object Centric'.
 			  { 
-				  SkAutoMapSessionFromTestFailedAssertionLC.
-				  SkAutoMapSessionFromTestUnhandledExceptionLC.
-				  SkMapSessionFormSelectedStartingPointLC.
-				  SkSetSessionStartingPointLC } }."
+				  SkChangesOfSelfLC.
+				  SkChangesOfObjectLC.
+				  SkChangesOfInstanceVariableLC } }.
+		  { 
+			  'Changes - General'.
+			  { 
+				  SkChangesOfVariableByNameLC.
+				  SkChangesOfAnyVariableLC.
+				  SkChangesOfAnyObjectOfClassLC } }.
+		  { 
+			  'SeekerDebug'.
+			  { 
+				  SkAliasOfSelectedVariableTestLC.
+				  SkNodeUnderCursorTestLC.
+				  SkNodeBeforeOrAfterCurrentLC } } }
 ]

@@ -81,6 +81,55 @@ Object >> seekAllChangesOnSelf [
 ]
 
 { #category : #'*Seeker' }
+Object >> seekAllMyChanges [
+
+	| seeker |
+	seeker := self seekMe.
+	seeker ifNotNil: [ 
+		^ (seeker find changesOfObject: self) asSeekerResultsCollection
+			  forAssignmentsOfInstanceVariables ].
+	^ nil
+]
+
+{ #category : #'*Seeker' }
+Object >> seekAndDisplayAllMyChanges [
+
+	| results seeker |
+	seeker := self seekMe.
+	results := self seekAllMyChanges.
+	results
+		ifNotNil: [ 
+			seeker seekerResultsPresenter showResult: results.
+			self inform: 'Results being shown in Results table' ]
+		ifNil: [ self error: 'Could not execute query' ]
+]
+
+{ #category : #'*Seeker' }
+Object >> seekMe [
+
+	SeekerDebugger allInstances.
+	SeekerDebugger allInstances reverseDo: [ :s | 
+		((s tracer isNotNil and: [ s tracer isSessionActive isNotNil ]) 
+			 and: [ s tracer isSessionActive ]) ifTrue: [ 
+			| alias |
+			alias := s tracer readAliasOf: self.
+			alias ifNotNil: [ ^ s tracer ] ] ].
+	^ nil
+]
+
+{ #category : #'*Seeker' }
+Object >> seekMyAlias [
+
+	SeekerDebugger allInstances.
+	SeekerDebugger allInstances reverseDo: [ :s | 
+		s tracer isSessionActive ifTrue: [ 
+			| alias |
+			alias := s tracer readAliasOf: self.
+			alias ifNotNil: [ ^ alias ] ] ].
+	^ nil
+]
+
+{ #category : #'*Seeker' }
 Object >> seekerCache [
 
 	^ SeekerCache seekerCacheObjectOf: self

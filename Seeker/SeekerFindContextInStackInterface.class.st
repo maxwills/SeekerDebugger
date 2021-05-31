@@ -4,6 +4,19 @@ Class {
 	#category : #'Seeker-Interfaces'
 }
 
+{ #category : #'as yet unclassified' }
+SeekerFindContextInStackInterface >> endingContextForTestCase [
+
+	"Returns the context where the test is setup and launched"
+
+	^ SkContextHelpers
+		  findContextInStack: [ :aContext | 
+			aContext receiver = CurrentExecutionEnvironment  and: [ aContext methodSelector = #runTestCase: and: [ 
+				  aContext compiledCode isCompiledMethod ] ]
+			   ]
+		  startingContext: tracer currentContext
+]
+
 { #category : #accessing }
 SeekerFindContextInStackInterface >> nonInlinedOwnerOfNode: aNode startingAt: aContext [
 
@@ -45,7 +58,9 @@ SeekerFindContextInStackInterface >> runCaseContextForTestCase [
 
 	^ SkContextHelpers
 		  findContextInStack: [ :aContext | 
-		  aContext methodSelector = #runCase ]
+			aContext receiver = CurrentExecutionEnvironment  and: [ aContext methodSelector = #runTestCase: and: [ 
+				  aContext compiledCode isCompiledMethod ] ]
+			   ]
 		  startingContext: tracer currentContext
 ]
 

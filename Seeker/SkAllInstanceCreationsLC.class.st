@@ -13,7 +13,9 @@ SkAllInstanceCreationsLC >> description [
 { #category : #executing }
 SkAllInstanceCreationsLC >> executeCommand [
 
-	self showResult: self tracer find allInstanceCreations
+	self showResult:
+		self tracer find allInstanceCreations asSeekerResultsCollection
+			forInstancesCreation
 ]
 
 { #category : #accessing }

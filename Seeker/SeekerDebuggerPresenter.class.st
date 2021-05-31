@@ -30,10 +30,12 @@ SeekerDebuggerPresenter class >> defaultDisplayOrder [
 SeekerDebuggerPresenter class >> defaultSpec [
 
 	^ SpBoxLayout newVertical
+		  add: #queriesPresenter expand: true;
 		  add: #currentStepLabel expand: false;
-		  add: #toolbar expand: false;
-		  add: #tabs expand: true;
 		  yourself
+	"add: 'Stepping Control' expand: false;
+		  add: #toolbar expand: false;"
+	"add: #tabs expand: true;"
 ]
 
 { #category : #'debugger extension' }
@@ -164,11 +166,12 @@ SeekerDebuggerPresenter >> initializePresenters [
 
 	self initializeToolbar.
 	self initializeCode.
-	self initializeTabs.
+
 	queriesPresenter := SeekerQueriesPresenter new
 		                    owner: self;
 		                    tracer: self seekerDebugger tracer;
 		                    yourself.
+	self initializeTabs.
 	"progress := self newProgressBar.
 	progress
 		progress: [ 
@@ -181,8 +184,6 @@ SeekerDebuggerPresenter >> initializePresenters [
 
 { #category : #'accessing model' }
 SeekerDebuggerPresenter >> initializeTabs [
-
-	"Called automatically by the Spec framework. This method describes how the widgets are initialized"
 
 	tabs := self newNotebook.
 	tabs addPageTitle: 'Query' provider: [ queriesPresenter ].
@@ -467,7 +468,7 @@ SeekerDebuggerPresenter >> updatePresenter [
 			put:
 			(WorkspaceVariable key: #seeker value: self seekerDebugger tracer).
 
-		currentStepLabel label: 'Trace Time Contol - ExecutedBytecode: '
+		currentStepLabel label: 'Trace Time - ExecutedBytecode: '
 			, seekerDebugger tracer bytecodeIndex asString , ' ('
 			, (self seekerDebugger tracer executionProgress 
 					 printShowingDecimalPlaces: 2) , '% of known execution)'.

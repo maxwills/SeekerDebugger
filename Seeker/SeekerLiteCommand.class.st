@@ -76,6 +76,12 @@ SeekerLiteCommand >> pushesNavigation [
 	^false
 ]
 
+{ #category : #'as yet unclassified' }
+SeekerLiteCommand >> readVariable: aVariable inContext: aContext [
+
+	^ aContext readVariableNamed: aVariable name
+]
+
 { #category : #accessing }
 SeekerLiteCommand >> seeker [ 
 	^self seekerDebuggerPresenter seekerDebugger

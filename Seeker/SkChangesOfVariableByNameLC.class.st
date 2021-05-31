@@ -13,7 +13,11 @@ SkChangesOfVariableByNameLC >> description [
 { #category : #executing }
 SkChangesOfVariableByNameLC >> executeCommand [
 
-	self tracer find changesOfAllVariablesNamedAsSelectedCode inspect
+	| res |
+	res := self tracer find changesOfAllVariablesNamedAsSelectedCode
+		       asSeekerResultsCollection forAssignmentsOfAnyVariable.
+
+	self showResult: res
 ]
 
 { #category : #accessing }

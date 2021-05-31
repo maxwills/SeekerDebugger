@@ -47,6 +47,12 @@ SeekerCurrentStateInterface >> aboutToSwitchContext [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerCurrentStateInterface >> aliasOfObject: anObject [
+
+	^ tracer readAliasOf: anObject
+]
+
+{ #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> assignmentCurrentValue [
 
 	"returns the current value of the variable (that is, before the assignemt takes place) in the current assignement node"
@@ -260,6 +266,12 @@ SeekerCurrentStateInterface >> previousNoi [
 SeekerCurrentStateInterface >> receiver [
 
 	^ tracer currentContext receiver
+]
+
+{ #category : #accessing }
+SeekerCurrentStateInterface >> receiverAlias [
+
+	^ tracer readAliasOf: self receiver
 ]
 
 { #category : #accessing }

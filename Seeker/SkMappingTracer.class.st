@@ -96,10 +96,10 @@ SkMappingTracer >> automapForDoItScenario [
 SkMappingTracer >> automapForTestCaseScenario [
 
 	| recordingInitialContext testInitialContext endingContext endTracedInstructionPC endTraceTime findContext |
-	"Only works if used the option: debug with Seeker"
-	"findContext is a SeekerFindContextInStackInterface object"
+	"Only works if used the option: debug with Seeker""findContext is a SeekerFindContextInStackInterface object"
 	findContext := self findContextInStack.
-	recordingInitialContext := findContext runCaseContextForTestCase.
+	endingContext := findContext endingContextForTestCase.
+	recordingInitialContext := endingContext sender.
 	recordingInitialContext ifNil: [ 
 		self error: 'Could not detect the initial context for recording.'.
 		^ false ].
@@ -114,11 +114,6 @@ SkMappingTracer >> automapForTestCaseScenario [
 	The reason for this is that initially the debugged process could be suspended at a node that the debugger would never step into.
 	So, when testing for is present on that instruction, it will be skipped. This way, the is pressent will return true at any instruction
 	in that context"
-	endingContext := SkContextHelpers
-		                 findContextInStack: [ :aContext | "We expect the execution will step in the method node of that context(because it doesn't have return node)"
-			                 (aContext receiver class inheritsFrom: TestCase) 
-				                 and: [ aContext methodSelector = #performTest ] ]
-		                 startingContext: self currentContext.
 
 	endTracedInstructionPC := endingContext tracedInstructionPC.
 	endTracedInstructionPC pc: endingContext endPC. "The last step is the endPC?"

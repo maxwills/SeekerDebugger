@@ -5,7 +5,7 @@ Class {
 		'traversingCursorIndex',
 		'data'
 	],
-	#category : #'Seeker-DataQuery'
+	#category : #'Seeker-QueryData'
 }
 
 { #category : #'instance creation' }

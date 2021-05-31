@@ -5,7 +5,7 @@ Class {
 		'privateTracer',
 		'privateExecutedBytecode'
 	],
-	#category : #'Seeker-DataQuery'
+	#category : #'Seeker-QueryData'
 }
 
 { #category : #'instance creation' }

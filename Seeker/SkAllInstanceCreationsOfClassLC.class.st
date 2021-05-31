@@ -15,6 +15,7 @@ SkAllInstanceCreationsOfClassLC >> executeCommand [
 
 	self showResult:
 		self tracer find allInstanceCreationsOfClassNamedAsSelectedCode
+			asSeekerResultsCollection forInstancesCreation
 ]
 
 { #category : #accessing }

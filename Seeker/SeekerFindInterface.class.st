@@ -22,9 +22,9 @@ SeekerFindInterface >> allInstanceCreationsOfClassNamed: aSymbol [
 	query := Query
 		         from: query
 		         select: [ :row | 
-			         row receiver isClass
-				         ifTrue: [ row receiver name = aSymbol ]
-				         ifFalse: [ row receiver class name = aSymbol ] ]
+			         row messageReceiver isClass
+				         ifTrue: [ row messageReceiver name = aSymbol ]
+				         ifFalse: [ row messageReceiver class name = aSymbol ] ]
 		         collect: #*.
 	result := query asTableForTimeTravel.
 	^ result
@@ -38,16 +38,6 @@ SeekerFindInterface >> allInstanceCreationsOfClassNamedAsSelectedCode [
 
 { #category : #'as yet unclassified' }
 SeekerFindInterface >> allMessageSends [
-
-	| query result |
-	query := tracer queries forMessageSends.
-
-	result := query asTableForTimeTravel.
-	^ result
-]
-
-{ #category : #'as yet unclassified' }
-SeekerFindInterface >> allMessageSendsOfMethod: aCompiledMethod [
 
 	| query result |
 	query := tracer queries forMessageSends.
@@ -85,17 +75,27 @@ SeekerFindInterface >> allReceivedMessages [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerFindInterface >> changesOfAllVariables [
+
+	| query result |
+	query := tracer queries forAssignmentsOfAnyVariable.
+
+	result := query asTableForTimeTravel.
+	^ result
+]
+
+{ #category : #'as yet unclassified' }
 SeekerFindInterface >> changesOfAllVariablesNamed: aSymbol [
 
 	| query result |
 	aSymbol isString ifFalse: [ ^ self error: 'Invalid variable name' ].
 	query := Query
-		         from: tracer queries forAssignmentsOfAnyVariable 
+		         from: tracer queries forAssignmentsOfAnyVariable
 		         select: [ :row | row variableName = aSymbol ]
 		         collect: #*.
 
 	result := query asTableForTimeTravel.
-	^ result rows
+	^ result
 ]
 
 { #category : #'as yet unclassified' }
@@ -107,56 +107,45 @@ SeekerFindInterface >> changesOfAllVariablesNamedAsSelectedCode [
 ]
 
 { #category : #'as yet unclassified' }
-SeekerFindInterface >> changesOfInstanceVariableNamed: aSymbol ofReceiverOfContext: aContext [
+SeekerFindInterface >> changesOfInstanceVariable: aSymbol ofObject: anObject [
 
-	| changesOfObject |
-	aSymbol isString ifFalse: [ ^ self error: 'Invalid variable name' ].
-	changesOfObject := self changesOfReceiverInstanceOfContext: aContext.
+	"Care that the object must be monitored by seeker (have an alias)"
 
-	^ changesOfObject select: [ :row | row variableName = aSymbol ]
-]
+	| alias query |
+	alias := tracer readAliasOf: anObject.
 
-{ #category : #'as yet unclassified' }
-SeekerFindInterface >> changesOfObjectInVariableNode: aNode inContext: aContext [
-
-	| messageReceiverAlias query result |
-	messageReceiverAlias := self
-		                        aliasOfVariableNode: aNode
-		                        inContext: aContext.
-		
 	"then, get all the changes of that alias"
 	query := Query
 		         from: tracer queries forAssignmentsOfInstanceVariables
-		         select: [ :row | row receiverAlias = messageReceiverAlias ]
+		         select: [ :row | 
+		         row receiverAlias = alias and: row variableName = aSymbol ]
 		         collect: #*.
 
-	result := query asTableForTimeTravel.
-	^ result rows
+	^ query asTableForTimeTravel
 ]
 
 { #category : #'as yet unclassified' }
-SeekerFindInterface >> changesOfObjectInVariableNode: aNode inContext: aContext atStep: aNumber [
+SeekerFindInterface >> changesOfInstanceVariablesOfClassName: aSymbol [
 
-	| messageReceiverAlias query result |
-	messageReceiverAlias := self
-		                        aliasOfVariableNode: aNode
-		                        inContext: aContext atStep: aNumber.
-		
+	"Care that the object must be monitored by seeker (have an alias)"
+
+	| query |
 	"then, get all the changes of that alias"
 	query := Query
 		         from: tracer queries forAssignmentsOfInstanceVariables
-		         select: [ :row | row receiverAlias = messageReceiverAlias ]
+		         select: [ :row | row receiverClass name = aSymbol ]
 		         collect: #*.
 
-	result := query asTableForTimeTravel.
-	^ result rows
+	^ query asTableForTimeTravel
 ]
 
 { #category : #'as yet unclassified' }
-SeekerFindInterface >> changesOfReceiverInstanceOfContext: aContext [
+SeekerFindInterface >> changesOfObject: anObject [
 
-	| alias query result |
-	alias := self receiverAliasOfContext: aContext.
+	"Care that the object must be monitored by seeker (have an alias)"
+
+	| alias query |
+	alias := tracer readAliasOf: anObject.
 
 	"then, get all the changes of that alias"
 	query := Query
@@ -164,14 +153,15 @@ SeekerFindInterface >> changesOfReceiverInstanceOfContext: aContext [
 		         select: [ :row | row receiverAlias = alias ]
 		         collect: #*.
 
-	result := query asTableForTimeTravel.
-	^ result rows
+	^ query asTableForTimeTravel
 ]
 
 { #category : #'as yet unclassified' }
-SeekerFindInterface >> changesOfReceiverInstanceOfSelecetedContext [
+SeekerFindInterface >> changesOfObjectInVariableNode: aNode inContext: aContext [
 
-	^ self changesOfReceiverInstanceOfContext: tracer selectedContext
+	| obj |
+	obj := aContext readVariableNamed: aNode variable name.
+	^ self changesOfObject: obj
 ]
 
 { #category : #'as yet unclassified' }
@@ -184,8 +174,8 @@ SeekerFindInterface >> changesOfSelectedInstanceVariable [
 	node variable isInstanceVariable ifFalse: [ 
 		^ self error: 'Selection is not an Instance Variable' ].
 	^ self
-		  changesOfInstanceVariableNamed: node variable name
-		  ofReceiverOfContext: tracer selectedContext
+		  changesOfInstanceVariable: node variable name
+		  ofObject: tracer selectedContext receiver
 ]
 
 { #category : #'as yet unclassified' }
@@ -193,7 +183,13 @@ SeekerFindInterface >> changesOfSelectedObject [
 
 	^ self
 		  changesOfObjectInVariableNode: tracer selectedNode
-		  inContext: tracer selectedContext atStep: tracer stepIndex.
+		  inContext: tracer selectedContext
+]
+
+{ #category : #'as yet unclassified' }
+SeekerFindInterface >> changesOfSelf [
+
+	^ self changesOfObject: tracer selectedContext receiver
 ]
 
 { #category : #'as yet unclassified' }

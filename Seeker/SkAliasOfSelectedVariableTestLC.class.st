@@ -13,22 +13,14 @@ SkAliasOfSelectedVariableTestLC >> description [
 { #category : #executing }
 SkAliasOfSelectedVariableTestLC >> executeCommand [
 
-	| selection result caretPosition query nodeUnderCursor aStepDescriptor isTopContext |
-	selection := self codeSelectedText.
-	caretPosition := self codeCaretPosition.
-
-	nodeUnderCursor := self nodeUnderCursor.
-	isTopContext := self selectedContextIsTopContext.
-	aStepDescriptor := self seeker tracer currentStepDescriptor.
-	query := self seeker tracer queries 
-		         forAliasOfObjectReferredByVariableNode: nodeUnderCursor.
-	query := Query
-		         from: (query withExecutionColumns: { #stepIndex })
-		         select: [ :row | 
-		         row stepIndex = aStepDescriptor executionIndex ]
-		         collect: #*.
-	result := query first variableValueAlias.
-	result inspect
+	| selectedNode obj selectedContext |
+	selectedContext := self tracer selectedContext.
+	selectedNode := self tracer selectedNode.
+	selectedNode ifNil: [ ^ self inform: 'No variable selected' ].
+	selectedNode isVariable ifFalse: [ 
+		^ self error: 'Only works for variables' ].
+	obj := selectedNode variable readInContext: selectedContext.
+	(self tracer readAliasOf: obj) inspect
 ]
 
 { #category : #accessing }
