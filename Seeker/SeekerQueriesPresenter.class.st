@@ -40,12 +40,6 @@ SeekerQueriesPresenter >> applyResultFilter [
 ]
 
 { #category : #'as yet unclassified' }
-SeekerQueriesPresenter >> autoEllipsisString: aString atWidth: aNumber [
-
-	^ StandardFonts listFont realFont widthOfString: aString
-]
-
-{ #category : #'as yet unclassified' }
 SeekerQueriesPresenter >> getRowSerialization: row [
 
 	^ String streamContents: [ :stream | 
@@ -92,12 +86,21 @@ SeekerQueriesPresenter >> notifyTimeTravel: row [
 { #category : #'UI specific' }
 SeekerQueriesPresenter >> showResult: anObject [
 
-	| cols |
+	| cols trimBlock |
 	self flag: 'Left some comments for Esteban'.
 	anObject quickConsistencyCheck.
 	cols := OrderedCollection new.
 	cols add: (SpIndexTableColumn new width: 40).
 	queryResults := anObject.
+
+	trimBlock := [ :row :col | 
+	             col expandable
+		             ifTrue: [ col value: row ]
+		             ifFalse: [ 
+			             (col value: row)
+				             trimForRenderWidth: col width
+				             usingFont: StandardFonts listFont
+				             autoEllipsis: true ] ].
 
 	"for every columunDefinition (SeekerResultsColumn) in my input collection :
    - Create a SpTableColumn (SpLinkTableColumn or SpStringTableColumn).
@@ -111,15 +114,15 @@ Set the tables columns from the ordered collection
 		col := each key = #bytecodeIndex
 			       ifTrue: [ "it's a link"
 				       SpLinkTableColumn
-					       title: 'When?'
-					       evaluated: [ :row | 'TimeTravel Here' "each value: row" ]
-					       action: [ :row | 
+					       title: 'TimeTravel'
+					       evaluated: [ :row | 'Go Here' "each value: row" ]
+					       action: [ :row | "each label"
 						       self notifyTimeTravel: row.
-						       row timeTravelToThis ] "each label" ]
+						       row timeTravelToThis ] ]
 			       ifFalse: [ 
 				       (SpStringTableColumn
 					        title: each label
-					        evaluated: [ :row | each value: row ])
+					        evaluated: [ :row | trimBlock value: row value: each ])
 					       displayBold: [ :row | 
 						       self valueMatchesSearchFilter: (each value: row) ];
 					       yourself ].
@@ -139,12 +142,6 @@ Set the tables columns from the ordered collection
 
 	self applyResultFilter.
 	self updateDisplayedResults
-]
-
-{ #category : #'as yet unclassified' }
-SeekerQueriesPresenter >> stringRenderSizeOf: aString [
-
-	^ StandardFonts listFont realFont widthOfString: aString
 ]
 
 { #category : #accessing }

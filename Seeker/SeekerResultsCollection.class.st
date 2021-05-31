@@ -188,20 +188,15 @@ SeekerResultsCollection >> forInstancesCreation [
 SeekerResultsCollection >> forMessageSends [
 
 	columns removeAll.
-	self addColumn
+	self addColumn xs
 		key: #bytecodeIndex;
-		label: 'ExecBC';
-		width: 60.
-	self addColumn
+		label: 'ExecBC'.
+	self addColumn md
 		key: #messageReceiverClass;
-		label: 'Receiver';
-		width: 170.
-	self addColumn
+		label: 'Receiver'.
+	self addColumn lg
 		key: #messageSelector;
-		label: 'Selector';
-		width: 200;
-		expandable: true.
-
+		label: 'Selector'.
 	^ self
 ]
 

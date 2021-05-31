@@ -50,21 +50,20 @@ String >> trimForRenderWidth: width usingFont: font autoEllipsis: autoEllipsis [
 
 	"aFont example: StandardFonts listFont "
 
+	(self renderWidthUsingFont: font) <= width ifTrue: [ ^ self ].
 	^ autoEllipsis
 		  ifTrue: [ 
 			  | elSize ellipsis trimTo |
 			  ellipsis := '...'.
-			  elSize := font realFont widthOfString: ellipsis.
+			  elSize := ellipsis renderWidthUsingFont: font.
 			  trimTo := self
 				            searchCharacterIndexForRenderTrim: width - elSize
 				            usingFont: font.
-			  "trimTo = 0 ifTrue: [ ^ ellipsis ]."
 			  ^ (self copyFrom: 1 to: trimTo) , ellipsis ]
 		  ifFalse: [ 
 			  | trimTo |
 			  trimTo := self
 				            searchCharacterIndexForRenderTrim: width
 				            usingFont: font.
-			  "trimTo = 0 ifTrue: [ ^ '' ]."
 			  ^ self copyFrom: 1 to: trimTo ]
 ]
