@@ -36,7 +36,13 @@ Class {
 	#classTraits : 'TDebuggerUpdateCoordinatorClient classTrait',
 	#instVars : [
 		'stDebugger',
-		'tracer'
+		'tracer',
+		'plugins',
+		'seekerDebuggerPresenter',
+		'instanceNumber'
+	],
+	#classVars : [
+		'instanceNumberTotal'
 	],
 	#category : #'Seeker-Core'
 }
@@ -97,8 +103,83 @@ SeekerDebugger >> evaluateExpression: aString inContext: aContext throws: anErro
 { #category : #initialization }
 SeekerDebugger >> initialize [
 
+	instanceNumberTotal ifNil: [ instanceNumberTotal := 0 ].
+	instanceNumberTotal := instanceNumberTotal + 1.
+	instanceNumber := instanceNumberTotal.
+	plugins := OrderedCollection new.
 	SeekerCache reset.
-	^ super initialize
+	super initialize.
+	self initializePlugins
+]
+
+{ #category : #initialization }
+SeekerDebugger >> initializePlugins [
+
+	(Pragma allNamed: #seekerDebuggerPlugin:) do: [ :pluginPragma | 
+		| pluginClass plugin |
+		pluginClass := pluginPragma method methodClass.
+		plugin := pluginClass new.
+		plugin initializeModel: self.
+		plugins add: plugin ]
+]
+
+{ #category : #'as yet unclassified' }
+SeekerDebugger >> instanceID [ 
+	^ instanceNumber
+]
+
+{ #category : #'as yet unclassified' }
+SeekerDebugger >> notifyCommandExecution: aCommand subEvent: aSymbol [
+
+	self notifyPlugins
+]
+
+{ #category : #'as yet unclassified' }
+SeekerDebugger >> notifyDebuggerInitialized [
+
+	self notifyPlugins
+]
+
+{ #category : #'as yet unclassified' }
+SeekerDebugger >> notifyExecutionMapped [
+
+	self notifyExecutionMapped: tracer currentContext method
+]
+
+{ #category : #'as yet unclassified' }
+SeekerDebugger >> notifyExecutionMapped: compiledMethod [
+
+	self notifyPlugins
+]
+
+{ #category : #'as yet unclassified' }
+SeekerDebugger >> notifyPlugins [
+
+	| senderContext methodSelector |
+	senderContext := thisContext sender.
+	methodSelector := senderContext methodSelector.
+	plugins do: [ :plugin | 
+		(plugin handlesMethod: methodSelector) ifTrue: [ 
+			plugin
+				handleMethod: methodSelector
+				withArguments: senderContext arguments ] ]
+]
+
+{ #category : #'as yet unclassified' }
+SeekerDebugger >> notifyQueryFilterTextEntered: searchedString [
+
+	self notifyPlugins
+]
+
+{ #category : #'as yet unclassified' }
+SeekerDebugger >> notifySessionEnd [ 
+	
+]
+
+{ #category : #'as yet unclassified' }
+SeekerDebugger >> notifyTimeTravel: stateString [
+
+	self notifyPlugins
 ]
 
 { #category : #'as yet unclassified' }
@@ -115,7 +196,7 @@ SeekerDebugger >> quickSetup [
 	isWatchedProcess := SeekerGlobals instance isWatchedProcess: process.
 	isWatchedProcess ifTrue: [ 
 		[ tracer isQuickMapAvailable ifTrue: [ tracer quickMap ] ] ensure: [ 
-			SeekerGlobals instance stopWatchingProcess: process ] ]
+			SeekerGlobals instance stopWatchingProcess: process ] ].
 ]
 
 { #category : #starting }
@@ -124,6 +205,18 @@ SeekerDebugger >> restart [
 	"Restarts the execution from the UserStart trace time (not bytecode one)"
 
 	tracer timeTravelToUserStart
+]
+
+{ #category : #accessing }
+SeekerDebugger >> seekerDebuggerPresenter [
+
+	^ seekerDebuggerPresenter
+]
+
+{ #category : #accessing }
+SeekerDebugger >> seekerDebuggerPresenter: anObject [
+
+	seekerDebuggerPresenter := anObject
 ]
 
 { #category : #initialization }

@@ -95,8 +95,9 @@ SkMappingTracer >> automapForDoItScenario [
 { #category : #'as yet unclassified' }
 SkMappingTracer >> automapForTestCaseScenario [
 
-	| recordingInitialContext testInitialContext endingContext endTracedInstructionPC endTraceTime findContext |
+	| recordingInitialContext testInitialContext endingContext endTracedInstructionPC endTraceTime findContext currentCompiledMethod |
 	"Only works if used the option: debug with Seeker""findContext is a SeekerFindContextInStackInterface object"
+	currentCompiledMethod := self slowCurrentContext compiledCode.
 	findContext := self findContextInStack.
 	endingContext := findContext endingContextForTestCase.
 	recordingInitialContext := endingContext sender.

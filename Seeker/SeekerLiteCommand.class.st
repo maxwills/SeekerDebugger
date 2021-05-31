@@ -44,10 +44,21 @@ SeekerLiteCommand >> description [
 { #category : #executing }
 SeekerLiteCommand >> execute [
 
+	| logCommands |
+	logCommands := false.
 	self pushesNavigation ifTrue: [ 
 		self seeker tracer pushNavigationHistory ].
-
-	self executeCommand
+	logCommands
+		ifTrue: [ 
+			[ 
+			self seeker notifyCommandExecution: self subEvent: #clicked.
+			self executeCommand.
+			self seeker notifyCommandExecution: self subEvent: #done ]
+				on: Exception
+				do: [ :e | 
+					self seeker notifyCommandExecution: self subEvent: #failed.
+					self inform: 'Error: ' , e messageText ] ]
+		ifFalse: [ self executeCommand ]
 ]
 
 { #category : #executing }

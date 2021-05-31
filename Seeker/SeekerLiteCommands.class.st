@@ -72,7 +72,8 @@ SeekerLiteCommands >> stCodeCommandsTree [
 			  'Instance Creations'.
 			  { 
 				  SkAllInstanceCreationsLC.
-				  SkAllInstanceCreationsOfClassLC } }.
+				  SkAllInstanceCreationsOfClassLC.
+				  SkAllInstanceCreationsOfExceptionLC } }.
 		  { 
 			  'Changes - Object Centric'.
 			  { 

@@ -51,7 +51,7 @@ AnonymousTypeForTimeTravel >> privateTracer: anObject [
 { #category : #'as yet unclassified' }
 AnonymousTypeForTimeTravel >> timeTravelToThis [
 
-	"Needs the stepIndex key"
+	"Needs the privateExecutedBytecode key"
 
 	privateTracer timeTravelToTraceTime:
 		privateExecutedBytecode asExecutedBytecodeTraceTime

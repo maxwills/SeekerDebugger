@@ -15,9 +15,12 @@ SkChangesOfAnyVariableLC >> executeCommand [
 
 	| res |
 	res := self tracer find changesOfAllVariables
-		       asSeekerResultsCollection forAssignmentsOfAnyVariable .
+		       asSeekerResultsCollection forAssignmentsOfAnyVariable.
 
-	self showResult: res
+	self showResult: res.
+	"[ DSSeekerActionRecord for: self ]
+		on: Error
+		do: [ :e | DSSpy log: #ERROR key: #PROCEED ]"
 ]
 
 { #category : #accessing }

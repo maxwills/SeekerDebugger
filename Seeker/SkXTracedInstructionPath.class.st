@@ -29,6 +29,13 @@ SkXTracedInstructionPath >> asExpression [
 ]
 
 { #category : #converting }
+SkXTracedInstructionPath >> asExpressionSkippingFirst: aNumber [
+
+	^ (contextPath asExpressionSkippingFirst: aNumber)
+	  , ' / ' , nodePath asExpression
+]
+
+{ #category : #converting }
 SkXTracedInstructionPath >> asTopNodesArray [
 
 	| collection |

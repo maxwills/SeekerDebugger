@@ -37,6 +37,16 @@ SeekerFindInterface >> allInstanceCreationsOfClassNamedAsSelectedCode [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerFindInterface >> allInstanceCreationsOfExceptions [
+
+	| query result |
+	query := tracer queries forExceptionInstancesCreation  .
+
+	result := query asTableForTimeTravel.
+	^ result
+]
+
+{ #category : #'as yet unclassified' }
 SeekerFindInterface >> allMessageSends [
 
 	| query result |
@@ -66,6 +76,16 @@ SeekerFindInterface >> allMessageSendsWithSelector: aSymbol [
 
 { #category : #'as yet unclassified' }
 SeekerFindInterface >> allReceivedMessages [
+
+	| query result |
+	query := tracer queries forReceivedMessages.
+
+	result := query asTableForTimeTravel.
+	^ result
+]
+
+{ #category : #'as yet unclassified' }
+SeekerFindInterface >> allReceivedMessagesForExceptions [
 
 	| query result |
 	query := tracer queries forReceivedMessages.

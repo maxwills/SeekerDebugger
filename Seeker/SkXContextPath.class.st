@@ -38,3 +38,10 @@ SkXContextPath >> asExpression [
 		  (self collect: [ :nodePath | "'(' , " 
 			   nodePath asExpression ", ')'" ])
 ]
+
+{ #category : #converting }
+SkXContextPath >> asExpressionSkippingFirst: aNumber [
+
+	aNumber >= self size ifTrue: [ ^ '' ].
+	^ (self copyFrom: aNumber to: self size) asExpression
+]

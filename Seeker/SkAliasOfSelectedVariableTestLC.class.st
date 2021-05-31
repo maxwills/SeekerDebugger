@@ -16,7 +16,7 @@ SkAliasOfSelectedVariableTestLC >> executeCommand [
 	| selectedNode obj selectedContext |
 	selectedContext := self tracer selectedContext.
 	selectedNode := self tracer selectedNode.
-	selectedNode ifNil: [ ^ self inform: 'No variable selected' ].
+	selectedNode ifNil: [ ^ self error: 'No variable selected' ].
 	selectedNode isVariable ifFalse: [ 
 		^ self error: 'Only works for variables' ].
 	obj := selectedNode variable readInContext: selectedContext.

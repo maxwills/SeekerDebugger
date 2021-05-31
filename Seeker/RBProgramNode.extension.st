@@ -53,7 +53,7 @@ RBProgramNode >> localPathNotation [
 
 	| nodeIndex ownerNode nodeIndexExpression |
 	ownerNode := self ownerNode.
-	nodeIndex := self ordinalIndex.
+	nodeIndex := self pcInMethod .
 	nodeIndexExpression := nodeIndex
 		                       ifNil: [ '' ]
 		                       ifNotNil: [ '@ ' , nodeIndex asString ].

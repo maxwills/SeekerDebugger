@@ -179,7 +179,7 @@ SeekerDebuggerPresenter >> initializePresenters [
 		every: 0.5 seconds."
 	currentStepLabel := self newLabel.
 	currentStepLabel label: 'Current Step: -'.
-	self initializeEvaluatorPresenters
+	self initializeEvaluatorPresenters.
 ]
 
 { #category : #'accessing model' }
@@ -327,11 +327,15 @@ SeekerDebuggerPresenter >> setModelBeforeInitialization: aStDebugger [
 
 	stDebugger := aStDebugger.
 	seekerDebugger := SeekerDebugger newFor: aStDebugger.
+	seekerDebugger seekerDebuggerPresenter: self.
 	evaluatorDebugger := EvaluatorDebugger new.
 	evaluatorDebugger stDebugger: aStDebugger.
 	debuggerUpdateCoordinator := seekerDebugger debuggerUpdateCoordinator.
 	stDebugger debuggerActionModel tracer: seekerDebugger tracer.
-	seekerDebugger quickSetup
+	seekerDebugger quickSetup.
+	seekerDebugger stDebugger: aStDebugger.
+	seekerDebugger notifyDebuggerInitialized.
+	seekerDebugger tracer isMapped ifTrue: seekerDebugger notifyExecutionMapped
 ]
 
 { #category : #'event handling' }

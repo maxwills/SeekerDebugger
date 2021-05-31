@@ -40,7 +40,8 @@ DebuggerStepperBase >> isSessionActive [
 { #category : #'as yet unclassified' }
 DebuggerStepperBase >> notifySessionEnd [
 
-	isSessionActive := false
+	isSessionActive := false.
+	self seeker notifySessionEnd
 ]
 
 { #category : #'as yet unclassified' }

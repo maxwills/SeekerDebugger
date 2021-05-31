@@ -177,6 +177,16 @@ SeekerCurrentStateInterface >> isFirstBytecodeOfStatement [
 ]
 
 { #category : #testing }
+SeekerCurrentStateInterface >> isInstanceCreationPrimitive [
+
+	| cc |
+	cc := self compiledCode.
+	cc isCompiledMethod ifFalse: [ ^ false ].
+
+	^ instanceCreationPrimitives includes: cc primitive
+]
+
+{ #category : #testing }
 SeekerCurrentStateInterface >> isInstantiationMessage [
 
 	| methodAboutToExecute node messageReceiver messageReceiverClass |

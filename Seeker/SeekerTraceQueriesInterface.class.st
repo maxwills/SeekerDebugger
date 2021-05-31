@@ -233,6 +233,19 @@ SeekerTraceQueriesInterface >> forContextSizeChanges [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerTraceQueriesInterface >> forExceptionInstancesCreation [
+
+	| q |
+	q := self forInstancesCreation.
+	q := Query
+		     from: q
+		     select: [ :r | 
+		     r messageReceiverClass inheritsFromOrSameAs: Exception ]
+		     collect: #*.
+	^ q
+]
+
+{ #category : #'as yet unclassified' }
 SeekerTraceQueriesInterface >> forInstanceVariables [
 
 	| q table |
@@ -280,9 +293,9 @@ SeekerTraceQueriesInterface >> forInstancesCreation [
 			     msgRcvrClass := msgRcvr
 				                     ifNotNil: [ 
 					                     msgRcvr isClass
-						                     ifTrue: [ msgRcvr name ]
-						                     ifFalse: [ msgRcvr className ] ]
-				                     ifNil: [ #undefined ].
+						                     ifTrue: [ msgRcvr ]
+						                     ifFalse: [ msgRcvr class] ]
+				                     ifNil: [ nil class].
 			     msgRcvrPackage := msgRcvrNode isVariable
 				                       ifTrue: [ 
 					                       msgRcvr isClass
@@ -299,7 +312,7 @@ SeekerTraceQueriesInterface >> forInstancesCreation [
 					     (#messageSelector -> row node selector).
 					     (#messageReceiverPackage -> msgRcvrPackage).
 					     (#creationFormattedDescription
-					      -> (msgRcvrClass , ' [' , msgRcvrPackage , ']')) } ].
+					      -> (msgRcvrClass name , ' [' , msgRcvrPackage , ']')) } ].
 	^ q
 ]
 

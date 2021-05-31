@@ -75,5 +75,6 @@ SeekerStepCollectionItem >> stepIndex: anObject [
 
 { #category : #'as yet unclassified' }
 SeekerStepCollectionItem >> timeTravelToThis [
+"Not used anymore"
 	seeker tracer restartAndStepToIndex: stepIndex
 ]

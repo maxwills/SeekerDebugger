@@ -98,6 +98,8 @@ SeekerStepQueryResult >> stepIndex: anObject [
 { #category : #'as yet unclassified' }
 SeekerStepQueryResult >> timeTravelToThis [
 
+	"Not used anymore"
+
 	self hasResult
 		ifTrue: [ seeker tracer restartAndStepToIndex: stepIndex ]
 		ifFalse: [ self inform: 'Nowhere to go' ]

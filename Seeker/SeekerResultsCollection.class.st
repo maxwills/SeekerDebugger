@@ -147,6 +147,25 @@ SeekerResultsCollection >> forAssignmentsOfInstanceVariablesWithPackage [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerResultsCollection >> forExceptionInstancesCreation [
+
+	columns removeAll.
+	self addColumn xs
+		key: #bytecodeIndex;
+		label: 'ExecBC'.
+	"self addColumn sm
+		key: #messageReceiverPackage;
+		label: 'Package'."
+	self addColumn xp
+		key: #creationFormattedDescription;
+		label: 'About to instantiate a: '.
+	self addColumn md
+		key: #receiverClass;
+		label: 'Sender''s Class'.
+	^ self
+]
+
+{ #category : #'as yet unclassified' }
 SeekerResultsCollection >> forInstancesCreation [
 
 	columns removeAll.
@@ -217,6 +236,20 @@ SeekerResultsCollection >> initialize [
 
 	columns := OrderedCollection new.
 	super initialize
+]
+
+{ #category : #printing }
+SeekerResultsCollection >> printRow: row on: aStream [
+
+	columns ifEmpty: [ ^ self ].
+	1 to: columns size do: [ :cindex | 
+		| c |
+		c := columns at: cindex.
+		cindex > 1 ifTrue: [ aStream nextPutAll: ';' ].
+		aStream
+			nextPutAll: c label;
+			nextPutAll: ': '.
+		aStream nextPutAll: (c value: row) ]
 ]
 
 { #category : #'as yet unclassified' }

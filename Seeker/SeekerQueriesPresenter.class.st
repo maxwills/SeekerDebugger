@@ -45,6 +45,13 @@ SeekerQueriesPresenter >> autoEllipsisString: aString atWidth: aNumber [
 	^ StandardFonts listFont realFont widthOfString: aString
 ]
 
+{ #category : #'as yet unclassified' }
+SeekerQueriesPresenter >> getRowSerialization: row [
+
+	^ String streamContents: [ :stream | 
+		  queryResults printRow: row on: stream ]
+]
+
 { #category : #initialization }
 SeekerQueriesPresenter >> initializePresenters [
 
@@ -53,7 +60,8 @@ SeekerQueriesPresenter >> initializePresenters [
 	resultsFilter := self newSearchInput.
 	resultsFilter whenSubmitDo: [ 
 		self applyResultFilter.
-		self updateDisplayedResults ].
+		self updateDisplayedResults.
+		self notifySeekerSearchInputActivated ].
 	resultsFilter placeholder:
 		'Case sensitive filter... (Press enter to apply)'.
 	summaryLabel := self newLabel.
@@ -67,6 +75,18 @@ SeekerQueriesPresenter >> initializeTable [
 	table := self newTable
 		         beNotResizable;
 		         yourself
+]
+
+{ #category : #'as yet unclassified' }
+SeekerQueriesPresenter >> notifySeekerSearchInputActivated [
+
+	tracer seeker notifyQueryFilterTextEntered: resultsFilter text
+]
+
+{ #category : #'as yet unclassified' }
+SeekerQueriesPresenter >> notifyTimeTravel: row [
+
+	tracer seeker notifyTimeTravel: (self getRowSerialization: row)
 ]
 
 { #category : #'UI specific' }
@@ -91,9 +111,11 @@ Set the tables columns from the ordered collection
 		col := each key = #bytecodeIndex
 			       ifTrue: [ "it's a link"
 				       SpLinkTableColumn
-					       title: each label
-					       evaluated: [ :row | each value: row ]
-					       action: [ :row | row timeTravelToThis ] ]
+					       title: 'When?'
+					       evaluated: [ :row | 'TimeTravel Here' "each value: row" ]
+					       action: [ :row | 
+						       self notifyTimeTravel: row.
+						       row timeTravelToThis ] "each label" ]
 			       ifFalse: [ 
 				       (SpStringTableColumn
 					        title: each label
@@ -104,14 +126,14 @@ Set the tables columns from the ordered collection
 		"col beExpandable."
 		each expandable
 			ifTrue: [ 
-				col beExpandable.
+				col beExpandable
 				"self error: 'isExpandable'"
-				Transcript show: 'It''s expandable' , String cr ]
+				"Transcript show: 'It''s expandable' , String cr" ]
 			ifFalse: [ 
 				col beNotExpandable.
-				col width: each width.
-				Transcript show:
-					'not expandable with width: ' , col width asString , String cr ].
+				col width: each width
+				"Transcript show:
+					'not expandable with width: ' , col width asString , String cr " ].
 		cols add: col ].
 	table columns: cols.
 
