@@ -3,12 +3,7 @@ Class {
 	#superclass : #DSAbstractEventRecord,
 	#instVars : [
 		'eventName',
-		'seekerInstanceID',
-		'tracedInstructionPath',
-		'stackDepth',
-		'selectedContextDepth',
-		'selectedCode',
-		'executedBytecode'
+		'seekerInstanceID'
 	],
 	#category : #SeekerDebuggerSpy
 }
@@ -35,18 +30,6 @@ DSSeekerActionRecord >> eventName [
 DSSeekerActionRecord >> eventName: anObject [
 
 	eventName := anObject
-]
-
-{ #category : #accessing }
-DSSeekerActionRecord >> executedBytecode [
-
-	^ executedBytecode
-]
-
-{ #category : #accessing }
-DSSeekerActionRecord >> executedBytecode: anObject [
-
-	executedBytecode := anObject
 ]
 
 { #category : #'actions api' }
@@ -78,52 +61,4 @@ DSSeekerActionRecord >> seekerInstanceID [
 DSSeekerActionRecord >> seekerInstanceID: anObject [
 
 	seekerInstanceID := anObject
-]
-
-{ #category : #accessing }
-DSSeekerActionRecord >> selectedCode [
-
-	^ selectedCode
-]
-
-{ #category : #accessing }
-DSSeekerActionRecord >> selectedCode: anObject [
-
-	selectedCode := anObject
-]
-
-{ #category : #accessing }
-DSSeekerActionRecord >> selectedContextDepth [
-
-	^ selectedContextDepth
-]
-
-{ #category : #accessing }
-DSSeekerActionRecord >> selectedContextDepth: anObject [
-
-	selectedContextDepth := anObject
-]
-
-{ #category : #accessing }
-DSSeekerActionRecord >> stackDepth [
-
-	^ stackDepth
-]
-
-{ #category : #accessing }
-DSSeekerActionRecord >> stackDepth: anObject [
-
-	stackDepth := anObject
-]
-
-{ #category : #accessing }
-DSSeekerActionRecord >> tracedInstructionPath [
-
-	^ tracedInstructionPath
-]
-
-{ #category : #accessing }
-DSSeekerActionRecord >> tracedInstructionPath: anObject [
-
-	tracedInstructionPath := anObject
 ]

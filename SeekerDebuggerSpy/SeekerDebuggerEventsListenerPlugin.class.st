@@ -5,6 +5,26 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
+SeekerDebuggerEventsListenerPlugin class >> fakeNotifyDebuggerInitializedForTestClass: aClass withSelector: aSymbol [
+
+	| dsClass rec |
+	dsClass := DSSeekerInitializationActionRecord.
+
+	[ 
+	rec := dsClass newEmptyRecordHolder.
+	rec testClass: aClass.
+	rec testMethodSelector: aSymbol.
+	rec win: SpWindow allInstances last.
+	rec eventName: #debuggerInitialized.
+	rec seekerInstanceID: SeekerDebugger nextInstanceID.
+	rec usingFakeWindow: true.
+
+	dsClass for: rec ]
+		on: Error
+		do: [ :e | DSSpy log: #ERROR key: #PROCEED ]
+]
+
+{ #category : #'as yet unclassified' }
 SeekerDebuggerEventsListenerPlugin >> debuggerWindow [
 
 	[ 
@@ -25,7 +45,6 @@ SeekerDebuggerEventsListenerPlugin >> fillBasicFields: object [
 
 	object seekerInstanceID: seeker instanceID.
 
-	object executedBytecode: seeker tracer bytecodeIndex
 ]
 
 { #category : #initialization }
@@ -36,20 +55,8 @@ SeekerDebuggerEventsListenerPlugin >> fillDetailedFields: object [
 			 asExpressionSkippingFirst: 20).
 	object stackDepth: seeker tracer currentContext stackDepth.
 	object selectedContextDepth: seeker tracer selectedContext stackDepth.
-	object selectedCode: seeker tracer selectedCode
-]
-
-{ #category : #'as yet unclassified' }
-SeekerDebuggerEventsListenerPlugin >> getRecordString: aString [
-
-	| stackInfo stackDepth selectedContextDepth |
-	stackDepth := seeker tracer currentContext stackDepth.
-	selectedContextDepth := seeker tracer selectedContext stackDepth.
-	stackInfo := seeker tracer currentContext contextPath asExpression.
-	^ self seekerInstanceIDString , aString , ' | #selectedCode: '
-	  , seeker tracer selectedCode , '# selectedContextDepth: ('
-	  , selectedContextDepth asString , '/' , stackDepth asString
-	  , ')  | #contextPath: ' , stackInfo
+	object selectedCode: seeker tracer selectedCode.
+	object executedBytecode: seeker tracer bytecodeIndex
 ]
 
 { #category : #initialization }
@@ -75,6 +82,8 @@ SeekerDebuggerEventsListenerPlugin >> handleNotifyCommandExecution: liteCommand 
 SeekerDebuggerEventsListenerPlugin >> handleNotifyDebuggerInitialized [
 
 	| dsClass rec |
+	self flag:
+		'I am not using this. Using the one in the class side instead'.
 	dsClass := DSSeekerActionRecord.
 	Transcript
 		show: 'handleNotifyDebuggerInitialized';
@@ -100,6 +109,7 @@ SeekerDebuggerEventsListenerPlugin >> handleNotifyDebuggerInitialized [
 SeekerDebuggerEventsListenerPlugin >> handleNotifyExecutionMapped: compiledMethod [
 
 	| dsClass rec |
+	self flag: 'I am not using this at all'.
 	dsClass := DSSeekerActionRecord.
 	[ 
 	rec := dsClass newEmptyRecordHolder.

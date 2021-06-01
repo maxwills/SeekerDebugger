@@ -1,6 +1,6 @@
 Class {
 	#name : #DSSeekerQueryCommandActionRecord,
-	#superclass : #DSSeekerActionRecord,
+	#superclass : #DSSeekerDetailedActionRecord,
 	#instVars : [
 		'queryCommandClass',
 		'subEvent'

@@ -98,6 +98,23 @@ AutomatedDebugSessionTests >> debug: aCompiledMethod receiver: anObject in: eval
 ]
 
 { #category : #'as yet unclassified' }
+AutomatedDebugSessionTests >> doFakeInitializationAndProgrammaticallyLaunchSeekerExample [
+
+	| testClass testMethodSelector |
+	testClass := GLineTest.
+	testMethodSelector := #testAngleWith.
+
+	"do the initialization record first"
+	SeekerDebuggerEventsListenerPlugin
+		fakeNotifyDebuggerInitializedForTestClass: testClass
+		withSelector: testMethodSelector.
+	"Launch the test"
+	ClyDebugTestWithSeekerCommand new
+		runTest: testMethodSelector
+		of: testClass
+]
+
+{ #category : #'as yet unclassified' }
 AutomatedDebugSessionTests >> replaceVar: aBlock [
 
 	| thisBlock |

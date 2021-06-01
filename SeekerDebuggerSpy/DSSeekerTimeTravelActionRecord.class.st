@@ -1,6 +1,6 @@
 Class {
 	#name : #DSSeekerTimeTravelActionRecord,
-	#superclass : #DSSeekerActionRecord,
+	#superclass : #DSSeekerDetailedActionRecord,
 	#instVars : [
 		'selectedResult'
 	],

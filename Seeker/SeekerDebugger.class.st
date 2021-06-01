@@ -71,6 +71,12 @@ SeekerDebugger class >> newFor: aStDebugger [
 	^ debugger
 ]
 
+{ #category : #'as yet unclassified' }
+SeekerDebugger class >> nextInstanceID [
+
+	^ instanceNumberTotal + 1
+]
+
 { #category : #'accessing context' }
 SeekerDebugger >> currentContext [
 ^tracer currentContext
