@@ -74,6 +74,7 @@ SeekerDebugger class >> newFor: aStDebugger [
 { #category : #'as yet unclassified' }
 SeekerDebugger class >> nextInstanceID [
 
+	instanceNumberTotal ifNil: [ instanceNumberTotal := 0 ].
 	^ instanceNumberTotal + 1
 ]
 
