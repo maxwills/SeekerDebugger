@@ -66,6 +66,10 @@ SeekerExecutionTablesInterface >> omniscientTable [
 					                (#contextPC -> csi contextPC).
 					                (#contextTop -> csi contextTop).
 					                (#isMethodReturn -> csi isMethodReturn).
+					                (#isExceptionSignaledMethod
+					                 -> csi isExceptionSignaledMethod).
+					                (#isFirstBytecodeOfMethod
+					                 -> csi isFirstBytecodeOfMethod).
 					                (#initialPC -> csi initialPC).
 					                (#endPC -> csi endPC).
 					                (#method -> csi compiledCode).

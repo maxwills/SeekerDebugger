@@ -46,6 +46,18 @@ SeekerStDebuggerDebuggerActionModel >> enabled [
 	^ false
 ]
 
+{ #category : #context }
+SeekerStDebuggerDebuggerActionModel >> referenceContext [
+
+	"This prevents a bug that happens when time traveling to the signaled expcetion. In that case, probable because of replays and context unwindinws,topContext receiver signalContext is nil, so signalerContext call fails.This prevents that."
+
+	self contextPredicate contextSignalsException ifFalse: [ 
+		^ self interruptedContext ].
+	^ topContext receiver signalContext
+		  ifNil: [ self interruptedContext ]
+		  ifNotNil: [ topContext receiver signalerContext ]
+]
+
 { #category : #'debugging actions' }
 SeekerStDebuggerDebuggerActionModel >> restartContext: aContext [
 

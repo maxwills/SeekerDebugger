@@ -43,6 +43,12 @@ SeekerLiteCommand >> codeSelectedText [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerLiteCommand >> commonDescriptionIntroString [
+
+	^ 'Queries the execution, from start to finish, '
+]
+
+{ #category : #'as yet unclassified' }
 SeekerLiteCommand >> createQueryTitle [
 
 	^ 'Query for ' , self name , self selectionTitleString
@@ -72,7 +78,7 @@ SeekerLiteCommand >> execute [
 				on: Exception
 				do: [ :e | 
 					self seeker notifyCommandExecution: self subEvent: #failed.
-					self inform: 'Error: ' , e messageText ] ]
+					self notifyError: e messageText ] ]
 		ifFalse: [ self executeCommand ]
 ]
 
@@ -95,6 +101,13 @@ SeekerLiteCommand >> name [
 SeekerLiteCommand >> nodeUnderCursor [
 
 	^ context nodeUnderCursor
+]
+
+{ #category : #'ui notifying' }
+SeekerLiteCommand >> notifyError: aString [
+
+	context warning: aString for: context code.
+	self inform: 'Error: ' , aString
 ]
 
 { #category : #'as yet unclassified' }

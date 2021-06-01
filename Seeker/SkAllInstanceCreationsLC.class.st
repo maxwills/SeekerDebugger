@@ -7,7 +7,9 @@ Class {
 { #category : #accessing }
 SkAllInstanceCreationsLC >> description [
 
-	^'MyCommand description'
+		^ self commonDescriptionIntroString
+	  ,
+	  'for every <instance creation message send>. Every listed result corresponds to the moment before performing the object instantiation. (Sender''s point of view)'
 ]
 
 { #category : #executing }
@@ -27,7 +29,7 @@ SkAllInstanceCreationsLC >> icon [
 
 "
 
-	^ #add
+	^ #smallNew
 ]
 
 { #category : #accessing }

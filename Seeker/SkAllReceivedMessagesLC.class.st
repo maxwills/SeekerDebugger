@@ -7,7 +7,9 @@ Class {
 { #category : #accessing }
 SkAllReceivedMessagesLC >> description [
 
-	^'MyCommand description'
+	^ self commonDescriptionIntroString
+	  ,
+	  'for every <received message>. Every listed result corresponds to the first instruction of a method call. (Receiver''s point of view. Useful for arguments values inspection)'
 ]
 
 { #category : #executing }
@@ -35,11 +37,11 @@ SkAllReceivedMessagesLC >> icon [
 
 "
 
-	^ #add
+	^ #glamorousOpenFromUrl
 ]
 
 { #category : #accessing }
 SkAllReceivedMessagesLC >> name [
 
-	^'All Received Messages'
+	^'All Received messages'
 ]

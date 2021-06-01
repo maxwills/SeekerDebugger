@@ -5,6 +5,16 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
+SeekerFindInterface >> allExceptionSignals [
+
+	| query result |
+	query := tracer queries forExceptionSignals.
+
+	result := query asTableForTimeTravel.
+	^ result
+]
+
+{ #category : #'as yet unclassified' }
 SeekerFindInterface >> allInstanceCreations [
 
 	| query result |

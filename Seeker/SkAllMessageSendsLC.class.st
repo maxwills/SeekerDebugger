@@ -7,7 +7,9 @@ Class {
 { #category : #accessing }
 SkAllMessageSendsLC >> description [
 
-	^'MyCommand description'
+	^ self commonDescriptionIntroString
+	  ,
+	  'for every <sent message>. Every listed result corresponds to the moment before performing the message send. (Sender''s point of view)'
 ]
 
 { #category : #executing }
@@ -31,10 +33,13 @@ SkAllMessageSendsLC >> icon [
 "Inspect the following line and choose an icon for the command
 
 (Smalltalk ui icons)
-
+history
+objects
+smallLoadProject
+smallPushpin
 "
-
-	^ #add
+"#glamorousSaveToUrl"
+	^ #smallExport
 ]
 
 { #category : #accessing }

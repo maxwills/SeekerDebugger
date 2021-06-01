@@ -7,7 +7,9 @@ Class {
 { #category : #accessing }
 SkChangesOfAnyObjectOfClassLC >> description [
 
-	^'MyCommand description'
+	^ self commonDescriptionIntroString
+	  ,
+	  'for every assignment of any <instance variable> of any <object> whose <class name> matches the <selected text>'
 ]
 
 { #category : #executing }
@@ -30,13 +32,13 @@ SkChangesOfAnyObjectOfClassLC >> icon [
 
 "
 
-	^ #add
+	^ #changeUpdate
 ]
 
 { #category : #accessing }
 SkChangesOfAnyObjectOfClassLC >> name [
 
-	^ 'Changes of any Object of the selected class'
+	^ 'All the assignments of instance variables, of objects whose class name matches selection'
 ]
 
 { #category : #'as yet unclassified' }

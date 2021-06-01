@@ -7,7 +7,9 @@ Class {
 { #category : #accessing }
 SkAllMessageSendsWithSelectorLC >> description [
 
-	^'MyCommand description'
+	^ self commonDescriptionIntroString
+	  ,
+	  'for every <message send> whose <selector> matches the <selected text>. Every listed result corresponds to the moment before performing the message send. (Sender''s point of view)'
 ]
 
 { #category : #executing }
@@ -29,7 +31,7 @@ SkAllMessageSendsWithSelectorLC >> icon [
 
 "
 
-	^ #add
+	^ #glamorousSaveToUrl
 ]
 
 { #category : #accessing }

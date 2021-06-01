@@ -38,5 +38,5 @@ SkAliasOfSelectedVariableTestLC >> icon [
 { #category : #accessing }
 SkAliasOfSelectedVariableTestLC >> name [
 
-	^'Alias of selected variable'
+	^ 'Alias of selected variable'
 ]

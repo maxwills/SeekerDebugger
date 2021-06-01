@@ -246,6 +246,26 @@ SeekerTraceQueriesInterface >> forExceptionInstancesCreation [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerTraceQueriesInterface >> forExceptionSignals [
+
+	| q table |
+	table := tracer tables omniscientTableForAliases.
+
+	q := Query
+		     from: table
+		     select: [ :row | 
+			     row isExceptionSignaledMethod and: [ 
+				     row isFirstBytecodeOfMethod ] ]
+		     collect: [ :row | 
+			     New with: { 
+					     (#bytecodeIndex -> row bytecodeIndex).
+					     (#methodSelector -> row methodSelector).
+					     (#receiverClass -> row receiverClass).
+					     (#messageText -> row receiver messageText) } ].
+	^ q
+]
+
+{ #category : #'as yet unclassified' }
 SeekerTraceQueriesInterface >> forInstanceVariables [
 
 	| q table |

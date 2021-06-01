@@ -7,7 +7,8 @@ Class {
 { #category : #accessing }
 SkChangesOfAnyVariableLC >> description [
 
-	^'MyCommand description'
+	^ self commonDescriptionIntroString
+	  , 'for every assignment of any <variable>'
 ]
 
 { #category : #executing }
@@ -32,11 +33,11 @@ SkChangesOfAnyVariableLC >> icon [
 
 "
 
-	^ #add
+	^ #changeUpdate
 ]
 
 { #category : #accessing }
 SkChangesOfAnyVariableLC >> name [
 
-	^ 'Changes of Any Variable'
+	^ 'All the assignments of any variable'
 ]

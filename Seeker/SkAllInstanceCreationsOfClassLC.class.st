@@ -7,7 +7,9 @@ Class {
 { #category : #accessing }
 SkAllInstanceCreationsOfClassLC >> description [
 
-	^'MyCommand description'
+	^ self commonDescriptionIntroString
+	  ,
+	  'for every <instance creation message send> that will instantiate an object of the class whose name matches the <selected text>. Every listed result corresponds to the moment before performing the object instantiation. (Sender''s point of view)'
 ]
 
 { #category : #executing }
@@ -27,13 +29,13 @@ SkAllInstanceCreationsOfClassLC >> icon [
 
 "
 
-	^ #add
+	^ #smallNew
 ]
 
 { #category : #accessing }
 SkAllInstanceCreationsOfClassLC >> name [
 
-	^'All Instances Creation of Class named as selection'
+	^'All Instances Creation of class named as selection'
 ]
 
 { #category : #'as yet unclassified' }

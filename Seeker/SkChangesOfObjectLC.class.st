@@ -7,7 +7,9 @@ Class {
 { #category : #accessing }
 SkChangesOfObjectLC >> description [
 
-	^'MyCommand description'
+	^ self commonDescriptionIntroString
+	  ,
+	  'for every assignment of any <instance variable> of the object referred by the <current value> of the <selected variable>'
 ]
 
 { #category : #executing }
@@ -27,13 +29,13 @@ SkChangesOfObjectLC >> icon [
 
 "
 
-	^ #add
+	^ #objects
 ]
 
 { #category : #accessing }
 SkChangesOfObjectLC >> name [
 
-	^'Changes of object'
+	^ 'All the assignments of instance variables, of the object currently pointed by the selected variable'
 ]
 
 { #category : #'as yet unclassified' }

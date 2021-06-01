@@ -34,7 +34,8 @@ Class {
 	#superclass : #SeekerInterfaceObject,
 	#instVars : [
 		'cachedValues',
-		'instanceCreationPrimitives'
+		'instanceCreationPrimitives',
+		'exceptionSignalSelectors'
 	],
 	#category : #'Seeker-Interfaces'
 }
@@ -156,13 +157,20 @@ SeekerCurrentStateInterface >> initialize [
 	self class methodDictionary keysDo: [ :selector | 
 		cachedValues at: selector put: -1 -> nil ].
 	instanceCreationPrimitives := #( 70 71 79 148 160 ).
-
+	exceptionSignalSelectors := #( #signalIn: #signal: #signal )
 ]
 
 { #category : #testing }
 SeekerCurrentStateInterface >> isDead [
 
 	^ self context isDead
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> isExceptionSignaledMethod [
+
+	^ (self receiverClass inheritsFromOrSameAs: Exception) and: [ 
+		  exceptionSignalSelectors includes: self methodSelector ]
 ]
 
 { #category : #'as yet unclassified' }

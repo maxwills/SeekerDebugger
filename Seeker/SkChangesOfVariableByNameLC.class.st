@@ -7,7 +7,9 @@ Class {
 { #category : #accessing }
 SkChangesOfVariableByNameLC >> description [
 
-	^'MyCommand description'
+	^ self commonDescriptionIntroString
+	  ,
+	  'for every assignment where the <variable name> matches the <selected text>'
 ]
 
 { #category : #executing }
@@ -29,13 +31,13 @@ SkChangesOfVariableByNameLC >> icon [
 
 "
 
-	^ #add
+	^ #changeUpdate
 ]
 
 { #category : #accessing }
 SkChangesOfVariableByNameLC >> name [
 
-	^ 'Changes of Variables with selected name'
+	^ 'All the assignments of variables with selected name'
 ]
 
 { #category : #'as yet unclassified' }

@@ -169,6 +169,26 @@ SeekerResultsCollection >> forExceptionInstancesCreation [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerResultsCollection >> forExceptionSignals [
+
+	columns removeAll.
+	self addColumn bc
+		key: #bytecodeIndex;
+		label: 'ExecBC'.
+	self addColumn md
+		key: #receiverClass;
+		label: 'Exception class'.
+	self addColumn sm
+		key: #methodSelector;
+		label: 'Signal Selector'.
+	self addColumn md
+		key: #messageText;
+		label: 'Message Text'.
+
+	^ self
+]
+
+{ #category : #'as yet unclassified' }
 SeekerResultsCollection >> forInstancesCreation [
 
 	columns removeAll.
