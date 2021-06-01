@@ -9,7 +9,7 @@ Class {
 
 { #category : #menu }
 SeekerWorldLiteCommands class >> menu00SeekerDevOn: aBuilder [
-	<worldMenu>
+	"<worldMenu>" 
 	(aBuilder item: #SeekerDev)
 		parent: #Tools;
 		label: 'SeekerDev';
@@ -20,7 +20,7 @@ SeekerWorldLiteCommands class >> menu00SeekerDevOn: aBuilder [
 
 { #category : #'as yet unclassified' }
 SeekerWorldLiteCommands class >> menuBrowseSeekerExamplesClass: aBuilder [
-	<worldMenu>
+	"<worldMenu>"
 	(aBuilder item: #SeekerDevBrowseSeekerExamplesClass)
 		parent: #SeekerDevBrowseSeekerPackage;
 		order: 1;
@@ -33,7 +33,7 @@ SeekerWorldLiteCommands class >> menuBrowseSeekerExamplesClass: aBuilder [
 { #category : #'as yet unclassified' }
 SeekerWorldLiteCommands class >> menuBrowseSeekerPackage: aBuilder [
 
-	<worldMenu>
+	"<worldMenu>"
 	(aBuilder item: #SeekerDevBrowseSeekerPackage)
 		parent: #SeekerDev;
 		order: 1;
@@ -45,7 +45,7 @@ SeekerWorldLiteCommands class >> menuBrowseSeekerPackage: aBuilder [
 
 { #category : #'as yet unclassified' }
 SeekerWorldLiteCommands class >> menuBrowseSeekerTracerClass: aBuilder [
-	<worldMenu>
+	"<worldMenu>"
 	(aBuilder item: #SeekerDevBrowseSeekerTracerClass)
 		parent: #SeekerDevBrowseSeekerPackage;
 		order: 1;
@@ -58,7 +58,7 @@ SeekerWorldLiteCommands class >> menuBrowseSeekerTracerClass: aBuilder [
 { #category : #'as yet unclassified' }
 SeekerWorldLiteCommands class >> menuBrowseStDebuggerActionModel: aBuilder [
 
-	<worldMenu>
+	"<worldMenu>"
 	(aBuilder item: #SeekerDevBrowseStDebuggerActionModel)
 		parent: #SeekerDev;
 		order: 2;
@@ -76,7 +76,7 @@ SeekerWorldLiteCommands class >> menuBrowseStDebuggerActionModel: aBuilder [
 { #category : #'as yet unclassified' }
 SeekerWorldLiteCommands class >> menuEsteban: aBuilder [
 
-	<worldMenu> 
+	"<worldMenu> " 
 	(aBuilder item: #SkEsteban)
 		parent: #SeekerDev;
 		order: 1;
@@ -89,7 +89,7 @@ SeekerWorldLiteCommands class >> menuEsteban: aBuilder [
 { #category : #'as yet unclassified' }
 SeekerWorldLiteCommands class >> menuEstebanColumnsCreation: aBuilder [
 
-	<worldMenu>
+	"<worldMenu>"
 	(aBuilder item: #SkEstebanGoToColumnsCreation)
 		parent: #SkEsteban;
 		order: 3;
@@ -102,7 +102,7 @@ SeekerWorldLiteCommands class >> menuEstebanColumnsCreation: aBuilder [
 { #category : #'as yet unclassified' }
 SeekerWorldLiteCommands class >> menuEstebanDebuggerExtensionPresenter: aBuilder [
 
-	<worldMenu>
+	"<worldMenu>"
 	(aBuilder item: #SkEstebanDebPresenter)
 		parent: #SkEsteban;
 		order: 2;
@@ -116,8 +116,8 @@ SeekerWorldLiteCommands class >> menuEstebanDebuggerExtensionPresenter: aBuilder
 { #category : #'as yet unclassified' }
 SeekerWorldLiteCommands class >> menuEstebanTestCase: aBuilder [
 
-	<worldMenu>
-	(aBuilder item: #SkEstebanGoToTestCase)
+	"<worldMenu>"
+	(aBuilder item: #SkEstebanGoToTestCase) 
 		parent: #SkEsteban;
 		order: 1;
 		label: 'Test Case to reproduce issue';
@@ -125,4 +125,17 @@ SeekerWorldLiteCommands class >> menuEstebanTestCase: aBuilder [
 		help: 'No label';
 		action: [ 
 			(MetacelloVersionNumberTestCase >> #testApproxVersion02) browse ]
+]
+
+{ #category : #menu }
+SeekerWorldLiteCommands class >> menuSeekerWarmup: aBuilder [
+
+	<worldMenu>
+	(aBuilder item: #SeekerWarmUp) 
+		parent: #Tools;
+		label: 'Seeker Warmup';
+		icon: (self iconNamed: 'exception');
+		help: 'Opens the Seeker Warmup test case';
+		action: [ (DoubleLinkedListTest >> #testLinksDo) browse ];
+		order: 776
 ]

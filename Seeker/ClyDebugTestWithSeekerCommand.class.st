@@ -18,7 +18,8 @@ ClyDebugTestWithSeekerCommand class >> fullBrowserTableIconActivation [
 
 { #category : #execution }
 ClyDebugTestWithSeekerCommand >> defaultMenuIcon [
-	^Smalltalk ui iconNamed: #smallDebug
+
+	^ Smalltalk ui iconNamed: #exception
 ]
 
 { #category : #accessing }
