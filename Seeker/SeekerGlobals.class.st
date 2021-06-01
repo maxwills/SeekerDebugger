@@ -72,6 +72,16 @@ SeekerGlobals >> defaultStepperClass: aStepperClass [
 	defaultStepperClass := aStepperClass
 ]
 
+{ #category : #'as yet unclassified' }
+SeekerGlobals >> goToStDebuggerActionModelOverride [
+
+	(StDebugger >> #debuggerActionModel) browse.
+	Clipboard clipboardText:
+		SeekerStDebuggerDebuggerActionModel name asString.
+	self inform:
+		'SeekerStDebuggerDebuggerActionModel ready in clipboard for overwriting'
+]
+
 { #category : #testing }
 SeekerGlobals >> isWatchedProcess: aProcess [
 	watchedProcesses ifNil: [ ^false ].
