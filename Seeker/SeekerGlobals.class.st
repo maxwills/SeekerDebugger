@@ -81,6 +81,8 @@ SeekerGlobals >> isWatchedProcess: aProcess [
 { #category : #accessing }
 SeekerGlobals >> seekerCodePresenterText [
 
+	"This returns the remembered text in the scripting code presenter"
+
 	^ seekerCodePresenterText
 ]
 
@@ -88,6 +90,14 @@ SeekerGlobals >> seekerCodePresenterText [
 SeekerGlobals >> seekerCodePresenterText: anObject [
 
 	seekerCodePresenterText := anObject
+]
+
+{ #category : #accessing }
+SeekerGlobals >> startQueryingFromBytecodeOne [
+
+	"For the test cases, the user might be interested in what happens during the test setup. In that case, this should return true"
+
+	^ false
 ]
 
 { #category : #'as yet unclassified' }

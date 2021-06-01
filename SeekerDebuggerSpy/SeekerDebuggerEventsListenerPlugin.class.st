@@ -14,7 +14,7 @@ SeekerDebuggerEventsListenerPlugin class >> fakeNotifyDebuggerInitializedForTest
 	rec := dsClass newEmptyRecordHolder.
 	rec testClass: aClass.
 	rec testMethodSelector: aSymbol.
-	rec win: SpWindow allInstances last.
+	rec win: nil.
 	rec eventName: #debuggerInitialized.
 	rec seekerInstanceID: SeekerDebugger nextInstanceID.
 	rec usingFakeWindow: true.
@@ -35,7 +35,7 @@ SeekerDebuggerEventsListenerPlugin >> debuggerWindow [
 	win window ifNil: [ ^ win ].
 	^ win window ]
 		on: Exception
-		do: [ :e | e putInSeekerAuxStorage1 ]
+		do: [ :e | nil ]
 ]
 
 { #category : #initialization }

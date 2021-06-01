@@ -70,7 +70,10 @@ SkExecutionVirtualTable >> do: aBlock [
 			  'Time traveling needs to be enabled to execute Trace Queries' ].
 	preBytecodeStepHook := [ aBlock value: self currentRow ].
 	tracer doAndUpdateSessionAfter: [ 
-		tracer restartAtBytecodeOne.
+		SeekerGlobals instance startQueryingFromBytecodeOne
+			ifTrue: [ tracer restartAtBytecodeOne ]
+			ifFalse: [ tracer timeTravelToUserStart ].
+
 		tracer addAstPreStepHook: preBytecodeStepHook.
 		[ tracer stepBytecodeToExecutionEnd ] ensure: [ 
 			tracer removeAstPreStepHook: preBytecodeStepHook.

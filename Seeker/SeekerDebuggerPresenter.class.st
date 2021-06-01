@@ -335,7 +335,7 @@ SeekerDebuggerPresenter >> setModelBeforeInitialization: aStDebugger [
 	seekerDebugger quickSetup.
 	seekerDebugger stDebugger: aStDebugger.
 	seekerDebugger notifyDebuggerInitialized.
-	seekerDebugger tracer isMapped ifTrue: seekerDebugger notifyExecutionMapped
+	
 ]
 
 { #category : #'event handling' }

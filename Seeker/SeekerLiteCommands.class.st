@@ -86,10 +86,10 @@ SeekerLiteCommands >> stCodeCommandsTree [
 				  SkChangesOfVariableByNameLC.
 				  SkChangesOfAnyVariableLC.
 				  SkChangesOfAnyObjectOfClassLC } }.
-		  { 
+		  "{ 
 			  'SeekerDebug'.
 			  { 
 				  SkAliasOfSelectedVariableTestLC.
 				  SkNodeUnderCursorTestLC.
-				  SkNodeBeforeOrAfterCurrentLC } } }
+				  SkNodeBeforeOrAfterCurrentLC } }" }
 ]

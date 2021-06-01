@@ -30,10 +30,16 @@ ClyDebugTestWithSeekerCommand >> defaultMenuItemName [
 ClyDebugTestWithSeekerCommand >> runTest: testSelector of: testClass [
 
 	| process suspendedContext |
+	"Current version is not compatible with break points"
+	Breakpoint removeAll.
 	process := [ super runTest: testSelector of: testClass ] newProcess.
 	SeekerGlobals instance watchProcess: process.
 	suspendedContext := process suspendedContext.
-
+	self flag:
+		'next call should be removed after experiment (or use a plugin system).'.
+	SeekerDebuggerEventsListenerPlugin
+		fakeNotifyDebuggerInitializedForTestClass: testClass
+		withSelector: testSelector.
 	(OupsDebugRequest newForContext: suspendedContext)
 		process: process;
 		compiledMethod: testClass >> testSelector;

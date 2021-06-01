@@ -44,7 +44,9 @@ eventName := aSeekerQuery class name.
 DSSeekerActionRecord >> record: object [
 
 	| superVars |
-	super record: object win.
+	object win ifNotNil: [ 
+		(object win class inheritsFromOrSameAs: SpWindow) ifTrue: [ 
+			super record: object win ] ].
 	superVars := DSAbstractEventRecord allInstVarNames asSet.
 	self class allInstVarNames do: [ :v | 
 		(superVars includes: v) ifFalse: [ 

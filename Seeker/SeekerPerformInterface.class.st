@@ -78,12 +78,6 @@ SeekerPerformInterface >> oldTimeTravelToNode: aNode inContext: aContext [
 				tracer safeStepToTraceTime: nodeTraceTime ] ]
 ]
 
-{ #category : #starting }
-SeekerPerformInterface >> restart [
-
-	tracer restartAtUserStart
-]
-
 { #category : #'debugging actions' }
 SeekerPerformInterface >> restartContext: aContext [
 
@@ -92,6 +86,12 @@ SeekerPerformInterface >> restartContext: aContext [
 		targetContextTraceTime := aContext tracedContextPC
 			                          asTraceTimeReference.
 		tracer safeTimeTravelToTraceTime: targetContextTraceTime ]
+]
+
+{ #category : #starting }
+SeekerPerformInterface >> restartFromBytecodeOne [
+
+	tracer restartAtBytecodeOne
 ]
 
 { #category : #'as yet unclassified' }
@@ -169,4 +169,10 @@ SeekerPerformInterface >> timeTravelToSelectedNode [
 	self
 		smartTimeTravelToNode: selectedNode
 		inContext: tracer selectedContext
+]
+
+{ #category : #starting }
+SeekerPerformInterface >> timeTravelToUserStart [
+
+	tracer timeTravelToUserStart
 ]
