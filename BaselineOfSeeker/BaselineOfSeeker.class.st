@@ -1,11 +1,11 @@
 Class {
-	#name : #BaselineOfSeekerDebugger,
+	#name : #BaselineOfSeeker,
 	#superclass : #BaselineOf,
 	#category : #BaselineOfSeeker
 }
 
 { #category : #baselines }
-BaselineOfSeekerDebugger >> baseline: spec [
+BaselineOfSeeker >> baseline: spec [
 
 	<baseline>
 	spec for: #common do: [ "Here is a typical package and its tests
