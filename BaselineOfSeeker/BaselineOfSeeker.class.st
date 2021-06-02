@@ -20,21 +20,11 @@ BaselineOfSeeker >> baseline: spec [
 			group: 'default' with: #('Beacon-XXX' 'Beacon-XXX-Tests') ]
 	"
 		spec
-			baseline: 'SeekerExperiment'
-			with: [ 
-			spec repository: 'github://StevenCostiou/SeekerExperiment:main' ].
-		spec
 			package: 'EvaluatorDebugger-Base';
 			package: 'Seeker'
 			with: [ spec requires: #( 'EvaluatorDebugger-Base' ) ];
-			package: 'Seeker-Tests' with: [ spec requires: #( 'Seeker' ) ];
-			package: 'SeekerDebuggerSpy'
-			with: [ spec requires: #( 'DebuggingSpy' 'Seeker' ) ].
+			package: 'Seeker-Tests' with: [ spec requires: #( 'Seeker' ) ].
 		spec
 			group: 'default'
-			with: #( 'EvaluatorDebugger-Base' 'Seeker' 'Seeker-Tests' ).
-		spec
-			group: 'SeekerExperiment'
-			with:
-			#( 'EvaluatorDebugger-Base' 'Seeker' 'Seeker-Tests' 'SeekerDebuggerSpy' ) ]
+			with: #( 'EvaluatorDebugger-Base' 'Seeker' 'Seeker-Tests' ) ]
 ]
