@@ -29,8 +29,7 @@ BaselineOfSeekerDebugger >> baseline: spec [
 			with: [ spec requires: #( 'EvaluatorDebugger-Base' ) ];
 			package: 'Seeker-Tests' with: [ spec requires: #( 'Seeker' ) ];
 			package: 'SeekerDebuggerSpy'
-			with: [ spec requires: #( 'DebuggingSpy' ) ];
-			with: [ spec requires: #( 'Seeker' ) ].
+			with: [ spec requires: #( 'DebuggingSpy' 'Seeker' ) ].
 		spec
 			group: 'default'
 			with: #( 'EvaluatorDebugger-Base' 'Seeker' 'Seeker-Tests' ).
