@@ -159,7 +159,7 @@ SeekerResultsCollection >> forExceptionInstancesCreation [
 	"self addColumn sm
 		key: #messageReceiverPackage;
 		label: 'Package'."
-	self addColumn xp
+	self addColumn lg
 		key: #creationFormattedDescription;
 		label: 'About to instantiate a: '.
 	self addColumn md
