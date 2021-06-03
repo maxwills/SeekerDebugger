@@ -77,8 +77,8 @@ SeekerLiteCommands >> stCodeCommandsTree [
 			  { 
 				  SkAllMessageSendsLC.
 				  SkAllMessageSendsWithSelectorLC.
-				  SkAllReceivedMessagesLC.
-				  SkAllSignallingExceptionsLC }.
+				  SkAllReceivedMessagesLC ".
+				  SkAllSignallingExceptionsLC " }.
 			  #smallExport.
 			  'Queries for listing message sends' }.
 		  { 
@@ -90,21 +90,22 @@ SeekerLiteCommands >> stCodeCommandsTree [
 			  #smallNew.
 			  'Queries for listing instances creations' }.
 		  { 
-			  'Assignments - General'.
-			  { 
-				  SkChangesOfVariableByNameLC.
-				  SkChangesOfAnyVariableLC.
-				  SkChangesOfAnyObjectOfClassLC }.
-			  #changeUpdate.
-			  'Queries for listing asignments on variables' }.
-		  { 
 			  ' Assignments - Object Centric'.
 			  { 
 				  SkChangesOfSelfLC.
 				  SkChangesOfObjectLC.
 				  SkChangesOfInstanceVariableLC }.
 			  #objects.
-			  'Queries for listing asignments on instance variables of specific a object' }
+			  'Queries for listing asignments on instance variables of specific a object' }.
+		  { 
+			  'Assignments - General'.
+			  { 
+				  SkChangesOfVariableByNameLC.
+				  SkChangesOfAnyVariableLC.
+				  SkChangesOfAnyObjectOfClassLC }.
+			  #changeUpdate.
+			  'Queries for listing asignments on variables' }
+
 		  "{ 
 			  'SeekerDebug'.
 			  { 

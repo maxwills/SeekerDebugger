@@ -472,7 +472,7 @@ SeekerDebuggerPresenter >> updatePresenter [
 			put:
 			(WorkspaceVariable key: #seeker value: self seekerDebugger tracer).
 
-		currentStepLabel label: 'Trace Time - ExecutedBytecode: '
+		currentStepLabel label: 'ExecutedBytecode: '
 			, seekerDebugger tracer bytecodeIndex asString , ' ('
 			, (self seekerDebugger tracer executionProgress 
 					 printShowingDecimalPlaces: 2) , '% of known execution)'.
