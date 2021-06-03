@@ -12,7 +12,7 @@ StInspectorTimeTravelCommand class >> defaultDescription [
 
 { #category : #default }
 StInspectorTimeTravelCommand class >> defaultName [
-	<toolbarInspectCommand: 40>
+	"<toolbarInspectCommand: 40>"
 
 	^ 'Time Travel'
 ]
