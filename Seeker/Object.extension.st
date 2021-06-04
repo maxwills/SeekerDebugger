@@ -47,6 +47,14 @@ Object >> @>= another [
 ]
 
 { #category : #'*Seeker' }
+Object >> asScopedObjectDo: aBlock [
+
+	aBlock argumentCount ~= 1 ifTrue: [ 
+		^ self error: 'The number of arguments of the block must be one' ].
+	[ aBlock value: self ] ensure: [ self finalize ]
+]
+
+{ #category : #'*Seeker' }
 Object class >> atSeekerAuxStorage1 [
 
 	^ SeekerGlobals instance auxiliaryTempStorage1
