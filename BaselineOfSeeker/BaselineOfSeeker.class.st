@@ -28,5 +28,6 @@ BaselineOfSeeker >> baseline: spec [
 			with: [ spec requires: #( 'Seeker' ) ]. "remove this after experiment"
 		spec
 			group: 'default'
-			with: #( 'EvaluatorDebugger-Base' 'Seeker' 'Seeker-Tests' ) ]
+			with:
+			#( 'EvaluatorDebugger-Base' 'Seeker' 'Seeker-Tests' 'SeekerDebuggerSpy' ) ]
 ]
