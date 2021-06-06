@@ -9,7 +9,9 @@ Class {
 		'filteredResult',
 		'summaryLabel',
 		'filterMatchBlockForHighlighting',
-		'queryTitle'
+		'queryTitle',
+		'tableContainerPresenter',
+		'tableContainerLayout'
 	],
 	#category : #'Seeker-UI'
 }
@@ -18,11 +20,11 @@ Class {
 SeekerQueriesPresenter class >> defaultSpec [
 
 	^ SpBoxLayout newVertical
-		  add: #queryTitle expand: false;
-		  add: #resultsFilter expand: false;
-		  add: #table expand: true;
-		  add: #summaryLabel expand: false;
-		  "fill: true"yourself
+		  add: #queryTitle expand: false fill: false;
+		  add: #resultsFilter expand: false fill: true;
+		  add: #tableContainerPresenter expand: true fill: true;
+		  add: #summaryLabel expand: false fill: false;
+		  "fill: false"yourself
 ]
 
 { #category : #'UI specific' }
@@ -52,8 +54,16 @@ SeekerQueriesPresenter >> getRowSerialization: row [
 SeekerQueriesPresenter >> initializePresenters [
 
 	filterMatchBlockForHighlighting := [ :val | false ].
+
+	tableContainerPresenter := self newPresenter.
+	tableContainerLayout := SpScrollableLayout new.
+	tableContainerPresenter layout: tableContainerLayout.
+
+
 	self initializeTable.
-	resultsFilter := self newSearchInput.
+	tableContainerLayout child: table.
+	
+	resultsFilter := self newTextInput.
 	resultsFilter whenSubmitDo: [ 
 		self applyResultFilter.
 		self updateDisplayedResults.
@@ -62,7 +72,7 @@ SeekerQueriesPresenter >> initializePresenters [
 		'Case sensitive filter... (Press enter to apply)'.
 	summaryLabel := self newLabel.
 	summaryLabel label: 'Showing 0 results.'.
-	queryTitle  := self newLabel.
+	queryTitle := self newLabel.
 	queryTitle label: 'No Query executed'.
 	super initializePresenters
 ]
@@ -71,7 +81,7 @@ SeekerQueriesPresenter >> initializePresenters [
 SeekerQueriesPresenter >> initializeTable [
 
 	table := self newTable
-		         beNotResizable;
+		         beResizable;
 		         yourself
 ]
 

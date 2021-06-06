@@ -15,7 +15,8 @@ Class {
 		'valueLabel',
 		'evaluatorDebugger',
 		'tabs',
-		'queriesPresenter'
+		'queriesPresenter',
+		'scrollablePresenter'
 	],
 	#category : #'Seeker-UI'
 }
@@ -30,12 +31,11 @@ SeekerDebuggerPresenter class >> defaultDisplayOrder [
 SeekerDebuggerPresenter class >> defaultSpec [
 
 	^ SpBoxLayout newVertical
-		  add: #queriesPresenter expand: true;
+		  add: 'Stepping Control' expand: false;
+		  add: #toolbar expand: false;
+		  add: #tabs expand: true;
 		  add: #currentStepLabel expand: false;
 		  yourself
-	"add: 'Stepping Control' expand: false;
-		  add: #toolbar expand: false;"
-	"add: #tabs expand: true;"
 ]
 
 { #category : #'debugger extension' }
@@ -164,13 +164,9 @@ SeekerDebuggerPresenter >> initializePresenters [
 
 	"Called automatically by the Spec framework. This method describes how the widgets are initialized"
 
+
 	self initializeToolbar.
 	self initializeCode.
-
-	queriesPresenter := SeekerQueriesPresenter new
-		                    owner: self;
-		                    tracer: self seekerDebugger tracer;
-		                    yourself.
 	self initializeTabs.
 	"progress := self newProgressBar.
 	progress
@@ -179,13 +175,19 @@ SeekerDebuggerPresenter >> initializePresenters [
 		every: 0.5 seconds."
 	currentStepLabel := self newLabel.
 	currentStepLabel label: 'Current Step: -'.
-	self initializeEvaluatorPresenters.
+	self initializeEvaluatorPresenters
 ]
 
 { #category : #'accessing model' }
 SeekerDebuggerPresenter >> initializeTabs [
 
+	self initializeToolbar.
+	self initializeCode.
 	tabs := self newNotebook.
+	queriesPresenter := SeekerQueriesPresenter new
+		                    owner: self;
+		                    tracer: self seekerDebugger tracer;
+		                    yourself.
 	tabs addPageTitle: 'Query' provider: [ queriesPresenter ].
 	tabs addPageTitle: 'Scripting' provider: [ code ]
 ]
