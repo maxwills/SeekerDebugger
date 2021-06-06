@@ -53,7 +53,7 @@ SeekerQueriesPresenter >> initializePresenters [
 
 	filterMatchBlockForHighlighting := [ :val | false ].
 	self initializeTable.
-	resultsFilter := self newSearchInput.
+	resultsFilter := self newTextInput.
 	resultsFilter whenSubmitDo: [ 
 		self applyResultFilter.
 		self updateDisplayedResults.
@@ -62,7 +62,7 @@ SeekerQueriesPresenter >> initializePresenters [
 		'Case sensitive filter... (Press enter to apply)'.
 	summaryLabel := self newLabel.
 	summaryLabel label: 'Showing 0 results.'.
-	queryTitle  := self newLabel.
+	queryTitle := self newLabel.
 	queryTitle label: 'No Query executed'.
 	super initializePresenters
 ]
