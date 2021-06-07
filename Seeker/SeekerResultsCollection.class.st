@@ -84,10 +84,10 @@ SeekerResultsCollection >> forAssignmentsOfAnyVariable [
 	self addColumn sm
 		key: #valueChangedFrom;
 		label: 'Current Value'.
-	self addColumn sm
+	self addColumn md
 		key: #valueChangedTo;
 		label: 'To be Assigned'.
-	self addColumn xs
+	self addColumn sm
 		key: #variableClass;
 		label: 'Var Class'.
 	^ self
@@ -112,7 +112,7 @@ SeekerResultsCollection >> forAssignmentsOfInstanceVariables [
 	self addColumn sm
 		key: #valueChangedFrom;
 		label: 'Current Value'.
-	self addColumn sm
+	self addColumn md
 		key: #valueChangedTo;
 		label: 'To be Assigned'.
 	"self addColumn sm
@@ -140,7 +140,7 @@ SeekerResultsCollection >> forAssignmentsOfInstanceVariablesWithPackage [
 	self addColumn sm
 		key: #valueChangedFrom;
 		label: 'Current Value'.
-	self addColumn sm
+	self addColumn md
 		key: #valueChangedTo;
 		label: 'To be Assigned'.
 	"self addColumn sm
