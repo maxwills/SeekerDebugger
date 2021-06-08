@@ -199,6 +199,8 @@ SeekerFindInterface >> changesOfSelectedInstanceVariable [
 
 	| node |
 	node := tracer selectedNode.
+	node ifNil: [ 
+		^ self error: 'Selection is not a variable' ].
 	node isVariable ifFalse: [ 
 		^ self error: 'Selection is not a variable' ].
 	node variable isInstanceVariable ifFalse: [ 
