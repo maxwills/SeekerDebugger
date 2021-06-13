@@ -127,9 +127,9 @@ Set the tables columns from the ordered collection
 		col := each key = #bytecodeIndex
 			       ifTrue: [ "it's a link"
 				       SpLinkTableColumn
-					       title: 'TimeTravel'
-					       evaluated: [ :row | 'Go Here' "each value: row" ]
-					       action: [ :row | "each label"
+					       title: each label
+					       evaluated: [ :row | each value: row ]
+					       action: [ :row | 
 						       self notifyTimeTravel: row.
 						       row timeTravelToThis ] ]
 			       ifFalse: [ 
