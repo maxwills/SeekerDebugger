@@ -17,3 +17,9 @@ Metacello new
 The `SeekerInstallHelpers>>#install` will:
 - Enable the debugger extension.
 - Change the `StDebugger` `debuggerActionModel` default class to `SeekerStDebuggerActionModel`. This will make the StDebugger to need Seeker to be enabled to work. (You can still debug normaly without Seeker, but it will be shown at the right, even if it is not used). Don't use this if you rely on your own modifications of `StDebuggerActionModel`. If you unload Seeker, you will need to manually restore `StDebugger>>#debuggerActionModel`. This will be addressed in future versions.
+
+## Limitations
+
+- Currently, supports only test cases. 
+  - It doesn't support tests tear down phase at the moment.
+- Performance: Executing code with Seeker is a lot slower than usual. If it takes more than 10 seconds to coplete an operation, force quit and don't try that test again.
