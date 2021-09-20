@@ -26,5 +26,5 @@ The `SeekerInstallHelpers>>#install` will:
 - Performance: Executing code with Seeker is slow. Consider closing by force if necessary.
 
 ## More information:
-
+Usage examples can be found in the readme here:
 https://github.com/Willembrinck/2021-TTQs
