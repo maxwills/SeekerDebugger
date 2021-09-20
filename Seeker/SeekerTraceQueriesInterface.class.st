@@ -5,6 +5,16 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
+SeekerTraceQueriesInterface >> baseCsiQuery [
+
+	"returns a Current State Interface based query"
+"Note that this will not work on it's own. It still lacks a select and collect.
+For time travel, it needs the executedBytecode field to be a part of each result item.
+"
+	^ Query from: tracer tables programStates 
+]
+
+{ #category : #'as yet unclassified' }
 SeekerTraceQueriesInterface >> baseQuery [
 
 	"returns a query upon the omniscientTable"

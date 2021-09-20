@@ -119,67 +119,8 @@ SeekerExecutionTablesInterface >> omniscientTableForAliases [
 
 { #category : #'as yet unclassified' }
 SeekerExecutionTablesInterface >> programStates [
-"Dont remember the purpose of this table. I think this was the one to offer only the csi in every row. Maybe there is useful info in some comment too"
 
-	| csi virtualTable instancesDictionary getCreationStep |
-	instancesDictionary := WeakIdentityKeyDictionary  new. "TODO add an onFinish to the table so I can clear the dictionary"
-	getCreationStep := [ :objInst :stepIndex | 
-	                   (instancesDictionary includesKey: objInst)
-		                   ifTrue: [ instancesDictionary at: objInst ]
-		                   ifFalse: [ 
-			                   instancesDictionary at: objInst put: stepIndex.
-			                   stepIndex ] ].
-
-	csi := tracer currentStateInterface.
-	"Note: May be it is worth separating the rowReificationBlock and specify another mandatory block to be executed once every step(for instance, for alias regitration).
-	 So the reification block might not be needed all the time. Also, consider specialized individual reifications for select and collect"
-	
-	virtualTable := SkExecutionVirtualTable
-		                newWithRowReificationBlock: [ 
-			                New with: { 
-					                (#aliasesDictionary -> instancesDictionary).
-					                (#bytecodeIndex -> csi bytecodeIndex).
-					                (#bytecodeStepInTracedStatement
-					                 -> csi bytecodeStepInTracedStatement).
-					                (#context -> csi context).
-					                (#contextPC -> csi contextPC).
-					                (#contextTop -> csi contextTop).
-					                (#isMethodReturn -> csi isMethodReturn).
-					                (#initialPC -> csi initialPC).
-					                (#endPC -> csi endPC).
-					                (#method -> csi method).
-					                (#methodSelector -> csi methodSelector).
-					                (#methodReturnValue -> csi methodReturnValue).
-					                (#node -> csi node).
-					                (#nodeIsVariable -> csi isVariable).
-					                (#receiver -> csi receiver).
-					                (#receiverAlias -> (getCreationStep
-						                  value: csi receiver
-						                  value: csi tracedStatementStepIndex)).
-					                (#receiverClass -> csi receiverClass).
-					                (#receiverPackage -> csi receiverPackage).
-					                (#statementIndex -> csi statementIndex).
-					                (#statementNode -> csi statementNode).
-					                (#statementNotation
-					                 -> csi statementNotation asString).
-					                (#stepIndex -> csi tracedStatementStepIndex).
-					                (#stackDepth -> csi stackDepth).
-					                (#sequenceNode -> csi sequenceNode).
-					                (#sequenceStatementCount
-					                 -> csi sequenceStatementCount).
-					                (#tracedStatementDescriptor
-					                 -> csi tracedStatementDescriptor).
-					                (#sourceCodeOfNode -> csi node sourceCode).
-					                (#sourceCodeOfStatementNode
-					                 -> csi statementNode sourceCode).
-					                (#nodeOrdinalIndex -> csi nodeOrdinalIndex).
-					                (#previousNoi -> csi previousNoi).
-					                (#nodeStart -> csi node start).
-					                (#isInstantiationMessage
-					                 -> csi isInstantiationMessage).
-					                (#nodeStop -> csi node stop) } ]
-		                forTracer: tracer.
-	^ virtualTable
+	^ SkProgramStates newForTracer: tracer
 ]
 
 { #category : #'as yet unclassified' }

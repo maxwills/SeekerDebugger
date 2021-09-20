@@ -131,7 +131,7 @@ Set the tables columns from the ordered collection
 					       evaluated: [ :row | each value: row ]
 					       action: [ :row | 
 						       self notifyTimeTravel: row.
-						       row timeTravelToThis ] ]
+						       tracer timeTravelToTraceTime: row bytecodeIndex asExecutedBytecodeTraceTime"row timeTravelToThis" ] ]
 			       ifFalse: [ 
 				       (SpStringTableColumn
 					        title: each label
