@@ -197,11 +197,16 @@ Query >> asTableForTimeTravel [
 
 	"Triggers the solution of the query"
 
-	"a result operation"
+	"a result operation.
+	It adds the executedBytecode if it is not present, but it requeires that the source type to be AnonymousType.
+	Otherwise, prefer to manually add the executedBytecode field and use #asTable instead 
+	"
 
 	| tracer makeItForTimeTravel |
 	tracer := self findTracer.
 	makeItForTimeTravel := [ :row | 
+		"all this code does is to save the executeByteCode. Essentially, it creates and object that has the same keys than the original, but it has the privateExecutedBytecide accessor"
+		"Ideally this transformation should be executed only in the most outter query"
 	                       | t |
 	                       t := AnonymousTypeForTimeTravel
 		                            newWith: {  }
@@ -225,8 +230,8 @@ Query >> collect: aBlock [
 	"A lazy version of collect: of Pharo collections, applicable to queries"
 
 	| q composedProjection selfisIdentity blockIsIdentity |
-	selfisIdentity := whereBlock == self class alwaysMatch.
-	blockIsIdentity := aBlock == self class alwaysMatch.
+	selfisIdentity := whereBlock == self class identityProjection.
+	blockIsIdentity := aBlock == self class identityProjection.
 	composedProjection := [ true ] switchCase: { 
 			                      ([ selfisIdentity and: blockIsIdentity ]
 			                       -> [ selectBlock ]).
@@ -468,6 +473,38 @@ Query >> isRowAMatch: aRow [
 	^ false
 ]
 
+{ #category : #navigating }
+Query >> oldResolve [
+"A backup of the old unfinished method"
+	| runIt |
+	runIt := timeIt = #timeItDetailed
+		         ifTrue: [ 
+			         [ 
+			         | startingTime originalProjectionBlock |
+			         originalProjectionBlock := selectBlock.
+			         startingTime := Time now.
+			         customPreparationBlock value. "Beware here"
+			         self optimizeRowAcquisitionForFields:
+				         self getRelevantFields.
+			         "TODO: modify the select so it adds the time rows. Need to track time since starting time and row time (so I need the time whene every row query started)"
+			         selectBlock := selectBlock numArgs = 0
+				                        ifTrue: [ [  ] ]
+				                        ifFalse: [ [  ] ].
+			         fromDataSource do: [ :row | self doQueryOnRow: row ].
+			         self processResult ] ]
+		         ifFalse: [ 
+			         [ 
+			         customPreparationBlock value. "Beware here"
+			         self optimizeRowAcquisitionForFields:
+				         self getRelevantFields.
+			         fromDataSource do: [ :row | self doQueryOnRow: row ].
+			         self processResult ] ].
+	(timeIt = #timeIt or: [ timeIt = #timeItDetailed ])
+		ifTrue: [ runIt timeToRun inspect ]
+		ifFalse: runIt.
+	^ self
+]
+
 { #category : #accessing }
 Query >> onQueryRowMatch [
 
@@ -512,33 +549,10 @@ Query >> resetTableTraversing [
 { #category : #navigating }
 Query >> resolve [
 
-	| runIt |
-	runIt := timeIt = #timeItDetailed
-		         ifTrue: [ 
-			         [ 
-			         | startingTime originalProjectionBlock |
-			         originalProjectionBlock := selectBlock.
-			         startingTime := Time now.
-			         customPreparationBlock value. "Beware here"
-			         self optimizeRowAcquisitionForFields:
-				         self getRelevantFields.
-			         "TODO: modify the select so it adds the time rows. Need to track time since starting time and row time (so I need the time whene every row query started)"
-			         selectBlock := selectBlock numArgs = 0
-				                        ifTrue: [ [  ] ]
-				                        ifFalse: [ [  ] ].
-			         fromDataSource do: [ :row | self doQueryOnRow: row ].
-			         self processResult ] ]
-		         ifFalse: [ 
-			         [ 
-			         customPreparationBlock value. "Beware here"
-			         self optimizeRowAcquisitionForFields:
-				         self getRelevantFields.
-			         fromDataSource do: [ :row | self doQueryOnRow: row ].
-			         self processResult ] ].
-	(timeIt = #timeIt or: [ timeIt = #timeItDetailed ])
-		ifTrue: [ runIt timeToRun inspect ]
-		ifFalse: runIt.
-	^ self
+	customPreparationBlock value.
+	self optimizeRowAcquisitionForFields: self getRelevantFields.
+	fromDataSource do: [ :row | self doQueryOnRow: row ].
+	self processResult
 ]
 
 { #category : #accessing }

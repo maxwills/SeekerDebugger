@@ -142,6 +142,12 @@ SeekerCurrentStateInterface >> endPC [
 	^ tracer currentContext compiledCode endPC
 ]
 
+{ #category : #accessing }
+SeekerCurrentStateInterface >> fieldNames [
+
+	^ { #dynamic }
+]
+
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> initialPC [
 

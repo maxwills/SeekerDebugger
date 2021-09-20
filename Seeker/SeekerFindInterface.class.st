@@ -274,3 +274,16 @@ SeekerFindInterface >> returnValuesOfSelection [
 		^ self returnValuesOfMessageSendNode: node inContext: context ].
 	^ self error: 'Node is not a message or method node.'
 ]
+
+{ #category : #'as yet unclassified' }
+SeekerFindInterface >> variablesWrittenForDeltaQuery [
+
+	| query result |
+	query := (tracer queries baseCsiQuery select: [:state| state node isAssignment]) collect: [:state| New with: {
+		(#bytecodeIndex -> state bytecodeIndex).
+		(#varName -> state node variable variable name).
+		}].
+
+	result := query asTable.
+	^ result
+]
