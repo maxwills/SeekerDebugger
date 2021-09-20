@@ -26,4 +26,4 @@ The `SeekerInstallHelpers>>#install` will:
 - Performance: Executing code with Seeker is slow. Consider closing by force if necessary.
 
 ## Quick reference:
-The Quick Reference pdf document is included in the repository, and can be accessed [here](./resources/TTQs-QuickReference.pdf).
+The Quick Reference pdf document is included in the repository, and can be accessed [here](./Resources/TTQs-QuickReference.pdf).
