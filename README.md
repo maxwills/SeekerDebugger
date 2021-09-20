@@ -25,6 +25,5 @@ The `SeekerInstallHelpers>>#install` will:
   - It doesn't support tests tear down phase at the moment.
 - Performance: Executing code with Seeker is slow. Consider closing by force if necessary.
 
-## More information:
-Usage examples can be found in the readme here:
-https://github.com/Willembrinck/2021-TTQs
+## Quick reference:
+The Quick Reference pdf document is included in the repository, and can be accessed [here](./resources/TTQs-QuickReference.pdf).
