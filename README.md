@@ -27,3 +27,33 @@ The `SeekerInstallHelpers>>#install` will:
 
 ## Quick reference:
 The Quick Reference pdf document is included in the repository, and can be accessed [here](./Resources/TTQs-QuickReference.pdf).
+
+## UI Integrated Query Example
+
+To make a query appear in the UI (the Query Tab of Seeker), follow this example.
+
+1. Go to the Scripting Tab, as shown here. 
+<img src="./Resources/scripting.png" width="700px">  
+
+
+2. Paste and execute the following code.
+```Smalltalk
+|query|
+"Lists the variable name for all the assignments of an execution."
+query := Query from: seeker programStates
+ select: [:state| state node isAssignment] 
+ collect: [:state| New with: {
+		(#bytecodeIndex -> state bytecodeIndex).
+		(#varName -> state node variable variable name).
+		}]
+.
+seeker ui showResult: query asSeekerResultsCollection  
+```
+3. See the results in the Query Tab. Click on any bytecodeIndex to time-travel to the result.
+
+### Time-Traveling Queries Notes:
+
+- The Query object instantiation doesn't trigger the production of results.
+- The method asSeekerResultsCollection triggers the query evaluation, and additionally produces a Seeker UI-friendly object containing the resulting collection.
+- The field bytecodeIndex is mandatory.
+- `New with:` message instantiates a dictionary-like object. Collect your results attributes like that for displaying them in the UI, as in the example.
