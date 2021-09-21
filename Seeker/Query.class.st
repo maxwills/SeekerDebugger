@@ -177,6 +177,12 @@ Query >> asQueryWithMemory [
 ]
 
 { #category : #operation }
+Query >> asSeekerResultsCollection [
+   "Wraps common steps for obtaining results and for easier ui integration, returning an Seeker UI friendly type"
+	^ self asTable asSeekerResultsCollection
+]
+
+{ #category : #operation }
 Query >> asTable [
 
 	"Triggers the solution of the query"

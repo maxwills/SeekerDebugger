@@ -120,7 +120,7 @@ SeekerExecutionTablesInterface >> omniscientTableForAliases [
 { #category : #'as yet unclassified' }
 SeekerExecutionTablesInterface >> programStates [
 
-	^ SkProgramStates newForTracer: tracer
+	^ tracer programStates
 ]
 
 { #category : #'as yet unclassified' }
