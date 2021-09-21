@@ -9,7 +9,7 @@ Class {
 
 { #category : #menu }
 SeekerWorldLiteCommands class >> menu00SeekerDevOn: aBuilder [
-	"<worldMenu>" 
+	<worldMenu>
 	(aBuilder item: #SeekerDev)
 		parent: #Tools;
 		label: 'SeekerDev';
@@ -20,7 +20,7 @@ SeekerWorldLiteCommands class >> menu00SeekerDevOn: aBuilder [
 
 { #category : #'as yet unclassified' }
 SeekerWorldLiteCommands class >> menuBrowseSeekerExamplesClass: aBuilder [
-	"<worldMenu>"
+	<worldMenu>
 	(aBuilder item: #SeekerDevBrowseSeekerExamplesClass)
 		parent: #SeekerDevBrowseSeekerPackage;
 		order: 1;
@@ -33,7 +33,7 @@ SeekerWorldLiteCommands class >> menuBrowseSeekerExamplesClass: aBuilder [
 { #category : #'as yet unclassified' }
 SeekerWorldLiteCommands class >> menuBrowseSeekerPackage: aBuilder [
 
-	"<worldMenu>"
+	<worldMenu>
 	(aBuilder item: #SeekerDevBrowseSeekerPackage)
 		parent: #SeekerDev;
 		order: 1;
@@ -45,7 +45,7 @@ SeekerWorldLiteCommands class >> menuBrowseSeekerPackage: aBuilder [
 
 { #category : #'as yet unclassified' }
 SeekerWorldLiteCommands class >> menuBrowseSeekerTracerClass: aBuilder [
-	"<worldMenu>"
+	<worldMenu>
 	(aBuilder item: #SeekerDevBrowseSeekerTracerClass)
 		parent: #SeekerDevBrowseSeekerPackage;
 		order: 1;
@@ -53,24 +53,6 @@ SeekerWorldLiteCommands class >> menuBrowseSeekerTracerClass: aBuilder [
 		icon: (self iconNamed: 'smallDebug');
 		help: 'Opens the Seeker tracer class';
 		action: [ SkQueryExperimentalTracer  browse ] 
-]
-
-{ #category : #'as yet unclassified' }
-SeekerWorldLiteCommands class >> menuBrowseStDebuggerActionModel: aBuilder [
-
-	"<worldMenu>"
-	(aBuilder item: #SeekerDevBrowseStDebuggerActionModel)
-		parent: #SeekerDev;
-		order: 2;
-		label: 'Go to StDebugger for override step';
-		icon: (self iconNamed: 'smallDebug');
-		help: 'Opens a browser on the method';
-		action: [ 
-			(StDebugger >> #debuggerActionModel) browse.
-			Clipboard clipboardText:
-					SeekerStDebuggerDebuggerActionModel name asString.
-			self inform:
-					'SeekerStDebuggerDebuggerActionModel ready in clipboard for overwriting' ]
 ]
 
 { #category : #'as yet unclassified' }

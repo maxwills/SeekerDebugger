@@ -1,3 +1,10 @@
+"
+The Find interface offers ready to use queries that produce specific results fields.
+
+Calling a method from this interface will immediately evaluate a query, returning the results table.
+
+* *Avoid using this interface if custom queries are needed*. 
+"
 Class {
 	#name : #SeekerFindInterface,
 	#superclass : #SeekerBasicFindInterface,

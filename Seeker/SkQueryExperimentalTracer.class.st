@@ -66,6 +66,15 @@ SkQueryExperimentalTracer >> find [
 ]
 
 { #category : #'object - api' }
+SkQueryExperimentalTracer >> findAndShow: aQuery [
+
+	| interface |
+	interface := SeekerFindInterface new.
+	interface tracer: self.
+	^ interface 
+]
+
+{ #category : #'object - api' }
 SkQueryExperimentalTracer >> findContextInStack [
 
 	| findContextInterface |
@@ -118,6 +127,12 @@ SkQueryExperimentalTracer >> perform [
 	interface := SeekerPerformInterface new.
 	interface tracer: self.
 	^ interface
+]
+
+{ #category : #'as yet unclassified' }
+SkQueryExperimentalTracer >> programStates [
+
+	^ SkProgramStates newForTracer: self
 ]
 
 { #category : #'object - api' }

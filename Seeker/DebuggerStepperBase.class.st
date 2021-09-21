@@ -20,7 +20,7 @@ Class {
 DebuggerStepperBase >> andThen [
 
 	"A human friendly message conjunction. Basically higher level/less efficient/prettier cascade.
-	Don't use with message with arguments."
+	Don't use with message with arguments. Actually, don't use it at all"
 
 	^ self
 ]
@@ -136,4 +136,12 @@ DebuggerStepperBase >> timeTravelToUserStart [
 DebuggerStepperBase >> trace [
 	"Returns the collection of steps signatures"
 	self subclassResponsibility
+]
+
+{ #category : #'as yet unclassified' }
+DebuggerStepperBase >> ui [
+
+	"Returns the result presenter. Or Nil"
+
+	^ seeker stDebugger seekerDebuggerPresenter 
 ]

@@ -1,3 +1,6 @@
+"
+Base support methods for the Find interface
+"
 Class {
 	#name : #SeekerBasicFindInterface,
 	#superclass : #SeekerInterfaceObject,
