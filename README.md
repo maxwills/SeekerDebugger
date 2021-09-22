@@ -1,6 +1,6 @@
 # SeekerDebugger
 
-Seeker Prototype Queryable TimeTraveling Debugger.
+Seeker Prototype Queryable Time-Traveling Debugger.
 
 *(Beware that the SeekerInstallHelpers class>>install call will overwrite parts of the StDebugger's code of your image)*
 
