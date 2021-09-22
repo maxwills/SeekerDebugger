@@ -55,5 +55,5 @@ seeker ui showResult: query asSeekerResultsCollection
 
 - The Query object instantiation doesn't trigger the production of results.
 - The method asSeekerResultsCollection triggers the query evaluation, and additionally produces a Seeker UI-friendly object containing the resulting collection.
-- The field bytecodeIndex is mandatory.
+- The field bytecodeIndex is mandatory. Include it like in the example.
 - `New with:` message instantiates a dictionary-like object. Collect your results attributes like that for displaying them in the UI, as in the example.
