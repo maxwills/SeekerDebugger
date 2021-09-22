@@ -30,7 +30,7 @@ The Quick Reference pdf document is included in the repository, and can be acces
 
 ## UI Integrated Query Example
 
-To make a query appear in the UI (the Query Tab of Seeker), follow this example.
+To show query results in the UI (the Query Tab of Seeker), follow this example.
 
 1. Go to the Scripting Tab, as shown here. 
 <img src="./Resources/scripting.png" width="700px">  
