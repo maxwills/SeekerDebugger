@@ -75,6 +75,14 @@ SeekerCurrentStateInterface >> assignmentNextValue [
 	^ context at: context basicSize
 ]
 
+{ #category : #'as yet unclassified' }
+SeekerCurrentStateInterface >> assignmentNodeVariable [
+
+	"Returns the Variable object of the RBVariableNode of the current RBAssignmentNode"
+
+	^ self node variable variable
+]
+
 { #category : #accessing }
 SeekerCurrentStateInterface >> bytecodeIndex [
 "Eachtime a bytecode is executed, the tracer counts it. this is that counter"
@@ -145,6 +153,8 @@ SeekerCurrentStateInterface >> endPC [
 { #category : #accessing }
 SeekerCurrentStateInterface >> fieldNames [
 
+	"A compatibility method. Just to prevent failures caused by using CSI instead of a QueryData object"
+
 	^ { #dynamic }
 ]
 
@@ -159,11 +169,13 @@ SeekerCurrentStateInterface >> initialize [
 
 	"initialize a dictionary with all the accessors(getters only) of this class"
 
+	"cachedValues has been discontinued"
+
 	cachedValues := Dictionary new.
 	self class methodDictionary keysDo: [ :selector | 
 		cachedValues at: selector put: -1 -> nil ].
 	instanceCreationPrimitives := #( 70 71 79 148 160 ).
-	exceptionSignalSelectors := #( #signalIn: #signal: #signal )
+	exceptionSignalSelectors := #( #signalIn: #signal: #signal ) "This is not a good solution."
 ]
 
 { #category : #testing }
@@ -203,10 +215,14 @@ SeekerCurrentStateInterface >> isInstanceCreationPrimitive [
 { #category : #testing }
 SeekerCurrentStateInterface >> isInstantiationMessage [
 
+	"Returns true if the current node is a message node, 
+and the method called corresponds to an instantiation primitive.
+"
+
 	| methodAboutToExecute node messageReceiver messageReceiverClass |
 	node := self node.
 	node isMessage ifFalse: [ ^ false ].
-	messageReceiver := node receiver "variable readInContext: self context".
+	messageReceiver := node receiver. "variable readInContext: self context"
 	messageReceiverClass := messageReceiver class.
 
 	methodAboutToExecute := self receiverClass lookupSelector:
@@ -267,6 +283,12 @@ SeekerCurrentStateInterface >> nodeIndexInAst [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerCurrentStateInterface >> nodeIsAssignement [
+
+	^ self node isAssignment
+]
+
+{ #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> nodeIsVariable [
 
 	^ self node isVariable
@@ -311,6 +333,12 @@ SeekerCurrentStateInterface >> receiverPackage [
 	^ rcvr isClass
 		  ifTrue: [ rcvr package ]
 		  ifFalse: [ rcvr class package ]
+]
+
+{ #category : #accessing }
+SeekerCurrentStateInterface >> receiverTid [
+
+	^ tracer readAliasOf: self receiver
 ]
 
 { #category : #accessing }
@@ -374,6 +402,14 @@ SeekerCurrentStateInterface >> tracedStatementPath [
 SeekerCurrentStateInterface >> tracedStatementStepIndex [
 
 	^ tracer tracedStatementIndex
+]
+
+{ #category : #'as yet unclassified' }
+SeekerCurrentStateInterface >> valueToBeAssigned [
+
+	| context |
+	context := self context.
+	^ context at: context basicSize
 ]
 
 { #category : #testing }

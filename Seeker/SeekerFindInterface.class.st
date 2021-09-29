@@ -286,10 +286,19 @@ SeekerFindInterface >> returnValuesOfSelection [
 SeekerFindInterface >> variablesWrittenForDeltaQuery [
 
 	| query result |
-	query := (tracer queries baseCsiQuery select: [:state| state node isAssignment]) collect: [:state| New with: {
-		(#bytecodeIndex -> state bytecodeIndex).
-		(#varName -> state node variable variable name).
-		}].
+	query := (tracer queries baseCsiQuery select: [ :state | 
+		          state node isAssignment and: [ 
+			          state assignmentNodeVariable isLocalVariable not ] ]) 
+		         collect: [ :state | 
+			         | variable |
+			         variable := state assignmentNodeVariable.
+			         New with: { 
+					         (#bytecodeIndex -> state bytecodeIndex).
+					         (#receiverTid -> state receiverTid).
+					         (#variableName -> variable name).
+					         (#valueChangedFrom
+					          -> (variable readInContext: state context)).
+					         (#valueChangedTo -> state valueToBeAssigned) } ].
 
 	result := query asTable.
 	^ result
