@@ -10,7 +10,8 @@ Class {
 		'instantiationFlag',
 		'instantiationCounter',
 		'instantiationIDDictionary',
-		'nonLocalObjects'
+		'nonLocalObjects',
+		'storedNonLocalChanges'
 	],
 	#category : #'Seeker-Components'
 }
@@ -62,11 +63,7 @@ SkQueryExperimentalTracer >> doAstStepPostProcessWithPrevNode: preProcessAstNode
 		instancedObj := currentStateInterfaceInstance context top.
 		instantiationFlag := false.
 		instantiationCounter += 1.
-		instantiationIDDictionary at: instancedObj put: instantiationCounter.
-		instancedObj class = OrderedCollection ifTrue: [ 
-			Transcript
-				show: 'MarkF', (byteCountCounter asString);
-				cr ] ].
+		instantiationIDDictionary at: instancedObj put: instantiationCounter ].
 	super
 		doAstStepPostProcessWithPrevNode: preProcessAstNode
 		andPrevContext: preContext
@@ -75,8 +72,24 @@ SkQueryExperimentalTracer >> doAstStepPostProcessWithPrevNode: preProcessAstNode
 { #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> doAstStepPreProcess [
 
-	currentStateInterfaceInstance isInstantiationMessage ifTrue: [ 
-		instantiationFlag := true ].
+	currentStateInterfaceInstance isInstantiationMessage
+		ifTrue: [ instantiationFlag := true ]
+		ifFalse: [ 
+			| node |
+			node := currentStateInterfaceInstance node.
+			"putting the tracing for restoration logic here"
+			((node isAssignment and: [ 
+				  node variable variable isLocalVariable not ]) and: [ 
+				 currentStateInterfaceInstance receiverIsLocalToExecution not]) 
+				ifTrue: [ 
+					| change variable |
+					variable := node variable variable.
+					change := { 
+						          currentStateInterfaceInstance receiver.
+						          variable name.
+						          (variable readInContext:
+							           currentStateInterfaceInstance context) }.
+					storedNonLocalChanges add: change ] ].
 	astPreStepHooks do: [ :each | each value ]
 ]
 
@@ -117,6 +130,7 @@ SkQueryExperimentalTracer >> initialize [
 	instantiationFlag := false.
 	currentStateInterfaceInstance := self currentStateInterface.
 	nonLocalObjects := WeakIdentitySet new.
+	storedNonLocalChanges := OrderedCollection new.
 	^ super initialize
 ]
 
@@ -227,6 +241,7 @@ SkQueryExperimentalTracer >> removeAstPreStepHook: aBlock [
 { #category : #starting }
 SkQueryExperimentalTracer >> restartAtBytecodeOne [
 
+	self restoreNonLocalChanges.
 	aliasesDictionary removeAll.
 	aliasesDictionary := WeakIdentityKeyDictionary new.
 	instantiationCounter := 0.
@@ -235,7 +250,20 @@ SkQueryExperimentalTracer >> restartAtBytecodeOne [
 	instantiationFlag := false.
 	currentStateInterfaceInstance := self currentStateInterface.
 	nonLocalObjects := WeakIdentitySet new.
+	storedNonLocalChanges := OrderedCollection new.
 	super restartAtBytecodeOne
+]
+
+{ #category : #'as yet unclassified' }
+SkQueryExperimentalTracer >> restoreNonLocalChanges [
+
+	storedNonLocalChanges reverseDo: [ :each | 
+		| obj var val |
+		obj := each at: 1.
+		var := each at: 2.
+		val := each at: 3.
+
+		obj writeSlotNamed: var value: val ]
 ]
 
 { #category : #accessing }

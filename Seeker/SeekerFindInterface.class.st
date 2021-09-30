@@ -337,6 +337,7 @@ SeekerFindInterface >> variablesWrittenForDeltaQuery [
 				         (#bytecodeIndex -> state bytecodeIndex).
 				         (#receiverTid -> state receiverTid).
 				         (#variableName -> variable name).
+				         (#receiver -> state receiver). "This object reference should work for most cases(since this query will list changes to objects external to the execution. However, if the external object is created during the execution, that would be a problem"
 				         (#valueChangedFrom
 				          -> (variable readInContext: state context)).
 				         (#valueChangedTo -> state valueToBeAssigned) } ].

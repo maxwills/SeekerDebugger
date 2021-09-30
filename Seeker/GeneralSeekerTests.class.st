@@ -117,6 +117,7 @@ GeneralSeekerTests >> testNonLocalObjectVariable [
 	aNumber := aNumber + 10.
 	SeekerGlobals instance auxiliaryTempStorage1: 2.
 	aNumber := aNumber + 10.
+	SeekerGlobals instance auxiliaryTempStorage1: 3.
 	self assert: false
 ]
 
@@ -189,6 +190,17 @@ GeneralSeekerTests >> testVariableTracking [
 	aNumber := aCol size.
 
 	self assert: false
+]
+
+{ #category : #tests }
+GeneralSeekerTests >> testVariableWriting [
+
+	| dog |
+	dog := SkDog new.
+	dog name: 'scumby'.
+	self assert: dog name equals: 'scumby'.
+	dog writeSlotNamed: #name value: 'doo'.
+	self assert: dog name equals: 'doo'
 ]
 
 { #category : #tests }

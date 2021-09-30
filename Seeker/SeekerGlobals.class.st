@@ -107,7 +107,7 @@ SeekerGlobals >> startQueryingFromBytecodeOne [
 
 	"For the test cases, the user might be interested in what happens during the test setup. In that case, this should return true"
 
-	^ false
+	^ true
 ]
 
 { #category : #'as yet unclassified' }

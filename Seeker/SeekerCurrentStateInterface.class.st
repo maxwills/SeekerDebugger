@@ -217,7 +217,11 @@ and the method called corresponds to an instantiation primitive.
 	pointer <= self context size ifFalse: [ ^ false ].
 	messageReceiver := self context at: pointer. "Heuristics"
 	messageReceiverClass := messageReceiver class. "variable readInContext: self context"
-	"The receiver can be another message send."
+	"Mind that the receiver can be another message send."
+	"Also, we need to manually check if the lookup should be performed from the superclass"
+	node receiver isSuperVariable ifTrue: [ 
+		messageReceiverClass := messageReceiverClass superclass ].
+
 	methodAboutToExecute := messageReceiverClass lookupSelector:
 		                        node selector. "messageReceiverClass"
 	^ methodAboutToExecute notNil and: [ 
