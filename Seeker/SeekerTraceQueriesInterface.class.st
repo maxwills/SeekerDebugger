@@ -18,6 +18,7 @@ For time travel, it needs the executedBytecode field to be a part of each result
 SeekerTraceQueriesInterface >> baseQuery [
 
 	"returns a query upon the omniscientTable"
+	"Discontinued. Use instead baseCsiQuery or directly use programStates as dataSource"
 
 	^ Query from: tracer tables omniscientTable
 ]
@@ -159,7 +160,7 @@ SeekerTraceQueriesInterface >> forAliases [
 SeekerTraceQueriesInterface >> forAssignmentsOfAnyVariable [
 
 	| table q |
-	table := tracer tables omniscientTableForAliases.
+	table := tracer programStates. "tables omniscientTableForAliases"
 
 	q := Query
 		     from: table
@@ -170,7 +171,8 @@ SeekerTraceQueriesInterface >> forAssignmentsOfAnyVariable [
 					     (#receiverClass -> row receiverClass).
 					     (#receiverClassAndPackage
 					      ->
-					      (row receiverClass name, ' [' , row receiverPackage name , ']')).
+					      (row receiverClass name , ' [' , row receiverPackage name
+					       , ']')).
 					     (#bytecodeIndex -> row bytecodeIndex).
 					     (#node -> row node).
 					     (#receiverAlias -> row receiverAlias).
@@ -188,7 +190,7 @@ SeekerTraceQueriesInterface >> forAssignmentsOfAnyVariable [
 SeekerTraceQueriesInterface >> forAssignmentsOfInstanceVariables [
 
 	| table q |
-	table := tracer tables omniscientTableForAliases.
+	table := tracer programStates.
 
 	q := Query
 		     from: table
@@ -342,7 +344,7 @@ SeekerTraceQueriesInterface >> forInstancesCreation [
 SeekerTraceQueriesInterface >> forMessageSends [
 
 	| q table |
-	table := tracer tables omniscientTableForAliases.
+	table := tracer programStates.
 
 	q := Query
 		     from: table
@@ -371,7 +373,7 @@ SeekerTraceQueriesInterface >> forMessageSends [
 SeekerTraceQueriesInterface >> forReceivedMessages [
 
 	| q table |
-	table := tracer tables omniscientTableForAliases.
+	table := tracer programStates.
 
 	q := Query
 		     from: table
@@ -510,6 +512,37 @@ SeekerTraceQueriesInterface >> forVariables [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerTraceQueriesInterface >> oldForAssignmentsOfInstanceVariables [
+
+	| table q |
+	table := tracer tables omniscientTableForAliases.
+
+	q := Query
+		     from: table
+		     where: [ :row | 
+			     row node isAssignment and: [ 
+				     row node variable variable isInstanceVariable ] ]
+		     select: [ :row | 
+			     New with: { 
+					     (#methodSelector -> row methodSelector).
+					     (#receiverClass -> row receiverClass).
+					     (#bytecodeIndex -> row bytecodeIndex).
+					     (#node -> row node).
+					     (#receiverAlias -> row receiverAlias).
+					     (#variableNode -> row node variable).
+					     (#variableName -> row node variable variable name).
+					     (#receiverPackage -> row receiverPackage).
+					     (#receiverClassAndPackage
+					      ->
+					      (row receiverClass name , ' [' , row receiverPackage name
+					       , ']')).
+					     (#valueChangedFrom
+					      -> (row node variable variable readInContext: row context)).
+					     (#valueChangedTo -> (row context at: row context basicSize)) } ].
+	^ q
+]
+
+{ #category : #'as yet unclassified' }
 SeekerTraceQueriesInterface >> oldForInstancesCreation [
 
 	| q table |
@@ -548,5 +581,34 @@ SeekerTraceQueriesInterface >> oldForInstancesCreation [
 					     (#messageReceiverPackage -> msgRcvrPackage).
 					     (#creationFormattedDescription
 					      -> (msgRcvrClass name , ' [' , msgRcvrPackage , ']')) } ].
+	^ q
+]
+
+{ #category : #'as yet unclassified' }
+SeekerTraceQueriesInterface >> oldForMessageSends [
+
+	| q table |
+	table := tracer tables omniscientTableForAliases.
+
+	q := Query
+		     from: table
+		     select: [ :row | row node isMessage ]
+		     collect: [ :row | 
+			     | msgRcvrNode msgRcvrClass |
+			     msgRcvrNode := row node receiver.
+			     msgRcvrClass := msgRcvrNode isVariable
+				                     ifTrue: [ 
+				                     'a '
+				                     ,
+				                     (msgRcvrNode variable readInContext:
+					                      row context) className ]
+				                     ifFalse: [ msgRcvrNode sourceCode ].
+			     New with: { 
+					     (#bytecodeIndex -> row bytecodeIndex).
+					     (#methodSelector -> row methodSelector).
+					     (#receiverClass -> row receiverClass).
+					     (#messageArguments -> row node arguments).
+					     (#messageReceiverClass -> msgRcvrClass value).
+					     (#messageSelector -> row node selector) } ].
 	^ q
 ]
