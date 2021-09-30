@@ -307,42 +307,34 @@ SeekerTraceQueriesInterface >> forInstanceVariables [
 { #category : #'as yet unclassified' }
 SeekerTraceQueriesInterface >> forInstancesCreation [
 
-	| q table |
-	table := tracer tables omniscientTableForAliases.
+	| q programStates |
+	programStates := tracer programStates.
 
 	q := Query
-		     from: table
+		     from: programStates
 		     select: [ :row | row isInstantiationMessage ]
 		     collect: [ :row | 
-			     | msgRcvrNode msgRcvr msgRcvrClass msgRcvrPackage |
-			     msgRcvrNode := row node receiver.
-			     msgRcvr := msgRcvrNode isVariable
-				                ifTrue: [ 
-				                msgRcvrNode variable readInContext: row context ]
-				                ifFalse: [ nil ].
-			     msgRcvrClass := msgRcvr
-				                     ifNotNil: [ 
-					                     msgRcvr isClass
-						                     ifTrue: [ msgRcvr ]
-						                     ifFalse: [ msgRcvr class] ]
-				                     ifNil: [ nil class].
-			     msgRcvrPackage := msgRcvrNode isVariable
-				                       ifTrue: [ 
-					                       msgRcvr isClass
-						                       ifTrue: [ msgRcvr package name ]
-						                       ifFalse: [ msgRcvr class package name ] ]
-				                       ifFalse: [ '#undefined' ].
+			     | msgRcvrClass msgRcvrPackage instMsgReceiver |
+			     instMsgReceiver := row context at:
+				                        row context size - row node numArgs. "Heuristics"
+			     msgRcvrClass := instMsgReceiver.
+			     msgRcvrPackage := instMsgReceiver isClass
+				                       ifTrue: [ instMsgReceiver package name ]
+				                       ifFalse: [ 
+				                       instMsgReceiver class package name ].
 			     New with: { 
 					     (#bytecodeIndex -> row bytecodeIndex).
 					     (#methodSelector -> row methodSelector).
 					     (#receiverClass -> row receiverClass).
-					     (#messageReceiver -> msgRcvr).
+					     (#messageReceiver -> instMsgReceiver).
 					     (#messageArguments -> row node arguments).
 					     (#messageReceiverClass -> msgRcvrClass).
 					     (#messageSelector -> row node selector).
 					     (#messageReceiverPackage -> msgRcvrPackage).
-					     (#creationFormattedDescription
-					      -> (msgRcvrClass name , ' [' , msgRcvrPackage , ']')) } ].
+					     (#creationFormattedDescription -> ((msgRcvrClass isClass
+						       ifTrue: [ msgRcvrClass name ]
+						       ifFalse:
+						       [ msgRcvrClass class name ] ), ' [' , msgRcvrPackage , ']')) } ].
 	^ q
 ]
 
@@ -514,5 +506,47 @@ SeekerTraceQueriesInterface >> forVariables [
 					     (#isSuperVariable -> variable isSuperVariable).
 						  "(#ownerAlias -> (row aliasesDictionary at: row receiver ifAbsent: [nil]))."
 					     (#context -> row context) } ].
+	^ q
+]
+
+{ #category : #'as yet unclassified' }
+SeekerTraceQueriesInterface >> oldForInstancesCreation [
+
+	| q table |
+	table := tracer tables omniscientTableForAliases.
+
+	q := Query
+		     from: table
+		     select: [ :row | row isInstantiationMessage ]
+		     collect: [ :row | 
+			     | msgRcvrNode msgRcvr msgRcvrClass msgRcvrPackage |
+			     msgRcvrNode := row node receiver.
+			     msgRcvr := msgRcvrNode isVariable
+				                ifTrue: [ 
+				                msgRcvrNode variable readInContext: row context ]
+				                ifFalse: [ nil ].
+			     msgRcvrClass := msgRcvr
+				                     ifNotNil: [ 
+					                     msgRcvr isClass
+						                     ifTrue: [ msgRcvr ]
+						                     ifFalse: [ msgRcvr class] ]
+				                     ifNil: [ nil class].
+			     msgRcvrPackage := msgRcvrNode isVariable
+				                       ifTrue: [ 
+					                       msgRcvr isClass
+						                       ifTrue: [ msgRcvr package name ]
+						                       ifFalse: [ msgRcvr class package name ] ]
+				                       ifFalse: [ '#undefined' ].
+			     New with: { 
+					     (#bytecodeIndex -> row bytecodeIndex).
+					     (#methodSelector -> row methodSelector).
+					     (#receiverClass -> row receiverClass).
+					     (#messageReceiver -> msgRcvr).
+					     (#messageArguments -> row node arguments).
+					     (#messageReceiverClass -> msgRcvrClass).
+					     (#messageSelector -> row node selector).
+					     (#messageReceiverPackage -> msgRcvrPackage).
+					     (#creationFormattedDescription
+					      -> (msgRcvrClass name , ' [' , msgRcvrPackage , ']')) } ].
 	^ q
 ]

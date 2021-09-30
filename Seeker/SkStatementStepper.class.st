@@ -111,8 +111,10 @@ SkStatementStepper >> doAstStepPostProcessWithPrevNode: preProcessAstNode andPre
 ]
 
 { #category : #'as yet unclassified' }
-SkStatementStepper >> doAstStepPreProcess [ 
-"subclasses shoudl reimplement this"
+SkStatementStepper >> doAstStepPreProcess [
+
+	"subclasses should reimplement this"
+
 	
 ]
 
@@ -427,8 +429,6 @@ SkStatementStepper >> stepBackOver [
 SkStatementStepper >> stepBytecode [
 
 	"Steps the debugger. No skipping. No recording. No updates (rememeber to force update after)"
-
-	"You must ensure that execution is not finished before callig this method."
 
 	| previousContext startingNode |
 	(self isExecutionFinished or: [ self isRiskyStep ]) ifTrue: [ "self inform: 'Reached execution safe end point'" 

@@ -6,7 +6,11 @@ Class {
 		'currentStateInterfaceInstance',
 		'queriesLibrary',
 		'aliasesDictionary',
-		'virtualTablesInterface'
+		'virtualTablesInterface',
+		'instantiationFlag',
+		'instantiationCounter',
+		'instantiationIDDictionary',
+		'nonLocalObjects'
 	],
 	#category : #'Seeker-Components'
 }
@@ -45,14 +49,34 @@ SkQueryExperimentalTracer >> currentStateAsRow [
 SkQueryExperimentalTracer >> currentStateInterface [
 
 	| csi |
-	csi := SeekerCurrentStateInterface new.
+	csi := SeekerCurrentStateInterface new. "why a new instance? Because sometimes when making changes to the CSI, the debugger still clings to an outdate instance(making modification during a debug session)"
 	csi tracer: self.
 	^ csi "currentStateInterfaceInstance"
+]
+
+{ #category : #accessing }
+SkQueryExperimentalTracer >> doAstStepPostProcessWithPrevNode: preProcessAstNode andPrevContext: preContext [
+
+	instantiationFlag ifTrue: [ 
+		| instancedObj |
+		instancedObj := currentStateInterfaceInstance context top.
+		instantiationFlag := false.
+		instantiationCounter += 1.
+		instantiationIDDictionary at: instancedObj put: instantiationCounter.
+		instancedObj class = OrderedCollection ifTrue: [ 
+			Transcript
+				show: 'MarkF', (byteCountCounter asString);
+				cr ] ].
+	super
+		doAstStepPostProcessWithPrevNode: preProcessAstNode
+		andPrevContext: preContext
 ]
 
 { #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> doAstStepPreProcess [
 
+	currentStateInterfaceInstance isInstantiationMessage ifTrue: [ 
+		instantiationFlag := true ].
 	astPreStepHooks do: [ :each | each value ]
 ]
 
@@ -88,6 +112,11 @@ SkQueryExperimentalTracer >> initialize [
 
 	astPreStepHooks := OrderedCollection new.
 	aliasesDictionary := WeakIdentityKeyDictionary new.
+	instantiationCounter := 0.
+	instantiationIDDictionary := WeakIdentityKeyDictionary new.
+	instantiationFlag := false.
+	currentStateInterfaceInstance := self currentStateInterface.
+	nonLocalObjects := WeakIdentitySet new.
 	^ super initialize
 ]
 
@@ -95,6 +124,26 @@ SkQueryExperimentalTracer >> initialize [
 SkQueryExperimentalTracer >> isTopContext: aContext [
 
 	^ stDebugger interruptedContext = aContext
+]
+
+{ #category : #accessing }
+SkQueryExperimentalTracer >> objectIsLocal: anObject [
+
+	"Returns true if the object that corresponds to the given Tid is instantiated during the execution"
+
+	"Beware that the execution corresponds only to the already executed part."
+
+	^ instantiationIDDictionary includesKey: anObject
+]
+
+{ #category : #accessing }
+SkQueryExperimentalTracer >> objectTidIsLocal: aNumber [
+
+	"Returns true if the object that corresponds to the given Tid is instantiated during the execution"
+
+	"Beware that the execution corresponds only to the already executed part."
+
+	^ (nonLocalObjects includes: aNumber) not
 ]
 
 { #category : #'as yet unclassified' }
@@ -155,7 +204,18 @@ SkQueryExperimentalTracer >> readAliasOf: anObject [
 { #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> registerAliasFor: anObject [
 
-	aliasesDictionary at: anObject ifAbsentPut: tracedContextCount "This could be also the executed bytecode, but this might be good enough and it is a smaller number ( may be even consider counting context jump!)"
+	aliasesDictionary
+		at: anObject
+		ifAbsentPut: [ "This could be also the executed bytecode, but this might be good enough and it is a smaller number ( may be even consider counting context jump!)" 
+			byteCountCounter ].
+
+	(instantiationIDDictionary includesKey: anObject) ifFalse: [ 
+		"anObject seekMyAlias = 1841 ifTrue: [ 
+			Transcript
+				show: 'markA' , byteCountCounter asString;
+				cr ]."
+		(nonLocalObjects includes: anObject) ifFalse: [ 
+			nonLocalObjects add: anObject ] ]
 ]
 
 { #category : #adding }
@@ -169,6 +229,12 @@ SkQueryExperimentalTracer >> restartAtBytecodeOne [
 
 	aliasesDictionary removeAll.
 	aliasesDictionary := WeakIdentityKeyDictionary new.
+	instantiationCounter := 0.
+	instantiationIDDictionary removeAll.
+	instantiationIDDictionary := WeakIdentityKeyDictionary new.
+	instantiationFlag := false.
+	currentStateInterfaceInstance := self currentStateInterface.
+	nonLocalObjects := WeakIdentitySet new.
 	super restartAtBytecodeOne
 ]
 

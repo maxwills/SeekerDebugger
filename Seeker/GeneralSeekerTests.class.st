@@ -106,6 +106,31 @@ GeneralSeekerTests >> testFindTestContextInStack [
 ]
 
 { #category : #tests }
+GeneralSeekerTests >> testNonLocalObjectVariable [
+
+	| aCol aNumber |
+	"Next assignment should not appear in the query results"
+	aCol := OrderedCollection new.
+	aNumber := 0.
+	"Next (inner) assignment should appear in the query"
+	SeekerGlobals instance auxiliaryTempStorage1: 1.
+	aNumber := aNumber + 10.
+	SeekerGlobals instance auxiliaryTempStorage1: 2.
+	aNumber := aNumber + 10.
+	self assert: false
+]
+
+{ #category : #tests }
+GeneralSeekerTests >> testPlusEqual [
+
+	| a b |
+	a := 0.
+	self assert: a equals: 0.
+	a += 1.
+	self assert: a equals: 1.
+]
+
+{ #category : #tests }
 GeneralSeekerTests >> testVariableChange [
 
 	"Do this once the window opens:

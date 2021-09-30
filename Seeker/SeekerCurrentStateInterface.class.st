@@ -203,29 +203,22 @@ SeekerCurrentStateInterface >> isFirstBytecodeOfStatement [
 ]
 
 { #category : #testing }
-SeekerCurrentStateInterface >> isInstanceCreationPrimitive [
-
-	| cc |
-	cc := self compiledCode.
-	cc isCompiledMethod ifFalse: [ ^ false ].
-
-	^ instanceCreationPrimitives includes: cc primitive
-]
-
-{ #category : #testing }
 SeekerCurrentStateInterface >> isInstantiationMessage [
 
 	"Returns true if the current node is a message node, 
 and the method called corresponds to an instantiation primitive.
 "
 
-	| methodAboutToExecute node messageReceiver messageReceiverClass |
+	| methodAboutToExecute node messageReceiver messageReceiverClass pointer |
 	node := self node.
 	node isMessage ifFalse: [ ^ false ].
-	messageReceiver := node receiver. "variable readInContext: self context"
-	messageReceiverClass := messageReceiver class.
-
-	methodAboutToExecute := self receiverClass lookupSelector:
+	pointer := self context size - self node numArgs. "Heuristics"
+	pointer <= 0 ifTrue: [ pointer := 1 ].
+	pointer <= self context size ifFalse: [ ^ false ].
+	messageReceiver := self context at: pointer. "Heuristics"
+	messageReceiverClass := messageReceiver class. "variable readInContext: self context"
+	"The receiver can be another message send."
+	methodAboutToExecute := messageReceiverClass lookupSelector:
 		                        node selector. "messageReceiverClass"
 	^ methodAboutToExecute notNil and: [ 
 		  instanceCreationPrimitives includes:
@@ -301,6 +294,12 @@ SeekerCurrentStateInterface >> nodeOrdinalIndex [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerCurrentStateInterface >> objectTidIsLocal: aNumber [
+
+	^ tracer objectTidIsLocal: aNumber
+]
+
+{ #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> previousNoi [
 
 	"The calculated ordinal index for the previous bytecode"
@@ -323,6 +322,12 @@ SeekerCurrentStateInterface >> receiverAlias [
 { #category : #accessing }
 SeekerCurrentStateInterface >> receiverClass [
 	^tracer currentContext receiver class
+]
+
+{ #category : #accessing }
+SeekerCurrentStateInterface >> receiverIsLocalToExecution [
+
+	^ tracer objectIsLocal: self receiver
 ]
 
 { #category : #accessing }

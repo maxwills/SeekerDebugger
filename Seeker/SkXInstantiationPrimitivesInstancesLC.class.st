@@ -1,18 +1,18 @@
 Class {
-	#name : #SkDeltaQueryLC,
+	#name : #SkXInstantiationPrimitivesInstancesLC,
 	#superclass : #SeekerLiteCommand,
 	#category : #'Seeker-Commands'
 }
 
 { #category : #accessing }
-SkDeltaQueryLC >> description [
+SkXInstantiationPrimitivesInstancesLC >> description [
 
 	^ self commonDescriptionIntroString
 	  , 'for every assignment of any <variable> for delta query'
 ]
 
 { #category : #executing }
-SkDeltaQueryLC >> executeCommand [
+SkXInstantiationPrimitivesInstancesLC >> executeCommand [
 
 	| res |
 	res := self tracer find variablesWrittenForDeltaQuery
@@ -25,7 +25,7 @@ SkDeltaQueryLC >> executeCommand [
 ]
 
 { #category : #accessing }
-SkDeltaQueryLC >> icon [
+SkXInstantiationPrimitivesInstancesLC >> icon [
 
 "Inspect the following line and choose an icon for the command
 
@@ -37,7 +37,7 @@ SkDeltaQueryLC >> icon [
 ]
 
 { #category : #accessing }
-SkDeltaQueryLC >> name [
+SkXInstantiationPrimitivesInstancesLC >> name [
 
-	^ 'All the assignments of any variable for delta query'
+	^ 'Experiment Instantiation Primitive Query'
 ]
