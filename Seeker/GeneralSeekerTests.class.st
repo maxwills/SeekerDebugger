@@ -4,6 +4,21 @@ Class {
 	#category : #'Seeker-BugCollection-Tests'
 }
 
+{ #category : #'as yet unclassified' }
+GeneralSeekerTests class >> doItScenario [
+
+	| aCol aNumber |
+	"Next assignment should not appear in the query results"
+	aCol := OrderedCollection new.
+	aNumber := 0.
+	"Next (inner) assignment should appear in the query"
+	SeekerGlobals instance auxiliaryTempStorage1: 1.
+	aNumber := aNumber + 10.
+	SeekerGlobals instance auxiliaryTempStorage1: 2.
+	aNumber := aNumber + 10.
+	SeekerGlobals instance auxiliaryTempStorage1: 3.
+]
+
 { #category : #tests }
 GeneralSeekerTests >> exceptionTest [
 

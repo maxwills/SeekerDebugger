@@ -78,18 +78,30 @@ SkQueryExperimentalTracer >> doAstStepPreProcess [
 			| node |
 			node := currentStateInterfaceInstance node.
 			"putting the tracing for restoration logic here"
-			((node isAssignment and: [ 
-				  node variable variable isLocalVariable not ]) and: [ 
-				 currentStateInterfaceInstance receiverIsLocalToExecution not]) 
-				ifTrue: [ 
-					"if the receiver is an object that was instantiated from outside the execution"
-					| change variable |
+			(node isAssignment and: [ 
+				 node variable isWorkspaceVariable or: [ 
+					 node variable variable isLocalVariable not and: [ 
+						 currentStateInterfaceInstance receiverIsLocalToExecution not ] ] ]) 
+				ifTrue: [ "if the receiver is an object that was instantiated from outside the execution, or in case of a workspace variable"
+					| change receiver variable varName undoBlock varValue |
+					receiver := currentStateInterfaceInstance receiver.
 					variable := node variable variable.
+					varName := variable name.
+					varValue := variable readInContext:
+						            currentStateInterfaceInstance context.
+					undoBlock := (isMappedForDoIt and: [ 
+						              variable isWorkspaceVariable ])
+						             ifTrue: [ 
+							             [ 
+							             variable write: varValue inContext: doItContext "I used the stored doItContext, because I don't know how to make the assignment without that context reference" ] ]
+						             ifFalse: [ "Why not using write:inContext:? because most likely the context will not exists when undoing changes for these variables." 
+							             [ 
+							             receiver writeSlotNamed: varName value: varValue ] ].
 					change := { 
 						          currentStateInterfaceInstance receiver.
 						          variable name.
-						          (variable readInContext:
-							           currentStateInterfaceInstance context) }.
+						          varValue.
+						          undoBlock }.
 					storedNonLocalChanges add: change ] ].
 	astPreStepHooks do: [ :each | each value ]
 ]
@@ -259,12 +271,14 @@ SkQueryExperimentalTracer >> restartAtBytecodeOne [
 SkQueryExperimentalTracer >> restoreNonLocalChanges [
 
 	storedNonLocalChanges reverseDo: [ :each | 
-		| obj var val |
-		obj := each at: 1.
+		| undoBlock "obj var val" |
+		"obj := each at: 1.
 		var := each at: 2.
 		val := each at: 3.
 
-		obj writeSlotNamed: var value: val ]
+		obj writeSlotNamed: var value: val"
+		undoBlock := each at: 4.
+		undoBlock value ]
 ]
 
 { #category : #accessing }

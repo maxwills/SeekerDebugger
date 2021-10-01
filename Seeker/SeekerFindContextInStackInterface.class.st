@@ -5,6 +5,25 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
+SeekerFindContextInStackInterface >> doIt [
+
+	^ SkContextHelpers
+		  findContextInStack: [ :aContext | aContext compiledCode isDoIt ]
+		  startingContext: tracer currentContext
+]
+
+{ #category : #'as yet unclassified' }
+SeekerFindContextInStackInterface >> endingContextForDoIt [
+
+	"Returns the context where the test is considered to be finished. However, the context wont be reached, since exiting the DoIt method leaves the execution no longer usable"
+
+	^ SkContextHelpers
+		  findContextInStack: [ :aContext | 
+			  aContext sender receiver class = SpCodeDebugItInSeekerCommand ]
+		  startingContext: tracer currentContext
+]
+
+{ #category : #'as yet unclassified' }
 SeekerFindContextInStackInterface >> endingContextForTestCase [
 
 	"Returns the context where the test is considered to be finished"
@@ -58,6 +77,12 @@ SeekerFindContextInStackInterface >> ownerOfNode: aNode startingAt: aContext [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerFindContextInStackInterface >> recordStartContextForDoIt [
+
+	^ self doIt
+]
+
+{ #category : #'as yet unclassified' }
 SeekerFindContextInStackInterface >> recordStartContextForTestCase [
 
 	"Returns the context that seeker Debugger restarts to begin a new replay"
@@ -90,6 +115,12 @@ SeekerFindContextInStackInterface >> runCaseContextForTestCase [
 				  aContext compiledCode isCompiledMethod ] ]
 			   ]
 		  startingContext: tracer currentContext
+]
+
+{ #category : #'as yet unclassified' }
+SeekerFindContextInStackInterface >> userStartContextForDoIt [
+
+	^ self doIt
 ]
 
 { #category : #'as yet unclassified' }
