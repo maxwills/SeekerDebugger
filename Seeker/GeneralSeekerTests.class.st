@@ -129,6 +129,7 @@ GeneralSeekerTests >> testPlusEqual [
 	self assert: a equals: 0.
 	a += 1.
 	self assert: a equals: 1.
+	self assert: false
 ]
 
 { #category : #tests }

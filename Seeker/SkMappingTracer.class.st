@@ -100,7 +100,7 @@ SkMappingTracer >> automapForTestCaseScenario [
 	currentCompiledMethod := self slowCurrentContext compiledCode.
 	findContext := self findContextInStack.
 	endingContext := findContext endingContextForTestCase.
-	recordingInitialContext := endingContext sender.
+	recordingInitialContext := findContext recordStartContextForTestCase.
 	recordingInitialContext ifNil: [ 
 		self error: 'Could not detect the initial context for recording.'.
 		^ false ].
@@ -119,9 +119,10 @@ SkMappingTracer >> automapForTestCaseScenario [
 	endTracedInstructionPC := endingContext tracedInstructionPC.
 	endTracedInstructionPC pc: endingContext endPC. "The last step is the endPC?"
 	endTraceTime := endTracedInstructionPC asTraceTimeReference.
-	pressumedEndCondition := [ "self traceTime @>=" 
+	pressumedEndCondition := [ "self traceTime @>="
 	                         endTraceTime 
-		                         referencesTheLocalPastOrPresent: self ].
+		                         referencesTheLocalPastOrPresent: self
+	                         "self currentContext = endingContext" ].
 	self doAndUpdateSessionAfter: [ self recountExecutedBytecodes ].
 	isMapped := true.
 	^ true
@@ -350,37 +351,6 @@ endStatementDescriptor ifNil: [ ^ false].
 ]
 
 { #category : #testing }
-SkMappingTracer >> isCurrentStepTheFirstStatementOfAMethod [
-
-	| statementNode sequenceNode currentStatementIndex |
-	currentStatementIndex := self currentStepDescriptor topStatementID
-		                         indexInSequence.
-	statementNode := self currentStatementNode.
-	sequenceNode := SkNodeHelpers sequenceNodeOf: statementNode.
-	sequenceNode ifNil: [ 
-		^ false "this case happens when there is a sort of primitive and the method doesnt contain any source (an empty method)" ].
-	sequenceNode parent class = RBMethodNode ifTrue: [ 
-		^ currentStatementIndex = 1 ].
-	^ false
-]
-
-{ #category : #testing }
-SkMappingTracer >> isCurrentStepTheLastStatementOfAMethod [
-
-	| statementNode sequenceNode currentStatementIndex |
-	currentStatementIndex := self currentStepDescriptor topStatementID
-		                         indexInSequence.
-	statementNode := self currentStatementNode.
-	sequenceNode := SkNodeHelpers sequenceNodeOf: statementNode.
-	sequenceNode parent class = RBMethodNode ifTrue: [ 
-		| currentSequenceStatementCount |
-		currentSequenceStatementCount := sequenceNode statements size.
-		currentStatementIndex = currentSequenceStatementCount ifTrue: [ 
-			^ true ] ].
-	^ false
-]
-
-{ #category : #testing }
 SkMappingTracer >> isDoItScenario [
 	
 		|stepDescriptor|
@@ -474,6 +444,39 @@ forwardStep := navigationForward last.
 navigationForward removeLast.
 navigationHistory add: currentStepIndex.
 self restartAndStepToIndex: forwardStep.
+]
+
+{ #category : #testing }
+SkMappingTracer >> oldIsCurrentStepTheFirstStatementOfAMethod [
+"Obsolete"
+	| statementNode sequenceNode currentStatementIndex |
+	currentStatementIndex := self currentStepDescriptor topStatementID
+		                         indexInSequence.
+	statementNode := self currentStatementNode.
+	sequenceNode := SkNodeHelpers sequenceNodeOf: statementNode.
+	sequenceNode ifNil: [ 
+		^ false "this case happens when there is a sort of primitive and the method doesnt contain any source (an empty method)" ].
+	sequenceNode parent class = RBMethodNode ifTrue: [ 
+		^ currentStatementIndex = 1 ].
+	^ false
+]
+
+{ #category : #testing }
+SkMappingTracer >> oldIsCurrentStepTheLastStatementOfAMethod [
+
+	"Obsolete"
+
+	| statementNode sequenceNode currentStatementIndex |
+	currentStatementIndex := self currentStepDescriptor topStatementID
+		                         indexInSequence.
+	statementNode := self currentStatementNode.
+	sequenceNode := SkNodeHelpers sequenceNodeOf: statementNode.
+	sequenceNode parent class = RBMethodNode ifTrue: [ 
+		| currentSequenceStatementCount |
+		currentSequenceStatementCount := sequenceNode statements size.
+		currentStatementIndex = currentSequenceStatementCount ifTrue: [ 
+			^ true ] ].
+	^ false
 ]
 
 { #category : #'as yet unclassified' }

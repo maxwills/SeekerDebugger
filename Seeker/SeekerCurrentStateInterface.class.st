@@ -212,8 +212,8 @@ and the method called corresponds to an instantiation primitive.
 	| methodAboutToExecute node messageReceiver messageReceiverClass pointer |
 	node := self node.
 	node isMessage ifFalse: [ ^ false ].
-	pointer := self context size - self node numArgs. "Heuristics"
-	pointer <= 0 ifTrue: [ pointer := 1 ].
+	pointer := self context stackPtr - self node numArgs. "Heuristics"
+	pointer <= 0 ifTrue: [ pointer := 1 ]. "I'm not sure these cases happen"
 	pointer <= self context size ifFalse: [ ^ false ].
 	messageReceiver := self context at: pointer. "Heuristics"
 	messageReceiverClass := messageReceiver class. "variable readInContext: self context"

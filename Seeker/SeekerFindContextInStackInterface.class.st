@@ -7,14 +7,20 @@ Class {
 { #category : #'as yet unclassified' }
 SeekerFindContextInStackInterface >> endingContextForTestCase [
 
-	"Returns the context where the test is setup and launched"
+	"Returns the context where the test is considered to be finished"
 
 	^ SkContextHelpers
 		  findContextInStack: [ :aContext | 
-			aContext receiver = CurrentExecutionEnvironment  and: [ aContext methodSelector = #runTestCase: and: [ 
-				  aContext compiledCode isCompiledMethod ] ]
-			   ]
+			  aContext receiver class = TestExecutionEnvironment and: [ 
+				  aContext methodSelector = #runTestCaseUnderWatchdog: and: [ 
+					  aContext compiledCode isCompiledBlock ] ] ]
 		  startingContext: tracer currentContext
+	"SkContextHelpers
+		  findContextInStack: [ :aContext | 
+			  aContext receiver = CurrentExecutionEnvironment and: [ 
+				  aContext methodSelector = #runTestCase: and: [ 
+					  aContext compiledCode isCompiledMethod ] ] ]
+		  startingContext: tracer currentContext" "self recordStartContextForTestCase sender"
 ]
 
 { #category : #accessing }
@@ -49,6 +55,28 @@ SeekerFindContextInStackInterface >> ownerOfNode: aNode startingAt: aContext [
 			  contextOwnerNode := context nodeForPC.
 			  contextOwnerNode = ownerNode ]
 		  startingContext: aContext
+]
+
+{ #category : #'as yet unclassified' }
+SeekerFindContextInStackInterface >> recordStartContextForTestCase [
+
+	"Returns the context that seeker Debugger restarts to begin a new replay"
+
+	"^ self endingContextForTestCase sender"
+
+	^ SkContextHelpers
+		  findContextInStack: [ :aContext | 
+			  aContext receiver = CurrentExecutionEnvironment and: [ 
+				  aContext methodSelector = #runTestCase: and: [ 
+					  aContext compiledCode isCompiledMethod ] ] ]
+		  startingContext: tracer currentContext "SkContextHelpers
+		  findContextInStack: [ :aContext | 
+			  aContext methodSelector = #runTestCase: and: [ 
+				  aContext compiledCode isCompiledMethod and: [ 
+					  aContext receiver class = DefaultExecutionEnvironment ] ] ]
+		  startingContext: tracer currentContext"
+
+	"^ self endingContextForTestCase sender"
 ]
 
 { #category : #'as yet unclassified' }

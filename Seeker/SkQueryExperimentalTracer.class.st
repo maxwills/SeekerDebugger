@@ -82,6 +82,7 @@ SkQueryExperimentalTracer >> doAstStepPreProcess [
 				  node variable variable isLocalVariable not ]) and: [ 
 				 currentStateInterfaceInstance receiverIsLocalToExecution not]) 
 				ifTrue: [ 
+					"if the receiver is an object that was instantiated from outside the execution"
 					| change variable |
 					variable := node variable variable.
 					change := { 
