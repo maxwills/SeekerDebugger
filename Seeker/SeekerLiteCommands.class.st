@@ -102,7 +102,6 @@ SeekerLiteCommands >> stCodeCommandsTree [
 			  { 
 				  SkChangesOfVariableByNameLC.
 				  SkChangesOfAnyVariableLC.
-				  SkXDeltaQueryLC.
 				  SkChangesOfAnyObjectOfClassLC }.
 			  #changeUpdate.
 			  'Queries for listing asignments on variables' }.

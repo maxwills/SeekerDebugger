@@ -252,7 +252,7 @@ SeekerTraceQueriesInterface >> forExceptionInstancesCreation [
 	q := Query
 		     from: q
 		     select: [ :r | 
-		     r messageReceiverClass inheritsFromOrSameAs: Exception ]
+		     r messageReceiver inheritsFromOrSameAs: Exception ]
 		     collect: #*.
 	^ q
 ]
@@ -330,13 +330,13 @@ SeekerTraceQueriesInterface >> forInstancesCreation [
 					     (#receiverClass -> row receiverClass).
 					     (#messageReceiver -> instMsgReceiver).
 					     (#messageArguments -> row node arguments).
-					     (#messageReceiverClass -> msgRcvrClass).
+					     (#messageReceiverClass -> msgRcvrClass class).
 					     (#messageSelector -> row node selector).
 					     (#messageReceiverPackage -> msgRcvrPackage).
-					     (#creationFormattedDescription -> ((msgRcvrClass isClass
-						       ifTrue: [ msgRcvrClass name ]
-						       ifFalse:
-						       [ msgRcvrClass class name ] ), ' [' , msgRcvrPackage , ']')) } ].
+					     (#creationFormattedDescription -> ((instMsgReceiver isClass
+						        ifTrue: [ instMsgReceiver name ]
+						        ifFalse: [ instMsgReceiver class name ]) , ' ['
+					       , msgRcvrPackage , ']')) } ].
 	^ q
 ]
 
