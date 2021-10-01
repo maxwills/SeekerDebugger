@@ -6,7 +6,12 @@ Class {
 		'currentStateInterfaceInstance',
 		'queriesLibrary',
 		'aliasesDictionary',
-		'virtualTablesInterface'
+		'virtualTablesInterface',
+		'instantiationFlag',
+		'instantiationCounter',
+		'instantiationIDDictionary',
+		'nonLocalObjects',
+		'storedNonLocalChanges'
 	],
 	#category : #'Seeker-Components'
 }
@@ -45,14 +50,59 @@ SkQueryExperimentalTracer >> currentStateAsRow [
 SkQueryExperimentalTracer >> currentStateInterface [
 
 	| csi |
-	csi := SeekerCurrentStateInterface new.
+	csi := SeekerCurrentStateInterface new. "why a new instance? Because sometimes when making changes to the CSI, the debugger still clings to an outdate instance(making modification during a debug session)"
 	csi tracer: self.
 	^ csi "currentStateInterfaceInstance"
+]
+
+{ #category : #accessing }
+SkQueryExperimentalTracer >> doAstStepPostProcessWithPrevNode: preProcessAstNode andPrevContext: preContext [
+
+	instantiationFlag ifTrue: [ 
+		| instancedObj |
+		instancedObj := currentStateInterfaceInstance context top.
+		instantiationFlag := false.
+		instantiationCounter += 1.
+		instantiationIDDictionary at: instancedObj put: instantiationCounter ].
+	super
+		doAstStepPostProcessWithPrevNode: preProcessAstNode
+		andPrevContext: preContext
 ]
 
 { #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> doAstStepPreProcess [
 
+	currentStateInterfaceInstance isInstantiationMessage
+		ifTrue: [ instantiationFlag := true ]
+		ifFalse: [ 
+			| node |
+			node := currentStateInterfaceInstance node.
+			"putting the tracing for restoration logic here"
+			(node isAssignment and: [ 
+				 node variable isWorkspaceVariable or: [ 
+					 node variable variable isLocalVariable not and: [ 
+						 currentStateInterfaceInstance receiverIsLocalToExecution not ] ] ]) 
+				ifTrue: [ "if the receiver is an object that was instantiated from outside the execution, or in case of a workspace variable"
+					| change receiver variable varName undoBlock varValue |
+					receiver := currentStateInterfaceInstance receiver.
+					variable := node variable variable.
+					varName := variable name.
+					varValue := variable readInContext:
+						            currentStateInterfaceInstance context.
+					undoBlock := (isMappedForDoIt and: [ 
+						              variable isWorkspaceVariable ])
+						             ifTrue: [ 
+							             [ 
+							             variable write: varValue inContext: doItContext "I used the stored doItContext, because I don't know how to make the assignment without that context reference" ] ]
+						             ifFalse: [ "Why not using write:inContext:? because most likely the context will not exists when undoing changes for these variables." 
+							             [ 
+							             receiver writeSlotNamed: varName value: varValue ] ].
+					change := { 
+						          currentStateInterfaceInstance receiver.
+						          variable name.
+						          varValue.
+						          undoBlock }.
+					storedNonLocalChanges add: change ] ].
 	astPreStepHooks do: [ :each | each value ]
 ]
 
@@ -88,6 +138,12 @@ SkQueryExperimentalTracer >> initialize [
 
 	astPreStepHooks := OrderedCollection new.
 	aliasesDictionary := WeakIdentityKeyDictionary new.
+	instantiationCounter := 0.
+	instantiationIDDictionary := WeakIdentityKeyDictionary new.
+	instantiationFlag := false.
+	currentStateInterfaceInstance := self currentStateInterface.
+	nonLocalObjects := WeakIdentitySet new.
+	storedNonLocalChanges := OrderedCollection new.
 	^ super initialize
 ]
 
@@ -95,6 +151,26 @@ SkQueryExperimentalTracer >> initialize [
 SkQueryExperimentalTracer >> isTopContext: aContext [
 
 	^ stDebugger interruptedContext = aContext
+]
+
+{ #category : #accessing }
+SkQueryExperimentalTracer >> objectIsLocal: anObject [
+
+	"Returns true if the object that corresponds to the given Tid is instantiated during the execution"
+
+	"Beware that the execution corresponds only to the already executed part."
+
+	^ instantiationIDDictionary includesKey: anObject
+]
+
+{ #category : #accessing }
+SkQueryExperimentalTracer >> objectTidIsLocal: aNumber [
+
+	"Returns true if the object that corresponds to the given Tid is instantiated during the execution"
+
+	"Beware that the execution corresponds only to the already executed part."
+
+	^ (nonLocalObjects includes: aNumber) not
 ]
 
 { #category : #'as yet unclassified' }
@@ -155,7 +231,18 @@ SkQueryExperimentalTracer >> readAliasOf: anObject [
 { #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> registerAliasFor: anObject [
 
-	aliasesDictionary at: anObject ifAbsentPut: tracedContextCount "This could be also the executed bytecode, but this might be good enough and it is a smaller number ( may be even consider counting context jump!)"
+	aliasesDictionary
+		at: anObject
+		ifAbsentPut: [ "This could be also the executed bytecode, but this might be good enough and it is a smaller number ( may be even consider counting context jump!)" 
+			byteCountCounter ].
+
+	(instantiationIDDictionary includesKey: anObject) ifFalse: [ 
+		"anObject seekMyAlias = 1841 ifTrue: [ 
+			Transcript
+				show: 'markA' , byteCountCounter asString;
+				cr ]."
+		(nonLocalObjects includes: anObject) ifFalse: [ 
+			nonLocalObjects add: anObject ] ]
 ]
 
 { #category : #adding }
@@ -167,9 +254,31 @@ SkQueryExperimentalTracer >> removeAstPreStepHook: aBlock [
 { #category : #starting }
 SkQueryExperimentalTracer >> restartAtBytecodeOne [
 
+	self restoreNonLocalChanges.
 	aliasesDictionary removeAll.
 	aliasesDictionary := WeakIdentityKeyDictionary new.
+	instantiationCounter := 0.
+	instantiationIDDictionary removeAll.
+	instantiationIDDictionary := WeakIdentityKeyDictionary new.
+	instantiationFlag := false.
+	currentStateInterfaceInstance := self currentStateInterface.
+	nonLocalObjects := WeakIdentitySet new.
+	storedNonLocalChanges := OrderedCollection new.
 	super restartAtBytecodeOne
+]
+
+{ #category : #'as yet unclassified' }
+SkQueryExperimentalTracer >> restoreNonLocalChanges [
+
+	storedNonLocalChanges reverseDo: [ :each | 
+		| undoBlock "obj var val" |
+		"obj := each at: 1.
+		var := each at: 2.
+		val := each at: 3.
+
+		obj writeSlotNamed: var value: val"
+		undoBlock := each at: 4.
+		undoBlock value ]
 ]
 
 { #category : #accessing }

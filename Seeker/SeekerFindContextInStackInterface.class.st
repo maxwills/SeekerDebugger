@@ -5,16 +5,41 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
-SeekerFindContextInStackInterface >> endingContextForTestCase [
+SeekerFindContextInStackInterface >> doIt [
 
-	"Returns the context where the test is setup and launched"
+	^ SkContextHelpers
+		  findContextInStack: [ :aContext | aContext compiledCode isDoIt ]
+		  startingContext: tracer currentContext
+]
+
+{ #category : #'as yet unclassified' }
+SeekerFindContextInStackInterface >> endingContextForDoIt [
+
+	"Returns the context where the test is considered to be finished. However, the context wont be reached, since exiting the DoIt method leaves the execution no longer usable"
 
 	^ SkContextHelpers
 		  findContextInStack: [ :aContext | 
-			aContext receiver = CurrentExecutionEnvironment  and: [ aContext methodSelector = #runTestCase: and: [ 
-				  aContext compiledCode isCompiledMethod ] ]
-			   ]
+			  aContext sender receiver class = SpCodeDebugItInSeekerCommand ]
 		  startingContext: tracer currentContext
+]
+
+{ #category : #'as yet unclassified' }
+SeekerFindContextInStackInterface >> endingContextForTestCase [
+
+	"Returns the context where the test is considered to be finished"
+
+	^ SkContextHelpers
+		  findContextInStack: [ :aContext | 
+			  aContext receiver class = TestExecutionEnvironment and: [ 
+				  aContext methodSelector = #runTestCaseUnderWatchdog: and: [ 
+					  aContext compiledCode isCompiledBlock ] ] ]
+		  startingContext: tracer currentContext
+	"SkContextHelpers
+		  findContextInStack: [ :aContext | 
+			  aContext receiver = CurrentExecutionEnvironment and: [ 
+				  aContext methodSelector = #runTestCase: and: [ 
+					  aContext compiledCode isCompiledMethod ] ] ]
+		  startingContext: tracer currentContext" "self recordStartContextForTestCase sender"
 ]
 
 { #category : #accessing }
@@ -52,6 +77,34 @@ SeekerFindContextInStackInterface >> ownerOfNode: aNode startingAt: aContext [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerFindContextInStackInterface >> recordStartContextForDoIt [
+
+	^ self doIt
+]
+
+{ #category : #'as yet unclassified' }
+SeekerFindContextInStackInterface >> recordStartContextForTestCase [
+
+	"Returns the context that seeker Debugger restarts to begin a new replay"
+
+	"^ self endingContextForTestCase sender"
+
+	^ SkContextHelpers
+		  findContextInStack: [ :aContext | 
+			  aContext receiver = CurrentExecutionEnvironment and: [ 
+				  aContext methodSelector = #runTestCase: and: [ 
+					  aContext compiledCode isCompiledMethod ] ] ]
+		  startingContext: tracer currentContext "SkContextHelpers
+		  findContextInStack: [ :aContext | 
+			  aContext methodSelector = #runTestCase: and: [ 
+				  aContext compiledCode isCompiledMethod and: [ 
+					  aContext receiver class = DefaultExecutionEnvironment ] ] ]
+		  startingContext: tracer currentContext"
+
+	"^ self endingContextForTestCase sender"
+]
+
+{ #category : #'as yet unclassified' }
 SeekerFindContextInStackInterface >> runCaseContextForTestCase [
 
 	"Returns the context where the test is setup and launched"
@@ -62,6 +115,12 @@ SeekerFindContextInStackInterface >> runCaseContextForTestCase [
 				  aContext compiledCode isCompiledMethod ] ]
 			   ]
 		  startingContext: tracer currentContext
+]
+
+{ #category : #'as yet unclassified' }
+SeekerFindContextInStackInterface >> userStartContextForDoIt [
+
+	^ self doIt
 ]
 
 { #category : #'as yet unclassified' }

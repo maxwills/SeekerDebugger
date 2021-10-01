@@ -44,6 +44,12 @@ DebuggerStepperBase >> notifySessionEnd [
 	self seeker notifySessionEnd
 ]
 
+{ #category : #starting }
+DebuggerStepperBase >> restart [
+
+	self error: 'obsolete method. Use retartFromBytecodeOne instead'
+]
+
 { #category : #'as yet unclassified' }
 DebuggerStepperBase >> restartRecordFromContext: aContext [
    self subclassResponsibility

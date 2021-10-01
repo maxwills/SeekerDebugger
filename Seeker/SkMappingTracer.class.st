@@ -5,7 +5,10 @@ Class {
 		'navigationHistory',
 		'navigationForward',
 		'isMapped',
-		'pressumedEndCondition'
+		'pressumedEndCondition',
+		'userFinalBytecode',
+		'isMappedForDoIt',
+		'doItContext'
 	],
 	#category : #'Seeker-Components'
 }
@@ -35,60 +38,40 @@ SkMappingTracer >> autoSetupForTestForUnhandledException [
 { #category : #'as yet unclassified' }
 SkMappingTracer >> automapForDoItScenario [
 
-	| initialRestartContext doItContext doItStep |
-	initialRestartContext := SkContextHelpers
-		                         findContextInStack: [ :aContext | 
-			                         | senderContext |
-			                         senderContext := aContext sender.
-			                         senderContext
-				                         ifNotNil: [ 
-					                         | receiverClass |
-					                         receiverClass := senderContext receiver
-						                                          class.
-					                         receiverClass
-					                         = SpCodeDebugItInSeekerCommand or: [ 
-						                         receiverClass = SpCodeDebugItCommand ] ]
-				                         ifNil: [ false ] ]
-		                         startingContext: self currentContext.
-	initialRestartContext ifNil: [ 
-		self error:
-			'Could not detect the initial context for the DoIt Scenario.'.
+	| recordingInitialContext testInitialContext endingContext endTracedInstructionPC endTraceTime findContext currentCompiledMethod |
+	"Only works if used the option: debug with Seeker""findContext is a SeekerFindContextInStackInterface object"
+	currentCompiledMethod := self slowCurrentContext compiledCode.
+	findContext := self findContextInStack.
+	doItContext := findContext doIt.
+	endingContext := findContext endingContextForDoIt.
+	recordingInitialContext := findContext recordStartContextForDoIt.
+	recordingInitialContext ifNil: [ 
+		self error: 'Could not detect the initial context for recording.'.
 		^ false ].
-	doItContext := SkContextHelpers
-		               findContextInStack: [ :aContext | 
-		               aContext methodSelector = #DoIt ]
-		               startingContext: self currentContext.
-	doItContext ifNil: [ 
-		self error:
-			'Could not detect the initial context for the DoIt Scenario.'.
-		^ false ].
-	contextOfExecutedBytecodeOne := initialRestartContext.
-	doItStep := SkStepDescriptor
-		            newFromNode:
-		            (SkContextHelpers currentNodeOf: doItContext isTopContext: false)
-		            inContext: doItContext
-		            isTopContext: false.
-	userStartTraceTime := doItStep.
-	pressumedEndStepForKnownScenario := userStartTraceTime
-		                                    getParentIndexlessDescriptor.
-	pressumedEndStepForKnownScenario isReturning: true.
-	pressumedEndStepForKnownScenario topStatementID isReturning: true.
+	contextOfExecutedBytecodeOne := recordingInitialContext.
 
-	pressumedEndCondition := [ 
-	                         | compareToValue |
-	                         compareToValue := self currentStepDescriptor 
-		                                           comparePathTo:
-		                                           pressumedEndStepForKnownScenario.
-	                         compareToValue > 0
-		                         ifTrue: [ 
-		                         true "In fact, we are past that point!" ]
+	testInitialContext := findContext userStartContextForDoIt.
+	testInitialContext ifNil: [ 
+		self error: 'Could not detect the initial context of the test.'.
+		^ false ].
+	userStartTraceTime := testInitialContext tracedContextPC
+		                      asTraceTimeReference. "Note this is a Context time and not an instruction time. 
+	The reason for this is that initially the debugged process could be suspended at a node that the debugger would never step into.
+	So, when testing for is present on that instruction, it will be skipped. This way, the is pressent will return true at any instruction
+	in that context"
+	endTracedInstructionPC := endingContext tracedInstructionPC.
+	endTracedInstructionPC pc: endingContext endPC. "The last step is the endPC?"
+	endTraceTime := endTracedInstructionPC asTraceTimeReference.
+	pressumedEndCondition := [ "self traceTime @>="
+	                         self currentContext == doItContext
+		                         ifTrue: [ "self currentContext = endingContext" 
+			                         self currentContext willReturn ]
 		                         ifFalse: [ 
-			                         compareToValue = 0
-				                         ifTrue: [ self currentNode isReturn ]
-				                         ifFalse: [ false ] ] ].
-
-	self recountExecutedBytecodes.
+		                         endTraceTime 
+			                         referencesTheLocalPastOrPresent: self ] ].
+	self doAndUpdateSessionAfter: [ self recountExecutedBytecodes ].
 	isMapped := true.
+	isMappedForDoIt := true.
 	^ true
 ]
 
@@ -100,7 +83,7 @@ SkMappingTracer >> automapForTestCaseScenario [
 	currentCompiledMethod := self slowCurrentContext compiledCode.
 	findContext := self findContextInStack.
 	endingContext := findContext endingContextForTestCase.
-	recordingInitialContext := endingContext sender.
+	recordingInitialContext := findContext recordStartContextForTestCase.
 	recordingInitialContext ifNil: [ 
 		self error: 'Could not detect the initial context for recording.'.
 		^ false ].
@@ -119,9 +102,10 @@ SkMappingTracer >> automapForTestCaseScenario [
 	endTracedInstructionPC := endingContext tracedInstructionPC.
 	endTracedInstructionPC pc: endingContext endPC. "The last step is the endPC?"
 	endTraceTime := endTracedInstructionPC asTraceTimeReference.
-	pressumedEndCondition := [ "self traceTime @>=" 
+	pressumedEndCondition := [ "self traceTime @>="
 	                         endTraceTime 
-		                         referencesTheLocalPastOrPresent: self ].
+		                         referencesTheLocalPastOrPresent: self
+	                         "self currentContext = endingContext" ].
 	self doAndUpdateSessionAfter: [ self recountExecutedBytecodes ].
 	isMapped := true.
 	^ true
@@ -186,6 +170,21 @@ SkMappingTracer >> automapForUIExceptionScenario [
 { #category : #'as yet unclassified' }
 SkMappingTracer >> clearStepBuffers [
 	^self
+]
+
+{ #category : #'as yet unclassified' }
+SkMappingTracer >> exploreBytecodesForDoIt [
+
+	| currentTraceTime |
+	contextOfExecutedBytecodeOne ifNil: [ "if there is no initial context, the restart will fail" 
+		self error: 'Initial context not set. (Is the execution mapped?)' ].
+	currentContext := session interruptedProcess suspendedContext.
+	currentTraceTime := currentContext tracedInstructionPC
+		                    asTraceTimeReference.
+	self doAndUpdateSessionAfter: [ 
+		self restartAtBytecodeOne andThen stepToEnd.
+		userFinalBytecode := byteCountCounter - 1.
+		self safeTimeTravelToTraceTime: currentTraceTime ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -331,9 +330,12 @@ SkMappingTracer >> goBackToTheBeginningOfLastMethodWithSelector: aSymbol ofClass
 { #category : #initialization }
 SkMappingTracer >> initialize [
 
+	userFinalBytecode := 0.
 	isMapped := false.
 	navigationHistory := OrderedCollection new.
 	navigationForward := OrderedCollection new.
+	isMappedForDoIt := false.
+	doItContext := nil.
 	super initialize
 ]
 
@@ -350,46 +352,9 @@ endStatementDescriptor ifNil: [ ^ false].
 ]
 
 { #category : #testing }
-SkMappingTracer >> isCurrentStepTheFirstStatementOfAMethod [
-
-	| statementNode sequenceNode currentStatementIndex |
-	currentStatementIndex := self currentStepDescriptor topStatementID
-		                         indexInSequence.
-	statementNode := self currentStatementNode.
-	sequenceNode := SkNodeHelpers sequenceNodeOf: statementNode.
-	sequenceNode ifNil: [ 
-		^ false "this case happens when there is a sort of primitive and the method doesnt contain any source (an empty method)" ].
-	sequenceNode parent class = RBMethodNode ifTrue: [ 
-		^ currentStatementIndex = 1 ].
-	^ false
-]
-
-{ #category : #testing }
-SkMappingTracer >> isCurrentStepTheLastStatementOfAMethod [
-
-	| statementNode sequenceNode currentStatementIndex |
-	currentStatementIndex := self currentStepDescriptor topStatementID
-		                         indexInSequence.
-	statementNode := self currentStatementNode.
-	sequenceNode := SkNodeHelpers sequenceNodeOf: statementNode.
-	sequenceNode parent class = RBMethodNode ifTrue: [ 
-		| currentSequenceStatementCount |
-		currentSequenceStatementCount := sequenceNode statements size.
-		currentStatementIndex = currentSequenceStatementCount ifTrue: [ 
-			^ true ] ].
-	^ false
-]
-
-{ #category : #testing }
 SkMappingTracer >> isDoItScenario [
-	
-		|stepDescriptor|
-		"Check if this is a DoIt scenario"
-		"stepDescriptor := self currentStepDescriptor.
-		(SkStepDescriptorHelpers descriptor: stepDescriptor containsSequenceByMethodSelector: #DoIt startingAt: 1) ifTrue: [ ^true ]."
-		^false
-	
 
+	^ self currentContext compiledCode isDoIt
 ]
 
 { #category : #testing }
@@ -474,6 +439,39 @@ forwardStep := navigationForward last.
 navigationForward removeLast.
 navigationHistory add: currentStepIndex.
 self restartAndStepToIndex: forwardStep.
+]
+
+{ #category : #testing }
+SkMappingTracer >> oldIsCurrentStepTheFirstStatementOfAMethod [
+"Obsolete"
+	| statementNode sequenceNode currentStatementIndex |
+	currentStatementIndex := self currentStepDescriptor topStatementID
+		                         indexInSequence.
+	statementNode := self currentStatementNode.
+	sequenceNode := SkNodeHelpers sequenceNodeOf: statementNode.
+	sequenceNode ifNil: [ 
+		^ false "this case happens when there is a sort of primitive and the method doesnt contain any source (an empty method)" ].
+	sequenceNode parent class = RBMethodNode ifTrue: [ 
+		^ currentStatementIndex = 1 ].
+	^ false
+]
+
+{ #category : #testing }
+SkMappingTracer >> oldIsCurrentStepTheLastStatementOfAMethod [
+
+	"Obsolete"
+
+	| statementNode sequenceNode currentStatementIndex |
+	currentStatementIndex := self currentStepDescriptor topStatementID
+		                         indexInSequence.
+	statementNode := self currentStatementNode.
+	sequenceNode := SkNodeHelpers sequenceNodeOf: statementNode.
+	sequenceNode parent class = RBMethodNode ifTrue: [ 
+		| currentSequenceStatementCount |
+		currentSequenceStatementCount := sequenceNode statements size.
+		currentStatementIndex = currentSequenceStatementCount ifTrue: [ 
+			^ true ] ].
+	^ false
 ]
 
 { #category : #'as yet unclassified' }

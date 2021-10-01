@@ -102,15 +102,15 @@ SeekerLiteCommands >> stCodeCommandsTree [
 			  { 
 				  SkChangesOfVariableByNameLC.
 				  SkChangesOfAnyVariableLC.
-				  SkDeltaQueryLC.
 				  SkChangesOfAnyObjectOfClassLC }.
 			  #changeUpdate.
-			  'Queries for listing asignments on variables' }
+			  'Queries for listing asignments on variables' }.
 
-		  "{ 
+		  { 
 			  'SeekerDebug'.
 			  { 
-				  SkAliasOfSelectedVariableTestLC.
-				  SkNodeUnderCursorTestLC.
-				  SkNodeBeforeOrAfterCurrentLC } }" }
+				  SkXDeltaQueryLC.
+				  SkXInstantiationPrimitivesInstancesLC }.
+			  #changeUpdate.
+			  'Experimental Queries for Seeker Development' } }
 ]

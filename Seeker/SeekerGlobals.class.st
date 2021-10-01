@@ -107,6 +107,9 @@ SeekerGlobals >> startQueryingFromBytecodeOne [
 
 	"For the test cases, the user might be interested in what happens during the test setup. In that case, this should return true"
 
+	"Bytecoe one is the first bytecode of the context that is restarted each time. If this method returns false, the queries results 
+	will include only data corresponding to the executed instructions that take place during and after the call to the test case method"
+
 	^ false
 ]
 

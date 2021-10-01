@@ -7,7 +7,7 @@ Class {
 { #category : #defaults }
 SpCodeDebugItInSeekerCommand class >> defaultIconName [
 
-	^ #smallDebug
+	^ #exception
 ]
 
 { #category : #default }

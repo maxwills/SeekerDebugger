@@ -237,6 +237,40 @@ SeekerFindInterface >> changesOfSelf [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerFindInterface >> experimentInstatiationPrimitiveQuery [
+
+	"this query should be able to map the created objects
+ from instantiation primitives to a counter or something similar
+"
+
+	"After an instantiation primitive, the instantiated object seems to be available in Context stackTop (is it always the case?).
+This means, that we need to assign its Instance ID the bytecode step right after executing the bytecode.
+If we use a postStep hook, then it would work, however, the results will show that the instance is available 
+at the step X which corresponds to the moment before executing the bytecode.
+"
+
+	| query result |
+	query := Query
+		         from: tracer programStates
+		         select: [ :state | 
+			         state node isAssignment and: [ 
+				         state assignmentNodeVariable isLocalVariable not ] ]
+		         collect: [ :state | 
+			         | variable |
+			         variable := state assignmentNodeVariable.
+			         New with: { 
+					         (#bytecodeIndex -> state bytecodeIndex).
+					         (#receiverTid -> state receiverTid).
+					         (#variableName -> variable name).
+					         (#valueChangedFrom
+					          -> (variable readInContext: state context)).
+					         (#valueChangedTo -> state valueToBeAssigned) } ].
+
+	result := query asTable.
+	^ result
+]
+
+{ #category : #'as yet unclassified' }
 SeekerFindInterface >> returnValuesOfAnyMessageSendWithSelectedSelector [
 
 ^self returnValuesOfAnyMessageSendWithSelector: tracer selectedSelector.
@@ -286,19 +320,27 @@ SeekerFindInterface >> returnValuesOfSelection [
 SeekerFindInterface >> variablesWrittenForDeltaQuery [
 
 	| query result |
-	query := (tracer queries baseCsiQuery select: [ :state | 
-		          state node isAssignment and: [ 
-			          state assignmentNodeVariable isLocalVariable not ] ]) 
-		         collect: [ :state | 
-			         | variable |
-			         variable := state assignmentNodeVariable.
-			         New with: { 
-					         (#bytecodeIndex -> state bytecodeIndex).
-					         (#receiverTid -> state receiverTid).
-					         (#variableName -> variable name).
-					         (#valueChangedFrom
-					          -> (variable readInContext: state context)).
-					         (#valueChangedTo -> state valueToBeAssigned) } ].
+	"Select nonlocal variables assignments (non temporary: instance variables mostly)"
+	query := tracer queries baseCsiQuery select: [ :state | 
+		         state node isAssignment and: [ 
+			         state assignmentNodeVariable isLocalVariable not ] ].
+	"Select only if the owner of the variable is non-local to the execution.
+	Non local means that the instance was not generated during the execution,
+	therefore, there was no instantiation primitive
+	"
+	query := query select: [ :state | 
+		         state receiverIsLocalToExecution not ].
+	query := query collect: [ :state | 
+		         | variable |
+		         variable := state assignmentNodeVariable.
+		         New with: { 
+				         (#bytecodeIndex -> state bytecodeIndex).
+				         (#receiverTid -> state receiverTid).
+				         (#variableName -> variable name).
+				         (#receiver -> state receiver). "This object reference should work for most cases(since this query will list changes to objects external to the execution. However, if the external object is created during the execution, that would be a problem"
+				         (#valueChangedFrom
+				          -> (variable readInContext: state context)).
+				         (#valueChangedTo -> state valueToBeAssigned) } ].
 
 	result := query asTable.
 	^ result

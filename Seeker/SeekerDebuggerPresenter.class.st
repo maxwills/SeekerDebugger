@@ -227,7 +227,7 @@ SeekerDebuggerPresenter >> initializeToolbar [
 				            action: [ self stepIntoHandler ];
 				            yourself);
 		           add: (self newToolbarButton
-				            label: 'Restart';
+				            label: 'Reset';
 				            icon: (self application iconNamed: #smallHome);
 				            action: [ self restartHandler ];
 				            yourself);
