@@ -318,7 +318,7 @@ SeekerTraceQueriesInterface >> forInstancesCreation [
 		     collect: [ :row | 
 			     | msgRcvrClass msgRcvrPackage instMsgReceiver |
 			     instMsgReceiver := row context at:
-				                        row context size - row node numArgs. "Heuristics"
+				                        row context stackPtr - row node numArgs. "Heuristics"
 			     msgRcvrClass := instMsgReceiver.
 			     msgRcvrPackage := instMsgReceiver isClass
 				                       ifTrue: [ instMsgReceiver package name ]
@@ -350,20 +350,38 @@ SeekerTraceQueriesInterface >> forMessageSends [
 		     from: table
 		     select: [ :row | row node isMessage ]
 		     collect: [ :row | 
-			     | msgRcvrNode msgRcvrClass |
+			     | msgRcvrNode msgRcvrClass msgRcvr pointer |
 			     msgRcvrNode := row node receiver.
-			     msgRcvrClass := msgRcvrNode isVariable
+			     pointer := row context stackPtr - row node numArgs.
+			     pointer < 1
+				     ifTrue: [ pointer := 1 ]
+				     ifFalse: [ 
+				     pointer > row context size ifTrue: [ 
+					     pointer := row context size ] ].
+			     msgRcvr := row node isInlined
+				                ifTrue: [  row context top ]
+				                ifFalse: [ row context at: pointer "Heuristics" ].
+
+			     msgRcvrClass := msgRcvr class. "msgRcvrNode isVariable
 				                     ifTrue: [ 
 				                     'a '
 				                     ,
 				                     (msgRcvrNode variable readInContext:
 					                      row context) className ]
-				                     ifFalse: [ msgRcvrNode sourceCode ].
+				                     ifFalse: [ 
+					instMsgReceiver := 
+					""msgRcvrNode sourceCode"" ]"
 			     New with: { 
 					     (#bytecodeIndex -> row bytecodeIndex).
 					     (#methodSelector -> row methodSelector).
 					     (#receiverClass -> row receiverClass).
 					     (#messageArguments -> row node arguments).
+					     (#messageReceiver -> msgRcvr).
+					     (#formattedMessageReceiver -> (msgRcvrNode isVariable
+						       ifTrue: [ 
+						       msgRcvrNode variable name , ' (' , (msgRcvrNode variable readInContext: row context) class asString
+						       , ')' ]
+						       ifFalse: [ msgRcvr ])).
 					     (#messageReceiverClass -> msgRcvrClass value).
 					     (#messageSelector -> row node selector) } ].
 	^ q

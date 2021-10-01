@@ -214,8 +214,8 @@ SeekerResultsCollection >> forMessageSends [
 	self addColumn bc
 		key: #bytecodeIndex;
 		label: 'ExecBC'.
-	self addColumn md
-		key: #messageReceiverClass;
+	self addColumn lg
+		key: #formattedMessageReceiver;
 		label: 'Receiver'.
 	self addColumn md
 		key: #messageSelector;

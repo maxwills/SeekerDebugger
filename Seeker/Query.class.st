@@ -35,22 +35,31 @@ Class {
 	#superclass : #SkIterableDataTableBase,
 	#instVars : [
 		'fromDataSource',
-		'selectBlock',
-		'whereBlock',
 		'resultBuffer',
 		'result',
 		'onQueryRowMatch',
 		'operationType',
 		'disableOptimization',
 		'timeIt',
-		'customPreparationBlock'
+		'customPreparationBlock',
+		'collectionBlock',
+		'selectionBlock'
 	],
 	#classInstVars : [
 		'identityProjection',
-		'alwaysMatch'
+		'alwaysMatch',
+		'queryHistory'
 	],
 	#category : #'Seeker-QueryData'
 }
+
+{ #category : #adding }
+Query class >> addQueryToHistory: aQuery [
+
+	self queryExecutionHistory add: aQuery.
+	[ self queryExecutionHistory size >= 100 ] whileTrue: [ 
+		self queryExecutionHistory removeFirst ]
+]
 
 { #category : #accessing }
 Query class >> alwaysMatch [
@@ -71,6 +80,17 @@ Query class >> from: aDataSource [
 ]
 
 { #category : #'instance creation' }
+Query class >> from: aDataSource select: aRowPredicateBlock [
+
+	"A more 'Pharo-like' version of the classic From Select Collect style"
+
+	^ self
+		  from: aDataSource
+		  where: aRowPredicateBlock
+		  select: self identityProjection
+]
+
+{ #category : #'instance creation' }
 Query class >> from: aDataSource select: aRowPredicateBlock collect: aProjectionBlock [
 
 	"A more 'Pharo-like' version of the classic From Select Collect style"
@@ -87,8 +107,8 @@ Query class >> from: aSeekerDataSet where: aPredicateBlock select: aProjectionBl
 	| q |
 	q := self new.
 	q disableOptimization: true.
-	q selectBlock: aProjectionBlock.
-	q whereBlock: aPredicateBlock.
+	q collectionBlock: aProjectionBlock.
+	q selectionBlock: aPredicateBlock.
 	q disableOptimization: false.
 	q fromDataSource: aSeekerDataSet.
 	^ q
@@ -99,6 +119,55 @@ Query class >> identityProjection [
 
 	identityProjection ifNil: [ identityProjection := [ :anArg | anArg ] ].
 	^ identityProjection
+]
+
+{ #category : #accessing }
+Query class >> isAlwaysMatchPredicate: aBlock [
+
+	| node |
+	node := aBlock compiledBlock ast.
+	^ (node isBlock and: [ 
+		   node arguments size = 1 and: [ node body statements isNotEmpty ] ])
+		  ifFalse: [ false ]
+		  ifTrue: [ 
+			  | lastStatementNode |
+			  lastStatementNode := node body statements last.
+			  lastStatementNode isLiteralNode
+				  ifFalse: [ false ]
+				  ifTrue: [ lastStatementNode value ] ]
+]
+
+{ #category : #testing }
+Query class >> isIdentityProjection: aBlock [
+
+	| node |
+	node := aBlock compiledBlock ast.
+	^ (node isBlock and: [ 
+		   node arguments size = 1 and: [ node body statements size = 1 ] ])
+		  ifFalse: [ false ]
+		  ifTrue: [ 
+			  | firstStatementNode |
+			  firstStatementNode := node body statements first.
+			  firstStatementNode isVariable
+				  ifFalse: [ false ]
+				  ifTrue: [ 
+				  node arguments first variable
+				  = firstStatementNode variable ] ]
+]
+
+{ #category : #adding }
+Query class >> lastExecutedQuery [
+
+	^ self queryExecutionHistory last
+]
+
+{ #category : #'as yet unclassified' }
+Query class >> queryExecutionHistory [
+
+	"The query class remembers the last 100 executed queries. For debugging purposes"
+
+	queryHistory ifNil: [ queryHistory := OrderedCollection new].
+	^ queryHistory
 ]
 
 { #category : #'as yet unclassified' }
@@ -170,8 +239,8 @@ Query >> asQueryWithMemory [
 	| q |
 	q := QueryWithMemory
 		     from: fromDataSource
-		     select: whereBlock
-		     collect: selectBlock.
+		     select: selectionBlock
+		     collect: collectionBlock.
 	q excluding: self excluding.
 	^ q
 ]
@@ -236,26 +305,40 @@ Query >> collect: aBlock [
 	"A lazy version of collect: of Pharo collections, applicable to queries"
 
 	| q composedProjection selfisIdentity blockIsIdentity |
-	selfisIdentity := whereBlock == self class identityProjection.
-	blockIsIdentity := aBlock == self class identityProjection.
+	selfisIdentity := self class isIdentityProjection: selectionBlock.
+	blockIsIdentity := self class isIdentityProjection: aBlock.
 	composedProjection := [ true ] switchCase: { 
 			                      ([ selfisIdentity and: blockIsIdentity ]
-			                       -> [ selectBlock ]).
+			                       -> [ collectionBlock ]).
 			                      ([ selfisIdentity and: blockIsIdentity not ]
 			                       -> [ aBlock ]).
 			                      ([ selfisIdentity not and: blockIsIdentity ]
-			                       -> [ selectBlock ]).
+			                       -> [ collectionBlock ]).
 			                      ([ 
 			                       selfisIdentity not and: blockIsIdentity not ]
 			                       -> [ 
 			                       [ :anArg1 | 
-			                       aBlock cull: (selectBlock cull: anArg1) ] ]) }.
+			                       aBlock cull: (collectionBlock cull: anArg1) ] ]) }.
 	q := self class
 		     from: self fromDataSource
-		     select: whereBlock
+		     select: selectionBlock
 		     collect: composedProjection.
 
 	^ q
+]
+
+{ #category : #'as yet unclassified' }
+Query >> collectionBlock [
+	^collectionBlock 
+]
+
+{ #category : #'as yet unclassified' }
+Query >> collectionBlock: anObject [
+
+	collectionBlock := anObject = #*
+		               ifTrue: [ Query identityProjection ]
+		               ifFalse: [ anObject ].
+	self optimizeRowAcquisitionForFields: self getRelevantFields
 ]
 
 { #category : #accessing }
@@ -288,7 +371,7 @@ Query >> currentRow [
 
 	"Part of the iterable data set interface. Used for queries nesting. returns the rowgetter result"
 
-	^ selectBlock cull: fromDataSource currentRow
+	^ collectionBlock cull: fromDataSource currentRow
 ]
 
 { #category : #accessing }
@@ -338,9 +421,9 @@ Query >> doQueryOnRow: aRow [
 
 	"performs the query in the specified row"
 
-	whereBlock numArgs = 0
-		ifTrue: [ whereBlock value ifTrue: onQueryRowMatch ]
-		ifFalse: [ (whereBlock value: aRow) ifTrue: onQueryRowMatch ]
+	selectionBlock numArgs = 0
+		ifTrue: [ selectionBlock value ifTrue: onQueryRowMatch ]
+		ifFalse: [ (selectionBlock value: aRow) ifTrue: onQueryRowMatch ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -348,12 +431,12 @@ Query >> doQueryRow [
 
 	"performs the query in the current row of the input"
 
-	whereBlock numArgs = 0
-		ifTrue: [ whereBlock value ifTrue: onQueryRowMatch ]
+	selectionBlock numArgs = 0
+		ifTrue: [ selectionBlock value ifTrue: onQueryRowMatch ]
 		ifFalse: [ 
 			| row |
 			row := self currentDataSourceRow.
-			(whereBlock value: row) ifTrue: onQueryRowMatch ]
+			(selectionBlock value: row) ifTrue: onQueryRowMatch ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -430,9 +513,9 @@ Query >> getRelevantFields [
 
 	| selectFields whereFields fromRelevantFields mergedSet |
 	selectFields := SkAnonymousTypeHelpers 
-		                listOfFieldsInAnonymousTypeBlock: selectBlock.
+		                listOfFieldsInAnonymousTypeBlock: collectionBlock.
 	whereFields := SkAnonymousTypeHelpers 
-		               listOfFieldsInAnonymousTypeBlock: whereBlock.
+		               listOfFieldsInAnonymousTypeBlock: selectionBlock.
 	fromRelevantFields := fromDataSource
 		                      ifNotNil: [ fromDataSource getRelevantFields ]
 		                      ifNil: [ {  } ].
@@ -458,12 +541,12 @@ Query >> isCurrentRowAMatch [
 
 	"returns true if the current row matches the query predicate without triggering the onQueryRowMatch handler"
 
-	whereBlock numArgs = 0
-		ifTrue: [ whereBlock value ifTrue: [ ^ true ] ]
+	selectionBlock numArgs = 0
+		ifTrue: [ selectionBlock value ifTrue: [ ^ true ] ]
 		ifFalse: [ 
 			| row |
 			row := self currentDataSourceRow.
-			(whereBlock value: row) ifTrue: [ ^ true ] ].
+			(selectionBlock value: row) ifTrue: [ ^ true ] ].
 	^ false
 ]
 
@@ -472,10 +555,10 @@ Query >> isRowAMatch: aRow [
 
 	"returns true if the given row matches the query predicate without triggering the onQueryRowMatch handler"
 
-	whereBlock numArgs = 0
-		ifTrue: [ whereBlock value ifTrue: [ ^ true ] ]
+	selectionBlock numArgs = 0
+		ifTrue: [ selectionBlock value ifTrue: [ ^ true ] ]
 		ifFalse: [ 
-			(whereBlock value: aRow) ifTrue: [ ^ true ] ].
+			(selectionBlock value: aRow) ifTrue: [ ^ true ] ].
 	^ false
 ]
 
@@ -487,13 +570,13 @@ Query >> oldResolve [
 		         ifTrue: [ 
 			         [ 
 			         | startingTime originalProjectionBlock |
-			         originalProjectionBlock := selectBlock.
+			         originalProjectionBlock := collectionBlock.
 			         startingTime := Time now.
 			         customPreparationBlock value. "Beware here"
 			         self optimizeRowAcquisitionForFields:
 				         self getRelevantFields.
 			         "TODO: modify the select so it adds the time rows. Need to track time since starting time and row time (so I need the time whene every row query started)"
-			         selectBlock := selectBlock numArgs = 0
+			         collectionBlock := collectionBlock numArgs = 0
 				                        ifTrue: [ [  ] ]
 				                        ifFalse: [ [  ] ].
 			         fromDataSource do: [ :row | self doQueryOnRow: row ].
@@ -558,7 +641,8 @@ Query >> resolve [
 	customPreparationBlock value.
 	self optimizeRowAcquisitionForFields: self getRelevantFields.
 	fromDataSource do: [ :row | self doQueryOnRow: row ].
-	self processResult
+	self processResult.
+	self class addQueryToHistory: self
 ]
 
 { #category : #accessing }
@@ -581,38 +665,39 @@ Query >> select: aBlock [
 	"Creates a new query with a composition of row matching condition"
 
 	| q composedWhereBlock selfTrue aBlockTrue |
-	selfTrue := whereBlock == self class alwaysMatch.
-	aBlockTrue := aBlock == self class alwaysMatch.
+	selfTrue := self class isAlwaysMatchPredicate: selectionBlock.
+	aBlockTrue := self class isAlwaysMatchPredicate: aBlock.
 	composedWhereBlock := [ true ] switchCase: { 
 			                      ([ selfTrue and: aBlockTrue ]
-			                       -> [ whereBlock ]).
+			                       -> [ selectionBlock ]).
 			                      ([ selfTrue and: aBlockTrue not ]
 			                       -> [ aBlock ]).
 			                      ([ selfTrue not and: aBlockTrue ]
-			                       -> [ whereBlock ]).
+			                       -> [ selectionBlock ]).
 			                      ([ selfTrue not and: aBlockTrue not ] -> [ 
 			                       [ :anArg1 | 
-			                       (whereBlock value: anArg1) and: [ 
+			                       (selectionBlock value: anArg1) and: [ 
 				                       aBlock value: anArg1 ] ] ]) }.
 	q := self class
 		     from: self fromDataSource
 		     select: composedWhereBlock
-		     collect: selectBlock.
+		     collect: collectionBlock.
 
 	^ q
 ]
 
 { #category : #'as yet unclassified' }
-Query >> selectBlock [
-	^selectBlock 
+Query >> selectionBlock [
+
+	^ selectionBlock
 ]
 
 { #category : #'as yet unclassified' }
-Query >> selectBlock: anObject [
+Query >> selectionBlock: anObject [
 
-	selectBlock := anObject = #*
-		               ifTrue: [ Query identityProjection ]
-		               ifFalse: [ anObject ].
+	selectionBlock := anObject = #*
+		              ifTrue: [ self class alwaysMatch ]
+		              ifFalse: [ anObject ].
 	self optimizeRowAcquisitionForFields: self getRelevantFields
 ]
 
@@ -633,19 +718,4 @@ Query >> timeIt [
 Query >> timeItDetailed [
 	timeIt := #timeItDetailed.
 	^ self
-]
-
-{ #category : #'as yet unclassified' }
-Query >> whereBlock [
-
-	^ whereBlock
-]
-
-{ #category : #'as yet unclassified' }
-Query >> whereBlock: anObject [
-
-	whereBlock := anObject = #*
-		              ifTrue: [ self class alwaysMatch ]
-		              ifFalse: [ anObject ].
-	self optimizeRowAcquisitionForFields: self getRelevantFields
 ]
