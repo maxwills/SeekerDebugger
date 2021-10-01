@@ -19,11 +19,14 @@ The `SeekerInstallHelpers>>#install` will:
 - Change the `StDebugger` `debuggerActionModel` default class to `SeekerStDebuggerActionModel`. This will make the StDebugger to need Seeker to be enabled to work. (You can still debug normaly without Seeker, but it will be shown at the right, even if it is not used). Don't use this if you rely on your own modifications of `StDebuggerActionModel`. If you unload Seeker, you will need to manually restore `StDebugger>>#debuggerActionModel`.
 
 
-## Limitations
-- Non-local changes NOT supported (i.e. only supports assignments for temporary (and parameters?) variables.  
-- Currently, supports only test cases.
-  - It doesn't support tests tear down phase at the moment.
+## Limitations and known issues.
+- Supports "Debug it" and TestCases when launched from the corresponding seeker menu entry. No support for non intentional debugging.
+- No complete support for test clean up at the moment.
+- Single thread executions only.
+- No UI executions support.
+- The execution reversal mechanism can only undo changes that originates from within an execution (the debugged execution call tree). Changes made from outside the execution could affect the reversal mechanism.
 - Performance: Executing code with Seeker is slow. Consider closing by force if necessary.
+- No support yet for "Debug Drive development". Modifying the debugged code during a debug session might produce problems with time-indices.
 
 ## Quick reference:
 The Quick Reference pdf document is included in the repository, and can be accessed [here](./Resources/TTQs-QuickReference.pdf).
