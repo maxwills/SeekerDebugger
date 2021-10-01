@@ -47,10 +47,19 @@ Class {
 	],
 	#classInstVars : [
 		'identityProjection',
-		'alwaysMatch'
+		'alwaysMatch',
+		'queryHistory'
 	],
 	#category : #'Seeker-QueryData'
 }
+
+{ #category : #adding }
+Query class >> addQueryToHistory: aQuery [
+
+	self queryExecutionHistory add: aQuery.
+	[ self queryExecutionHistory size >= 100 ] whileTrue: [ 
+		self queryExecutionHistory removeFirst ]
+]
 
 { #category : #accessing }
 Query class >> alwaysMatch [
@@ -144,6 +153,21 @@ Query class >> isIdentityProjection: aBlock [
 				  ifTrue: [ 
 				  node arguments first variable
 				  = firstStatementNode variable ] ]
+]
+
+{ #category : #adding }
+Query class >> lastExecutedQuery [
+
+	^ self queryExecutionHistory last
+]
+
+{ #category : #'as yet unclassified' }
+Query class >> queryExecutionHistory [
+
+	"The query class remembers the last 100 executed queries. For debugging purposes"
+
+	queryHistory ifNil: [ queryHistory := OrderedCollection new].
+	^ queryHistory
 ]
 
 { #category : #'as yet unclassified' }
@@ -617,7 +641,8 @@ Query >> resolve [
 	customPreparationBlock value.
 	self optimizeRowAcquisitionForFields: self getRelevantFields.
 	fromDataSource do: [ :row | self doQueryOnRow: row ].
-	self processResult
+	self processResult.
+	self class addQueryToHistory: self
 ]
 
 { #category : #accessing }
