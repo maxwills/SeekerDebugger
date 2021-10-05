@@ -14,5 +14,5 @@ inscreased by aNumber. There are several ways to achieve that.
 	msgNode := senderContext method sourceNodeForPC:
 		           senderContext executedPC.
 	variable := msgNode receiver variable.
-	variable write: self + aNumber inContext: senderContext
+	^ variable write: self + aNumber inContext: senderContext
 ]
