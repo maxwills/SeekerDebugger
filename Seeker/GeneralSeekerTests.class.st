@@ -19,6 +19,22 @@ GeneralSeekerTests class >> doItScenario [
 	SeekerGlobals instance auxiliaryTempStorage1: 3.
 ]
 
+{ #category : #'as yet unclassified' }
+GeneralSeekerTests class >> exceptionScenario [
+
+	"Do this once the window opens:
+	seeker stepper trackedVariableName: 'aNumber'
+	then remap the test
+	"
+
+	| aNumber|
+	aNumber := -1.
+	aNumber := 0.
+	aNumber := 10/aNumber.
+
+	self assert: true
+]
+
 { #category : #tests }
 GeneralSeekerTests >> exceptionTest [
 
