@@ -24,6 +24,14 @@ SeekerFindContextInStackInterface >> endingContextForDoIt [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerFindContextInStackInterface >> endingContextForMarkedSession [
+
+	"Returns the context where the execution is considered to be finished"
+
+	^ self userStartContextForMarkedSession sender sender
+]
+
+{ #category : #'as yet unclassified' }
 SeekerFindContextInStackInterface >> endingContextForTestCase [
 
 	"Returns the context where the test is considered to be finished"
@@ -83,6 +91,16 @@ SeekerFindContextInStackInterface >> recordStartContextForDoIt [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerFindContextInStackInterface >> recordStartContextForMarkedSession [
+
+	^ SkContextHelpers
+		  findContextInStack: [ :aContext | 
+			  aContext receiver = SeekerSessionHelpers and: [ 
+				  aContext methodSelector = #innerSeekerSessionFor:withFlag: ] ]
+		  startingContext: tracer slowCurrentContext
+]
+
+{ #category : #'as yet unclassified' }
 SeekerFindContextInStackInterface >> recordStartContextForTestCase [
 
 	"Returns the context that seeker Debugger restarts to begin a new replay"
@@ -121,6 +139,16 @@ SeekerFindContextInStackInterface >> runCaseContextForTestCase [
 SeekerFindContextInStackInterface >> userStartContextForDoIt [
 
 	^ self doIt
+]
+
+{ #category : #'as yet unclassified' }
+SeekerFindContextInStackInterface >> userStartContextForMarkedSession [
+
+	^ SkContextHelpers
+		  findContextInStack: [ :aContext | 
+			  aContext receiver = SeekerSessionHelpers and: [ 
+				  aContext methodSelector = #seekerSessionStartMaker ] ]
+		  startingContext: tracer slowCurrentContext
 ]
 
 { #category : #'as yet unclassified' }

@@ -76,6 +76,39 @@ SkMappingTracer >> automapForDoItScenario [
 ]
 
 { #category : #'as yet unclassified' }
+SkMappingTracer >> automapForSeekerMarkedSessionScenario [
+
+	| recordingInitialContext testInitialContext endingContext endTracedInstructionPC endTraceTime findContext currentCompiledMethod |
+	"Only works if used the option: debug with Seeker""findContext is a SeekerFindContextInStackInterface object"
+	currentCompiledMethod := self slowCurrentContext compiledCode.
+	findContext := self findContextInStack.
+
+	recordingInitialContext := findContext
+		                           recordStartContextForMarkedSession.
+	recordingInitialContext ifNil: [ 
+		self error: 'Could not detect the initial context for recording.'.
+		^ false ].
+	contextOfExecutedBytecodeOne := recordingInitialContext.
+
+	testInitialContext := recordingInitialContext.
+	testInitialContext ifNil: [ 
+		self error: 'Could not detect the initial context.'.
+		^ false ].
+	userStartTraceTime := 11 asExecutedBytecodeTraceTime. "Manually calculated" "testInitialContext tracedContextPC
+		                      asTraceTimeReference"
+	endingContext := testInitialContext sender.
+	pressumedEndCondition := [ "this is not a proper solution. If there is a returing block, these conditions might never be met."
+	                         self currentContext receiver
+	                         == SeekerSessionHelpers and: [ 
+		                         self currentContext selector
+		                         = #seekerSessionEndMarker ] ].
+	self doAndUpdateSessionAfter: [ 
+		self timeTravelToTraceTime: userStartTraceTime ].
+	isMapped := true.
+	^ true
+]
+
+{ #category : #'as yet unclassified' }
 SkMappingTracer >> automapForTestCaseScenario [
 
 	| recordingInitialContext testInitialContext endingContext endTracedInstructionPC endTraceTime findContext currentCompiledMethod |
@@ -396,6 +429,13 @@ SkMappingTracer >> isQuickMapAvailable [
 
 ]
 
+{ #category : #'as yet unclassified' }
+SkMappingTracer >> isSeekerMarkedSessionScenario [
+
+	^ self slowCurrentContext receiver = SeekerSessionHelpers and: [ 
+		  self slowCurrentContext selector = #openDebugger ]
+]
+
 { #category : #testing }
 SkMappingTracer >> isTestCaseScenario [
 
@@ -482,6 +522,7 @@ SkMappingTracer >> pushNavigationHistory [
 { #category : #'as yet unclassified' }
 SkMappingTracer >> quickMap [
 "TODO: Move out the inform calls"
+(self isSeekerMarkedSessionScenario) ifTrue: [ ^self automapForSeekerMarkedSessionScenario ".^self inform: 'Time Traveling enabled'" ].
 	(self isDoItScenario) ifTrue: [ ^self automapForDoItScenario ".^self inform: 'Time Traveling enabled'" ].
 	(self isTestCaseScenario ) ifTrue: [ ^self automapForTestCaseScenario".^self inform: 'Time Traveling enabled' "].
 ^ false "self inform: 'Could not enable Time Traveling automatically. The session needs a manual set up' ."

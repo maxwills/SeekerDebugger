@@ -38,6 +38,14 @@ SkExecutedBytecodeTraceTimeReference >> referencesTheFuture: tracer [
 ]
 
 { #category : #testing }
+SkExecutedBytecodeTraceTimeReference >> referencesTheLocalPast: tracer [
+
+	"No local checing at the moment"
+
+	^ executedBytecode < tracer bytecodeIndex
+]
+
+{ #category : #testing }
 SkExecutedBytecodeTraceTimeReference >> referencesThePast: tracer [
 
 	^ executedBytecode < tracer bytecodeIndex

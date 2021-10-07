@@ -60,6 +60,12 @@ SeekerGlobals >> clearWatchedProcesses [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerGlobals >> debugCommandKeysPressed [
+
+	^ self isCommandPressed and: [ self isShiftPressed ]
+]
+
+{ #category : #'as yet unclassified' }
 SeekerGlobals >> defaultStepperClass [
 
 	| fallbackDefault |

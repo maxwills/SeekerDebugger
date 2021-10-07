@@ -204,6 +204,8 @@ SeekerDebugger >> quickSetup [
 	isWatchedProcess ifTrue: [ 
 		[ tracer isQuickMapAvailable ifTrue: [ tracer quickMap ] ] ensure: [ 
 			SeekerGlobals instance stopWatchingProcess: process ] ].
+	"If the current method is SeekerSessionStarted seekerSessionStartMaker then automap this!"
+	tracer isSeekerMarkedSessionScenario ifTrue: [ tracer quickMap ]
 ]
 
 { #category : #starting }
