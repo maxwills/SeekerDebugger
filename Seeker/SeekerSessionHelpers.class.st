@@ -35,7 +35,10 @@ SeekerSessionHelpers class >> openDebugger [
 { #category : #'as yet unclassified' }
 SeekerSessionHelpers class >> seekerSession: aBlock [
 
-	self innerSeekerSessionFor: aBlock withFlag: self makeOnceFlag
+	SeekerGlobals instance debugCommandKeysPressed
+		ifTrue: [ 
+		self innerSeekerSessionFor: aBlock withFlag: self makeOnceFlag ]
+		ifFalse: [ aBlock value ]
 ]
 
 { #category : #'as yet unclassified' }
