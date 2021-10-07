@@ -60,3 +60,7 @@ seeker ui showResult: query asSeekerResultsCollection
 - The method asSeekerResultsCollection triggers the query evaluation, and additionally produces a Seeker UI-friendly object containing the resulting collection.
 - The field bytecodeIndex is mandatory. Include it like in the example.
 - `New with:` message instantiates a dictionary-like object. Collect your results attributes like that for displaying them in the UI, as in the example.
+
+### Notes
+	Remember:
+	HandMorph handleEvent: SeekerGlobals instance updateModifierKeys: anEvent.
