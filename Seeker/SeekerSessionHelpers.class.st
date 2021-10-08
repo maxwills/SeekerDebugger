@@ -5,6 +5,23 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
+SeekerSessionHelpers class >> debugSession: aBlock [
+
+	self innerSeekerSessionFor: aBlock withFlag: self makeOnceFlag
+]
+
+{ #category : #'as yet unclassified' }
+SeekerSessionHelpers class >> debugSessionIfKeysPressed: aBlock [
+
+	"this will open a seeker debugging session if Shift+Cmd keys are pressed during execution"
+
+	SeekerGlobals instance debugCommandKeysPressed
+		ifTrue: [ 
+		self innerSeekerSessionFor: aBlock withFlag: self makeOnceFlag ]
+		ifFalse: [ aBlock value ]
+]
+
+{ #category : #'as yet unclassified' }
 SeekerSessionHelpers class >> innerSeekerSessionFor: aBlock withFlag: aFlagBlock [
 
 	aFlagBlock value ifTrue: [ self openDebugger ].
