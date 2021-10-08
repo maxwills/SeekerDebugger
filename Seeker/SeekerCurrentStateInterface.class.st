@@ -190,6 +190,14 @@ SeekerCurrentStateInterface >> assignmentNodeVariable [
 ]
 
 { #category : #accessing }
+SeekerCurrentStateInterface >> bytecode [
+
+	^ self context compiledCode symbolicBytecodes
+		  detect: [ :each | each offset = self context pc ]
+		  ifNone: [ nil ]
+]
+
+{ #category : #accessing }
 SeekerCurrentStateInterface >> bytecodeIndex [
 "Eachtime a bytecode is executed, the tracer counts it. this is that counter"
 	^ tracer bytecodeIndex
@@ -326,7 +334,7 @@ and the method called corresponds to an instantiation primitive.
 { #category : #testing }
 SeekerCurrentStateInterface >> isMessageSend [
 
-	^ self node isMessage
+	^ self node isMessage and: [ self context willSend ]
 ]
 
 { #category : #testing }
