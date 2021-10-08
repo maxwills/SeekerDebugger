@@ -34,11 +34,34 @@ Class {
 	#superclass : #SeekerInterfaceObject,
 	#instVars : [
 		'cachedValues',
-		'instanceCreationPrimitives',
 		'exceptionSignalSelectors'
+	],
+	#classVars : [
+		'instanceCreationPrimitives',
+		'instanceCreationPrimitivesArray'
 	],
 	#category : #'Seeker-Interfaces'
 }
+
+{ #category : #initialization }
+SeekerCurrentStateInterface class >> initialize [
+
+	instanceCreationPrimitives := #( 70 71 79 148 160 ).
+	instanceCreationPrimitivesArray := Array new: 160.
+	1 to: instanceCreationPrimitivesArray size do: [ :i | 
+	instanceCreationPrimitivesArray at: i put: false ].
+	instanceCreationPrimitives do: [ :each | 
+		instanceCreationPrimitivesArray at: each put: true ]
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface class >> isInstantiationPrimitive: aNumber [
+
+	^ (aNumber < 1 or: [ aNumber > 160 ])
+		  ifTrue: [ false ]
+		  ifFalse: [ "160 is the maxium instantiation primitive in current pharo version (october 2021), and the size of the array" 
+			  instanceCreationPrimitivesArray at: aNumber ]
+]
 
 { #category : #testing }
 SeekerCurrentStateInterface >> aboutToSwitchContext [
@@ -174,7 +197,6 @@ SeekerCurrentStateInterface >> initialize [
 	cachedValues := Dictionary new.
 	self class methodDictionary keysDo: [ :selector | 
 		cachedValues at: selector put: -1 -> nil ].
-	instanceCreationPrimitives := #( 70 71 79 148 160 ).
 	exceptionSignalSelectors := #( #signalIn: #signal: #signal ) "This is not a good solution."
 ]
 
@@ -225,7 +247,7 @@ and the method called corresponds to an instantiation primitive.
 	methodAboutToExecute := messageReceiverClass lookupSelector:
 		                        node selector. "messageReceiverClass"
 	^ methodAboutToExecute notNil and: [ 
-		  instanceCreationPrimitives includes:
+		  self class isInstantiationPrimitive:
 			  methodAboutToExecute primitive ]
 ]
 
