@@ -334,7 +334,10 @@ and the method called corresponds to an instantiation primitive.
 { #category : #testing }
 SeekerCurrentStateInterface >> isMessageSend [
 
-	^ self node isMessage and: [ self context willSend ]
+	^ self node isMessage and: [ 
+		  self context willSend or: [ 
+			  self node isInlined and: [ 
+				  self context willJumpIfFalse or: [ self context willJumpIfTrue ] ] ] ]
 ]
 
 { #category : #testing }
@@ -370,11 +373,14 @@ SeekerCurrentStateInterface >> messageReceiver [
 	"Returns the message receiver of the current message node. Assumes the current node is a message node
 "
 
-	| pointer |
-	pointer := self context stackPtr - self node numArgs. "Heuristics"
-	pointer <= 0 ifTrue: [ pointer := 1 ]. "I'm not sure these cases happen"
-	pointer > self context size ifTrue: [ ^ nil ].
-	^ self context at: pointer "Heuristics"
+	^ self node isInlined
+		  ifTrue: [ self context top ]
+		  ifFalse: [ 
+			  | pointer |
+			  pointer := self context stackPtr - self node numArgs. "Heuristics"
+			  pointer <= 0 ifTrue: [ pointer := 1 ]. "I'm not sure these cases happen"
+			  pointer > self context size ifTrue: [ ^ nil ].
+			  self context at: pointer "Heuristics" ]
 ]
 
 { #category : #testing }

@@ -348,19 +348,11 @@ SeekerTraceQueriesInterface >> forMessageSends [
 
 	q := Query
 		     from: table
-		     select: [ :row | row node isMessage ]
+		     select: [ :row | row isMessageSend ]
 		     collect: [ :row | 
-			     | msgRcvrNode msgRcvrClass msgRcvr pointer |
+			     | msgRcvrNode msgRcvrClass msgRcvr |
 			     msgRcvrNode := row node receiver.
-			     pointer := row context stackPtr - row node numArgs.
-			     pointer < 1
-				     ifTrue: [ pointer := 1 ]
-				     ifFalse: [ 
-				     pointer > row context size ifTrue: [ 
-					     pointer := row context size ] ].
-			     msgRcvr := row node isInlined
-				                ifTrue: [  row context top ]
-				                ifFalse: [ row context at: pointer "Heuristics" ].
+			     msgRcvr := row messageReceiver.
 
 			     msgRcvrClass := msgRcvr class. "msgRcvrNode isVariable
 				                     ifTrue: [ 
@@ -379,9 +371,13 @@ SeekerTraceQueriesInterface >> forMessageSends [
 					     (#messageReceiver -> msgRcvr).
 					     (#formattedMessageReceiver -> (msgRcvrNode isVariable
 						       ifTrue: [ 
-						       msgRcvrNode variable name , ' (' , (msgRcvrNode variable readInContext: row context) class asString
-						       , ')' ]
-						       ifFalse: [ msgRcvr ])).
+							       msgRcvrNode variable name , ' ('
+							       ,
+							       (msgRcvrNode variable readInContext: row context) class
+								       asString , ')' ]
+						       ifFalse: [ 
+							       [ msgRcvr asString , ' (' , msgRcvrNode sourceCode , ')' ] 
+								       onErrorDo: [ "msgRcvr" msgRcvrNode sourceCode ] ])).
 					     (#messageReceiverClass -> msgRcvrClass value).
 					     (#messageSelector -> row node selector) } ].
 	^ q
