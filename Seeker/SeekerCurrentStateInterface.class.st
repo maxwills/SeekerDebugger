@@ -1,4 +1,56 @@
 "
+## Primitives and numbers
+Instantiation primives are:
+(Taken from Sindarin. I assume it is correct)
+( 70 71 79 148 160 ).
+
+Manually identified primitives that write to the receiver:
+(changes the receiver)
+39
+61
+64
+69
+74
+144
+145
+166
+211
+549
+615
+616
+617
+618
+619
+620
+621
+622
+623
+624
+625
+626
+627
+628
+629
+645
+646
+647
+648
+649
+650
+651
+652
+653
+654
+655
+656
+657
+658
+659
+
+105 (replace from to)
+
+
+## Old description:
 A Seeker Interface Object that expose methods for convenient access to the debugged execution data.
 
 At every executedBytecode, debugged program state can be queried using this object.
@@ -27,18 +79,78 @@ Using the interface:
 csi := SeekerCurrentStateInterface new tracer: aSeekerTracer
 csi node isAssignemnt ifTrue: [
 	 assignmentOldValue:= csi assignmentCurrentValue. 
-	assignmentNewValue := csi assignmentNextValue]
+	assignmentNewValue := csi assignmentNextValue].
+
+## Conventions
+testing methods starting with is are safe. Which means, there is no need to check for conditions before calling them.
+Other methods might need a prior check.
 "
 Class {
 	#name : #SeekerCurrentStateInterface,
 	#superclass : #SeekerInterfaceObject,
 	#instVars : [
 		'cachedValues',
-		'instanceCreationPrimitives',
 		'exceptionSignalSelectors'
+	],
+	#classVars : [
+		'instanceCreationPrimitives',
+		'instanceCreationPrimitivesArray',
+		'writingPrimitivesArray'
 	],
 	#category : #'Seeker-Interfaces'
 }
+
+{ #category : #initialization }
+SeekerCurrentStateInterface class >> initialize [
+
+	"Read the class comments for details on the magic literals"
+
+	| writingPrimitives |
+	instanceCreationPrimitives := #( 70 71 79 148 160 ).
+	instanceCreationPrimitivesArray := Array new: 160.
+	1 to: instanceCreationPrimitivesArray size do: [ :i | 
+	instanceCreationPrimitivesArray at: i put: false ].
+	instanceCreationPrimitives do: [ :each | 
+		instanceCreationPrimitivesArray at: each put: true ].
+	writingPrimitivesArray := Array new: 659.
+	writingPrimitives := self writingPrimitives.
+	1 to: writingPrimitivesArray size do: [ :i | 
+	writingPrimitivesArray at: i put: false ].
+	writingPrimitives do: [ :each | 
+		writingPrimitivesArray at: each put: true ]
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface class >> isInstantiationPrimitive: aNumber [
+
+	^ (aNumber < 1 or: [ aNumber > 160 ])
+		  ifTrue: [ false ]
+		  ifFalse: [ "160 is the maxium instantiation primitive in current pharo version (october 2021), and the size of the array" 
+			  instanceCreationPrimitivesArray at: aNumber ]
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface class >> isWaitPrimitive: aNumber [
+
+	^ aNumber = 86
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface class >> isWritingPrimitive: aNumber [
+
+	^ (aNumber < 1 or: [ aNumber > 659 ])
+		  ifTrue: [ false ]
+		  ifFalse: [ "659 is the maxium writing primitive in current pharo version (october 2021) we have listed, and the size of the array" 
+			  writingPrimitivesArray at: aNumber ]
+]
+
+{ #category : #'as yet unclassified' }
+SeekerCurrentStateInterface class >> writingPrimitives [
+
+	^ #( 39 61 64 69 74 144 145 166 211 549 615 616 617 618 619 620 621
+	     622 623 624 625 626 627 628 629 645 646 647 648 649 650 651 652
+	     653 654 655 656 657 658 659 105 )
+]
 
 { #category : #testing }
 SeekerCurrentStateInterface >> aboutToSwitchContext [
@@ -81,6 +193,14 @@ SeekerCurrentStateInterface >> assignmentNodeVariable [
 	"Returns the Variable object of the RBVariableNode of the current RBAssignmentNode"
 
 	^ self node variable variable
+]
+
+{ #category : #accessing }
+SeekerCurrentStateInterface >> bytecode [
+
+	^ self context compiledCode symbolicBytecodes
+		  detect: [ :each | each offset = self context pc ]
+		  ifNone: [ nil ]
 ]
 
 { #category : #accessing }
@@ -174,7 +294,6 @@ SeekerCurrentStateInterface >> initialize [
 	cachedValues := Dictionary new.
 	self class methodDictionary keysDo: [ :selector | 
 		cachedValues at: selector put: -1 -> nil ].
-	instanceCreationPrimitives := #( 70 71 79 148 160 ).
 	exceptionSignalSelectors := #( #signalIn: #signal: #signal ) "This is not a good solution."
 ]
 
@@ -209,24 +328,22 @@ SeekerCurrentStateInterface >> isInstantiationMessage [
 and the method called corresponds to an instantiation primitive.
 "
 
-	| methodAboutToExecute node messageReceiver messageReceiverClass pointer |
+	| methodAboutToExecute node |
 	node := self node.
 	node isMessage ifFalse: [ ^ false ].
-	pointer := self context stackPtr - self node numArgs. "Heuristics"
-	pointer <= 0 ifTrue: [ pointer := 1 ]. "I'm not sure these cases happen"
-	pointer <= self context size ifFalse: [ ^ false ].
-	messageReceiver := self context at: pointer. "Heuristics"
-	messageReceiverClass := messageReceiver class. "variable readInContext: self context"
-	"Mind that the receiver can be another message send."
-	"Also, we need to manually check if the lookup should be performed from the superclass"
-	node receiver isSuperVariable ifTrue: [ 
-		messageReceiverClass := messageReceiverClass superclass ].
-
-	methodAboutToExecute := messageReceiverClass lookupSelector:
-		                        node selector. "messageReceiverClass"
+	methodAboutToExecute := self methodAboutToExecute.
 	^ methodAboutToExecute notNil and: [ 
-		  instanceCreationPrimitives includes:
+		  self class isInstantiationPrimitive:
 			  methodAboutToExecute primitive ]
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> isMessageSend [
+
+	^ self node isMessage and: [ 
+		  self context willSend or: [ 
+			  self node isInlined and: [ 
+				  self context willJumpIfFalse or: [ self context willJumpIfTrue ] ] ] ]
 ]
 
 { #category : #testing }
@@ -236,9 +353,113 @@ SeekerCurrentStateInterface >> isMethodReturn [
 ]
 
 { #category : #testing }
+SeekerCurrentStateInterface >> isSeekerMarkerMethod [
+
+]
+
+{ #category : #testing }
 SeekerCurrentStateInterface >> isVariable [
 
 	^ self node isVariable
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> isWaitPrimitive [
+
+	| methodAboutToExecute node |
+	node := self node.
+	node isMessage ifFalse: [ ^ false ].
+	methodAboutToExecute := self methodAboutToExecute.
+	^ methodAboutToExecute notNil and: [ 
+		  self class isWaitPrimitive: methodAboutToExecute primitive ]
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> isWritingPrimitiveMessage [
+
+	"Returns true if the current node is a message node, 
+and the method called corresponds to a writing primitive.
+"
+
+	| methodAboutToExecute node |
+	node := self node.
+	node isMessage ifFalse: [ ^ false ].
+	methodAboutToExecute := self methodAboutToExecute.
+	^ methodAboutToExecute notNil and: [ 
+		  self class isWritingPrimitive: methodAboutToExecute primitive ]
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> messageArgumentAt: aNumber [
+
+	"Returns the argument at the specified index of the current message node. Assumes the current node is a message node
+"
+
+	"Clients should take care that the argument index is within limits"
+
+	^ self node isInlined
+		  ifTrue: [ 
+		  self context top "inlined messages should not have arguments" ]
+		  ifFalse: [ 
+			  | pointer |
+			  pointer := 1 + self context stackPtr - self node numArgs. "Heuristics"
+			  pointer <= 0 ifTrue: [ pointer := 1 ]. "I'm not sure these cases happen"
+			  pointer > self context size ifTrue: [ ^ nil ].
+			  self context at: pointer "Heuristics" ]
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> messageIsSeekerMarkerMethod [
+
+	| messageReceiver messageSelector |
+	messageReceiver := self messageReceiver.
+	messageReceiver == SeekerSessionHelpers ifFalse: [ ^ false ].
+	messageSelector := self messageSelector.
+	^ messageSelector == #marker or: [ messageSelector == #marker: ]
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> messageReceiver [
+
+	"Returns the message receiver of the current message node. Assumes the current node is a message node
+"
+
+	^ self node isInlined
+		  ifTrue: [ self context top ]
+		  ifFalse: [ 
+			  | pointer |
+			  pointer := self context stackPtr - self node numArgs. "Heuristics"
+			  pointer <= 0 ifTrue: [ pointer := 1 ]. "I'm not sure these cases happen"
+			  pointer > self context size ifTrue: [ ^ nil ].
+			  self context at: pointer "Heuristics" ]
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> messageSelector [
+
+	"Returns the message selector of the current message node. Assumes the current node is a message node
+"
+
+	^ self node selector
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> methodAboutToExecute [
+
+	"Returns the method (CompiledMethod) about to be executed for the current message node. Assuems that the current node is a message node"
+
+	| methodAboutToExecute node messageReceiver messageReceiverClass |
+	node := self node.
+	messageReceiver := self messageReceiver.
+	messageReceiverClass := messageReceiver class. "variable readInContext: self context"
+	"Mind that the receiver can be another message send."
+	"Also, we need to manually check if the lookup should be performed from the superclass"
+	node receiver isSuperVariable ifTrue: [ 
+		messageReceiverClass := messageReceiverClass superclass ].
+
+	methodAboutToExecute := messageReceiverClass lookupSelector:
+		                        node selector.
+	^ methodAboutToExecute
 ]
 
 { #category : #accessing }

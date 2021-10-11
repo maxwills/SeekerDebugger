@@ -14,7 +14,27 @@ SeekerInstallHelpers class >> enableDebuggerExtension [
 SeekerInstallHelpers class >> install [
 
 	self overrideStDebuggerActionModel.
-	self enableDebuggerExtension
+	self enableDebuggerExtension.
+	self overrideHandMorph
+]
+
+{ #category : #actions }
+SeekerInstallHelpers class >> overrideHandMorph [
+
+	"Used to capture shift and command keys"
+
+	| methodSource |
+	self flag: 'Hacky. Should be changed in the future'.
+
+	methodSource := (HandMorph  >> #handleEvent:) sourceCode.
+	methodSource := methodSource
+		                copyReplaceAll: 'evt := anEvent.'
+		                with:
+		                'evt := anEvent "this comment prevent a second installation". 
+		SeekerGlobals instance updateModifierKeys: anEvent.'.
+	HandMorph compile: methodSource
+
+	"(StDebugger >> #debuggerActionModel) browse"
 ]
 
 { #category : #actions }

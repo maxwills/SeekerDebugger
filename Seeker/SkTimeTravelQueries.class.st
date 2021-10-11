@@ -11,7 +11,7 @@ Class {
 SkTimeTravelQueries >> matchesInstanceCreation [
 
 	| q instanceCreationPrimitives isAboutToInstantiateClass |
-	q := tracer queries baseQuery collect: [ :row | 
+	q := tracer queries baseQueryOld collect: [ :row | 
 		     New with: { 
 				     (#receiver -> row receiver).
 				     (#node -> row node) } ].
@@ -75,7 +75,7 @@ SkTimeTravelQueries >> matchesInstanceCreationPretier [
 SkTimeTravelQueries >> matchesNextStatementInSequence [
 
 	| q inSameDynanimcSequence startingState |
-	q := tracer queries baseQuery collect: [ :row | 
+	q := tracer queries baseQueryOld collect: [ :row | 
 		     New with: { 
 				     (#context -> row context).
 				     (#stackDepth -> row stackDepth).

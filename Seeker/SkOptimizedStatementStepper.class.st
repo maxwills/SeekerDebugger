@@ -60,7 +60,11 @@ SkOptimizedStatementStepper >> restartAtBytecodeOne [
 { #category : #'accessing context' }
 SkOptimizedStatementStepper >> slowCurrentContext [
 
-	^ super currentContext
+	"currentContext := nil.
+	^ super currentContext"
+
+	currentContext := stDebugger interruptedContext.
+	^ currentContext
 ]
 
 { #category : #'as yet unclassified' }

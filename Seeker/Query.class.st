@@ -686,6 +686,12 @@ Query >> select: aBlock [
 	^ q
 ]
 
+{ #category : #enumerating }
+Query >> select: aBlock collect: aProjectionBlock [
+
+	^ (self select: aBlock) collect: aProjectionBlock
+]
+
 { #category : #'as yet unclassified' }
 Query >> selectionBlock [
 

@@ -11,7 +11,9 @@ Class {
 		'instantiationCounter',
 		'instantiationIDDictionary',
 		'nonLocalObjects',
-		'storedNonLocalChanges'
+		'storedNonLocalChanges',
+		'storedNonLocalChangesDictionary',
+		'shouldAlwaysRunToEnd'
 	],
 	#category : #'Seeker-Components'
 }
@@ -29,6 +31,18 @@ SkQueryExperimentalTracer >> aliasesDictionary [
 ]
 
 { #category : #'as yet unclassified' }
+SkQueryExperimentalTracer >> checkIfShouldRunToEnd [
+
+	"If in the execution we find elements that need to finish their execution before restarting,
+	this method will set a flag true. In that case, seeker will ensure that the execution is run to the end everytime it is internally restarted. This is used in cases like Tests clean up phases, and syncronization objects (Semaphores, Monitors, Etc)"
+
+	"No support yet for test cleanup methods. And this should be called when the current node is a send message"
+
+	shouldAlwaysRunToEnd ifFalse: [ 
+		shouldAlwaysRunToEnd := self receiver class == Semaphore ]
+]
+
+{ #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> createContextCacheFor: aContext [
 
 	| contextVars |
@@ -42,7 +56,7 @@ SkQueryExperimentalTracer >> currentStateAsRow [
 	"Debug help. Don't use this. No filtering or optimizations. Create a baseQuery instead and use it with select: collect:"
 
 	| q |
-	q := self queries baseQuery.
+	q := self queries baseQueryOld.
 	^ q currentRow
 ]
 
@@ -72,37 +86,38 @@ SkQueryExperimentalTracer >> doAstStepPostProcessWithPrevNode: preProcessAstNode
 { #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> doAstStepPreProcess [
 
-	currentStateInterfaceInstance isInstantiationMessage
-		ifTrue: [ instantiationFlag := true ]
-		ifFalse: [ 
+	currentStateInterfaceInstance isMessageSend
+		ifTrue: [ "handling message sends cases"
+			| method primitive |
+			method := currentStateInterfaceInstance methodAboutToExecute.
+			primitive := method ifNil: [ 0 ] ifNotNil: [ method primitive ].
+			shouldAlwaysRunToEnd ifFalse: [ 
+				shouldAlwaysRunToEnd := SeekerCurrentStateInterface 
+					                        isWaitPrimitive: primitive ].
+			(SeekerCurrentStateInterface isInstantiationPrimitive: primitive)
+				ifTrue: [ instantiationFlag := true ]
+				ifFalse: [ 
+					(SeekerCurrentStateInterface isWritingPrimitive: primitive) 
+						ifTrue: [ 
+							| messageReceiver |
+							messageReceiver := currentStateInterfaceInstance
+								                   messageReceiver.
+							(self objectIsLocal: messageReceiver) ifFalse: [ "We store a copy of the object if this is writing primitive" 
+								self recordSnapshotOfObject: messageReceiver ] ] ] ]
+		ifFalse: [ "assignment cases"
 			| node |
 			node := currentStateInterfaceInstance node.
-			"putting the tracing for restoration logic here"
+			"putting the tracing for restoration (of assignments)logic here"
 			(node isAssignment and: [ 
 				 node variable isWorkspaceVariable or: [ 
 					 node variable variable isLocalVariable not and: [ 
 						 currentStateInterfaceInstance receiverIsLocalToExecution not ] ] ]) 
 				ifTrue: [ "if the receiver is an object that was instantiated from outside the execution, or in case of a workspace variable"
-					| change receiver variable varName undoBlock varValue |
-					receiver := currentStateInterfaceInstance receiver.
-					variable := node variable variable.
-					varName := variable name.
-					varValue := variable readInContext:
-						            currentStateInterfaceInstance context.
-					undoBlock := (isMappedForDoIt and: [ 
-						              variable isWorkspaceVariable ])
-						             ifTrue: [ 
-							             [ 
-							             variable write: varValue inContext: doItContext "I used the stored doItContext, because I don't know how to make the assignment without that context reference" ] ]
-						             ifFalse: [ "Why not using write:inContext:? because most likely the context will not exists when undoing changes for these variables." 
-							             [ 
-							             receiver writeSlotNamed: varName value: varValue ] ].
-					change := { 
-						          currentStateInterfaceInstance receiver.
-						          variable name.
-						          varValue.
-						          undoBlock }.
-					storedNonLocalChanges add: change ] ].
+					self
+						recordChangeForReceiver: currentStateInterfaceInstance receiver
+						ofVar: node variable variable
+						inContext: currentStateInterfaceInstance context ] ].
+
 	astPreStepHooks do: [ :each | each value ]
 ]
 
@@ -143,7 +158,9 @@ SkQueryExperimentalTracer >> initialize [
 	instantiationFlag := false.
 	currentStateInterfaceInstance := self currentStateInterface.
 	nonLocalObjects := WeakIdentitySet new.
+	shouldAlwaysRunToEnd := false.
 	storedNonLocalChanges := OrderedCollection new.
+	storedNonLocalChangesDictionary := WeakIdentityKeyDictionary new. "Keys are the object owning the variable, and the value is a dictionary of keys variable name (symbol) with values the Undo block"
 	^ super initialize
 ]
 
@@ -229,6 +246,45 @@ SkQueryExperimentalTracer >> readAliasOf: anObject [
 ]
 
 { #category : #'as yet unclassified' }
+SkQueryExperimentalTracer >> recordChangeForReceiver: anObject ofVar: aVariable inContext: aContext [
+
+	"Note that this method stores only the first change of a variable."
+
+	| variablesChangesOfReceiver |
+	variablesChangesOfReceiver := storedNonLocalChangesDictionary
+		                              at: anObject
+		                              ifAbsentPut: [ Dictionary new ].
+	variablesChangesOfReceiver at: aVariable name ifAbsentPut: [ 
+		| varValue varName |
+		varName := aVariable name.
+		varValue := aVariable readInContext: aContext.
+		(isMappedForDoIt and: [ aVariable isWorkspaceVariable ])
+			ifTrue: [ 
+				[ 
+				aVariable write: varValue inContext: doItContext "I used the stored doItContext, because I don't know how to make the assignment without that context reference" ] ]
+			ifFalse: [ "Why not using write:inContext:? because most likely the context will not exists when undoing changes for these variables." 
+				[ anObject writeSlotNamed: varName value: varValue ] ] ]
+]
+
+{ #category : #'as yet unclassified' }
+SkQueryExperimentalTracer >> recordSnapshotOfObject: anObject [
+
+	"Note that this method stores only the first change of a variable."
+
+	| variablesChangesOfReceiver |
+	variablesChangesOfReceiver := storedNonLocalChangesDictionary
+		                              at: anObject
+		                              ifAbsentPut: [ Dictionary new ].
+
+	variablesChangesOfReceiver
+		at: #__full_object_snaphot__
+		ifAbsentPut: [ 
+			| valuesCopy |
+			valuesCopy := anObject shallowCopy.
+			[ anObject copySameFrom: valuesCopy ] ]
+]
+
+{ #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> registerAliasFor: anObject [
 
 	aliasesDictionary
@@ -254,6 +310,10 @@ SkQueryExperimentalTracer >> removeAstPreStepHook: aBlock [
 { #category : #starting }
 SkQueryExperimentalTracer >> restartAtBytecodeOne [
 
+	"Before restarting, check if the execution should be executed to end"
+
+	shouldAlwaysRunToEnd ifTrue: [ self stepToEnd ].
+	shouldAlwaysRunToEnd := false.
 	self restoreNonLocalChanges.
 	aliasesDictionary removeAll.
 	aliasesDictionary := WeakIdentityKeyDictionary new.
@@ -264,21 +324,23 @@ SkQueryExperimentalTracer >> restartAtBytecodeOne [
 	currentStateInterfaceInstance := self currentStateInterface.
 	nonLocalObjects := WeakIdentitySet new.
 	storedNonLocalChanges := OrderedCollection new.
+	storedNonLocalChangesDictionary removeAll.
+	storedNonLocalChangesDictionary := WeakIdentityKeyDictionary new. "Keys are the object owning the variable, and the value is a dictionary of keys variable name (symbol) with values the Undo block"
 	super restartAtBytecodeOne
 ]
 
 { #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> restoreNonLocalChanges [
 
-	storedNonLocalChanges reverseDo: [ :each | 
-		| undoBlock "obj var val" |
-		"obj := each at: 1.
-		var := each at: 2.
-		val := each at: 3.
-
-		obj writeSlotNamed: var value: val"
+	"	storedNonLocalChanges reverseDo: [ :each | 
+		| undoBlock |
 		undoBlock := each at: 4.
-		undoBlock value ]
+		undoBlock value ]"
+
+	"in this implementation we only store the first changes to a variable of an object. In theory, the order they are restored is not important"
+
+	storedNonLocalChangesDictionary valuesDo: [ :variablesAndUndoBlocks | 
+		variablesAndUndoBlocks valuesDo: [ :undoB | undoB value ] ]
 ]
 
 { #category : #accessing }

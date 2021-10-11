@@ -270,6 +270,12 @@ at the step X which corresponds to the moment before executing the bytecode.
 	^ result
 ]
 
+{ #category : #'accessing - markers' }
+SeekerFindInterface >> markers [
+
+	^ tracer queries forMarkers asTableForTimeTravel
+]
+
 { #category : #'as yet unclassified' }
 SeekerFindInterface >> returnValuesOfAnyMessageSendWithSelectedSelector [
 
@@ -321,7 +327,7 @@ SeekerFindInterface >> variablesWrittenForDeltaQuery [
 
 	| query result |
 	"Select nonlocal variables assignments (non temporary: instance variables mostly)"
-	query := tracer queries baseCsiQuery select: [ :state | 
+	query := tracer queries baseQuery select: [ :state | 
 		         state node isAssignment and: [ 
 			         state assignmentNodeVariable isLocalVariable not ] ].
 	"Select only if the owner of the variable is non-local to the execution.

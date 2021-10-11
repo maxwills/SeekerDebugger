@@ -285,10 +285,13 @@ SeekerDebuggerPresenter >> onResultsFilterSubmitHandler [
 
 { #category : #'event handling' }
 SeekerDebuggerPresenter >> restartHandler [
-"Called when pressing the icon in the toolbar"
-self mapExecutionIfNotMappedAlready.
-self doAndUpdateSessionAfter: [ self seekerDebugger tracer pushNavigationHistory .	self seekerDebugger restart ]
-	
+
+	"Called when pressing the icon in the toolbar"
+
+	self mapExecutionIfNotMappedAlready.
+	self doAndUpdateSessionAfter: [ 
+		self seekerDebugger tracer pushNavigationHistory.
+		self seekerDebugger restart ]
 ]
 
 { #category : #'event handling' }

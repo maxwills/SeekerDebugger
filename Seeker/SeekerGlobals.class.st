@@ -7,7 +7,10 @@ Class {
 		'auxiliaryTempStorage2',
 		'defaultStepperClass',
 		'watchedProcesses',
-		'ordinatedNodesDictionary'
+		'ordinatedNodesDictionary',
+		'isAltPressed',
+		'isShiftPressed',
+		'isCommandPressed'
 	],
 	#classVars : [
 		'instance'
@@ -57,6 +60,12 @@ SeekerGlobals >> clearWatchedProcesses [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerGlobals >> debugCommandKeysPressed [
+
+	^ self isCommandPressed and: [ self isShiftPressed ]
+]
+
+{ #category : #'as yet unclassified' }
 SeekerGlobals >> defaultStepperClass [
 
 	| fallbackDefault |
@@ -80,6 +89,42 @@ SeekerGlobals >> goToStDebuggerActionModelOverride [
 		SeekerStDebuggerDebuggerActionModel name asString.
 	self inform:
 		'SeekerStDebuggerDebuggerActionModel ready in clipboard for overwriting'
+]
+
+{ #category : #accessing }
+SeekerGlobals >> isAltPressed [
+
+	^ isAltPressed
+]
+
+{ #category : #accessing }
+SeekerGlobals >> isAltPressed: anObject [
+
+	isAltPressed := anObject
+]
+
+{ #category : #accessing }
+SeekerGlobals >> isCommandPressed [
+
+	^ isCommandPressed
+]
+
+{ #category : #accessing }
+SeekerGlobals >> isCommandPressed: anObject [
+
+	isCommandPressed := anObject
+]
+
+{ #category : #accessing }
+SeekerGlobals >> isShiftPressed [
+
+	^ isShiftPressed
+]
+
+{ #category : #accessing }
+SeekerGlobals >> isShiftPressed: anObject [
+
+	isShiftPressed := anObject
 ]
 
 { #category : #testing }
@@ -124,6 +169,14 @@ SeekerGlobals >> stopWatchingProcess: aProcess [
 		ifFalse: [ "THIS IS AN ERROR AND SHOULD NEVER BE IN THIS SITUATION"
 			self inform: 'SEEKER ERROR: Process not being watched'.
 			self error: 'SEEKER ERROR: Process not being watched' ]
+]
+
+{ #category : #'as yet unclassified' }
+SeekerGlobals >> updateModifierKeys: anEvent [
+
+	isAltPressed := anEvent altKeyPressed.
+	isShiftPressed := anEvent shiftPressed.
+	isCommandPressed := anEvent commandKeyPressed
 ]
 
 { #category : #'as yet unclassified' }

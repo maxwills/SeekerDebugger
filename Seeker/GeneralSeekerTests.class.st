@@ -19,6 +19,44 @@ GeneralSeekerTests class >> doItScenario [
 	SeekerGlobals instance auxiliaryTempStorage1: 3.
 ]
 
+{ #category : #'as yet unclassified' }
+GeneralSeekerTests class >> exceptionScenario [
+
+	"Do this once the window opens:
+	seeker stepper trackedVariableName: 'aNumber'
+	then remap the test
+	"
+
+	| aNumber|
+	aNumber := -1.
+	aNumber := 0.
+	aNumber := 10/aNumber.
+
+	self assert: true
+]
+
+{ #category : #'as yet unclassified' }
+GeneralSeekerTests class >> myQueryExample: seeker [
+
+	| query |
+	"Lists the variable name for all the assignments of an execution."
+	"This can be executed from the scripting tab doing GeneralSeekerTests myQueryExample: seeker"
+	query := Query
+		         from: seeker programStates
+		         select: [ :state | state node isAssignment ]
+		         collect: [ :state | 
+			         New with: { 
+					         (#bytecodeIndex -> state bytecodeIndex).
+					         (#varName -> state node variable variable name) } ].
+	"Equivalent to the following"
+	"query := seeker queries baseQueryForAssignments  
+ collect: [:state| New with: {
+		(#bytecodeIndex -> state bytecodeIndex).
+		(#varName -> state node variable variable name).
+		}]"
+	seeker ui showResult: query asSeekerResultsCollection
+]
+
 { #category : #tests }
 GeneralSeekerTests >> exceptionTest [
 
@@ -117,6 +155,28 @@ GeneralSeekerTests >> testFindTestContextInStack [
 	aCol add: 1.
 	aCol add: 1.
 	
+	self assert: false
+]
+
+{ #category : #tests }
+GeneralSeekerTests >> testMarkers [
+
+	| aCol aNumber aMarkerBlock |
+	"Next assignment should not appear in the query results"
+	aMarkerBlock := [ 
+	                SeekerSessionHelpers marker: 'Should be the fourth' ].
+	aCol := OrderedCollection new.
+	aNumber := 0.
+	SeekerSessionHelpers marker.
+	"Next (inner) assignment should appear in the query"
+	SeekerGlobals instance auxiliaryTempStorage1: 1.
+	aNumber := aNumber + 10.
+	SeekerGlobals instance auxiliaryTempStorage1: 2.
+	SeekerSessionHelpers marker.
+	aNumber := aNumber + 10.
+	SeekerGlobals instance auxiliaryTempStorage1: aMarkerBlock.
+	SeekerSessionHelpers marker. "Third one"
+	SeekerGlobals instance auxiliaryTempStorage1 value. "Fourth one is inside this block"
 	self assert: false
 ]
 

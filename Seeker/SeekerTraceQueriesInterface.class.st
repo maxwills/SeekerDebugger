@@ -5,7 +5,7 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
-SeekerTraceQueriesInterface >> baseCsiQuery [
+SeekerTraceQueriesInterface >> baseQuery [
 
 	"returns a Current State Interface based query"
 "Note that this will not work on it's own. It still lacks a select and collect.
@@ -15,7 +15,35 @@ For time travel, it needs the executedBytecode field to be a part of each result
 ]
 
 { #category : #'as yet unclassified' }
-SeekerTraceQueriesInterface >> baseQuery [
+SeekerTraceQueriesInterface >> baseQueryForAssignments [
+
+	"A base query. Don't launch it like this. A collectionBlock is needed for this to produce results"
+
+	^ Query
+		  from: tracer programStates
+		  select: [ :row | row node isAssignment ]
+]
+
+{ #category : #'as yet unclassified' }
+SeekerTraceQueriesInterface >> baseQueryForInstancesCreation [
+
+	^ Query
+		  from: tracer programStates
+		  select: [ :row | row isInstantiationMessage ]
+]
+
+{ #category : #'as yet unclassified' }
+SeekerTraceQueriesInterface >> baseQueryForMessageSends [
+
+	"A base query. Don't launch it like this. A collectionBlock is needed for this to produce results"
+
+	^ Query
+		  from: tracer programStates
+		  select: [ :row | row isMessageSend ]
+]
+
+{ #category : #'as yet unclassified' }
+SeekerTraceQueriesInterface >> baseQueryOld [
 
 	"returns a query upon the omniscientTable"
 	"Discontinued. Use instead baseCsiQuery or directly use programStates as dataSource"
@@ -159,62 +187,47 @@ SeekerTraceQueriesInterface >> forAliases [
 { #category : #'as yet unclassified' }
 SeekerTraceQueriesInterface >> forAssignmentsOfAnyVariable [
 
-	| table q |
-	table := tracer programStates. "tables omniscientTableForAliases"
-
-	q := Query
-		     from: table
-		     where: [ :row | row node isAssignment ]
-		     select: [ :row | 
-			     New with: { 
-					     (#methodSelector -> row methodSelector).
-					     (#receiverClass -> row receiverClass).
-					     (#receiverClassAndPackage
-					      ->
-					      (row receiverClass name , ' [' , row receiverPackage name
-					       , ']')).
-					     (#bytecodeIndex -> row bytecodeIndex).
-					     (#node -> row node).
-					     (#receiverAlias -> row receiverAlias).
-					     (#variableNode -> row node variable).
-					     (#variableName -> row node variable variable name).
-					     (#valueChangedFrom
-					      -> (row node variable variable readInContext: row context)).
-					     (#valueChangedTo -> (row context at: row context basicSize)).
-					     (#receiverPackage -> row receiverPackage).
-					     (#variableClass -> row node variable variable class) } ].
-	^ q
+	^ self baseQueryForAssignments collect: [ :row | 
+		  New with: { 
+				  (#methodSelector -> row methodSelector).
+				  (#receiverClass -> row receiverClass).
+				  (#receiverClassAndPackage
+				   ->
+				   (row receiverClass name , ' [' , row receiverPackage name , ']')).
+				  (#bytecodeIndex -> row bytecodeIndex).
+				  (#node -> row node).
+				  (#receiverAlias -> row receiverAlias).
+				  (#variableNode -> row node variable).
+				  (#variableName -> row node variable variable name).
+				  (#valueChangedFrom
+				   -> (row node variable variable readInContext: row context)).
+				  (#valueChangedTo -> (row context at: row context basicSize)).
+				  (#receiverPackage -> row receiverPackage).
+				  (#variableClass -> row node variable variable class) } ]
 ]
 
 { #category : #'as yet unclassified' }
 SeekerTraceQueriesInterface >> forAssignmentsOfInstanceVariables [
 
-	| table q |
-	table := tracer programStates.
-
-	q := Query
-		     from: table
-		     where: [ :row | 
-			     row node isAssignment and: [ 
-				     row node variable variable isInstanceVariable ] ]
-		     select: [ :row | 
-			     New with: { 
-					     (#methodSelector -> row methodSelector).
-					     (#receiverClass -> row receiverClass).
-					     (#bytecodeIndex -> row bytecodeIndex).
-					     (#node -> row node).
-					     (#receiverAlias -> row receiverAlias).
-					     (#variableNode -> row node variable).
-					     (#variableName -> row node variable variable name).
-					     (#receiverPackage -> row receiverPackage).
-					     (#receiverClassAndPackage
-					      ->
-					      (row receiverClass name , ' [' , row receiverPackage name
-					       , ']')).
-					     (#valueChangedFrom
-					      -> (row node variable variable readInContext: row context)).
-					     (#valueChangedTo -> (row context at: row context basicSize)) } ].
-	^ q
+	^ self baseQueryForAssignments
+		  select: [ :row | row node variable variable isInstanceVariable ]
+		  collect: [ :row | 
+			  New with: { 
+					  (#methodSelector -> row methodSelector).
+					  (#receiverClass -> row receiverClass).
+					  (#bytecodeIndex -> row bytecodeIndex).
+					  (#node -> row node).
+					  (#receiverAlias -> row receiverAlias).
+					  (#variableNode -> row node variable).
+					  (#variableName -> row node variable variable name).
+					  (#receiverPackage -> row receiverPackage).
+					  (#receiverClassAndPackage
+					   ->
+					   (row receiverClass name , ' [' , row receiverPackage name
+					    , ']')).
+					  (#valueChangedFrom
+					   -> (row node variable variable readInContext: row context)).
+					  (#valueChangedTo -> (row context at: row context basicSize)) } ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -309,60 +322,56 @@ SeekerTraceQueriesInterface >> forInstanceVariables [
 { #category : #'as yet unclassified' }
 SeekerTraceQueriesInterface >> forInstancesCreation [
 
-	| q programStates |
-	programStates := tracer programStates.
+	^ self baseQueryForInstancesCreation collect: [ :row | 
+		  | msgRcvrClass msgRcvrPackage instMsgReceiver |
+		  instMsgReceiver := row context at:
+			                     row context stackPtr - row node numArgs. "Heuristics"
+		  msgRcvrClass := instMsgReceiver.
+		  msgRcvrPackage := instMsgReceiver isClass
+			                    ifTrue: [ instMsgReceiver package name ]
+			                    ifFalse: [ instMsgReceiver class package name ].
+		  New with: { 
+				  (#bytecodeIndex -> row bytecodeIndex).
+				  (#methodSelector -> row methodSelector).
+				  (#receiverClass -> row receiverClass).
+				  (#messageReceiver -> instMsgReceiver).
+				  (#messageArguments -> row node arguments).
+				  (#messageReceiverClass -> msgRcvrClass class).
+				  (#messageSelector -> row node selector).
+				  (#messageReceiverPackage -> msgRcvrPackage).
+				  (#creationFormattedDescription -> ((instMsgReceiver isClass
+					     ifTrue: [ instMsgReceiver name ]
+					     ifFalse: [ instMsgReceiver class name ]) , ' ['
+				    , msgRcvrPackage , ']')) } ]
+]
 
-	q := Query
-		     from: programStates
-		     select: [ :row | row isInstantiationMessage ]
-		     collect: [ :row | 
-			     | msgRcvrClass msgRcvrPackage instMsgReceiver |
-			     instMsgReceiver := row context at:
-				                        row context stackPtr - row node numArgs. "Heuristics"
-			     msgRcvrClass := instMsgReceiver.
-			     msgRcvrPackage := instMsgReceiver isClass
-				                       ifTrue: [ instMsgReceiver package name ]
-				                       ifFalse: [ 
-				                       instMsgReceiver class package name ].
-			     New with: { 
-					     (#bytecodeIndex -> row bytecodeIndex).
-					     (#methodSelector -> row methodSelector).
-					     (#receiverClass -> row receiverClass).
-					     (#messageReceiver -> instMsgReceiver).
-					     (#messageArguments -> row node arguments).
-					     (#messageReceiverClass -> msgRcvrClass class).
-					     (#messageSelector -> row node selector).
-					     (#messageReceiverPackage -> msgRcvrPackage).
-					     (#creationFormattedDescription -> ((instMsgReceiver isClass
-						        ifTrue: [ instMsgReceiver name ]
-						        ifFalse: [ instMsgReceiver class name ]) , ' ['
-					       , msgRcvrPackage , ']')) } ].
-	^ q
+{ #category : #'as yet unclassified' }
+SeekerTraceQueriesInterface >> forMarkers [
+
+	^ self baseQuery
+		  select: [ :state | 
+			  state isMessageSend and: [ state messageIsSeekerMarkerMethod ] ]
+		  collect: [ :state | 
+			  | arg |
+			  arg := state node arguments isNotEmpty
+				         ifTrue: [ (state messageArgumentAt: 1) asString ]
+				         ifFalse: [ '' ].
+			  New with: { 
+					  (#bytecodeIndex -> state bytecodeIndex).
+					  (#senderMethodClass -> state context sender methodClass).
+					  (#senderMethodSelector -> state context sender methodSelector).
+					  (#markerArg -> arg) } ]
 ]
 
 { #category : #'as yet unclassified' }
 SeekerTraceQueriesInterface >> forMessageSends [
 
-	| q table |
-	table := tracer programStates.
+	^ self baseQueryForMessageSends collect: [ :row | 
+		  | msgRcvrNode msgRcvrClass msgRcvr |
+		  msgRcvrNode := row node receiver.
+		  msgRcvr := row messageReceiver.
 
-	q := Query
-		     from: table
-		     select: [ :row | row node isMessage ]
-		     collect: [ :row | 
-			     | msgRcvrNode msgRcvrClass msgRcvr pointer |
-			     msgRcvrNode := row node receiver.
-			     pointer := row context stackPtr - row node numArgs.
-			     pointer < 1
-				     ifTrue: [ pointer := 1 ]
-				     ifFalse: [ 
-				     pointer > row context size ifTrue: [ 
-					     pointer := row context size ] ].
-			     msgRcvr := row node isInlined
-				                ifTrue: [  row context top ]
-				                ifFalse: [ row context at: pointer "Heuristics" ].
-
-			     msgRcvrClass := msgRcvr class. "msgRcvrNode isVariable
+		  msgRcvrClass := msgRcvr class. "msgRcvrNode isVariable
 				                     ifTrue: [ 
 				                     'a '
 				                     ,
@@ -371,20 +380,23 @@ SeekerTraceQueriesInterface >> forMessageSends [
 				                     ifFalse: [ 
 					instMsgReceiver := 
 					""msgRcvrNode sourceCode"" ]"
-			     New with: { 
-					     (#bytecodeIndex -> row bytecodeIndex).
-					     (#methodSelector -> row methodSelector).
-					     (#receiverClass -> row receiverClass).
-					     (#messageArguments -> row node arguments).
-					     (#messageReceiver -> msgRcvr).
-					     (#formattedMessageReceiver -> (msgRcvrNode isVariable
-						       ifTrue: [ 
-						       msgRcvrNode variable name , ' (' , (msgRcvrNode variable readInContext: row context) class asString
-						       , ')' ]
-						       ifFalse: [ msgRcvr ])).
-					     (#messageReceiverClass -> msgRcvrClass value).
-					     (#messageSelector -> row node selector) } ].
-	^ q
+		  New with: { 
+				  (#bytecodeIndex -> row bytecodeIndex).
+				  (#methodSelector -> row methodSelector).
+				  (#receiverClass -> row receiverClass).
+				  (#messageArguments -> row node arguments).
+				  (#messageReceiver -> msgRcvr).
+				  (#formattedMessageReceiver -> (msgRcvrNode isVariable
+					    ifTrue: [ 
+						    msgRcvrNode variable name , ' ('
+						    ,
+						    (msgRcvrNode variable readInContext: row context) class
+							    asString , ')' ]
+					    ifFalse: [ 
+						    [ msgRcvr asString , ' (' , msgRcvrNode sourceCode , ')' ] 
+							    onErrorDo: [ "msgRcvr" msgRcvrNode sourceCode ] ])).
+				  (#messageReceiverClass -> msgRcvrClass value).
+				  (#messageSelector -> row node selector) } ]
 ]
 
 { #category : #'as yet unclassified' }
