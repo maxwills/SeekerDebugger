@@ -130,6 +130,12 @@ SeekerCurrentStateInterface class >> isInstantiationPrimitive: aNumber [
 ]
 
 { #category : #testing }
+SeekerCurrentStateInterface class >> isWaitPrimitive: aNumber [
+
+	^ aNumber = 86
+]
+
+{ #category : #testing }
 SeekerCurrentStateInterface class >> isWritingPrimitive: aNumber [
 
 	^ (aNumber < 1 or: [ aNumber > 659 ])
@@ -350,6 +356,17 @@ SeekerCurrentStateInterface >> isMethodReturn [
 SeekerCurrentStateInterface >> isVariable [
 
 	^ self node isVariable
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> isWaitPrimitive [
+
+	| methodAboutToExecute node |
+	node := self node.
+	node isMessage ifFalse: [ ^ false ].
+	methodAboutToExecute := self methodAboutToExecute.
+	^ methodAboutToExecute notNil and: [ 
+		  self class isWaitPrimitive: methodAboutToExecute primitive ]
 ]
 
 { #category : #testing }

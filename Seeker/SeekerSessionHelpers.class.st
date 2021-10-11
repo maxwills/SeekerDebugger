@@ -44,6 +44,16 @@ SeekerSessionHelpers class >> makeOnceFlag [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerSessionHelpers class >> markerHere [
+
+	"Does nothing. Seeker should recognize this call."
+
+	"Seeker this message send will be used by seeker MarkersQuery"
+
+	^ self
+]
+
+{ #category : #'as yet unclassified' }
 SeekerSessionHelpers class >> openDebugger [
 
 	Exception new signal 
@@ -62,6 +72,10 @@ SeekerSessionHelpers class >> seekerSession: aBlock [
 SeekerSessionHelpers class >> seekerSessionEndMarker [
 
 	"Does nothing. Seeker should recognize this call."
+	"Seeker will not step beyond this point."
+	"- Press Reset (Seeker Extension Toolbar) to time travel to the start of the registered execution
+	 - Press Proceed (in the StDebugger toolbar) to continue the execution (ending the debugging session)
+	"
    ^ self yourself
 ]
 

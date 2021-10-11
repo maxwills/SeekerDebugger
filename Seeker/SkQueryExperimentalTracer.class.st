@@ -12,7 +12,8 @@ Class {
 		'instantiationIDDictionary',
 		'nonLocalObjects',
 		'storedNonLocalChanges',
-		'storedNonLocalChangesDictionary'
+		'storedNonLocalChangesDictionary',
+		'shouldAlwaysRunToEnd'
 	],
 	#category : #'Seeker-Components'
 }
@@ -30,6 +31,18 @@ SkQueryExperimentalTracer >> aliasesDictionary [
 ]
 
 { #category : #'as yet unclassified' }
+SkQueryExperimentalTracer >> checkIfShouldRunToEnd [
+
+	"If in the execution we find elements that need to finish their execution before restarting,
+	this method will set a flag true. In that case, seeker will ensure that the execution is run to the end everytime it is internally restarted. This is used in cases like Tests clean up phases, and syncronization objects (Semaphores, Monitors, Etc)"
+
+	"No support yet for test cleanup methods. And this should be called when the current node is a send message"
+
+	shouldAlwaysRunToEnd ifFalse: [ 
+		shouldAlwaysRunToEnd := self receiver class == Semaphore ]
+]
+
+{ #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> createContextCacheFor: aContext [
 
 	| contextVars |
@@ -43,7 +56,7 @@ SkQueryExperimentalTracer >> currentStateAsRow [
 	"Debug help. Don't use this. No filtering or optimizations. Create a baseQuery instead and use it with select: collect:"
 
 	| q |
-	q := self queries baseQuery.
+	q := self queries baseQueryOld.
 	^ q currentRow
 ]
 
@@ -73,35 +86,37 @@ SkQueryExperimentalTracer >> doAstStepPostProcessWithPrevNode: preProcessAstNode
 { #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> doAstStepPreProcess [
 
-	true ifTrue: [ 
-		currentStateInterfaceInstance isMessageSend
-			ifTrue: [ "handling message sends cases"
-				| method primitive |
-				method := currentStateInterfaceInstance methodAboutToExecute.
-				primitive := method ifNil: [ 0 ] ifNotNil: [ method primitive ].
-				(SeekerCurrentStateInterface isInstantiationPrimitive: primitive)
-					ifTrue: [ instantiationFlag := true ]
-					ifFalse: [ 
-						(SeekerCurrentStateInterface isWritingPrimitive: primitive) 
-							ifTrue: [ 
-								| messageReceiver |
-								messageReceiver := currentStateInterfaceInstance
-									                   messageReceiver.
-								(self objectIsLocal: messageReceiver) ifFalse: [ "We store a copy of the object if this is writing primitive" 
-									self recordSnapshotOfObject: messageReceiver ] ] ] ]
-			ifFalse: [ "assignment cases"
-				| node |
-				node := currentStateInterfaceInstance node.
-				"putting the tracing for restoration (of assignments)logic here"
-				(node isAssignment and: [ 
-					 node variable isWorkspaceVariable or: [ 
-						 node variable variable isLocalVariable not and: [ 
-							 currentStateInterfaceInstance receiverIsLocalToExecution not ] ] ]) 
-					ifTrue: [ "if the receiver is an object that was instantiated from outside the execution, or in case of a workspace variable"
-						self
-							recordChangeForReceiver: currentStateInterfaceInstance receiver
-							ofVar: node variable variable
-							inContext: currentStateInterfaceInstance context ] ] ].
+	currentStateInterfaceInstance isMessageSend
+		ifTrue: [ "handling message sends cases"
+			| method primitive |
+			method := currentStateInterfaceInstance methodAboutToExecute.
+			primitive := method ifNil: [ 0 ] ifNotNil: [ method primitive ].
+			shouldAlwaysRunToEnd ifFalse: [ 
+				shouldAlwaysRunToEnd := SeekerCurrentStateInterface 
+					                        isWaitPrimitive: primitive ].
+			(SeekerCurrentStateInterface isInstantiationPrimitive: primitive)
+				ifTrue: [ instantiationFlag := true ]
+				ifFalse: [ 
+					(SeekerCurrentStateInterface isWritingPrimitive: primitive) 
+						ifTrue: [ 
+							| messageReceiver |
+							messageReceiver := currentStateInterfaceInstance
+								                   messageReceiver.
+							(self objectIsLocal: messageReceiver) ifFalse: [ "We store a copy of the object if this is writing primitive" 
+								self recordSnapshotOfObject: messageReceiver ] ] ] ]
+		ifFalse: [ "assignment cases"
+			| node |
+			node := currentStateInterfaceInstance node.
+			"putting the tracing for restoration (of assignments)logic here"
+			(node isAssignment and: [ 
+				 node variable isWorkspaceVariable or: [ 
+					 node variable variable isLocalVariable not and: [ 
+						 currentStateInterfaceInstance receiverIsLocalToExecution not ] ] ]) 
+				ifTrue: [ "if the receiver is an object that was instantiated from outside the execution, or in case of a workspace variable"
+					self
+						recordChangeForReceiver: currentStateInterfaceInstance receiver
+						ofVar: node variable variable
+						inContext: currentStateInterfaceInstance context ] ].
 
 	astPreStepHooks do: [ :each | each value ]
 ]
@@ -143,6 +158,7 @@ SkQueryExperimentalTracer >> initialize [
 	instantiationFlag := false.
 	currentStateInterfaceInstance := self currentStateInterface.
 	nonLocalObjects := WeakIdentitySet new.
+	shouldAlwaysRunToEnd := false.
 	storedNonLocalChanges := OrderedCollection new.
 	storedNonLocalChangesDictionary := WeakIdentityKeyDictionary new. "Keys are the object owning the variable, and the value is a dictionary of keys variable name (symbol) with values the Undo block"
 	^ super initialize
@@ -294,6 +310,10 @@ SkQueryExperimentalTracer >> removeAstPreStepHook: aBlock [
 { #category : #starting }
 SkQueryExperimentalTracer >> restartAtBytecodeOne [
 
+	"Before restarting, check if the execution should be executed to end"
+
+	shouldAlwaysRunToEnd ifTrue: [ self stepToEnd ].
+	shouldAlwaysRunToEnd := false.
 	self restoreNonLocalChanges.
 	aliasesDictionary removeAll.
 	aliasesDictionary := WeakIdentityKeyDictionary new.

@@ -321,7 +321,7 @@ SeekerFindInterface >> variablesWrittenForDeltaQuery [
 
 	| query result |
 	"Select nonlocal variables assignments (non temporary: instance variables mostly)"
-	query := tracer queries baseCsiQuery select: [ :state | 
+	query := tracer queries baseQuery select: [ :state | 
 		         state node isAssignment and: [ 
 			         state assignmentNodeVariable isLocalVariable not ] ].
 	"Select only if the owner of the variable is non-local to the execution.
