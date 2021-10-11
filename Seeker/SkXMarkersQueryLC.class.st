@@ -15,21 +15,7 @@ SkXMarkersQueryLC >> description [
 SkXMarkersQueryLC >> executeCommand [
 
 	| res |
-	res := (self tracer queries baseQuery
-		        select: [ :state | 
-			        state isMessageSend and: [ 
-				        state messageIsSeekerMarkerMethod ] ]
-		        collect: [ :state | 
-			        | arg |
-			        arg := state node arguments isNotEmpty
-				               ifTrue: [ (state messageArgumentAt: 1) asString ]
-				               ifFalse: [ '' ].
-			        New with: { 
-					        (#bytecodeIndex -> state bytecodeIndex).
-					        (#senderMethodClass -> state context sender methodClass).
-					        (#senderMethodSelector
-					         -> state context sender methodSelector).
-					        (#markerArg -> arg) } ]) asSeekerResultsCollection. "forAssignmentsOfAnyVariable"
+	res := self tracer find markers asSeekerResultsCollection. "forAssignmentsOfAnyVariable"
 
 	self showResult: res
 	"[ DSSeekerActionRecord for: self ]

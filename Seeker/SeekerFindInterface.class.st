@@ -270,6 +270,12 @@ at the step X which corresponds to the moment before executing the bytecode.
 	^ result
 ]
 
+{ #category : #'accessing - markers' }
+SeekerFindInterface >> markers [
+
+	^ tracer queries forMarkers asTableForTimeTravel
+]
+
 { #category : #'as yet unclassified' }
 SeekerFindInterface >> returnValuesOfAnyMessageSendWithSelectedSelector [
 

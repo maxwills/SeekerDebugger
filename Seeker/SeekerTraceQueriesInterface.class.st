@@ -346,6 +346,24 @@ SeekerTraceQueriesInterface >> forInstancesCreation [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerTraceQueriesInterface >> forMarkers [
+
+	^ self baseQuery
+		  select: [ :state | 
+			  state isMessageSend and: [ state messageIsSeekerMarkerMethod ] ]
+		  collect: [ :state | 
+			  | arg |
+			  arg := state node arguments isNotEmpty
+				         ifTrue: [ (state messageArgumentAt: 1) asString ]
+				         ifFalse: [ '' ].
+			  New with: { 
+					  (#bytecodeIndex -> state bytecodeIndex).
+					  (#senderMethodClass -> state context sender methodClass).
+					  (#senderMethodSelector -> state context sender methodSelector).
+					  (#markerArg -> arg) } ]
+]
+
+{ #category : #'as yet unclassified' }
 SeekerTraceQueriesInterface >> forMessageSends [
 
 	^ self baseQueryForMessageSends collect: [ :row | 
