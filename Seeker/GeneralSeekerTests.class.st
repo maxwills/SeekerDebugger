@@ -35,6 +35,28 @@ GeneralSeekerTests class >> exceptionScenario [
 	self assert: true
 ]
 
+{ #category : #'as yet unclassified' }
+GeneralSeekerTests class >> myQueryExample: seeker [
+
+	| query |
+	"Lists the variable name for all the assignments of an execution."
+	"This can be executed from the scripting tab doing GeneralSeekerTests myQueryExample: seeker"
+	query := Query
+		         from: seeker programStates
+		         select: [ :state | state node isAssignment ]
+		         collect: [ :state | 
+			         New with: { 
+					         (#bytecodeIndex -> state bytecodeIndex).
+					         (#varName -> state node variable variable name) } ].
+	"Equivalent to the following"
+	"query := seeker queries baseQueryForAssignments  
+ collect: [:state| New with: {
+		(#bytecodeIndex -> state bytecodeIndex).
+		(#varName -> state node variable variable name).
+		}]"
+	seeker ui showResult: query asSeekerResultsCollection
+]
+
 { #category : #tests }
 GeneralSeekerTests >> exceptionTest [
 

@@ -48,6 +48,7 @@ SkDataTable >> asSeekerResultsCollection [
 				 key: each;
 				 yourself) ].
 	self rows do: [ :each | res add: each ].
+	SeekerSessionHelpers lastQueryResults: res.
 	^ res
 ]
 

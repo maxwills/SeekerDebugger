@@ -8,6 +8,8 @@ Class {
 SeekerPerformInterface >> advanceToNextStatement [
 
 	| startingNode startingContext startingStatement startingStatementIndex startingStackDepth inSameDynanimcSequence statementsInSequence |
+	"This method doesnt work. The reason is that the debugger is interrupted sometimes in the method node. Then, the first actual statement is a variant number of bytecodes away.
+Therefore, calculating the next statement in the sequence should be done differently from current implementation, trying to handle the case of such case. An idea would be to use the sequence node and the statement as an identity. However, doing that is sensitive to modifications during debugging of the code. "
 	startingNode := tracer currentNode.
 	startingStatement := startingNode statementNode.
 	startingStatementIndex := SkNodeHelpers 
@@ -26,9 +28,11 @@ SeekerPerformInterface >> advanceToNextStatement [
 				inSameDynanimcSequence value and: [ 
 					| node statementIndex |
 					node := tracer currentNode.
-					statementIndex := SkNodeHelpers statementNodeIndexInSequence:
-						                  node statementNode.
-					statementIndex = 0 or: [ statementIndex > startingStatementIndex ] ] ] ] ]
+					node isMethod not and: [ 
+						statementIndex := SkNodeHelpers statementNodeIndexInSequence:
+							                  node statementNode.
+						statementIndex = 0 or: [ 
+							statementIndex > startingStatementIndex ] ] ] ] ] ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -119,6 +123,7 @@ SeekerPerformInterface >> reverseToPreviousStatement [
 					node := tracer currentNode.
 					statementIndex := SkNodeHelpers statementNodeIndexInSequence:
 						                  node statementNode.
+
 					statementIndex = 0 or: [ 
 						statementIndex = (startingStatementIndex - 1) ] ] ] ] ]
 ]

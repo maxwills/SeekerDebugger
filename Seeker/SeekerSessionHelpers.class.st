@@ -1,6 +1,9 @@
 Class {
 	#name : #SeekerSessionHelpers,
 	#superclass : #Object,
+	#classVars : [
+		'lastQueryResults'
+	],
 	#category : #'Seeker-Helpers'
 }
 
@@ -27,6 +30,18 @@ SeekerSessionHelpers class >> innerSeekerSessionFor: aBlock withFlag: aFlagBlock
 	aFlagBlock value ifTrue: [ self openDebugger ].
 	aBlock value.
 	self seekerSessionEndMarker
+]
+
+{ #category : #'as yet unclassified' }
+SeekerSessionHelpers class >> lastQueryResults [
+
+	^ lastQueryResults
+]
+
+{ #category : #'as yet unclassified' }
+SeekerSessionHelpers class >> lastQueryResults: aQueryResults [
+
+	lastQueryResults := aQueryResults
 ]
 
 { #category : #'as yet unclassified' }
