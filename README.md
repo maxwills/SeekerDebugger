@@ -17,6 +17,7 @@ Metacello new
 The `SeekerInstallHelpers>>#install` will:
 - Enable the debugger extension in the StDebugger UI.
 - Change the `StDebugger` `debuggerActionModel` default class to `SeekerStDebuggerActionModel`. This will make the StDebugger to need Seeker to be enabled to work. (You can still debug normaly without Seeker, but it will be shown at the right, even if it is not used). Don't use this if you rely on your own modifications of `StDebuggerActionModel`. If you unload Seeker, you will need to manually restore `StDebugger>>#debuggerActionModel`.
+- Add a line to `HandMorph>>handleEvent:` to capture the pressed state of modifier keys.
 
 
 ## Limitations and known issues.
