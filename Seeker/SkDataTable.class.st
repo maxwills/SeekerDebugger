@@ -37,12 +37,16 @@ SkDataTable class >> newWithColumns: aCollectionOfSymbols [
 { #category : #converting }
 SkDataTable >> asSeekerResultsCollection [
 
-	| res |
+	| res setColumnWidth |
 	res := SeekerResultsCollection new.
+	setColumnWidth := [ :col | 
+	                  self columnLabels size < 5 ifTrue: [ 
+		                  col key ~= #bytecodeIndex ifTrue: [ col md ] ] ].
 	self columnLabels do: [ :each | 
-		res addColumn
-			label: each;
-			key: each ].
+		setColumnWidth value: (res addColumn
+				 label: each;
+				 key: each;
+				 yourself) ].
 	self rows do: [ :each | res add: each ].
 	^ res
 ]

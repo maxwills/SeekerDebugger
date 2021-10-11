@@ -109,6 +109,7 @@ SeekerLiteCommands >> stCodeCommandsTree [
 		  { 
 			  'SeekerDebug'.
 			  { 
+				  SkXMarkersQueryLC.
 				  SkXDeltaQueryLC.
 				  SkXInstantiationPrimitivesInstancesLC }.
 			  #changeUpdate.

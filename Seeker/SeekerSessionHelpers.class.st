@@ -44,11 +44,23 @@ SeekerSessionHelpers class >> makeOnceFlag [
 ]
 
 { #category : #'as yet unclassified' }
-SeekerSessionHelpers class >> markerHere [
+SeekerSessionHelpers class >> marker [
 
 	"Does nothing. Seeker should recognize this call."
 
 	"Seeker this message send will be used by seeker MarkersQuery"
+
+	^ self
+]
+
+{ #category : #'as yet unclassified' }
+SeekerSessionHelpers class >> marker: aString [
+
+	"Does nothing. Seeker should recognize this call."
+
+	"Seeker this message send will be used by seeker MarkersQuery"
+
+	"Parameter aString will appear in the query results"
 
 	^ self
 ]

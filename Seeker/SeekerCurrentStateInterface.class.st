@@ -353,6 +353,11 @@ SeekerCurrentStateInterface >> isMethodReturn [
 ]
 
 { #category : #testing }
+SeekerCurrentStateInterface >> isSeekerMarkerMethod [
+
+]
+
+{ #category : #testing }
 SeekerCurrentStateInterface >> isVariable [
 
 	^ self node isVariable
@@ -385,6 +390,35 @@ and the method called corresponds to a writing primitive.
 ]
 
 { #category : #testing }
+SeekerCurrentStateInterface >> messageArgumentAt: aNumber [
+
+	"Returns the argument at the specified index of the current message node. Assumes the current node is a message node
+"
+
+	"Clients should take care that the argument index is within limits"
+
+	^ self node isInlined
+		  ifTrue: [ 
+		  self context top "inlined messages should not have arguments" ]
+		  ifFalse: [ 
+			  | pointer |
+			  pointer := 1 + self context stackPtr - self node numArgs. "Heuristics"
+			  pointer <= 0 ifTrue: [ pointer := 1 ]. "I'm not sure these cases happen"
+			  pointer > self context size ifTrue: [ ^ nil ].
+			  self context at: pointer "Heuristics" ]
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> messageIsSeekerMarkerMethod [
+
+	| messageReceiver messageSelector |
+	messageReceiver := self messageReceiver.
+	messageReceiver == SeekerSessionHelpers ifFalse: [ ^ false ].
+	messageSelector := self messageSelector.
+	^ messageSelector == #marker or: [ messageSelector == #marker: ]
+]
+
+{ #category : #testing }
 SeekerCurrentStateInterface >> messageReceiver [
 
 	"Returns the message receiver of the current message node. Assumes the current node is a message node
@@ -398,6 +432,15 @@ SeekerCurrentStateInterface >> messageReceiver [
 			  pointer <= 0 ifTrue: [ pointer := 1 ]. "I'm not sure these cases happen"
 			  pointer > self context size ifTrue: [ ^ nil ].
 			  self context at: pointer "Heuristics" ]
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> messageSelector [
+
+	"Returns the message selector of the current message node. Assumes the current node is a message node
+"
+
+	^ self node selector
 ]
 
 { #category : #testing }
