@@ -174,9 +174,15 @@ SeekerGlobals >> stopWatchingProcess: aProcess [
 { #category : #'as yet unclassified' }
 SeekerGlobals >> updateModifierKeys: anEvent [
 
-	isAltPressed := anEvent altKeyPressed.
-	isShiftPressed := anEvent shiftPressed.
-	isCommandPressed := anEvent commandKeyPressed
+	isAltPressed := (anEvent respondsTo: #altKeyPressed)
+		                ifTrue: [ anEvent altKeyPressed ]
+		                ifFalse: [ false ].
+	isShiftPressed := (anEvent respondsTo: #shiftPressed)
+		                  ifTrue: [ anEvent shiftPressed ]
+		                  ifFalse: [ false ].
+	isCommandPressed := (anEvent respondsTo: #commandKeyPressed)
+		                    ifTrue: [ anEvent commandKeyPressed ]
+		                    ifFalse: [ false ]
 ]
 
 { #category : #'as yet unclassified' }
