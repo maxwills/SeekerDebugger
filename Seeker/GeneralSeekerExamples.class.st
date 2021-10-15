@@ -25,5 +25,4 @@ GeneralSeekerExamples class >> markersExample [
 	SeekerGlobals instance auxiliaryTempStorage1: aMarkerBlock.
 	SeekerSessionHelpers marker. "Third one"
 	SeekerGlobals instance auxiliaryTempStorage1 value. "Fourth one is inside this block"
-	self assert: false
 ]
