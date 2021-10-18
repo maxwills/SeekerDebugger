@@ -14,6 +14,9 @@ Metacello new
 #SeekerInstallHelpers asClass install.
 ```
 
+### IMPORTANT
+When installing Seeker in a non-moose Image, a waring will pop up duging the baseline instalation. The message warns that there is a missing dependency (FamixStClass). Click proceed and ignore it for the moment. Future version will include diferent isntallation processes for particular images.
+
 The `SeekerInstallHelpers>>#install` will:
 - Enable the debugger extension in the StDebugger UI.
 - Change the `StDebugger` `debuggerActionModel` default class to `SeekerStDebuggerActionModel`. This will make the StDebugger to need Seeker to be enabled to work. (You can still debug normaly without Seeker, but it will be shown at the right, even if it is not used). Don't use this if you rely on your own modifications of `StDebuggerActionModel`. If you unload Seeker, you will need to manually restore `StDebugger>>#debuggerActionModel`.
