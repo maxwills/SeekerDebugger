@@ -15,7 +15,7 @@ Metacello new
 ```
 
 ### IMPORTANT
-When installing Seeker in a non-moose Image, a waring will pop up duging the baseline instalation. The message warns that there is a missing dependency (FamixStClass). Click proceed and ignore it for the moment. Future version will include diferent isntallation processes for particular images.
+When installing Seeker in a non-moose Image, a warning will pop up duging the baseline installation. The message warns that there is a missing dependency (FamixStClass). Click proceed and ignore it for the moment. Future version will include diferent isntallation processes for particular images.
 
 The `SeekerInstallHelpers>>#install` will:
 - Enable the debugger extension in the StDebugger UI.
