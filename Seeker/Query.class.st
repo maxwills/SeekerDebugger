@@ -411,7 +411,7 @@ Query >> do: aBlock [
 	"Ablock is a method that takes orgument (the iteration row). Hoever, OnQueryRow match is a block that receives no arguments. (might change this in the future)"
 	onQueryRowMatch := [ aBlock value: self currentRow ].
 	"The idea here is to simulate that we will iterate over the datasources filtered items. So aBlock will only be executed for the items that matchnthe where clause"
-	customPreparationBlock value."Beware here"
+	customPreparationBlock value. "Beware here"
 	[ fromDataSource do: [ :row | self doQueryOnRow: row ] ] ensure: [ 
 		onQueryRowMatch := originalOnQueryRowMatch ]
 ]

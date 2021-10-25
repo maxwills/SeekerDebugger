@@ -163,8 +163,7 @@ GeneralSeekerTests >> testMarkers [
 
 	| aCol aNumber aMarkerBlock |
 	"Next assignment should not appear in the query results"
-	aMarkerBlock := [ 
-	                SeekerSessionHelpers marker: 'Should be the fourth' ].
+	aMarkerBlock := [ SeekerSessionHelpers marker: 'Should be the fourth' ].
 	aCol := OrderedCollection new.
 	aNumber := 0.
 	SeekerSessionHelpers marker.

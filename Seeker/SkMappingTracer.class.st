@@ -562,6 +562,29 @@ SkMappingTracer >> recordFromHereWithExecutionEndingConditionOnState: aPredicate
 ]
 
 { #category : #'as yet unclassified' }
+SkMappingTracer >> recordOnThisContext [
+
+	| csi endCondition initialContext endingContext endTracedInstructionPC endTraceTime |
+	initialContext := self slowCurrentContext.
+	endingContext := initialContext.
+	endTracedInstructionPC := endingContext tracedInstructionPC.
+	endTracedInstructionPC pc: endingContext endPC. "The last step is the endPC?"
+	endTraceTime := endTracedInstructionPC asTraceTimeReference.
+	pressumedEndCondition := [ "self traceTime @>="
+	                         self currentContext == initialContext
+		                         ifTrue: [ "self currentContext = endingContext" 
+			                         self currentContext willReturn ]
+		                         ifFalse: [ 
+		                         endTraceTime 
+			                         referencesTheLocalPastOrPresent: self ] ].
+	csi := self currentStateInterface.
+	self
+		automapForCustomScenario: self slowCurrentContext
+		withEndingCondition: pressumedEndCondition.
+	self inform: 'New execution parameters set.'
+]
+
+{ #category : #'as yet unclassified' }
 SkMappingTracer >> recursiveAddContextInStackToList: aCollection startingContext: aContext [
 
 	| sender |

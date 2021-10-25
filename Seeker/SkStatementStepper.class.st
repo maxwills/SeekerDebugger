@@ -147,6 +147,12 @@ SkStatementStepper >> executionProgress [
 	^ (100.0 * byteCountCounter / maxExecutedBytecode) asFloat
 ]
 
+{ #category : #'updating - session' }
+SkStatementStepper >> forceSessionUpdate [
+
+	self debuggerUpdateCoordinator forceUpdate
+]
+
 { #category : #testing }
 SkStatementStepper >> hasSignalledUnhandledException [
 	"Returns true if the debugged execution has signalled an exception that has not been handled by any on:do: (i.e. the #defaultAction of the exception is about to be executed. This default action typically leads to opening a debugger on the process that signalled the exception)"
@@ -376,6 +382,14 @@ SkStatementStepper >> signalExceptionIfDebuggedExecutionIsFinished [
 	].
 ]
 
+{ #category : #'updating - session' }
+SkStatementStepper >> softUIUpdate [
+
+	| presenter |
+	presenter := self seekerResultsPresenter.
+	presenter ifNotNil: [ presenter updatePresenter ]
+]
+
 { #category : #accessing }
 SkStatementStepper >> stDebugger [
 
@@ -444,6 +458,7 @@ SkStatementStepper >> stepBytecode [
 	self
 		doAstStepPostProcessWithPrevNode: startingNode
 		andPrevContext: previousContext.
+	byteCountCounter % 1000 = 0 ifTrue: [ self softUIUpdate ].
 	^ true
 ]
 

@@ -58,6 +58,7 @@ SkProgramStates >> do: aBlock [
 		^ self error:
 			  'Time traveling needs to be enabled to execute Trace Queries' ].
 	preBytecodeStepHook := [ aBlock value: self currentRow ].
+
 	tracer doAndUpdateSessionAfter: [ 
 		SeekerGlobals instance startQueryingFromBytecodeOne
 			ifTrue: [ tracer restartAtBytecodeOne ]
