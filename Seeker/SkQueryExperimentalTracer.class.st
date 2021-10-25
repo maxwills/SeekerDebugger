@@ -401,6 +401,17 @@ SkQueryExperimentalTracer >> stepToNextIteration [
 						self currentNode nonInlinedOwner = nodeOwner ] ] ] ] ]
 ]
 
+{ #category : #'as yet unclassified' }
+SkQueryExperimentalTracer >> stepToNextMarker [
+
+	| csi |
+	csi := self currentStateInterface.
+	self doAndUpdateSessionAfter: [ 
+		self stepBytecode.
+		self stepBytecodeUntilConditionIsTrue: [ 
+			csi isMessageSend and: [ csi messageIsSeekerMarkerMethod ] ] ]
+]
+
 { #category : #'object - api' }
 SkQueryExperimentalTracer >> tables [
 

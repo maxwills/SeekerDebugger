@@ -353,11 +353,6 @@ SeekerCurrentStateInterface >> isMethodReturn [
 ]
 
 { #category : #testing }
-SeekerCurrentStateInterface >> isSeekerMarkerMethod [
-
-]
-
-{ #category : #testing }
 SeekerCurrentStateInterface >> isVariable [
 
 	^ self node isVariable

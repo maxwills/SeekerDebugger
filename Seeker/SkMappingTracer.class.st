@@ -36,6 +36,27 @@ SkMappingTracer >> autoSetupForTestForUnhandledException [
 ]
 
 { #category : #'as yet unclassified' }
+SkMappingTracer >> automapForCustomScenario: aContext withEndingCondition: aBlock [
+
+	| recordingInitialContext currentCompiledMethod |
+	"Only works if used the option: debug with Seeker""findContext is a SeekerFindContextInStackInterface object"
+	currentCompiledMethod := self slowCurrentContext compiledCode.
+
+	recordingInitialContext := aContext.
+	recordingInitialContext ifNil: [ 
+		self error: 'Could not detect the initial context for recording.'.
+		^ false ].
+	contextOfExecutedBytecodeOne := recordingInitialContext.
+	
+	userStartTraceTime := 1 asExecutedBytecodeTraceTime.
+	
+	pressumedEndCondition := aBlock.
+	self doAndUpdateSessionAfter: [ self recountExecutedBytecodes ].
+	isMapped := true.
+	^ true
+]
+
+{ #category : #'as yet unclassified' }
 SkMappingTracer >> automapForDoItScenario [
 
 	| recordingInitialContext testInitialContext endingContext endTracedInstructionPC endTraceTime findContext currentCompiledMethod |
@@ -78,7 +99,7 @@ SkMappingTracer >> automapForDoItScenario [
 { #category : #'as yet unclassified' }
 SkMappingTracer >> automapForSeekerMarkedSessionScenario [
 
-	| recordingInitialContext testInitialContext endingContext endTracedInstructionPC endTraceTime findContext currentCompiledMethod |
+	| recordingInitialContext testInitialContext endingContext findContext currentCompiledMethod |
 	"Only works if used the option: debug with Seeker""findContext is a SeekerFindContextInStackInterface object"
 	currentCompiledMethod := self slowCurrentContext compiledCode.
 	findContext := self findContextInStack.
@@ -527,6 +548,17 @@ SkMappingTracer >> quickMap [
 	(self isTestCaseScenario ) ifTrue: [ ^self automapForTestCaseScenario".^self inform: 'Time Traveling enabled' "].
 ^ false "self inform: 'Could not enable Time Traveling automatically. The session needs a manual set up' ."
 	
+]
+
+{ #category : #'as yet unclassified' }
+SkMappingTracer >> recordFromHereWithExecutionEndingConditionOnState: aPredicateOfCurrentState [
+
+	| csi |
+	csi := self currentStateInterface.
+	self
+		automapForCustomScenario: self slowCurrentContext
+		withEndingCondition: [ aPredicateOfCurrentState value: csi ].
+	self inform: 'New execution parameters set.'
 ]
 
 { #category : #'as yet unclassified' }
