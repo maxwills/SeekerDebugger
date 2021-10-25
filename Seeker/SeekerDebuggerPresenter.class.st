@@ -466,6 +466,15 @@ SeekerDebuggerPresenter >> updateExpressionValueDisplayed [
 ]
 
 { #category : #'accessing model' }
+SeekerDebuggerPresenter >> updateLabelOnly [
+
+	currentStepLabel label:
+		'ExecutedBytecode: ' , seekerDebugger tracer bytecodeIndex asString
+		, ' (' , (self seekerDebugger tracer executionProgress 
+			 printShowingDecimalPlaces: 2) , '% of known execution)'
+]
+
+{ #category : #'accessing model' }
 SeekerDebuggerPresenter >> updatePresenter [
 
 	"Called automatically when the debugger updates its state after stepping""Your widgets should be updated here."
@@ -477,10 +486,7 @@ SeekerDebuggerPresenter >> updatePresenter [
 			put:
 			(WorkspaceVariable key: #seeker value: self seekerDebugger tracer).
 
-		currentStepLabel label: 'ExecutedBytecode: '
-			, seekerDebugger tracer bytecodeIndex asString , ' ('
-			, (self seekerDebugger tracer executionProgress 
-					 printShowingDecimalPlaces: 2) , '% of known execution)'.
+		self updateLabelOnly.
 		"	self updateEvaluatorCode."
 		"		self updateExpressionValueDisplayed."
 
