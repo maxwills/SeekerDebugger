@@ -6,6 +6,22 @@ This was done to be able to update the UI, so the app doesn't seem blocked. Howe
 Note to self: fix the softUIupdate code so it is only run when it is called from a different thread than the one from the UI (or consider using monitors or something)
 (Sympthom: the StDebugger code presenter rendered a red X. It's the first time I've seen it with seeker, so the most likely reason is about this threading and UI change)
 
+### This version new functionalities
+
+- Command queries not executed in the UI thread (A status bar updates during their execution). However, the waiting cursor is now missing.
+- New scripting functions:  
+```Smalltalk
+"setting custom execution boundaries"
+seeker recordFromHereWithExecutionEndingConditionOnState: [:state| state bytecodeIndex = 2   ].
+seeker recordOnThisContext.
+
+"stepping to a marker"
+seeker stepToNextMarker.
+"Not new, but useful to remember"
+seeker timeTravelToTraceTime: 5 asExecutedBytecodeTraceTime 
+
+```
+
 
 ## Baseline
 
