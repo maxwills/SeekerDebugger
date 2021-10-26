@@ -498,6 +498,17 @@ SkStatementStepper >> stepBytecodeUntilStatementJump [
 		self currentStatementNode ~= currentStatementNode or: [ previousContext ~= self currentContext ] ]
 ]
 
+{ #category : #'as yet unclassified' }
+SkStatementStepper >> stepBytecodes: aNumber [
+
+	"supports negative numbers to travel backward"
+
+	self doAndUpdateSessionAfter: [ 
+		| targetBytecode |
+		targetBytecode := 1 max: byteCountCounter + aNumber.
+		self timeTravelToBytecodeIndex: targetBytecode ]
+]
+
 { #category : #'debug - stepping' }
 SkStatementStepper >> stepInto [
 
@@ -566,6 +577,21 @@ SkStatementStepper >> stepUntilConditionIsTrue: aBlock [
 				ifFalse: [ shouldStop := self stepIntoNoUpdateGuard not ]
 				ifTrue: [ conditionReached := true ] ] ].
 	^ conditionReached
+]
+
+{ #category : #'as yet unclassified' }
+SkStatementStepper >> timeTravelToBytecodeIndex: aNumber [
+
+	self doAndUpdateSessionAfter: [ 
+		aNumber = byteCountCounter ifTrue: [ ^ self ].
+		aNumber > byteCountCounter
+			ifTrue: [ "no need to restart"
+				| targetTraceTime |
+				targetTraceTime := aNumber asExecutedBytecodeTraceTime.
+				self stepBytecodeUntilConditionIsTrue: [ 
+					self traceTime @= targetTraceTime ] ]
+			ifFalse: [ 
+			self timeTravelToTraceTime: aNumber asExecutedBytecodeTraceTime ] ]
 ]
 
 { #category : #'as yet unclassified' }
