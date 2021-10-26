@@ -17,7 +17,7 @@ Do this:
 ```Smalltalk
 Metacello new
     baseline: 'Seeker';
-    repository: 'github://maxwills/SeekerDebugger:main';
+    repository: 'github://maxwills/SeekerDebugger:custom-mods';
     load.
     
 #SeekerInstallHelpers asClass install.
