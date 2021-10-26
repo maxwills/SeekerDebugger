@@ -17,6 +17,11 @@ seeker recordOnThisContext.
 
 "stepping to a marker"
 seeker stepToNextMarker.
+"other stepping"
+seeker timeTravelToBytecodeIndex:  1001.
+seeker stepBytecodes: 100.
+
+
 "Not new, but useful to remember"
 seeker timeTravelToTraceTime: 5 asExecutedBytecodeTraceTime 
 
