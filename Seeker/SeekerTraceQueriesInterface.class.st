@@ -366,37 +366,41 @@ SeekerTraceQueriesInterface >> forMarkers [
 { #category : #'as yet unclassified' }
 SeekerTraceQueriesInterface >> forMessageSends [
 
+	| resultType |
+	resultType := NewType with
+		              bytecodeIndex;
+		              methodSelector;
+		              receiverClass;
+		              messageArguments;
+		              messageReceiver;
+		              formattedMessageReceiver;
+		              messageReceiverClass;
+		              messageSelector;
+		              endNewType.
 	^ self baseQueryForMessageSends collect: [ :row | 
 		  | msgRcvrNode msgRcvrClass msgRcvr |
 		  msgRcvrNode := row node receiver.
 		  msgRcvr := row messageReceiver.
 
-		  msgRcvrClass := msgRcvr class. "msgRcvrNode isVariable
-				                     ifTrue: [ 
-				                     'a '
-				                     ,
-				                     (msgRcvrNode variable readInContext:
-					                      row context) className ]
-				                     ifFalse: [ 
-					instMsgReceiver := 
-					""msgRcvrNode sourceCode"" ]"
-		  New with: { 
-				  (#bytecodeIndex -> row bytecodeIndex).
-				  (#methodSelector -> row methodSelector).
-				  (#receiverClass -> row receiverClass).
-				  (#messageArguments -> row node arguments).
-				  (#messageReceiver -> msgRcvr).
-				  (#formattedMessageReceiver -> (msgRcvrNode isVariable
-					    ifTrue: [ 
-						    msgRcvrNode variable name , ' ('
-						    ,
-						    (msgRcvrNode variable readInContext: row context) class
-							    asString , ')' ]
-					    ifFalse: [ 
-						    [ msgRcvr asString , ' (' , msgRcvrNode sourceCode , ')' ] 
-							    onErrorDo: [ "msgRcvr" msgRcvrNode sourceCode ] ])).
-				  (#messageReceiverClass -> msgRcvrClass value).
-				  (#messageSelector -> row node selector) } ]
+		  msgRcvrClass := msgRcvr class. 
+		  resultType new
+			  bytecodeIndex: row bytecodeIndex;
+			  methodSelector: row methodSelector;
+			  receiverClass: row receiverClass;
+			  messageArguments: row node arguments;
+			  messageReceiver: msgRcvr;
+			  formattedMessageReceiver: (msgRcvrNode isVariable
+					   ifTrue: [ 
+						   msgRcvrNode variable name , ' ('
+						   ,
+							   (msgRcvrNode variable readInContext: row context) class
+								   asString , ')' ]
+					   ifFalse: [ 
+						   [ msgRcvr asString , ' (' , msgRcvrNode sourceCode , ')' ] 
+							   onErrorDo: [ "msgRcvr" msgRcvrNode sourceCode ] ]);
+			  messageReceiverClass: msgRcvrClass value;
+			  messageSelector: row node selector;
+			  yourself ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -616,6 +620,42 @@ SeekerTraceQueriesInterface >> oldForInstancesCreation [
 
 { #category : #'as yet unclassified' }
 SeekerTraceQueriesInterface >> oldForMessageSends [
+
+	^ self baseQueryForMessageSends collect: [ :row | 
+		  | msgRcvrNode msgRcvrClass msgRcvr |
+		  msgRcvrNode := row node receiver.
+		  msgRcvr := row messageReceiver.
+
+		  msgRcvrClass := msgRcvr class. "msgRcvrNode isVariable
+				                     ifTrue: [ 
+				                     'a '
+				                     ,
+				                     (msgRcvrNode variable readInContext:
+					                      row context) className ]
+				                     ifFalse: [ 
+					instMsgReceiver := 
+					""msgRcvrNode sourceCode"" ]"
+		  New with: { 
+				  (#bytecodeIndex -> row bytecodeIndex).
+				  (#methodSelector -> row methodSelector).
+				  (#receiverClass -> row receiverClass).
+				  (#messageArguments -> row node arguments).
+				  (#messageReceiver -> msgRcvr).
+				  (#formattedMessageReceiver -> (msgRcvrNode isVariable
+					    ifTrue: [ 
+						    msgRcvrNode variable name , ' ('
+						    ,
+						    (msgRcvrNode variable readInContext: row context) class
+							    asString , ')' ]
+					    ifFalse: [ 
+						    [ msgRcvr asString , ' (' , msgRcvrNode sourceCode , ')' ] 
+							    onErrorDo: [ "msgRcvr" msgRcvrNode sourceCode ] ])).
+				  (#messageReceiverClass -> msgRcvrClass value).
+				  (#messageSelector -> row node selector) } ]
+]
+
+{ #category : #'as yet unclassified' }
+SeekerTraceQueriesInterface >> olderForMessageSends [
 
 	| q table |
 	table := tracer tables omniscientTableForAliases.

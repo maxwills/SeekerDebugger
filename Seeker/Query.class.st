@@ -279,20 +279,11 @@ Query >> asTableForTimeTravel [
 
 	| tracer makeItForTimeTravel |
 	tracer := self findTracer.
-	makeItForTimeTravel := [ :row | 
-		"all this code does is to save the executeByteCode. Essentially, it creates and object that has the same keys than the original, but it has the privateExecutedBytecide accessor"
-		"Ideally this transformation should be executed only in the most outter query"
-	                       | t |
-	                       t := AnonymousTypeForTimeTravel
-		                            newWith: {  }
-		                            forTracer: tracer.
-	                       t mergeWith: row.
-	                       t privateExecutedBytecode: row bytecodeIndex ].
+
 	operationType := #asTable.
 	resultBuffer := OrderedCollection new.
 
-	self onQueryRowMatch: [ 
-		resultBuffer add: (makeItForTimeTravel value: self currentRow) ].
+	self onQueryRowMatch: [ resultBuffer add: self currentRow ].
 
 	self resolve.
 

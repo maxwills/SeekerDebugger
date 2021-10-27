@@ -18,7 +18,7 @@ SkDataTable class >> newForAnonymousTypeObjects: aCollectionOfAnonymousTypeObjec
 	ds := self new.
 	aCollectionOfAnonymousTypeObjects ifNotEmpty: [ 
 		| fieldNames |
-		fieldNames := aCollectionOfAnonymousTypeObjects first fieldNames.
+		fieldNames := aCollectionOfAnonymousTypeObjects first class fields.
 		fieldNames do: [ :each | ds columnLabels add: each ].
 		aCollectionOfAnonymousTypeObjects do: [ :each | ds rows add: each ] ].
 
