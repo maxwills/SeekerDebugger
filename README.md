@@ -39,9 +39,8 @@ Do this:
 Metacello new
     baseline: 'Seeker';
     repository: 'github://maxwills/SeekerDebugger:custom-mods';
+    onWarning: [ :ex | ex resume ];
     load.
-    
-#SeekerInstallHelpers asClass install.
 ```
 
 ### IMPORTANT
