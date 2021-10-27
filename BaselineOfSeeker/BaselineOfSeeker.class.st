@@ -8,25 +8,23 @@ Class {
 BaselineOfSeeker >> baseline: spec [
 
 	<baseline>
-	spec for: #common do: [ "Here is a typical package and its tests
-	spec for: #'common' do: [
-		spec 
-			package: #'XXX-Core';
-			package: #'XXX-Core-Tests' with: [
-				spec requires: #('XXX-Core' ) ].
-		spec 
-			group: 'Core' with: #('XXX-Core' );
-			group: 'CoreTests' with: #('XXX-Core' 'XXX-Core-Tests');
-			group: 'default' with: #('Beacon-XXX' 'Beacon-XXX-Tests') ]
-	"
+	spec for: #common do: [ 
+		spec postLoadDoIt: #postload:package:.
 		spec
 			package: 'EvaluatorDebugger-Base';
 			package: 'Seeker'
 			with: [ spec requires: #( 'EvaluatorDebugger-Base' ) ];
-			package: 'Seeker-Tests' with: [ spec requires: #( 'Seeker' ) ]";
+			package: 'Seeker-Tests' with: [ ";
 			package: 'SeekerDebuggerSpy'
-			with: [ spec requires: #( 'Seeker' ) ]". "remove this after experiment"
+			with: [ spec requires: #( 'Seeker' ) ]" 
+				spec requires: #( 'Seeker' ) ]. "remove this after experiment"
 		spec
 			group: 'default'
 			with: #( 'EvaluatorDebugger-Base' 'Seeker' 'Seeker-Tests' ) ]
+]
+
+{ #category : #actions }
+BaselineOfSeeker >> postload: loader package: packageSpec [
+
+	(self class environment at: #SeekerInstallHelpers) install
 ]
