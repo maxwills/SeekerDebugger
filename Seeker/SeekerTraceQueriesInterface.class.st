@@ -367,10 +367,10 @@ SeekerTraceQueriesInterface >> forMarkers [
 SeekerTraceQueriesInterface >> forMessageSends [
 
 	^ self baseQueryForMessageSends collect: [ :row | 
-		  | msgRcvrNode msgRcvrClass msgRcvr |
+		  | msgRcvrNode msgRcvrClass msgRcvr receiverOid |
 		  msgRcvrNode := row node receiver.
-		  msgRcvr := row messageReceiver.
-
+		  msgRcvr := row messageReceiver. "row messageReceiver"
+		  receiverOid := row aliasOfObject: msgRcvr.
 		  msgRcvrClass := msgRcvr class. "msgRcvrNode isVariable
 				                     ifTrue: [ 
 				                     'a '
@@ -386,7 +386,10 @@ SeekerTraceQueriesInterface >> forMessageSends [
 				  (#receiverClass -> row receiverClass).
 				  (#messageArguments -> row node arguments).
 				  (#messageReceiver -> msgRcvr).
-				  (#formattedMessageReceiver -> (msgRcvrNode isVariable
+				  (#formattedMessageReceiver
+				   ->
+					   (row node receiver sourceCode , ' (' , msgRcvrClass asString
+					    , ') [oid:' , receiverOid asString , ']')). "(msgRcvrNode isVariable
 					    ifTrue: [ 
 						    msgRcvrNode variable name , ' ('
 						    ,
@@ -394,8 +397,9 @@ SeekerTraceQueriesInterface >> forMessageSends [
 							    asString , ')' ]
 					    ifFalse: [ 
 						    [ msgRcvr asString , ' (' , msgRcvrNode sourceCode , ')' ] 
-							    onErrorDo: [ "msgRcvr" msgRcvrNode sourceCode ] ])).
-				  (#messageReceiverClass -> msgRcvrClass value).
+							    onErrorDo: [ ""msgRcvr"" msgRcvrNode sourceCode ] ])"
+				  (#messageReceiverClass -> msgRcvrClass).
+				  (#messageReceiverOid -> receiverOid).
 				  (#messageSelector -> row node selector) } ]
 ]
 
