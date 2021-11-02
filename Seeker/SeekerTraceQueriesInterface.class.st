@@ -187,47 +187,50 @@ SeekerTraceQueriesInterface >> forAliases [
 { #category : #'as yet unclassified' }
 SeekerTraceQueriesInterface >> forAssignmentsOfAnyVariable [
 
+	| t |
+	t := AutoType new.
 	^ self baseQueryForAssignments collect: [ :row | 
-		  New with: { 
-				  (#methodSelector -> row methodSelector).
-				  (#receiverClass -> row receiverClass).
-				  (#receiverClassAndPackage
-				   ->
-				   (row receiverClass name , ' [' , row receiverPackage name , ']')).
-				  (#bytecodeIndex -> row bytecodeIndex).
-				  (#node -> row node).
-				  (#receiverAlias -> row receiverAlias).
-				  (#variableNode -> row node variable).
-				  (#variableName -> row node variable variable name).
-				  (#valueChangedFrom
-				   -> (row node variable variable readInContext: row context)).
-				  (#valueChangedTo -> (row context at: row context basicSize)).
-				  (#receiverPackage -> row receiverPackage).
-				  (#variableClass -> row node variable variable class) } ]
+		  t with
+			  methodSelector: row methodSelector;
+			  receiverClass: row receiverClass;
+			  receiverClassAndPackage:
+				  row receiverClass name , ' [' , row receiverPackage name , ']';
+			  bytecodeIndex: row bytecodeIndex;
+			  node: row node;
+			  receiverAlias: row receiverAlias;
+			  variableNode: row node variable;
+			  variableName: row node variable variable name;
+			  valueChangedFrom:
+				  (row node variable variable readInContext: row context);
+			  valueChangedTo: (row context at: row context basicSize);
+			  receiverPackage: row receiverPackage;
+			  variableClass: row node variable variable class;
+			  endWith ]
 ]
 
 { #category : #'as yet unclassified' }
 SeekerTraceQueriesInterface >> forAssignmentsOfInstanceVariables [
 
+	| t |
+	t := AutoType new.
 	^ self baseQueryForAssignments
 		  select: [ :row | row node variable variable isInstanceVariable ]
 		  collect: [ :row | 
-			  New with: { 
-					  (#methodSelector -> row methodSelector).
-					  (#receiverClass -> row receiverClass).
-					  (#bytecodeIndex -> row bytecodeIndex).
-					  (#node -> row node).
-					  (#receiverAlias -> row receiverAlias).
-					  (#variableNode -> row node variable).
-					  (#variableName -> row node variable variable name).
-					  (#receiverPackage -> row receiverPackage).
-					  (#receiverClassAndPackage
-					   ->
-					   (row receiverClass name , ' [' , row receiverPackage name
-					    , ']')).
-					  (#valueChangedFrom
-					   -> (row node variable variable readInContext: row context)).
-					  (#valueChangedTo -> (row context at: row context basicSize)) } ]
+			  t with
+				  methodSelector: row methodSelector;
+				  receiverClass: row receiverClass;
+				  bytecodeIndex: row bytecodeIndex;
+				  node: row node;
+				  receiverAlias: row receiverAlias;
+				  variableNode: row node variable;
+				  variableName: row node variable variable name;
+				  receiverPackage: row receiverPackage;
+				  receiverClassAndPackage:
+					  row receiverClass name , ' [' , row receiverPackage name , ']';
+				  valueChangedFrom:
+					  (row node variable variable readInContext: row context);
+				  valueChangedTo: (row context at: row context basicSize);
+				  endWith ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -293,9 +296,9 @@ SeekerTraceQueriesInterface >> forExceptionSignals [
 { #category : #'as yet unclassified' }
 SeekerTraceQueriesInterface >> forInstanceVariables [
 
-	| q table |
+	| q table t |
 	table := tracer tables omniscientTableForAliases.
-
+	t := AutoType new.
 	q := Query
 		     from: table
 		     select: [ :row | 
@@ -304,18 +307,20 @@ SeekerTraceQueriesInterface >> forInstanceVariables [
 		     collect: [ :row | 
 			     | variable |
 			     variable := row node variable.
-			     New with: { 
-					     (#stepIndex -> row stepIndex).
-					     "(#aliasesDictionary -> row aliasesDictionary)."
-					     (#methodSelector -> row methodSelector).
-					     (#receiverClass -> row receiverClass).
-					     (#receiverAlias -> row receiverAlias). "the receiver is the owner of the variable"
-					     (#bytecodeIndex -> row bytecodeIndex).
-					     (#node -> row node).
-					     (#variable -> variable).
-					     (#isInstanceVariable -> variable isInstanceVariable).
-					     "(#ownerAlias -> (row aliasesDictionary at: row receiver ifAbsent: [nil]))."
-					     (#context -> row context) } ].
+			     t with
+				     stepIndex: row stepIndex;
+				     "(#aliasesDictionary -> row aliasesDictionary)."
+				     methodSelector: row methodSelector;
+				     receiverClass: row receiverClass;
+				     receiverAlias: row receiverAlias;
+				     "the receiver is the owner of the variable"bytecodeIndex:
+					     row bytecodeIndex;
+				     node: row node;
+				     variable: variable;
+				     isInstanceVariable: variable isInstanceVariable;
+				     "(#ownerAlias -> (row aliasesDictionary at: row receiver ifAbsent: [nil]))."
+				     context: row context;
+				     endWith ].
 	^ q
 ]
 

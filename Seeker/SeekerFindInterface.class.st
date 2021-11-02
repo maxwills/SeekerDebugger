@@ -196,10 +196,8 @@ SeekerFindInterface >> changesOfObject: anObject [
 	alias := tracer readAliasOf: anObject.
 
 	"then, get all the changes of that alias"
-	query := Query
-		         from: tracer queries forAssignmentsOfInstanceVariables
-		         select: [ :row | row receiverAlias = alias ]
-		         collect: #*.
+	query := tracer queries forAssignmentsOfInstanceVariables select: [ 
+		         :row | row receiverAlias = alias ].
 
 	^ query asTableForTimeTravel
 ]

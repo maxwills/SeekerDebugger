@@ -83,9 +83,14 @@ Object >> putInSeekerAuxStorage2 [
 ]
 
 { #category : #'*Seeker' }
-Object >> seekAllChangesOnSelf [
-	
+Object >> seekAllMessagesSentToMe [
 
+	| seeker |
+	seeker := self seekMe.
+	seeker ifNotNil: [ 
+		^ (seeker find allMessageSendsToOid: self seekMyAlias)
+			  asSeekerResultsCollection forMessageSends ].
+	^ nil
 ]
 
 { #category : #'*Seeker' }
@@ -97,6 +102,19 @@ Object >> seekAllMyChanges [
 		^ (seeker find changesOfObject: self) asSeekerResultsCollection
 			  forAssignmentsOfInstanceVariables ].
 	^ nil
+]
+
+{ #category : #'*Seeker' }
+Object >> seekAndDisplayAllMessagesSentToMe [
+
+	| results seeker |
+	seeker := self seekMe.
+	results := self seekAllMessagesSentToMe.
+	results
+		ifNotNil: [ 
+			seeker seekerResultsPresenter showResult: results.
+			self inform: 'Results being shown in Results table' ]
+		ifNil: [ self error: 'Could not execute query' ]
 ]
 
 { #category : #'*Seeker' }
