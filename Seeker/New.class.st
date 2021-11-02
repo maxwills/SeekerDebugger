@@ -4,6 +4,12 @@ Class {
 	#category : #'Seeker-QueryData'
 }
 
+{ #category : #accessing }
+New class >> with [
+
+	^ MyDynamicTypeBuilder new
+]
+
 { #category : #'instance creation' }
 New class >> with: aCollection [
 

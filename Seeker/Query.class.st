@@ -102,7 +102,31 @@ Query class >> from: aDataSource select: aRowPredicateBlock collect: aProjection
 ]
 
 { #category : #'instance creation' }
+Query class >> from: aDataSource select: aRowPredicateBlock collectNewType: aProjectionBlock [
+
+	"A more 'Pharo-like' version of the classic From Select Collect style"
+
+	^ self
+		  from: aDataSource
+		  where: aRowPredicateBlock
+		  selectNewType: aProjectionBlock
+]
+
+{ #category : #'instance creation' }
 Query class >> from: aSeekerDataSet where: aPredicateBlock select: aProjectionBlock [
+
+	| q |
+	q := self new.
+	q disableOptimization: true.
+	q collectionBlock: aProjectionBlock.
+	q selectionBlock: aPredicateBlock.
+	q disableOptimization: false.
+	q fromDataSource: aSeekerDataSet.
+	^ q
+]
+
+{ #category : #'instance creation' }
+Query class >> from: aSeekerDataSet where: aPredicateBlock selectNewType: aProjectionBlock [
 
 	| q |
 	q := self new.
@@ -279,20 +303,11 @@ Query >> asTableForTimeTravel [
 
 	| tracer makeItForTimeTravel |
 	tracer := self findTracer.
-	makeItForTimeTravel := [ :row | 
-		"all this code does is to save the executeByteCode. Essentially, it creates and object that has the same keys than the original, but it has the privateExecutedBytecide accessor"
-		"Ideally this transformation should be executed only in the most outter query"
-	                       | t |
-	                       t := AnonymousTypeForTimeTravel
-		                            newWith: {  }
-		                            forTracer: tracer.
-	                       t mergeWith: row.
-	                       t privateExecutedBytecode: row bytecodeIndex ].
+
 	operationType := #asTable.
 	resultBuffer := OrderedCollection new.
 
-	self onQueryRowMatch: [ 
-		resultBuffer add: (makeItForTimeTravel value: self currentRow) ].
+	self onQueryRowMatch: [ resultBuffer add: self currentRow ].
 
 	self resolve.
 
@@ -303,6 +318,44 @@ Query >> asTableForTimeTravel [
 Query >> collect: aBlock [
 
 	"A lazy version of collect: of Pharo collections, applicable to queries"
+
+	| q composedProjection selfisIdentity blockIsIdentity |
+	selfisIdentity := self class isIdentityProjection: selectionBlock.
+	blockIsIdentity := self class isIdentityProjection: aBlock.
+
+	"the following is a very bad solution. It mixes behaviors. if collection with two arguments are detected, there is no composition"
+	composedProjection := [ true ] switchCase: { 
+			                      ([ selfisIdentity and: blockIsIdentity ]
+			                       -> [ collectionBlock ]).
+			                      ([ selfisIdentity and: blockIsIdentity not ]
+			                       -> [ aBlock ]).
+			                      ([ selfisIdentity not and: blockIsIdentity ]
+			                       -> [ collectionBlock ]).
+			                      ([ 
+			                       selfisIdentity not and: blockIsIdentity not ]
+			                       -> [ 
+				                       aBlock argumentCount = 2
+					                       ifTrue: [ aBlock ]
+					                       ifFalse: [ 
+						                       collectionBlock argumentCount = 2
+							                       ifTrue: [ collectionBlock ]
+							                       ifFalse: [ 
+							                       [ :anArg1 | 
+							                       aBlock cull:
+								                       (collectionBlock cull: anArg1) ] ] ] ]) }.
+	q := self class
+		     from: self fromDataSource
+		     select: selectionBlock
+		     collect: composedProjection.
+
+	^ q
+]
+
+{ #category : #enumerating }
+Query >> collectNewType: aBlock [
+
+	"A lazy version of collect: of Pharo collections, applicable to queries"
+	"block has two parameters. the first one is the state, the second the dynamic object "
 
 	| q composedProjection selfisIdentity blockIsIdentity |
 	selfisIdentity := self class isIdentityProjection: selectionBlock.
@@ -322,7 +375,7 @@ Query >> collect: aBlock [
 	q := self class
 		     from: self fromDataSource
 		     select: selectionBlock
-		     collect: composedProjection.
+		     collectNewType: composedProjection.
 
 	^ q
 ]
@@ -421,9 +474,7 @@ Query >> doQueryOnRow: aRow [
 
 	"performs the query in the specified row"
 
-	selectionBlock numArgs = 0
-		ifTrue: [ selectionBlock value ifTrue: onQueryRowMatch ]
-		ifFalse: [ (selectionBlock value: aRow) ifTrue: onQueryRowMatch ]
+	(selectionBlock value: aRow) ifTrue: onQueryRowMatch
 ]
 
 { #category : #'as yet unclassified' }
@@ -511,7 +562,8 @@ Query >> getRelevantFields [
 
 	"Returns a collection of the fields (when using anonymous type rows) that are used in the selectBlock or whereBlock. it will search recursivelly in every nested block"
 
-	| selectFields whereFields fromRelevantFields mergedSet |
+	^ {  } "changed due to using anonumous type"
+	"| selectFields whereFields fromRelevantFields mergedSet |
 	selectFields := SkAnonymousTypeHelpers 
 		                listOfFieldsInAnonymousTypeBlock: collectionBlock.
 	whereFields := SkAnonymousTypeHelpers 
@@ -523,7 +575,7 @@ Query >> getRelevantFields [
 	mergedSet addAll: selectFields.
 	mergedSet addAll: whereFields.
 	mergedSet addAll: fromRelevantFields.
-	^ mergedSet asOrderedCollection
+	^ mergedSet asOrderedCollection"
 ]
 
 { #category : #initialization }
@@ -602,7 +654,9 @@ Query >> onQueryRowMatch [
 
 { #category : #accessing }
 Query >> onQueryRowMatch: anObject [
-
+  "note that this is an action that depends on the query resolution mode.
+  It might be a good idea to create subclasses of queries that override the method instead
+"
 	onQueryRowMatch := anObject
 ]
 
@@ -637,6 +691,17 @@ Query >> resetTableTraversing [
 
 { #category : #navigating }
 Query >> resolve [
+
+	collectionBlock argumentCount = 2 ifTrue: [ 
+		| newTypeScope newWrappedCollect originalCollectionBlock |
+		originalCollectionBlock := collectionBlock.
+		newTypeScope := { AnonymousType }.
+		newWrappedCollect := [ :state | 
+		                     newTypeScope newWith: [ :item | 
+			                     originalCollectionBlock
+				                     value: state
+				                     value: item ] ].
+		collectionBlock := newWrappedCollect ].
 
 	customPreparationBlock value.
 	self optimizeRowAcquisitionForFields: self getRelevantFields.

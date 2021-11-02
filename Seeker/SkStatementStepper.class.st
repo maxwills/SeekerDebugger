@@ -387,7 +387,8 @@ SkStatementStepper >> softUIUpdate [
 
 	| presenter |
 	presenter := self seekerResultsPresenter.
-	presenter ifNotNil: [ presenter updateLabelOnly ]
+	presenter ifNotNil: [ 
+		WorldState defer: [ presenter updateLabelOnly ] ]
 ]
 
 { #category : #accessing }
