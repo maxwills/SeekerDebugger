@@ -35,7 +35,7 @@ SkNodeTraceTimeReference >> referencesTheLocalPast: tracer [
 	currentStop := currentNode stop.
 	^ currentNode ownerNode = ownerNode and: [ 
 		  node ~= currentNode and: [ 
-			  nodeStop <= currentStop and: [ currentNode start < nodeStart ] ] ]
+			  nodeStop <= currentStop and: [ currentNode start <= nodeStart ] ] ]
 ]
 
 { #category : #testing }
@@ -45,7 +45,11 @@ SkNodeTraceTimeReference >> referencesTheLocalPastOrPresent: tracer [
 	"Should use nonInlinedOwnerInstead?"
 	currentNode := tracer currentNode.
 	currentStop := currentNode stop.
-	^ currentNode ownerNode = ownerNode and: [ 
+	currentNode ownerNode = ownerNode ifFalse: [ ^ false ].
+	^ currentNode isMethod
+		  ifTrue: [ 
+		  nodeStop == currentStop and: [ currentNode start == nodeStart ] ]
+		  ifFalse: [ 
 		  nodeStop <= currentStop and: [ currentNode start <= nodeStart ] ]
 ]
 

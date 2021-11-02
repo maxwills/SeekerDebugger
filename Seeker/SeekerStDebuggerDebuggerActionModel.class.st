@@ -49,7 +49,7 @@ SeekerStDebuggerDebuggerActionModel >> enabled [
 { #category : #context }
 SeekerStDebuggerDebuggerActionModel >> referenceContext [
 
-	"This prevents a bug that happens when time traveling to the signaled expcetion. In that case, probable because of replays and context unwindinws,topContext receiver signalContext is nil, so signalerContext call fails.This prevents that."
+	"This prevents a bug that happens when time traveling to the signaled exception. In that case, probable because of replays and context unwindinws,topContext receiver signalContext is nil, so signalerContext call fails.This prevents that."
 
 	self contextPredicate contextSignalsException ifFalse: [ 
 		^ self interruptedContext ].
@@ -63,7 +63,7 @@ SeekerStDebuggerDebuggerActionModel >> restartContext: aContext [
 
 	self enabled
 		ifTrue: [ 
-			tracer doAndUpdateSessionAfter: [ 
+			tracer blockingDoAndUpdateSessionAfter: [ 
 				tracer perform restartContext: aContext.
 				currentState aboutToSwitchContext ifFalse: [ 
 					self doStepToFirstInterestingBytecode ].
@@ -77,8 +77,8 @@ SeekerStDebuggerDebuggerActionModel >> runToSelection: aSelectionInterval inCont
 
 	self enabled
 		ifTrue: [ 
-			tracer perform timeTravelToSelectedNode.
-			self updateTopContext ]
+			tracer blockingDoAndUpdateSessionAfter: [ "self updateTopContext" 
+				tracer perform timeTravelToSelectedNode ] ]
 		ifFalse: [ 
 		super runToSelection: aSelectionInterval inContext: aContext ]
 ]
