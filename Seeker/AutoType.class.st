@@ -19,14 +19,15 @@ Class {
 	#category : #'Seeker-QueryData'
 }
 
-{ #category : #'instance creation' }
-AutoType >> new [
+{ #category : #accessing }
+AutoType >> newWith [
 
-	"The first time this is executed, it will return a class builder that uses the with: method to define the class,.
-Therefore, it is the with: method that will return the new instance. the second time and forth, it will return a new instance of the auto defined class.
+	"The first time this is executed, it will create a class builder that will being listening for setter to define the type, until endWith is called, which will return an instance of the new defined class.
+The second time and forth, it will immediately return a new instance of the already defined class (whose endWith method is equivalent to #yourself)
+See AutoTypeBuild for more info.
 "
 
-	^ type ifNil: [ AutoTypeBuilder new ] ifNotNil: [ type new ]
+	^ type ifNotNil: [ type new ] ifNil: [ AutoTypeBuilder newFor: self ]
 ]
 
 { #category : #accessing }
@@ -39,14 +40,4 @@ AutoType >> type [
 AutoType >> type: anObject [
 
 	type := anObject
-]
-
-{ #category : #accessing }
-AutoType >> with [
-
-	"returns a class builder. The class definition finished when the endWith method of the builder is called"
-
-	^ type
-		  ifNotNil: [ type new ]
-		  ifNil: [ AutoTypeBuilder newFor: self ]
 ]

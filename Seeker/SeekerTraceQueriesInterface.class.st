@@ -8,10 +8,12 @@ Class {
 SeekerTraceQueriesInterface >> baseQuery [
 
 	"returns a Current State Interface based query"
-"Note that this will not work on it's own. It still lacks a select and collect.
+
+	"Note that this will not work on it's own. It still lacks a select and collect.
 For time travel, it needs the executedBytecode field to be a part of each result item.
 "
-	^ Query from: tracer tables programStates 
+
+	^ Query from: tracer programStates
 ]
 
 { #category : #'as yet unclassified' }
@@ -21,7 +23,7 @@ SeekerTraceQueriesInterface >> baseQueryForAssignments [
 
 	^ Query
 		  from: tracer programStates
-		  select: [ :row | row node isAssignment ]
+		  select: [ :state | state node isAssignment ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -29,7 +31,7 @@ SeekerTraceQueriesInterface >> baseQueryForInstancesCreation [
 
 	^ Query
 		  from: tracer programStates
-		  select: [ :row | row isInstantiationMessage ]
+		  select: [ :state | state isInstantiationMessage ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -39,7 +41,7 @@ SeekerTraceQueriesInterface >> baseQueryForMessageSends [
 
 	^ Query
 		  from: tracer programStates
-		  select: [ :row | row isMessageSend ]
+		  select: [ :state | state isMessageSend ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -60,6 +62,7 @@ step :=  seeker currentIndexlessStepDescriptor .
 (seeker queries forAliasOfContextReceiverWithStepDescriptorPath:step) first"
 
 	| q |
+	self error: 'should not used'.
 	q := Query
 		     from: tracer tables omniscientTableForAliases
 		     select: [ :row | row stepIndex = aNumber ]
@@ -77,10 +80,13 @@ step :=  seeker currentIndexlessStepDescriptor .
 SeekerTraceQueriesInterface >> forAliasOfObjectReferredByVariableNode: aVariableNode [
 
 	| q table |
+	self error: 'should not used'.
 	table := tracer tables omniscientTableForAliases.
 	q := Query
 		     from: table
-		     where: [ :row | row node isVariable and: [row node variable name=aVariableNode variable name]]
+		     where: [ :row | 
+			     row node isVariable and: [ 
+				     row node variable name = aVariableNode variable name ] ]
 		     select: [ :row | 
 			     | variableValue getAlias |
 			     variableValue := row context readVariableNamed:
@@ -120,6 +126,7 @@ SeekerTraceQueriesInterface >> forAliasOfObjectReferredByVariableNode: aVariable
 
 	| q table contextOfVariable |
 	contextOfVariable := nil.
+	self error: 'should not used'.
 	table := tracer tables omniscientTableForAliases.
 	q := Query
 		     from: table
@@ -169,7 +176,7 @@ SeekerTraceQueriesInterface >> forAliases [
 
 	"aliasTable columns: #stepIndex #creationStep #bytecodeIndex "
 	"methodsTable columuns: #stepIndex #receiverClass #methodSelector #bytecodeIndex"
-
+	self error: 'should not used'.
 	q := Query
 		     from: (methodsTable join: aliasesTable)
 		     where: [ :row | "row isFirstBytecode" 
@@ -189,22 +196,23 @@ SeekerTraceQueriesInterface >> forAssignmentsOfAnyVariable [
 
 	| t |
 	t := AutoType new.
-	^ self baseQueryForAssignments collect: [ :row | 
-		  t with
-			  methodSelector: row methodSelector;
-			  receiverClass: row receiverClass;
+	^ self baseQueryForAssignments collect: [ :state | 
+		  t newWith
+			  methodSelector: state methodSelector;
+			  receiverClass: state receiverClass;
 			  receiverClassAndPackage:
-				  row receiverClass name , ' [' , row receiverPackage name , ']';
-			  bytecodeIndex: row bytecodeIndex;
-			  node: row node;
-			  receiverAlias: row receiverAlias;
-			  variableNode: row node variable;
-			  variableName: row node variable variable name;
+				  state receiverClass name , ' [' , state receiverPackage name
+				  , ']';
+			  bytecodeIndex: state bytecodeIndex;
+			  node: state node;
+			  receiverAlias: state receiverAlias;
+			  variableNode: state node variable;
+			  variableName: state node variable variable name;
 			  valueChangedFrom:
-				  (row node variable variable readInContext: row context);
-			  valueChangedTo: (row context at: row context basicSize);
-			  receiverPackage: row receiverPackage;
-			  variableClass: row node variable variable class;
+				  (state node variable variable readInContext: state context);
+			  valueChangedTo: (state context at: state context basicSize);
+			  receiverPackage: state receiverPackage;
+			  variableClass: state node variable variable class;
 			  endWith ]
 ]
 
@@ -214,22 +222,24 @@ SeekerTraceQueriesInterface >> forAssignmentsOfInstanceVariables [
 	| t |
 	t := AutoType new.
 	^ self baseQueryForAssignments
-		  select: [ :row | row node variable variable isInstanceVariable ]
-		  collect: [ :row | 
-			  t with
-				  methodSelector: row methodSelector;
-				  receiverClass: row receiverClass;
-				  bytecodeIndex: row bytecodeIndex;
-				  node: row node;
-				  receiverAlias: row receiverAlias;
-				  variableNode: row node variable;
-				  variableName: row node variable variable name;
-				  receiverPackage: row receiverPackage;
+		  select: [ :state | 
+		  state node variable variable isInstanceVariable ]
+		  collect: [ :state | 
+			  t newWith
+				  methodSelector: state methodSelector;
+				  receiverClass: state receiverClass;
+				  bytecodeIndex: state bytecodeIndex;
+				  node: state node;
+				  receiverAlias: state receiverAlias;
+				  variableNode: state node variable;
+				  variableName: state node variable variable name;
+				  receiverPackage: state receiverPackage;
 				  receiverClassAndPackage:
-					  row receiverClass name , ' [' , row receiverPackage name , ']';
+					  state receiverClass name , ' [' , state receiverPackage name
+					  , ']';
 				  valueChangedFrom:
-					  (row node variable variable readInContext: row context);
-				  valueChangedTo: (row context at: row context basicSize);
+					  (state node variable variable readInContext: state context);
+				  valueChangedTo: (state context at: state context basicSize);
 				  endWith ]
 ]
 
@@ -245,7 +255,7 @@ SeekerTraceQueriesInterface >> forContextSizeChanges [
 	  #bytecodeIndex
 	  #contextSize 
 	  #previousRow"
-
+	self error: 'should not used'.
 	q := Query
 		     from: table
 		     where: [ :row | row contextSize ~= row previousRow contextSize ]
@@ -263,14 +273,8 @@ SeekerTraceQueriesInterface >> forContextSizeChanges [
 { #category : #'as yet unclassified' }
 SeekerTraceQueriesInterface >> forExceptionInstancesCreation [
 
-	| q |
-	q := self forInstancesCreation.
-	q := Query
-		     from: q
-		     select: [ :r | 
-		     r messageReceiver inheritsFromOrSameAs: Exception ]
-		     collect: #*.
-	^ q
+	^ self forInstancesCreation select: [ :state | 
+		  state messageReceiver inheritsFromOrSameAs: Exception ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -278,7 +282,7 @@ SeekerTraceQueriesInterface >> forExceptionSignals [
 
 	| q table |
 	table := tracer tables omniscientTableForAliases.
-
+	self error: 'should not be used'.
 	q := Query
 		     from: table
 		     select: [ :row | 
@@ -297,6 +301,7 @@ SeekerTraceQueriesInterface >> forExceptionSignals [
 SeekerTraceQueriesInterface >> forInstanceVariables [
 
 	| q table t |
+	self error: 'should not be used'.
 	table := tracer tables omniscientTableForAliases.
 	t := AutoType new.
 	q := Query
@@ -307,7 +312,7 @@ SeekerTraceQueriesInterface >> forInstanceVariables [
 		     collect: [ :row | 
 			     | variable |
 			     variable := row node variable.
-			     t with
+			     t newWith
 				     stepIndex: row stepIndex;
 				     "(#aliasesDictionary -> row aliasesDictionary)."
 				     methodSelector: row methodSelector;
@@ -327,32 +332,37 @@ SeekerTraceQueriesInterface >> forInstanceVariables [
 { #category : #'as yet unclassified' }
 SeekerTraceQueriesInterface >> forInstancesCreation [
 
-	^ self baseQueryForInstancesCreation collect: [ :row | 
+	| t |
+	t := AutoType new.
+	^ self baseQueryForInstancesCreation collect: [ :state | 
 		  | msgRcvrClass msgRcvrPackage instMsgReceiver |
-		  instMsgReceiver := row context at:
-			                     row context stackPtr - row node numArgs. "Heuristics"
+		  instMsgReceiver := state context at:
+			                     state context stackPtr - state node numArgs. "Heuristics"
 		  msgRcvrClass := instMsgReceiver.
 		  msgRcvrPackage := instMsgReceiver isClass
 			                    ifTrue: [ instMsgReceiver package name ]
 			                    ifFalse: [ instMsgReceiver class package name ].
-		  New with: { 
-				  (#bytecodeIndex -> row bytecodeIndex).
-				  (#methodSelector -> row methodSelector).
-				  (#receiverClass -> row receiverClass).
-				  (#messageReceiver -> instMsgReceiver).
-				  (#messageArguments -> row node arguments).
-				  (#messageReceiverClass -> msgRcvrClass class).
-				  (#messageSelector -> row node selector).
-				  (#messageReceiverPackage -> msgRcvrPackage).
-				  (#creationFormattedDescription -> ((instMsgReceiver isClass
-					     ifTrue: [ instMsgReceiver name ]
-					     ifFalse: [ instMsgReceiver class name ]) , ' ['
-				    , msgRcvrPackage , ']')) } ]
+		  t newWith
+			  bytecodeIndex: state bytecodeIndex;
+			  methodSelector: state methodSelector;
+			  receiverClass: state receiverClass;
+			  messageReceiver: instMsgReceiver;
+			  messageArguments: state node arguments;
+			  messageReceiverClass: msgRcvrClass class;
+			  messageSelector: state node selector;
+			  messageReceiverPackage: msgRcvrPackage;
+			  creationFormattedDescription: (instMsgReceiver isClass
+					   ifTrue: [ instMsgReceiver name ]
+					   ifFalse: [ instMsgReceiver class name ]) , ' ['
+				  , msgRcvrPackage , ']';
+			  endWith ]
 ]
 
 { #category : #'as yet unclassified' }
 SeekerTraceQueriesInterface >> forMarkers [
 
+	| t |
+	t := AutoType new.
 	^ self baseQuery
 		  select: [ :state | 
 			  state isMessageSend and: [ state messageIsSeekerMarkerMethod ] ]
@@ -361,25 +371,26 @@ SeekerTraceQueriesInterface >> forMarkers [
 			  arg := state node arguments isNotEmpty
 				         ifTrue: [ (state messageArgumentAt: 1) asString ]
 				         ifFalse: [ '' ].
-			  New with: { 
-					  (#bytecodeIndex -> state bytecodeIndex).
-					  (#senderMethodClass -> state context sender methodClass).
-					  (#senderMethodSelector -> state context sender methodSelector).
-					  (#markerArg -> arg) } ]
+			  t newWith
+				  bytecodeIndex: state bytecodeIndex;
+				  senderMethodClass: state context sender methodClass;
+				  senderMethodSelector: state context sender methodSelector;
+				  markerArg: arg;
+				  endWith ]
 ]
 
 { #category : #'as yet unclassified' }
 SeekerTraceQueriesInterface >> forMessageSends [
 
-	| auto |
-	auto := AutoType new.
+	| t |
+	t := AutoType new.
 	^ self baseQueryForMessageSends collect: [ :row | 
 		  | msgRcvrNode msgRcvrClass msgRcvr receiverOid |
 		  msgRcvrNode := row node receiver.
 		  msgRcvr := row messageReceiver.
 		  receiverOid := row aliasOfObject: msgRcvr.
 		  msgRcvrClass := msgRcvr class.
-		  auto with
+		  t newWith
 			  bytecodeIndex: row bytecodeIndex;
 			  methodSelector: row methodSelector;
 			  receiverClass: row receiverClass;
@@ -432,20 +443,18 @@ SeekerTraceQueriesInterface >> forMessageSendsBak [
 { #category : #'as yet unclassified' }
 SeekerTraceQueriesInterface >> forReceivedMessages [
 
-	| q table auto |
-	auto := AutoType new.
-	table := tracer programStates.
-	q := Query
-		     from: table
-		     select: [ :state | state contextPC = state initialPC ]
-		     collect: [ :state | 
-			     auto with
-				     bytecodeIndex: state bytecodeIndex;
-				     methodSelector: state methodSelector;
-				     receiverClass: state receiverClass;
-				     arguments: state context arguments;
-				     endWith ].
-	^ q
+	| t |
+	t := AutoType new.
+	^ Query
+		  from: tracer programStates
+		  select: [ :state | state contextPC = state initialPC ]
+		  collect: [ :state | 
+			  t newWith
+				  bytecodeIndex: state bytecodeIndex;
+				  methodSelector: state methodSelector;
+				  receiverClass: state receiverClass;
+				  arguments: state context arguments;
+				  endWith ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -472,7 +481,7 @@ SeekerTraceQueriesInterface >> forReturnValues [
 
 	| q table |
 	table := tracer tables omniscientTable.
-
+	self error: 'should not be used'.
 	q := Query
 		     from: table
 		     where: [ :row | row isMethodReturn ]
@@ -489,6 +498,7 @@ SeekerTraceQueriesInterface >> forReturnValues [
 SeekerTraceQueriesInterface >> forReturnValuesOfMethod: aMethod [
 
 	| q methodClass methodSelector |
+	self error: 'should not be used'.
 	methodClass := aMethod methodClass.
 	methodSelector := aMethod selector.
 
@@ -502,6 +512,7 @@ SeekerTraceQueriesInterface >> forReturnValuesOfMethod: aMethod [
 SeekerTraceQueriesInterface >> forReturnValuesOfMethodWithSelector: aSymbol [
 
 	| q |
+	self error: 'should not be used'.
 	q := self forReturnValues select: [ :row | 
 		     row methodSelector = aSymbol ].
 	^ q
@@ -512,25 +523,28 @@ SeekerTraceQueriesInterface >> forVariableValueChanges [
 
 	| q variablesValues |
 	variablesValues := self forVariableValues asQueryWithMemory.
-
-	q := Query from: variablesValues select: [:row| row value ~= row previousRow value ] collect: [ :row | 
-		     New with: { 
-				     (#stepIndex -> row stepIndex).
-				     (#methodSelector -> row methodSelector).
-				     (#receiverClass -> row receiverClass).
-				     (#bytecodeIndex -> row bytecodeIndex).
-				     (#node -> row node).
-				     (#variable -> row variable).
-				     (#isTempVariable -> row isTempVariable).
-				     (#isInstanceVariable -> row isInstanceVariable).
-				     (#isLocalVariable -> row isLocalVariable).
-				     (#isGlobalVariable -> row isGlobalVariable).
-				     (#isSelfVariable -> row isSelfVariable).
-				     (#isSuperVariable -> row isSuperVariable).
-				     (#alias -> row alias).
-				     (#context -> row context).
-				     (#valueBefore -> row previousRow value).
-				     (#valueNow -> row value) } ].
+	self error: 'should not be used'.
+	q := Query
+		     from: variablesValues
+		     select: [ :row | row value ~= row previousRow value ]
+		     collect: [ :row | 
+			     New with: { 
+					     (#stepIndex -> row stepIndex).
+					     (#methodSelector -> row methodSelector).
+					     (#receiverClass -> row receiverClass).
+					     (#bytecodeIndex -> row bytecodeIndex).
+					     (#node -> row node).
+					     (#variable -> row variable).
+					     (#isTempVariable -> row isTempVariable).
+					     (#isInstanceVariable -> row isInstanceVariable).
+					     (#isLocalVariable -> row isLocalVariable).
+					     (#isGlobalVariable -> row isGlobalVariable).
+					     (#isSelfVariable -> row isSelfVariable).
+					     (#isSuperVariable -> row isSuperVariable).
+					     (#alias -> row alias).
+					     (#context -> row context).
+					     (#valueBefore -> row previousRow value).
+					     (#valueNow -> row value) } ].
 	^ q
 ]
 
@@ -539,7 +553,7 @@ SeekerTraceQueriesInterface >> forVariableValues [
 
 	| q variablesOnly |
 	variablesOnly := self forVariables.
-
+	self error: 'should not be used'.
 	q := Query from: variablesOnly select: #* collect: [ :row | 
 		     New with: { 
 				     (#stepIndex -> row stepIndex).
@@ -565,7 +579,7 @@ SeekerTraceQueriesInterface >> forVariables [
 
 	| q table |
 	table := tracer tables omniscientTableForAliases.
-
+	self error: 'should not be used'.
 	q := Query
 		     from: table
 		     select: [ :row | row nodeIsVariable ]
@@ -586,7 +600,7 @@ SeekerTraceQueriesInterface >> forVariables [
 					     (#isGlobalVariable -> variable isGlobalVariable).
 					     (#isSelfVariable -> variable isSelfVariable).
 					     (#isSuperVariable -> variable isSuperVariable).
-						  "(#ownerAlias -> (row aliasesDictionary at: row receiver ifAbsent: [nil]))."
+					     "(#ownerAlias -> (row aliasesDictionary at: row receiver ifAbsent: [nil]))."
 					     (#context -> row context) } ].
 	^ q
 ]

@@ -31,6 +31,33 @@ AutoTypeBuilder >> autoType: anObject [
 ]
 
 { #category : #'as yet unclassified' }
+AutoTypeBuilder >> buildClass [
+
+	"this builds the class and return it"
+
+	EpMonitor disableDuring: [ 
+		| newClass |
+		newClass := (Object << #AnonymousTypeX)
+			            slots: fields;
+			            tag: '';
+			            sharedVariables: { #fields };
+			            package: '';
+			            build.
+		fields do: [ :each | 
+			self createAccessorsForField: each inClass: newClass ].
+		newClass writeClassVariableNamed: #fields value: fields.
+		newClass compile: 'keysDo: aBlock
+	fields do: [ :each | aBlock value: each ]'.
+		newClass compile: 'at: anObject
+	^self readSlotNamed: anObject'.
+		newClass compile: 'endWith
+	^self'.
+		newClass class compile: 'fields
+	^ fields'.
+		^ newClass ]
+]
+
+{ #category : #'as yet unclassified' }
 AutoTypeBuilder >> createAccessorsForField: aSymbol inClass: aClass [
 
 	"getter"
@@ -71,36 +98,9 @@ AutoTypeBuilder >> doesNotUnderstand: aMessage [
 ]
 
 { #category : #'as yet unclassified' }
-AutoTypeBuilder >> endNewType [
-
-	"this builds the class and return it"
-
-	EpMonitor disableDuring: [ 
-		| newClass |
-		newClass := (Object << #AnonymousTypeX)
-			            slots: fields;
-			            tag: '';
-			            sharedVariables: { #fields };
-			            package: '';
-			            build.
-		fields do: [ :each | 
-			self createAccessorsForField: each inClass: newClass ].
-		newClass writeClassVariableNamed: #fields value: fields.
-		newClass compile: 'keysDo: aBlock
-	fields do: [ :each | aBlock value: each ]'.
-		newClass compile: 'at: anObject
-	^self readSlotNamed: anObject'.
-		newClass compile: 'endWith
-	^self'.
-		newClass class compile: 'fields
-	^ fields'.
-		^ newClass ]
-]
-
-{ #category : #'as yet unclassified' }
 AutoTypeBuilder >> endWith [
 
-	type := self endNewType.
+	type := self buildClass.
 	autoType type: type. "without this, the code would be always calling the builder, which is super slow"
 	^ self doPendingAssignmentsOn: type new
 ]
@@ -110,9 +110,4 @@ AutoTypeBuilder >> initialize [
 
 	fields := OrderedCollection new.
 	assignments := OrderedCollection new
-]
-
-{ #category : #'instance creation' }
-AutoTypeBuilder >> with: aBlock [
-"executes the block. The block has already a reference to self"
 ]
