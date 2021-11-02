@@ -369,7 +369,7 @@ SeekerTraceQueriesInterface >> forMessageSends [
 	| auto |
 	auto := AutoType new.
 	^ self baseQueryForMessageSends collect: [ :row | 
-		  | msgRcvrNode msgRcvrClass msgRcvr |
+		  | msgRcvrNode msgRcvrClass msgRcvr receiverOid |
 		  msgRcvrNode := row node receiver.
 		  msgRcvr := row messageReceiver.
 

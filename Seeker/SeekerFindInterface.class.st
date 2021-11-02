@@ -74,6 +74,17 @@ SeekerFindInterface >> allMessageSends [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerFindInterface >> allMessageSendsToOid: aNumber [
+
+	| query result |
+	query := tracer queries forMessageSends select: [ :state | 
+		         state messageReceiverOid = aNumber ].
+
+	result := query asTableForTimeTravel.
+	^ result
+]
+
+{ #category : #'as yet unclassified' }
 SeekerFindInterface >> allMessageSendsWithSelectedSelector [
 
 	^ self allMessageSendsWithSelector: tracer selectedSelector

@@ -429,6 +429,12 @@ SeekerCurrentStateInterface >> messageReceiver [
 			  self context at: pointer "Heuristics" ]
 ]
 
+{ #category : #'as yet unclassified' }
+SeekerCurrentStateInterface >> messageReceiverOid [
+
+	^ self aliasOfObject: self messageReceiver
+]
+
 { #category : #testing }
 SeekerCurrentStateInterface >> messageSelector [
 
