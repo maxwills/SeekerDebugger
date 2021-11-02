@@ -56,7 +56,10 @@ Class {
 		'previousContextStackDepth',
 		'rememberContextStackDepth',
 		'contextJumpCount',
-		'tracedContextCount'
+		'tracedContextCount',
+		'iteratingFlag',
+		'emergencyStopFlag',
+		'preventNextTimeRestoration'
 	],
 	#category : #'Seeker-Components'
 }
@@ -67,6 +70,17 @@ SkStatementStepper >> bytecodeIndex [
 	"total number of bytecode steps executed"
 
 	^ byteCountCounter
+]
+
+{ #category : #accessing }
+SkStatementStepper >> checkPreventNextTimeRestoration [
+
+	"Used to prevent restorting the live session when a query is manually stopped (Why? because it is useful to know where the execution is at the moment of the emergency stop"
+
+	| val |
+	val := preventNextTimeRestoration.
+	preventNextTimeRestoration := false.
+	^ val
 ]
 
 { #category : #'as yet unclassified' }
@@ -165,7 +179,9 @@ SkStatementStepper >> hasSignalledUnhandledException [
 SkStatementStepper >> initialize [
 
 	super initialize.
-
+	iteratingFlag := false.
+	emergencyStopFlag := false.
+	preventNextTimeRestoration := false.
 	currentTraceTimeReference := SkCurrentTraceTimeReference new tracer:
 		                             self.
 	contextJumpCount := 0.
@@ -318,6 +334,7 @@ SkStatementStepper >> restartAtBytecodeOne [
 	contextJumpCount := 0.
 	trace removeAll.
 	currentStepIndex := 0.
+	preventNextTimeRestoration := false.
 
 	tracedContextCount := 0.
 	stDebugger session restart: contextOfExecutedBytecodeOne.
@@ -354,6 +371,14 @@ SkStatementStepper >> safeTimeTravelToTraceTime: aTraceTime [
 	self doAndUpdateSessionAfter: [ 
 		self restartAtBytecodeOne andThen stepBytecodeUntilConditionIsTrue: [ 
 			aTraceTime referencesTheLocalPastOrPresent: self ] ]
+]
+
+{ #category : #'as yet unclassified' }
+SkStatementStepper >> setEmergencyStopFlag [
+
+	iteratingFlag ifTrue: [ 
+		emergencyStopFlag := true.
+		preventNextTimeRestoration := true ]
 ]
 
 { #category : #initialization }
@@ -446,6 +471,11 @@ SkStatementStepper >> stepBytecode [
 	"Steps the debugger. No skipping. No recording. No updates (rememeber to force update after)"
 
 	| previousContext startingNode |
+	emergencyStopFlag ifTrue: [ 
+		emergencyStopFlag := false.
+		self inform: 'Seeker Emergency Stop'.
+		self updateUI.
+		^ false ].
 	(self isExecutionFinished or: [ self isRiskyStep ]) ifTrue: [ "self inform: 'Reached execution safe end point'" 
 		^ false ].
 	previousContext := currentContext.
@@ -469,8 +499,10 @@ SkStatementStepper >> stepBytecodeToExecutionEnd [
 	"Steps the AST. No skipping. No recording. No Updates
 TODO: Add error management. There are two kind, one from the executed code, and the other is from the debugger code"
 
+	iteratingFlag := true.
+	[ 
 	[ false ] whileFalse: [ self stepBytecode ifFalse: [ ^ false ] ].
-	^ true
+	^ true ] ensure: [ iteratingFlag := false ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -483,8 +515,10 @@ TODO: Add error management. There are two kind, one from the executed code, and 
 		whileFalseAlt: [ self stepBytecode ifFalse: [ ^ false ] ]
 		lvl: 8."
 
+	iteratingFlag := true.
+	[ 
 	aBlock whileFalse: [ self stepBytecode ifFalse: [ ^ false ] ].
-	^ true
+	^ true ] ensure: [ iteratingFlag := false ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -568,6 +602,7 @@ SkStatementStepper >> stepUntilConditionIsTrue: aBlock [
 	"I can't refactor the next code and I don't know why (whenver I do it, the debugger acts weird (and I can't automap)"
 
 	| conditionReached |
+	self error: 'this should not be used'.
 	conditionReached := false.
 	self doAndUpdateSessionAfter: [ 
 		| shouldStop |

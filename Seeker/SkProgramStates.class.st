@@ -67,7 +67,8 @@ SkProgramStates >> do: aBlock [
 		tracer addAstPreStepHook: preBytecodeStepHook.
 		[ tracer stepBytecodeToExecutionEnd ] ensure: [ 
 			tracer removeAstPreStepHook: preBytecodeStepHook.
-			tracer timeTravelToTraceTime: currentTracetime ] ]
+			tracer checkPreventNextTimeRestoration ifFalse: [ 
+				tracer timeTravelToTraceTime: currentTracetime ] ] ]
 ]
 
 { #category : #'as yet unclassified' }

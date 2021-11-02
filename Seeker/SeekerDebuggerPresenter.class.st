@@ -108,6 +108,14 @@ SeekerDebuggerPresenter >> doAndUpdateSessionAfter: aBlock [
 	debuggerUpdateCoordinator coordinateUpdatesFor: aBlock
 ]
 
+{ #category : #'event handling' }
+SeekerDebuggerPresenter >> emergencyStoptHandler [
+
+	"Called when pressing the icon in the toolbar"
+
+	self tracer setEmergencyStopFlag
+]
+
 { #category : #'as yet unclassified' }
 SeekerDebuggerPresenter >> enableTimeTravelingHandler [
 
@@ -254,6 +262,11 @@ SeekerDebuggerPresenter >> initializeToolbar [
 				            label: 'Next Iteration';
 				            icon: (self application iconNamed: #smallUpdate);
 				            action: [ self nextIterationHandler ];
+				            yourself);
+		           add: (self newToolbarButton
+				            label: 'STOP';
+				            icon: (self application iconNamed: #stop);
+				            action: [ self emergencyStoptHandler ];
 				            yourself);
 		           "add: (self newToolbarButton
 				            label: 'Enable Time Travel';
