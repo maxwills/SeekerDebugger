@@ -150,6 +150,8 @@ SeekerGlobals >> seekerCodePresenterText: anObject [
 { #category : #accessing }
 SeekerGlobals >> startQueryingFromBytecodeOne [
 
+	"A configuration flag (read only)"
+
 	"For the test cases, the user might be interested in what happens during the test setup. In that case, this should return true"
 
 	"Bytecoe one is the first bytecode of the context that is restarted each time. If this method returns false, the queries results 
