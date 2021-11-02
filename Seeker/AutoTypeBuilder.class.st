@@ -1,5 +1,5 @@
 Class {
-	#name : #MyDynamicTypeBuilder,
+	#name : #AutoTypeBuilder,
 	#superclass : #Object,
 	#instVars : [
 		'type',
@@ -11,7 +11,7 @@ Class {
 }
 
 { #category : #'instance creation' }
-MyDynamicTypeBuilder class >> newFor: autoType [
+AutoTypeBuilder class >> newFor: autoType [
 
 	^ self new
 		  autoType: autoType;
@@ -19,19 +19,19 @@ MyDynamicTypeBuilder class >> newFor: autoType [
 ]
 
 { #category : #accessing }
-MyDynamicTypeBuilder >> autoType [
+AutoTypeBuilder >> autoType [
 
 	^ autoType
 ]
 
 { #category : #accessing }
-MyDynamicTypeBuilder >> autoType: anObject [
+AutoTypeBuilder >> autoType: anObject [
 
 	autoType := anObject
 ]
 
 { #category : #'as yet unclassified' }
-MyDynamicTypeBuilder >> createAccessorsForField: aSymbol inClass: aClass [
+AutoTypeBuilder >> createAccessorsForField: aSymbol inClass: aClass [
 
 	"getter"
 
@@ -43,7 +43,7 @@ MyDynamicTypeBuilder >> createAccessorsForField: aSymbol inClass: aClass [
 ]
 
 { #category : #'as yet unclassified' }
-MyDynamicTypeBuilder >> doPendingAssignmentsOn: anObject [
+AutoTypeBuilder >> doPendingAssignmentsOn: anObject [
 
 	assignments do: [ :each | 
 		| selector arg |
@@ -54,7 +54,7 @@ MyDynamicTypeBuilder >> doPendingAssignmentsOn: anObject [
 ]
 
 { #category : #'reflective operations' }
-MyDynamicTypeBuilder >> doesNotUnderstand: aMessage [
+AutoTypeBuilder >> doesNotUnderstand: aMessage [
 
 	| selector |
 	selector := aMessage selector.
@@ -71,7 +71,7 @@ MyDynamicTypeBuilder >> doesNotUnderstand: aMessage [
 ]
 
 { #category : #'as yet unclassified' }
-MyDynamicTypeBuilder >> endNewType [
+AutoTypeBuilder >> endNewType [
 
 	"this builds the class and return it"
 
@@ -98,7 +98,7 @@ MyDynamicTypeBuilder >> endNewType [
 ]
 
 { #category : #'as yet unclassified' }
-MyDynamicTypeBuilder >> endWith [
+AutoTypeBuilder >> endWith [
 
 	type := self endNewType.
 	autoType type: type. "without this, the code would be always calling the builder, which is super slow"
@@ -106,13 +106,13 @@ MyDynamicTypeBuilder >> endWith [
 ]
 
 { #category : #initialization }
-MyDynamicTypeBuilder >> initialize [
+AutoTypeBuilder >> initialize [
 
 	fields := OrderedCollection new.
 	assignments := OrderedCollection new
 ]
 
 { #category : #'instance creation' }
-MyDynamicTypeBuilder >> with: aBlock [
+AutoTypeBuilder >> with: aBlock [
 "executes the block. The block has already a reference to self"
 ]

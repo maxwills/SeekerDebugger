@@ -26,20 +26,7 @@ AutoType >> new [
 Therefore, it is the with: method that will return the new instance. the second time and forth, it will return a new instance of the auto defined class.
 "
 
-	^ type ifNil: [ MyDynamicTypeBuilder new ] ifNotNil: [ type new ]
-]
-
-{ #category : #'instance creation' }
-AutoType >> newWith: aSetterBlock [
-
-	"Instantiates the anonymousType class (if it doesn't exists) and then executes the block"
-
-	^ type ifNotNil: [ type new ] ifNil: [ 
-		  | builder |
-		  builder := MyDynamicTypeBuilder new.
-		  aSetterBlock value.
-		  type := builder endNewType.
-		  ^ builder doPendingAssignmentsOn: type new ]
+	^ type ifNil: [ AutoTypeBuilder new ] ifNotNil: [ type new ]
 ]
 
 { #category : #accessing }
@@ -61,5 +48,5 @@ AutoType >> with [
 
 	^ type
 		  ifNotNil: [ type new ]
-		  ifNil: [ MyDynamicTypeBuilder newFor: self ]
+		  ifNil: [ AutoTypeBuilder newFor: self ]
 ]

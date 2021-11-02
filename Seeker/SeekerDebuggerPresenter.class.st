@@ -66,6 +66,15 @@ SeekerDebuggerPresenter >> advanceDownHandler [
 	self seekerDebugger tracer perform advanceToNextStatement
 ]
 
+{ #category : #accessing }
+SeekerDebuggerPresenter >> blockingDoAndUpdateSessionAfter: aBlock [
+
+	"Updates the UI after executing the block. Forces UI Update, and returns after the UI cycle is completed"
+
+	debuggerUpdateCoordinator blockingDoAndUpdateSessionAfter: aBlock.
+
+]
+
 { #category : #'debugger extension' }
 SeekerDebuggerPresenter >> debuggerExtensionToolName [
 	^ 'Seeker'
@@ -90,6 +99,11 @@ SeekerDebuggerPresenter >> displayOrder [
 
 { #category : #accessing }
 SeekerDebuggerPresenter >> doAndUpdateSessionAfter: aBlock [
+
+	"Updates the UI after executing the block. Forces UI Update in a defered manner
+	Returns after executing the block, and before updating the UI.
+	See also: blockingDoAndUpdateSessionAfter:.
+	"
 
 	debuggerUpdateCoordinator coordinateUpdatesFor: aBlock
 ]

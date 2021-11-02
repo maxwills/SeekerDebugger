@@ -372,7 +372,7 @@ SeekerTraceQueriesInterface >> forMessageSends [
 		  | msgRcvrNode msgRcvrClass msgRcvr receiverOid |
 		  msgRcvrNode := row node receiver.
 		  msgRcvr := row messageReceiver.
-
+		  receiverOid := row aliasOfObject: msgRcvr.
 		  msgRcvrClass := msgRcvr class.
 		  auto with
 			  bytecodeIndex: row bytecodeIndex;
@@ -380,6 +380,7 @@ SeekerTraceQueriesInterface >> forMessageSends [
 			  receiverClass: row receiverClass;
 			  messageArguments: row node arguments;
 			  messageReceiver: msgRcvr;
+			  messageReceiverOid: receiverOid;
 			  formattedMessageReceiver: (msgRcvrNode isVariable
 					   ifTrue: [ 
 						   msgRcvrNode variable name , ' ('

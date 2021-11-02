@@ -51,7 +51,7 @@ SkMappingTracer >> automapForCustomScenario: aContext withEndingCondition: aBloc
 	userStartTraceTime := 1 asExecutedBytecodeTraceTime.
 	
 	pressumedEndCondition := aBlock.
-	self doAndUpdateSessionAfter: [ self recountExecutedBytecodes ].
+	self blockingDoAndUpdateSessionAfter: [ self recountExecutedBytecodes ].
 	isMapped := true.
 	^ true
 ]
@@ -90,7 +90,7 @@ SkMappingTracer >> automapForDoItScenario [
 		                         ifFalse: [ 
 		                         endTraceTime 
 			                         referencesTheLocalPastOrPresent: self ] ].
-	self doAndUpdateSessionAfter: [ self recountExecutedBytecodes ].
+	self blockingDoAndUpdateSessionAfter: [ self recountExecutedBytecodes ].
 	isMapped := true.
 	isMappedForDoIt := true.
 	^ true
@@ -123,7 +123,7 @@ SkMappingTracer >> automapForSeekerMarkedSessionScenario [
 	                         == SeekerSessionHelpers and: [ 
 		                         self currentContext selector
 		                         = #seekerSessionEndMarker ] ].
-	self doAndUpdateSessionAfter: [ 
+	self blockingDoAndUpdateSessionAfter: [ 
 		self timeTravelToTraceTime: userStartTraceTime ].
 	isMapped := true.
 	^ true
@@ -160,7 +160,8 @@ SkMappingTracer >> automapForTestCaseScenario [
 	                         endTraceTime 
 		                         referencesTheLocalPastOrPresent: self
 	                         "self currentContext = endingContext" ].
-	self doAndUpdateSessionAfter: [ self recountExecutedBytecodes ].
+	self blockingDoAndUpdateSessionAfter: [ 
+		self recountExecutedBytecodes ].
 	isMapped := true.
 	^ true
 ]
