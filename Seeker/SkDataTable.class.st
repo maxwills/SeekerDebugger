@@ -14,15 +14,15 @@ Class {
 { #category : #'instance creation' }
 SkDataTable class >> newForAnonymousTypeObjects: aCollectionOfAnonymousTypeObjects [
 
-	| ds |
-	ds := self new.
-	aCollectionOfAnonymousTypeObjects ifNotEmpty: [ 
-		| fieldNames |
-		fieldNames := aCollectionOfAnonymousTypeObjects first class fields.
-		fieldNames do: [ :each | ds columnLabels add: each ].
-		aCollectionOfAnonymousTypeObjects do: [ :each | ds rows add: each ] ].
-
-	^ ds
+	^ aCollectionOfAnonymousTypeObjects
+		  ifEmpty: [ self new ]
+		  ifNotEmpty: [ 
+			  | ds |
+			  ds := self newWithColumns:
+				        aCollectionOfAnonymousTypeObjects first class fields.
+			  aCollectionOfAnonymousTypeObjects do: [ :each | 
+				  ds rows add: each ].
+			  ds ]
 ]
 
 { #category : #'instance creation' }

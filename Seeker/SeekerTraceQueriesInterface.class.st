@@ -366,24 +366,44 @@ SeekerTraceQueriesInterface >> forMarkers [
 { #category : #'as yet unclassified' }
 SeekerTraceQueriesInterface >> forMessageSends [
 
-	| resultType |
-	resultType := NewType with
-		              bytecodeIndex;
-		              methodSelector;
-		              receiverClass;
-		              messageArguments;
-		              messageReceiver;
-		              formattedMessageReceiver;
-		              messageReceiverClass;
-		              messageSelector;
-		              endNewType.
+	| auto |
+	auto := AutoType new.
 	^ self baseQueryForMessageSends collect: [ :row | 
 		  | msgRcvrNode msgRcvrClass msgRcvr |
 		  msgRcvrNode := row node receiver.
 		  msgRcvr := row messageReceiver.
 
-		  msgRcvrClass := msgRcvr class. 
-		  resultType new
+		  msgRcvrClass := msgRcvr class.
+		  auto with
+			  bytecodeIndex: row bytecodeIndex;
+			  methodSelector: row methodSelector;
+			  receiverClass: row receiverClass;
+			  messageArguments: row node arguments;
+			  messageReceiver: msgRcvr;
+			  formattedMessageReceiver: (msgRcvrNode isVariable
+					   ifTrue: [ 
+						   msgRcvrNode variable name , ' ('
+						   ,
+							   (msgRcvrNode variable readInContext: row context) class
+								   asString , ')' ]
+					   ifFalse: [ 
+						   [ msgRcvr asString , ' (' , msgRcvrNode sourceCode , ')' ] 
+							   onErrorDo: [ "msgRcvr" msgRcvrNode sourceCode ] ]);
+			  messageReceiverClass: msgRcvrClass value;
+			  messageSelector: row node selector;
+			  endWith ]
+]
+
+{ #category : #'as yet unclassified' }
+SeekerTraceQueriesInterface >> forMessageSendsBak [
+
+	^ self baseQueryForMessageSends collect: [ :row :newType | 
+		  | msgRcvrNode msgRcvrClass msgRcvr |
+		  msgRcvrNode := row node receiver.
+		  msgRcvr := row messageReceiver.
+
+		  msgRcvrClass := msgRcvr class.
+		  newType
 			  bytecodeIndex: row bytecodeIndex;
 			  methodSelector: row methodSelector;
 			  receiverClass: row receiverClass;
@@ -406,18 +426,38 @@ SeekerTraceQueriesInterface >> forMessageSends [
 { #category : #'as yet unclassified' }
 SeekerTraceQueriesInterface >> forReceivedMessages [
 
-	| q table |
+	| q table auto |
+	auto := AutoType new.
 	table := tracer programStates.
+	q := Query
+		     from: table
+		     select: [ :state | state contextPC = state initialPC ]
+		     collect: [ :state | 
+			     auto with
+				     bytecodeIndex: state bytecodeIndex;
+				     methodSelector: state methodSelector;
+				     receiverClass: state receiverClass;
+				     arguments: state context arguments;
+				     endWith ].
+	^ q
+]
 
+{ #category : #'as yet unclassified' }
+SeekerTraceQueriesInterface >> forReceivedMessagesB [
+
+	| q table auto |
+	auto := AutoType new.
+	table := tracer programStates.
 	q := Query
 		     from: table
 		     select: [ :row | row contextPC = row initialPC ]
 		     collect: [ :row | 
-			     New with: { 
-					     (#bytecodeIndex -> row bytecodeIndex).
-					     (#methodSelector -> row methodSelector).
-					     (#receiverClass -> row receiverClass).
-					     (#arguments -> row context arguments) } ].
+			     auto newWith: [ :x | 
+				     x
+					     bytecodeIndex: row bytecodeIndex;
+					     methodSelector: row methodSelector;
+					     receiverClass: row receiverClass;
+					     arguments: row context arguments ] ].
 	^ q
 ]
 
