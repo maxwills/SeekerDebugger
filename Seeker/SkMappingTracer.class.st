@@ -36,6 +36,27 @@ SkMappingTracer >> autoSetupForTestForUnhandledException [
 ]
 
 { #category : #'as yet unclassified' }
+SkMappingTracer >> automapForCustomScenario: aContext withEndingCondition: aBlock [
+
+	| recordingInitialContext currentCompiledMethod |
+	"Only works if used the option: debug with Seeker""findContext is a SeekerFindContextInStackInterface object"
+	currentCompiledMethod := self slowCurrentContext compiledCode.
+
+	recordingInitialContext := aContext.
+	recordingInitialContext ifNil: [ 
+		self error: 'Could not detect the initial context for recording.'.
+		^ false ].
+	contextOfExecutedBytecodeOne := recordingInitialContext.
+	
+	userStartTraceTime := 1 asExecutedBytecodeTraceTime.
+	
+	pressumedEndCondition := aBlock.
+	self blockingDoAndUpdateSessionAfter: [ self recountExecutedBytecodes ].
+	isMapped := true.
+	^ true
+]
+
+{ #category : #'as yet unclassified' }
 SkMappingTracer >> automapForDoItScenario [
 
 	| recordingInitialContext testInitialContext endingContext endTracedInstructionPC endTraceTime findContext currentCompiledMethod |
@@ -69,7 +90,7 @@ SkMappingTracer >> automapForDoItScenario [
 		                         ifFalse: [ 
 		                         endTraceTime 
 			                         referencesTheLocalPastOrPresent: self ] ].
-	self doAndUpdateSessionAfter: [ self recountExecutedBytecodes ].
+	self blockingDoAndUpdateSessionAfter: [ self recountExecutedBytecodes ].
 	isMapped := true.
 	isMappedForDoIt := true.
 	^ true
@@ -78,7 +99,7 @@ SkMappingTracer >> automapForDoItScenario [
 { #category : #'as yet unclassified' }
 SkMappingTracer >> automapForSeekerMarkedSessionScenario [
 
-	| recordingInitialContext testInitialContext endingContext endTracedInstructionPC endTraceTime findContext currentCompiledMethod |
+	| recordingInitialContext testInitialContext endingContext findContext currentCompiledMethod |
 	"Only works if used the option: debug with Seeker""findContext is a SeekerFindContextInStackInterface object"
 	currentCompiledMethod := self slowCurrentContext compiledCode.
 	findContext := self findContextInStack.
@@ -102,7 +123,7 @@ SkMappingTracer >> automapForSeekerMarkedSessionScenario [
 	                         == SeekerSessionHelpers and: [ 
 		                         self currentContext selector
 		                         = #seekerSessionEndMarker ] ].
-	self doAndUpdateSessionAfter: [ 
+	self blockingDoAndUpdateSessionAfter: [ 
 		self timeTravelToTraceTime: userStartTraceTime ].
 	isMapped := true.
 	^ true
@@ -139,7 +160,8 @@ SkMappingTracer >> automapForTestCaseScenario [
 	                         endTraceTime 
 		                         referencesTheLocalPastOrPresent: self
 	                         "self currentContext = endingContext" ].
-	self doAndUpdateSessionAfter: [ self recountExecutedBytecodes ].
+	self blockingDoAndUpdateSessionAfter: [ 
+		self recountExecutedBytecodes ].
 	isMapped := true.
 	^ true
 ]
@@ -527,6 +549,40 @@ SkMappingTracer >> quickMap [
 	(self isTestCaseScenario ) ifTrue: [ ^self automapForTestCaseScenario".^self inform: 'Time Traveling enabled' "].
 ^ false "self inform: 'Could not enable Time Traveling automatically. The session needs a manual set up' ."
 	
+]
+
+{ #category : #'as yet unclassified' }
+SkMappingTracer >> recordFromHereWithExecutionEndingConditionOnState: aPredicateOfCurrentState [
+
+	| csi |
+	csi := self currentStateInterface.
+	self
+		automapForCustomScenario: self slowCurrentContext
+		withEndingCondition: [ aPredicateOfCurrentState value: csi ].
+	self inform: 'New execution parameters set.'
+]
+
+{ #category : #'as yet unclassified' }
+SkMappingTracer >> recordOnThisContext [
+
+	| csi endCondition initialContext endingContext endTracedInstructionPC endTraceTime |
+	initialContext := self slowCurrentContext.
+	endingContext := initialContext.
+	endTracedInstructionPC := endingContext tracedInstructionPC.
+	endTracedInstructionPC pc: endingContext endPC. "The last step is the endPC?"
+	endTraceTime := endTracedInstructionPC asTraceTimeReference.
+	pressumedEndCondition := [ "self traceTime @>="
+	                         self currentContext == initialContext
+		                         ifTrue: [ "self currentContext = endingContext" 
+			                         self currentContext willReturn ]
+		                         ifFalse: [ 
+		                         endTraceTime 
+			                         referencesTheLocalPastOrPresent: self ] ].
+	csi := self currentStateInterface.
+	self
+		automapForCustomScenario: self slowCurrentContext
+		withEndingCondition: pressumedEndCondition.
+	self inform: 'New execution parameters set.'
 ]
 
 { #category : #'as yet unclassified' }

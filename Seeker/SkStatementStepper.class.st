@@ -56,7 +56,10 @@ Class {
 		'previousContextStackDepth',
 		'rememberContextStackDepth',
 		'contextJumpCount',
-		'tracedContextCount'
+		'tracedContextCount',
+		'iteratingFlag',
+		'emergencyStopFlag',
+		'preventNextTimeRestoration'
 	],
 	#category : #'Seeker-Components'
 }
@@ -67,6 +70,17 @@ SkStatementStepper >> bytecodeIndex [
 	"total number of bytecode steps executed"
 
 	^ byteCountCounter
+]
+
+{ #category : #accessing }
+SkStatementStepper >> checkPreventNextTimeRestoration [
+
+	"Used to prevent restorting the live session when a query is manually stopped (Why? because it is useful to know where the execution is at the moment of the emergency stop"
+
+	| val |
+	val := preventNextTimeRestoration.
+	preventNextTimeRestoration := false.
+	^ val
 ]
 
 { #category : #'as yet unclassified' }
@@ -147,6 +161,12 @@ SkStatementStepper >> executionProgress [
 	^ (100.0 * byteCountCounter / maxExecutedBytecode) asFloat
 ]
 
+{ #category : #'updating - session' }
+SkStatementStepper >> forceSessionUpdate [
+
+	self debuggerUpdateCoordinator forceUpdate
+]
+
 { #category : #testing }
 SkStatementStepper >> hasSignalledUnhandledException [
 	"Returns true if the debugged execution has signalled an exception that has not been handled by any on:do: (i.e. the #defaultAction of the exception is about to be executed. This default action typically leads to opening a debugger on the process that signalled the exception)"
@@ -159,7 +179,9 @@ SkStatementStepper >> hasSignalledUnhandledException [
 SkStatementStepper >> initialize [
 
 	super initialize.
-
+	iteratingFlag := false.
+	emergencyStopFlag := false.
+	preventNextTimeRestoration := false.
 	currentTraceTimeReference := SkCurrentTraceTimeReference new tracer:
 		                             self.
 	contextJumpCount := 0.
@@ -312,6 +334,7 @@ SkStatementStepper >> restartAtBytecodeOne [
 	contextJumpCount := 0.
 	trace removeAll.
 	currentStepIndex := 0.
+	preventNextTimeRestoration := false.
 
 	tracedContextCount := 0.
 	stDebugger session restart: contextOfExecutedBytecodeOne.
@@ -350,6 +373,14 @@ SkStatementStepper >> safeTimeTravelToTraceTime: aTraceTime [
 			aTraceTime referencesTheLocalPastOrPresent: self ] ]
 ]
 
+{ #category : #'as yet unclassified' }
+SkStatementStepper >> setEmergencyStopFlag [
+
+	iteratingFlag ifTrue: [ 
+		emergencyStopFlag := true.
+		preventNextTimeRestoration := true ]
+]
+
 { #category : #initialization }
 SkStatementStepper >> setSelectedContextAsStartingPoint: aContext [
 	contextOfExecutedBytecodeOne:= aContext.
@@ -374,6 +405,15 @@ SkStatementStepper >> signalExceptionIfDebuggedExecutionIsFinished [
 	(self isExecutionFinished) ifTrue: [ 
 		DebuggedExecutionIsFinished signal.
 	].
+]
+
+{ #category : #'updating - session' }
+SkStatementStepper >> softUIUpdate [
+
+	| presenter |
+	presenter := self seekerResultsPresenter.
+	presenter ifNotNil: [ 
+		WorldState defer: [ presenter updateLabelOnly ] ]
 ]
 
 { #category : #accessing }
@@ -431,6 +471,11 @@ SkStatementStepper >> stepBytecode [
 	"Steps the debugger. No skipping. No recording. No updates (rememeber to force update after)"
 
 	| previousContext startingNode |
+	emergencyStopFlag ifTrue: [ 
+		emergencyStopFlag := false.
+		self inform: 'Seeker Emergency Stop'.
+		self updateUI.
+		^ false ].
 	(self isExecutionFinished or: [ self isRiskyStep ]) ifTrue: [ "self inform: 'Reached execution safe end point'" 
 		^ false ].
 	previousContext := currentContext.
@@ -444,6 +489,7 @@ SkStatementStepper >> stepBytecode [
 	self
 		doAstStepPostProcessWithPrevNode: startingNode
 		andPrevContext: previousContext.
+	byteCountCounter % 10000 = 0 ifTrue: [ self softUIUpdate ].
 	^ true
 ]
 
@@ -453,8 +499,10 @@ SkStatementStepper >> stepBytecodeToExecutionEnd [
 	"Steps the AST. No skipping. No recording. No Updates
 TODO: Add error management. There are two kind, one from the executed code, and the other is from the debugger code"
 
+	iteratingFlag := true.
+	[ 
 	[ false ] whileFalse: [ self stepBytecode ifFalse: [ ^ false ] ].
-	^ true
+	^ true ] ensure: [ iteratingFlag := false ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -467,8 +515,10 @@ TODO: Add error management. There are two kind, one from the executed code, and 
 		whileFalseAlt: [ self stepBytecode ifFalse: [ ^ false ] ]
 		lvl: 8."
 
+	iteratingFlag := true.
+	[ 
 	aBlock whileFalse: [ self stepBytecode ifFalse: [ ^ false ] ].
-	^ true
+	^ true ] ensure: [ iteratingFlag := false ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -481,6 +531,17 @@ SkStatementStepper >> stepBytecodeUntilStatementJump [
 	previousContext := self currentContext.
 	^self stepBytecodeUntilConditionIsTrue: [ 
 		self currentStatementNode ~= currentStatementNode or: [ previousContext ~= self currentContext ] ]
+]
+
+{ #category : #'as yet unclassified' }
+SkStatementStepper >> stepBytecodes: aNumber [
+
+	"supports negative numbers to travel backward"
+
+	self doAndUpdateSessionAfter: [ 
+		| targetBytecode |
+		targetBytecode := 1 max: byteCountCounter + aNumber.
+		self timeTravelToBytecodeIndex: targetBytecode ]
 ]
 
 { #category : #'debug - stepping' }
@@ -541,6 +602,7 @@ SkStatementStepper >> stepUntilConditionIsTrue: aBlock [
 	"I can't refactor the next code and I don't know why (whenver I do it, the debugger acts weird (and I can't automap)"
 
 	| conditionReached |
+	self error: 'this should not be used'.
 	conditionReached := false.
 	self doAndUpdateSessionAfter: [ 
 		| shouldStop |
@@ -551,6 +613,21 @@ SkStatementStepper >> stepUntilConditionIsTrue: aBlock [
 				ifFalse: [ shouldStop := self stepIntoNoUpdateGuard not ]
 				ifTrue: [ conditionReached := true ] ] ].
 	^ conditionReached
+]
+
+{ #category : #'as yet unclassified' }
+SkStatementStepper >> timeTravelToBytecodeIndex: aNumber [
+
+	self doAndUpdateSessionAfter: [ 
+		aNumber = byteCountCounter ifTrue: [ ^ self ].
+		aNumber > byteCountCounter
+			ifTrue: [ "no need to restart"
+				| targetTraceTime |
+				targetTraceTime := aNumber asExecutedBytecodeTraceTime.
+				self stepBytecodeUntilConditionIsTrue: [ 
+					self traceTime @= targetTraceTime ] ]
+			ifFalse: [ 
+			self timeTravelToTraceTime: aNumber asExecutedBytecodeTraceTime ] ]
 ]
 
 { #category : #'as yet unclassified' }

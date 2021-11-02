@@ -81,6 +81,13 @@ SeekerLiteCommands >> stCodeCommandsTree [
 				  SkAllSignallingExceptionsLC " }.
 			  #smallExport.
 			  'Queries for listing message sends' }.
+			 { 
+			  ' Messages - Object Centric'.
+			  { 
+				  SkAllMessageSendsToSelfLC .
+				  SkAllMessageSendsToObjectInVariableLC}.
+			  #objects.
+			  'Queries for listing messages sent to a specific object' }.
 		  { 
 			  'Instances Creations'.
 			  { 
@@ -96,7 +103,7 @@ SeekerLiteCommands >> stCodeCommandsTree [
 				  SkChangesOfObjectLC.
 				  SkChangesOfInstanceVariableLC }.
 			  #objects.
-			  'Queries for listing asignments on instance variables of specific a object' }.
+			  'Queries for listing asignments on instance variables of a specific object' }.
 		  { 
 			  'Assignments - General'.
 			  { 

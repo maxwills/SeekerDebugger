@@ -63,6 +63,7 @@ SeekerLiteCommand >> description [
 SeekerLiteCommand >> execute [
 
 	| logCommands |
+	[ 
 	queryTitle := self createQueryTitle.
 	logCommands := true.
 	time := Time millisecondClockValue.
@@ -80,7 +81,7 @@ SeekerLiteCommand >> execute [
 					do: [ :e | 
 						self seeker notifyCommandExecution: self subEvent: #failed.
 						self notifyError: e messageText ] ]
-			ifFalse: [ self executeCommand ] ]
+			ifFalse: [ self executeCommand ] ] ] fork
 ]
 
 { #category : #executing }

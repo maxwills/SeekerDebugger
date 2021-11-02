@@ -74,6 +74,17 @@ SeekerFindInterface >> allMessageSends [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerFindInterface >> allMessageSendsToOid: aNumber [
+
+	| query result |
+	query := tracer queries forMessageSends select: [ :state | 
+		         state messageReceiverOid = aNumber ].
+
+	result := query asTableForTimeTravel.
+	^ result
+]
+
+{ #category : #'as yet unclassified' }
 SeekerFindInterface >> allMessageSendsWithSelectedSelector [
 
 	^ self allMessageSendsWithSelector: tracer selectedSelector
@@ -185,10 +196,8 @@ SeekerFindInterface >> changesOfObject: anObject [
 	alias := tracer readAliasOf: anObject.
 
 	"then, get all the changes of that alias"
-	query := Query
-		         from: tracer queries forAssignmentsOfInstanceVariables
-		         select: [ :row | row receiverAlias = alias ]
-		         collect: #*.
+	query := tracer queries forAssignmentsOfInstanceVariables select: [ 
+		         :row | row receiverAlias = alias ].
 
 	^ query asTableForTimeTravel
 ]

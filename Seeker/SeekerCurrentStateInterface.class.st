@@ -353,11 +353,6 @@ SeekerCurrentStateInterface >> isMethodReturn [
 ]
 
 { #category : #testing }
-SeekerCurrentStateInterface >> isSeekerMarkerMethod [
-
-]
-
-{ #category : #testing }
 SeekerCurrentStateInterface >> isVariable [
 
 	^ self node isVariable
@@ -432,6 +427,12 @@ SeekerCurrentStateInterface >> messageReceiver [
 			  pointer <= 0 ifTrue: [ pointer := 1 ]. "I'm not sure these cases happen"
 			  pointer > self context size ifTrue: [ ^ nil ].
 			  self context at: pointer "Heuristics" ]
+]
+
+{ #category : #'as yet unclassified' }
+SeekerCurrentStateInterface >> messageReceiverOid [
+
+	^ self aliasOfObject: self messageReceiver
 ]
 
 { #category : #testing }

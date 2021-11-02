@@ -161,7 +161,7 @@ SeekerPerformInterface >> timeTravelToNode: aNode inContext: aContext [
 					 method is returned. Instead, we say that if the methodNode was selected, go to the beggining of the method" 
 			                   aContext tracedContextPC asTraceTimeReference ]
 		                   ifFalse: [ aNode asTraceTimeReference ].
-	tracer doAndUpdateSessionAfter: [ 
+	tracer blockingDoAndUpdateSessionAfter: [ 
 		self restartContext: aContext.
 		tracer safeStepToTraceTime: targetTraceTime ]
 ]

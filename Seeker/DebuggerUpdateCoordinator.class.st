@@ -22,15 +22,18 @@ DebuggerUpdateCoordinator >> coordinateUpdatesFor: aBlock [
 	preventUpdate := true.
 
 	aBlock ensure: [ 
-		oldFlagValue ifFalse: [ 
-			stDebugger session updateContextTo:
-				stDebugger interruptedProcess suspendedContext.
-			stDebugger debuggerActionModel updateTopContext.
-			stDebugger updateStep.
-			stDebugger setSessionHolderSubscriptions.
-			stDebugger triggerEvent: #stepInto.
-			stDebugger forceSessionUpdate ].
-		preventUpdate := oldFlagValue ]
+		oldFlagValue
+			ifFalse: [ 
+				WorldState defer: [ 
+					stDebugger session updateContextTo:
+						stDebugger interruptedProcess suspendedContext.
+					stDebugger debuggerActionModel updateTopContext.
+					stDebugger updateStep.
+					stDebugger setSessionHolderSubscriptions.
+					stDebugger triggerEvent: #stepInto.
+					stDebugger forceSessionUpdate.
+					preventUpdate := oldFlagValue ] ]
+			ifTrue: [ preventUpdate := oldFlagValue ] ]
 ]
 
 { #category : #initialization }

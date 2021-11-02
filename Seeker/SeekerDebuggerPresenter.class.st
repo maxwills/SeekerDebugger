@@ -66,6 +66,15 @@ SeekerDebuggerPresenter >> advanceDownHandler [
 	self seekerDebugger tracer perform advanceToNextStatement
 ]
 
+{ #category : #accessing }
+SeekerDebuggerPresenter >> blockingDoAndUpdateSessionAfter: aBlock [
+
+	"Updates the UI after executing the block. Forces UI Update, and returns after the UI cycle is completed"
+
+	debuggerUpdateCoordinator blockingDoAndUpdateSessionAfter: aBlock.
+
+]
+
 { #category : #'debugger extension' }
 SeekerDebuggerPresenter >> debuggerExtensionToolName [
 	^ 'Seeker'
@@ -91,7 +100,20 @@ SeekerDebuggerPresenter >> displayOrder [
 { #category : #accessing }
 SeekerDebuggerPresenter >> doAndUpdateSessionAfter: aBlock [
 
+	"Updates the UI after executing the block. Forces UI Update in a defered manner
+	Returns after executing the block, and before updating the UI.
+	See also: blockingDoAndUpdateSessionAfter:.
+	"
+
 	debuggerUpdateCoordinator coordinateUpdatesFor: aBlock
+]
+
+{ #category : #'event handling' }
+SeekerDebuggerPresenter >> emergencyStoptHandler [
+
+	"Called when pressing the icon in the toolbar"
+
+	self tracer setEmergencyStopFlag
 ]
 
 { #category : #'as yet unclassified' }
@@ -240,6 +262,11 @@ SeekerDebuggerPresenter >> initializeToolbar [
 				            label: 'Next Iteration';
 				            icon: (self application iconNamed: #smallUpdate);
 				            action: [ self nextIterationHandler ];
+				            yourself);
+		           add: (self newToolbarButton
+				            label: 'STOP';
+				            icon: (self application iconNamed: #stop);
+				            action: [ self emergencyStoptHandler ];
 				            yourself);
 		           "add: (self newToolbarButton
 				            label: 'Enable Time Travel';
@@ -417,7 +444,7 @@ SeekerDebuggerPresenter >> syncWithDebugSession [
 	tracer := self seekerDebugger tracer.
 	(tracer isMapped and: [ 
 		 self debuggerUpdateCoordinator preventingUpdates not ]) ifTrue: [ 
-		tracer doAndUpdateSessionAfter: [ 
+		tracer blockingDoAndUpdateSessionAfter: [ 
 			| context |
 			context := stDebugger interruptedContext.
 			tracer currentNode
@@ -466,6 +493,15 @@ SeekerDebuggerPresenter >> updateExpressionValueDisplayed [
 ]
 
 { #category : #'accessing model' }
+SeekerDebuggerPresenter >> updateLabelOnly [
+
+	currentStepLabel label:
+		'ExecutedBytecode: ' , seekerDebugger tracer bytecodeIndex asString
+		, ' (' , (self seekerDebugger tracer executionProgress 
+			 printShowingDecimalPlaces: 2) , '% of known execution)'
+]
+
+{ #category : #'accessing model' }
 SeekerDebuggerPresenter >> updatePresenter [
 
 	"Called automatically when the debugger updates its state after stepping""Your widgets should be updated here."
@@ -477,10 +513,7 @@ SeekerDebuggerPresenter >> updatePresenter [
 			put:
 			(WorkspaceVariable key: #seeker value: self seekerDebugger tracer).
 
-		currentStepLabel label: 'ExecutedBytecode: '
-			, seekerDebugger tracer bytecodeIndex asString , ' ('
-			, (self seekerDebugger tracer executionProgress 
-					 printShowingDecimalPlaces: 2) , '% of known execution)'.
+		self updateLabelOnly.
 		"	self updateEvaluatorCode."
 		"		self updateExpressionValueDisplayed."
 

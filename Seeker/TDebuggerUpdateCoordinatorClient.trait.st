@@ -7,6 +7,16 @@ Trait {
 }
 
 { #category : #accessing }
+TDebuggerUpdateCoordinatorClient >> blockingDoAndUpdateSessionAfter: aBlock [
+
+	"Updates the UI after executing the block. Forces UI Update, and returns after the UI cycle is completed.
+	See also: doAndUpdateSessionAfter: "
+
+	debuggerUpdateCoordinator coordinateUpdatesFor: aBlock.
+	WorldMorph doOneCycle
+]
+
+{ #category : #accessing }
 TDebuggerUpdateCoordinatorClient >> debuggerUpdateCoordinator [
 
 	^ debuggerUpdateCoordinator
@@ -20,6 +30,11 @@ TDebuggerUpdateCoordinatorClient >> debuggerUpdateCoordinator: anObject [
 
 { #category : #accessing }
 TDebuggerUpdateCoordinatorClient >> doAndUpdateSessionAfter: aBlock [
+
+	"Updates the UI after executing the block. Forces UI Update in a defered manner
+	Returns after executing the block, and before updating the UI.
+	See also: blockingDoAndUpdateSessionAfter:.
+	"
 
 	debuggerUpdateCoordinator coordinateUpdatesFor: aBlock
 ]

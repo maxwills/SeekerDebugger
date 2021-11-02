@@ -1,5 +1,35 @@
 # SeekerDebugger
 
+## CUSTOM-MODS BRANCH INFO
+This branch contains untested changes such as Queries (from commands) executed in a forked proces.
+This was done to be able to update the UI, so the app doesn't seem blocked. However, it might have introduced a bug.
+Note to self: fix the softUIupdate code so it is only run when it is called from a different thread than the one from the UI (or consider using monitors or something)
+(Sympthom: the StDebugger code presenter rendered a red X. It's the first time I've seen it with seeker, so the most likely reason is about this threading and UI change)
+
+### This version new functionalities
+
+- Command queries not executed in the UI thread (A status bar updates during their execution). However, the waiting cursor is now missing.
+- New scripting functions:  
+```Smalltalk
+"setting custom execution boundaries"
+seeker recordFromHereWithExecutionEndingConditionOnState: [:state| state bytecodeIndex = 2   ].
+seeker recordOnThisContext.
+
+"stepping to a marker"
+seeker stepToNextMarker.
+"other stepping"
+seeker timeTravelToBytecodeIndex:  1001.
+seeker stepBytecodes: 100.
+
+
+"Not new, but useful to remember"
+seeker timeTravelToTraceTime: 5 asExecutedBytecodeTraceTime 
+
+```
+
+
+## Baseline
+
 Seeker Prototype Queryable Time-Traveling Debugger.
 
 *(Beware that the SeekerInstallHelpers class>>install call will overwrite parts of the StDebugger's code of your image)*
@@ -8,10 +38,9 @@ Do this:
 ```Smalltalk
 Metacello new
     baseline: 'Seeker';
-    repository: 'github://maxwills/SeekerDebugger:main';
+    repository: 'github://maxwills/SeekerDebugger:custom-mods';
+    onWarning: [ :ex | ex resume ];
     load.
-    
-#SeekerInstallHelpers asClass install.
 ```
 
 ### IMPORTANT
