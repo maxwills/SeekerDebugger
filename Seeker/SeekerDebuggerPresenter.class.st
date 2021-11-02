@@ -431,7 +431,7 @@ SeekerDebuggerPresenter >> syncWithDebugSession [
 	tracer := self seekerDebugger tracer.
 	(tracer isMapped and: [ 
 		 self debuggerUpdateCoordinator preventingUpdates not ]) ifTrue: [ 
-		tracer doAndUpdateSessionAfter: [ 
+		tracer blockingDoAndUpdateSessionAfter: [ 
 			| context |
 			context := stDebugger interruptedContext.
 			tracer currentNode
