@@ -62,6 +62,7 @@ SeekerDebugger class >> newFor: aStDebugger [
 	stepper stDebugger: aStDebugger.
 	stepper interruptedProcess: aStDebugger interruptedProcess. "aStDebugger session interruptedProcess"
 	stepper debuggerUpdateCoordinator: updateCoordinator.
+	updateCoordinator tracer: stepper.
 
 	debugger := SeekerDebugger new.
 	debugger tracer: stepper.

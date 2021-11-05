@@ -7,7 +7,8 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'stDebugger',
-		'preventUpdate'
+		'preventUpdate',
+		'tracer'
 	],
 	#category : #'Seeker-Helpers'
 }
@@ -15,12 +16,20 @@ Class {
 { #category : #accessing }
 DebuggerUpdateCoordinator >> coordinateUpdatesFor: aBlock [
 
-	| oldFlagValue caughtException |
+	| oldFlagValue caughtException inspectorsAndOids |
 	caughtException := nil.
-	preventUpdate ifFalse: [ stDebugger removeSessionHolderSubscriptions ].
+	preventUpdate ifFalse: [ 
+		stDebugger removeSessionHolderSubscriptions.
+		inspectorsAndOids := OrderedCollection new. "This ui code should go somewhere else?"
+		StInspector allInstances do: [ :each | 
+			| oid |
+			oid := tracer oidOf: each model inspectedObject.
+			oid ifNotNil: [ 
+				inspectorsAndOids add: { 
+						each.
+						oid } ] ] ].
 	oldFlagValue := preventUpdate.
 	preventUpdate := true.
-
 	aBlock ensure: [ 
 		oldFlagValue
 			ifFalse: [ 
@@ -32,6 +41,17 @@ DebuggerUpdateCoordinator >> coordinateUpdatesFor: aBlock [
 					stDebugger setSessionHolderSubscriptions.
 					stDebugger triggerEvent: #stepInto.
 					stDebugger forceSessionUpdate.
+					"Refresh inspectors"
+					inspectorsAndOids ifNotNil: [ 
+						inspectorsAndOids do: [ :each | 
+							| inspector oid |
+							inspector := each at: 1.
+							oid := each at: 2.
+							inspector
+								model: (StInspectorModel on: (tracer getObjectByOid: oid));
+								updateList;
+								updateTitle ] ].
+
 					preventUpdate := oldFlagValue ] ]
 			ifTrue: [ preventUpdate := oldFlagValue ] ]
 ]
@@ -58,4 +78,16 @@ DebuggerUpdateCoordinator >> stDebugger [
 DebuggerUpdateCoordinator >> stDebugger: anObject [
 
 	stDebugger := anObject
+]
+
+{ #category : #accessing }
+DebuggerUpdateCoordinator >> tracer [
+
+	^ tracer
+]
+
+{ #category : #accessing }
+DebuggerUpdateCoordinator >> tracer: aTracer [
+
+	tracer := aTracer
 ]

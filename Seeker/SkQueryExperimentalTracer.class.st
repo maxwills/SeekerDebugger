@@ -148,6 +148,14 @@ SkQueryExperimentalTracer >> findContextInStack [
 	^ findContextInterface
 ]
 
+{ #category : #'as yet unclassified' }
+SkQueryExperimentalTracer >> getObjectByOid: aNumber [
+
+	aliasesDictionary associationsDo: [ :assoc | 
+		assoc value == aNumber ifTrue: [ ^ assoc key ] ].
+	^ nil
+]
+
 { #category : #initialization }
 SkQueryExperimentalTracer >> initialize [
 
@@ -188,6 +196,12 @@ SkQueryExperimentalTracer >> objectTidIsLocal: aNumber [
 	"Beware that the execution corresponds only to the already executed part."
 
 	^ (nonLocalObjects includes: aNumber) not
+]
+
+{ #category : #'as yet unclassified' }
+SkQueryExperimentalTracer >> oidOf: anObject [
+
+	^ aliasesDictionary at: anObject ifAbsent: nil
 ]
 
 { #category : #'as yet unclassified' }

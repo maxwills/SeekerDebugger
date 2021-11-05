@@ -88,8 +88,18 @@ Object >> seekAllMessagesSentToMe [
 	| seeker |
 	seeker := self seekMe.
 	seeker ifNotNil: [ 
-		^ (seeker find allMessageSendsToOid: self seekMyAlias)
-			  asSeekerResultsCollection forMessageSends ].
+		| oid inspectors res newRef |
+		oid := self seekMyAlias.
+		inspectors := self seekMyInspectors.
+		res := (seeker find allMessageSendsToOid: oid)
+			       asSeekerResultsCollection forMessageSends.
+		"newRef := seeker getObjectByOid: oid.
+		inspectors do: [ :each | 
+			each
+				model: (StInspectorModel on: newRef);
+				updateList;
+				updateTitle ]."
+		^ res ].
 	^ nil
 ]
 
@@ -99,8 +109,18 @@ Object >> seekAllMyChanges [
 	| seeker |
 	seeker := self seekMe.
 	seeker ifNotNil: [ 
-		^ (seeker find changesOfObject: self) asSeekerResultsCollection
-			  forAssignmentsOfInstanceVariables ].
+		| oid inspectors res newRef |
+		oid := self seekMyAlias.
+		inspectors := self seekMyInspectors.
+		res := (seeker find changesOfObject: self) asSeekerResultsCollection
+			       forAssignmentsOfInstanceVariables.
+		"newRef := seeker getObjectByOid: oid.
+		inspectors do: [ :each | 
+			each
+				model: (StInspectorModel on: newRef);
+				updateList; updateTitle]."
+		^ res ].
+
 	^ nil
 ]
 
@@ -153,6 +173,13 @@ Object >> seekMyAlias [
 			alias := s tracer readAliasOf: self.
 			alias ifNotNil: [ ^ alias ] ] ].
 	^ nil
+]
+
+{ #category : #'*Seeker' }
+Object >> seekMyInspectors [
+
+	^ StInspector allInstances select: [ :insp | 
+		  insp model inspectedObject == self ]
 ]
 
 { #category : #'*Seeker' }
