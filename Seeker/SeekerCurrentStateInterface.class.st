@@ -420,7 +420,10 @@ SeekerCurrentStateInterface >> messageReceiver [
 "
 
 	^ self node isInlined
-		  ifTrue: [ self context top ]
+		  ifTrue: [ 
+			  self context stackPtr = 0
+				  ifTrue: [ nil "emptyStack" ]
+				  ifFalse: [ self context top ] ]
 		  ifFalse: [ 
 			  | pointer |
 			  pointer := self context stackPtr - self node numArgs. "Heuristics"
