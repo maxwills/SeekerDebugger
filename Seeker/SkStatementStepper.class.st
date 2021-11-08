@@ -410,10 +410,11 @@ SkStatementStepper >> signalExceptionIfDebuggedExecutionIsFinished [
 { #category : #'updating - session' }
 SkStatementStepper >> softUIUpdate [
 
+	"updates values on specific elements of the UI (i.e. wihout reloading completely the StDebugger UI from the session"
+
 	| presenter |
 	presenter := self seekerResultsPresenter.
-	presenter ifNotNil: [ 
-		WorldState defer: [ presenter updateLabelOnly ] ]
+	presenter ifNotNil: [ self safeInvoke: [ presenter updateLabelOnly ] ]
 ]
 
 { #category : #accessing }

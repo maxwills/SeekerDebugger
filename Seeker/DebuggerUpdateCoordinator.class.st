@@ -33,7 +33,7 @@ DebuggerUpdateCoordinator >> coordinateUpdatesFor: aBlock [
 	aBlock ensure: [ 
 		oldFlagValue
 			ifFalse: [ 
-				WorldState defer: [ 
+				self safeInvoke: [ 
 					stDebugger session updateContextTo:
 						stDebugger interruptedProcess suspendedContext.
 					stDebugger debuggerActionModel updateTopContext.
@@ -49,8 +49,8 @@ DebuggerUpdateCoordinator >> coordinateUpdatesFor: aBlock [
 							oid := each at: 2.
 							inspector
 								model: (StInspectorModel on: (tracer getObjectByOid: oid));
-								updateList;
-								updateTitle ] ].
+								updateList.
+							inspector window title: inspector windowTitle "Manually updating the title. The only way I could make it work" ] ].
 
 					preventUpdate := oldFlagValue ] ]
 			ifTrue: [ preventUpdate := oldFlagValue ] ]
@@ -66,6 +66,14 @@ DebuggerUpdateCoordinator >> initialize [
 DebuggerUpdateCoordinator >> preventingUpdates [
 
 	^ preventUpdate
+]
+
+{ #category : #'as yet unclassified' }
+DebuggerUpdateCoordinator >> safeInvoke: aBlock [
+
+	UIManager default uiProcess == Processor activeProcess
+		ifTrue: [ aBlock value ]
+		ifFalse: [ UIManager default defer: aBlock ]
 ]
 
 { #category : #accessing }

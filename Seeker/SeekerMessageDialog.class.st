@@ -28,6 +28,15 @@ SeekerMessageDialog class >> showDialog: text withTitle: title [
 	"dialog position: 25 @ 25"
 ]
 
+{ #category : #'as yet unclassified' }
+SeekerMessageDialog class >> showModalDialog: text withTitle: title [
+
+	(StPharoApplication current newInform
+		 label: text;
+		 title: title;
+		 yourself) openModalWithSpec
+]
+
 { #category : #accessing }
 SeekerMessageDialog >> entryText [
 	"Answer the value of entryText"

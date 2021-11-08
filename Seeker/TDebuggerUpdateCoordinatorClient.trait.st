@@ -12,8 +12,10 @@ TDebuggerUpdateCoordinatorClient >> blockingDoAndUpdateSessionAfter: aBlock [
 	"Updates the UI after executing the block. Forces UI Update, and returns after the UI cycle is completed.
 	See also: doAndUpdateSessionAfter: "
 
+	"I am not sure of the portability of this class"
+
 	debuggerUpdateCoordinator coordinateUpdatesFor: aBlock.
-	WorldMorph doOneCycle
+	UIManager default currentWorld doOneCycleNow
 ]
 
 { #category : #accessing }
@@ -37,4 +39,10 @@ TDebuggerUpdateCoordinatorClient >> doAndUpdateSessionAfter: aBlock [
 	"
 
 	debuggerUpdateCoordinator coordinateUpdatesFor: aBlock
+]
+
+{ #category : #'as yet unclassified' }
+TDebuggerUpdateCoordinatorClient >> safeInvoke: aBlock [
+
+	debuggerUpdateCoordinator safeInvoke: aBlock
 ]
