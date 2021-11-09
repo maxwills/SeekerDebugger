@@ -1,6 +1,6 @@
 Class {
 	#name : #SkProgramStates,
-	#superclass : #SkIterableDataTableBase,
+	#superclass : #SkIterableDataSource,
 	#instVars : [
 		'rowReificationBlock',
 		'tracer',
@@ -10,7 +10,7 @@ Class {
 		'protectedColumns',
 		'csi'
 	],
-	#category : #'Seeker-QueryData'
+	#category : #'Seeker-Query'
 }
 
 { #category : #'instance creation' }

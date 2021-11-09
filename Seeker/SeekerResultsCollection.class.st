@@ -11,7 +11,7 @@ Class {
 		'title',
 		'timeToRun'
 	],
-	#category : #'Seeker-QueryData'
+	#category : #'Seeker-UI'
 }
 
 { #category : #'instance creation' }

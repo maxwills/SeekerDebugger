@@ -9,7 +9,7 @@ The idea so far is that this trace should contain no references or data at all (
 Class {
 	#name : #SkTrace,
 	#superclass : #OrderedCollection,
-	#category : #'Seeker-Components'
+	#category : #'Seeker-Deprecated'
 }
 
 { #category : #converting }

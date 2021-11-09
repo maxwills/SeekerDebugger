@@ -61,7 +61,7 @@ Class {
 		'emergencyStopFlag',
 		'preventNextTimeRestoration'
 	],
-	#category : #'Seeker-Components'
+	#category : #'Seeker-Tracer'
 }
 
 { #category : #mapping }

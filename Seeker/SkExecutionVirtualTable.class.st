@@ -1,6 +1,6 @@
 Class {
 	#name : #SkExecutionVirtualTable,
-	#superclass : #SkIterableDataTableBase,
+	#superclass : #SkIterableDataSource,
 	#instVars : [
 		'rowReificationBlock',
 		'tracer',
@@ -9,7 +9,7 @@ Class {
 		'excludedFields',
 		'protectedColumns'
 	],
-	#category : #'Seeker-QueryData'
+	#category : #'Seeker-Experimental'
 }
 
 { #category : #'instance creation' }

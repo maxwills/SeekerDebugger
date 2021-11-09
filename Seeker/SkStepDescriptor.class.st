@@ -11,7 +11,7 @@ Class {
 		'astSteps',
 		'isReturning'
 	],
-	#category : #'Seeker-Components'
+	#category : #'Seeker-Deprecated'
 }
 
 { #category : #'as yet unclassified' }

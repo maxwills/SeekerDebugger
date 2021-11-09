@@ -15,7 +15,7 @@ Class {
 		'storedNonLocalChangesDictionary',
 		'shouldAlwaysRunToEnd'
 	],
-	#category : #'Seeker-Components'
+	#category : #'Seeker-Tracer'
 }
 
 { #category : #adding }

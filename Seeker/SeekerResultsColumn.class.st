@@ -8,7 +8,7 @@ Class {
 		'expandable',
 		'width'
 	],
-	#category : #'Seeker-QueryData'
+	#category : #'Seeker-UI'
 }
 
 { #category : #'as yet unclassified' }

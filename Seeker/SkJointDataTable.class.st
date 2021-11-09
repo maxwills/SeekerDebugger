@@ -4,12 +4,12 @@ The reason for the limitation is that the table traversing simulation for the ex
 "
 Class {
 	#name : #SkJointDataTable,
-	#superclass : #SkIterableDataTableBase,
+	#superclass : #SkIterableDataSource,
 	#instVars : [
 		'leftTable',
 		'rightTable'
 	],
-	#category : #'Seeker-QueryData'
+	#category : #'Seeker-Experimental'
 }
 
 { #category : #'as yet unclassified' }

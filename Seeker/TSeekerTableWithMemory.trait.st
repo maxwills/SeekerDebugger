@@ -4,7 +4,7 @@ Trait {
 		'privateTableMemoryPreviousCallRow',
 		'privateTableMemoryPreviousCallPrevious'
 	],
-	#category : #'Seeker-QueryData'
+	#category : #'Seeker-Experimental'
 }
 
 { #category : #'as yet unclassified' }

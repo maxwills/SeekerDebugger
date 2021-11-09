@@ -10,7 +10,7 @@ Class {
 		'isMappedForDoIt',
 		'doItContext'
 	],
-	#category : #'Seeker-Components'
+	#category : #'Seeker-Tracer'
 }
 
 { #category : #'as yet unclassified' }

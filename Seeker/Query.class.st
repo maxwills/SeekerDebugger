@@ -32,7 +32,7 @@ Queries experessions are compatible with AnonymousTypes. Providing freedom to ex
 "
 Class {
 	#name : #Query,
-	#superclass : #SkIterableDataTableBase,
+	#superclass : #SkIterableDataSource,
 	#instVars : [
 		'fromDataSource',
 		'resultBuffer',
@@ -50,7 +50,7 @@ Class {
 		'alwaysMatch',
 		'queryHistory'
 	],
-	#category : #'Seeker-QueryData'
+	#category : #'Seeker-Query'
 }
 
 { #category : #adding }
@@ -691,17 +691,6 @@ Query >> resetTableTraversing [
 
 { #category : #navigating }
 Query >> resolve [
-
-	collectionBlock argumentCount = 2 ifTrue: [ 
-		| newTypeScope newWrappedCollect originalCollectionBlock |
-		originalCollectionBlock := collectionBlock.
-		newTypeScope := { AnonymousType }.
-		newWrappedCollect := [ :state | 
-		                     newTypeScope newWith: [ :item | 
-			                     originalCollectionBlock
-				                     value: state
-				                     value: item ] ].
-		collectionBlock := newWrappedCollect ].
 
 	customPreparationBlock value.
 	self optimizeRowAcquisitionForFields: self getRelevantFields.

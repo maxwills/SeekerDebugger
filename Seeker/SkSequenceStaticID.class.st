@@ -11,7 +11,7 @@ Class {
 		'belongsToBlock',
 		'ownerBlockLabel'
 	],
-	#category : #'Seeker-Components'
+	#category : #'Seeker-Deprecated'
 }
 
 { #category : #'as yet unclassified' }
