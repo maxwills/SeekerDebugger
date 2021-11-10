@@ -71,7 +71,7 @@ Query class >> alwaysMatch [
 { #category : #'instance creation' }
 Query class >> from: aDataSource [
 
-	"Creates a query that can be issued over aDataSource. aDataSource is an object whose class inherits from SkIterableDataTableBase"
+	"Creates a query that can be issued over aDataSource. aDataSource is an object whose class inherits from SkIterableDataSource"
 
 	^ self
 		  from: aDataSource
@@ -143,40 +143,6 @@ Query class >> identityProjection [
 
 	identityProjection ifNil: [ identityProjection := [ :anArg | anArg ] ].
 	^ identityProjection
-]
-
-{ #category : #accessing }
-Query class >> isAlwaysMatchPredicate: aBlock [
-
-	| node |
-	node := aBlock compiledBlock ast.
-	^ (node isBlock and: [ 
-		   node arguments size = 1 and: [ node body statements isNotEmpty ] ])
-		  ifFalse: [ false ]
-		  ifTrue: [ 
-			  | lastStatementNode |
-			  lastStatementNode := node body statements last.
-			  lastStatementNode isLiteralNode
-				  ifFalse: [ false ]
-				  ifTrue: [ lastStatementNode value ] ]
-]
-
-{ #category : #testing }
-Query class >> isIdentityProjection: aBlock [
-
-	| node |
-	node := aBlock compiledBlock ast.
-	^ (node isBlock and: [ 
-		   node arguments size = 1 and: [ node body statements size = 1 ] ])
-		  ifFalse: [ false ]
-		  ifTrue: [ 
-			  | firstStatementNode |
-			  firstStatementNode := node body statements first.
-			  firstStatementNode isVariable
-				  ifFalse: [ false ]
-				  ifTrue: [ 
-				  node arguments first variable
-				  = firstStatementNode variable ] ]
 ]
 
 { #category : #adding }
@@ -301,7 +267,7 @@ Query >> asTableForTimeTravel [
 	Otherwise, prefer to manually add the executedBytecode field and use #asTable instead 
 	"
 
-	| tracer makeItForTimeTravel |
+	| tracer |
 	tracer := self findTracer.
 
 	operationType := #asTable.
@@ -319,36 +285,13 @@ Query >> collect: aBlock [
 
 	"A lazy version of collect: of Pharo collections, applicable to queries"
 
-	| q composedProjection selfisIdentity blockIsIdentity |
-	selfisIdentity := self class isIdentityProjection: selectionBlock.
-	blockIsIdentity := self class isIdentityProjection: aBlock.
-
-	"the following is a very bad solution. It mixes behaviors. if collection with two arguments are detected, there is no composition"
-	composedProjection := [ true ] switchCase: { 
-			                      ([ selfisIdentity and: blockIsIdentity ]
-			                       -> [ collectionBlock ]).
-			                      ([ selfisIdentity and: blockIsIdentity not ]
-			                       -> [ aBlock ]).
-			                      ([ selfisIdentity not and: blockIsIdentity ]
-			                       -> [ collectionBlock ]).
-			                      ([ 
-			                       selfisIdentity not and: blockIsIdentity not ]
-			                       -> [ 
-				                       aBlock argumentCount = 2
-					                       ifTrue: [ aBlock ]
-					                       ifFalse: [ 
-						                       collectionBlock argumentCount = 2
-							                       ifTrue: [ collectionBlock ]
-							                       ifFalse: [ 
-							                       [ :anArg1 | 
-							                       aBlock cull:
-								                       (collectionBlock cull: anArg1) ] ] ] ]) }.
-	q := self class
-		     from: self fromDataSource
-		     select: selectionBlock
-		     collect: composedProjection.
-
-	^ q
+	^ self class
+		  from: self fromDataSource
+		  select: selectionBlock
+		  collect:
+		  (BlockComposer
+			   projectionCompositionOf: collectionBlock
+			   and: aBlock)
 ]
 
 { #category : #enumerating }
@@ -424,7 +367,7 @@ Query >> currentRow [
 
 	"Part of the iterable data set interface. Used for queries nesting. returns the rowgetter result"
 
-	^ collectionBlock cull: fromDataSource currentRow
+	^ collectionBlock value: fromDataSource currentRow
 ]
 
 { #category : #accessing }
@@ -457,37 +400,8 @@ Query >> disableOptimization: anObject [
 { #category : #enumerating }
 Query >> do: aBlock [
 
-	"Performs aBlock on the underlying condition matching rows. To simulate that, the onQueryRowMatch mechanism is used."
-
-	| originalOnQueryRowMatch |
-	originalOnQueryRowMatch := onQueryRowMatch. "we don't perform the original onQueryRowMatch because this is not a resolve situation"
-	"Ablock is a method that takes orgument (the iteration row). Hoever, OnQueryRow match is a block that receives no arguments. (might change this in the future)"
-	onQueryRowMatch := [ aBlock value: self currentRow ].
-	"The idea here is to simulate that we will iterate over the datasources filtered items. So aBlock will only be executed for the items that matchnthe where clause"
-	customPreparationBlock value. "Beware here"
-	[ fromDataSource do: [ :row | self doQueryOnRow: row ] ] ensure: [ 
-		onQueryRowMatch := originalOnQueryRowMatch ]
-]
-
-{ #category : #'as yet unclassified' }
-Query >> doQueryOnRow: aRow [
-
-	"performs the query in the specified row"
-
-	(selectionBlock value: aRow) ifTrue: onQueryRowMatch
-]
-
-{ #category : #'as yet unclassified' }
-Query >> doQueryRow [
-
-	"performs the query in the current row of the input"
-
-	selectionBlock numArgs = 0
-		ifTrue: [ selectionBlock value ifTrue: onQueryRowMatch ]
-		ifFalse: [ 
-			| row |
-			row := self currentDataSourceRow.
-			(selectionBlock value: row) ifTrue: onQueryRowMatch ]
+	fromDataSource do: [ :row | 
+		(selectionBlock value: row) ifTrue: [ aBlock value: self currentRow ] ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -593,13 +507,7 @@ Query >> isCurrentRowAMatch [
 
 	"returns true if the current row matches the query predicate without triggering the onQueryRowMatch handler"
 
-	selectionBlock numArgs = 0
-		ifTrue: [ selectionBlock value ifTrue: [ ^ true ] ]
-		ifFalse: [ 
-			| row |
-			row := self currentDataSourceRow.
-			(selectionBlock value: row) ifTrue: [ ^ true ] ].
-	^ false
+	^ selectionBlock value: self currentDataSourceRow
 ]
 
 { #category : #'as yet unclassified' }
@@ -607,11 +515,7 @@ Query >> isRowAMatch: aRow [
 
 	"returns true if the given row matches the query predicate without triggering the onQueryRowMatch handler"
 
-	selectionBlock numArgs = 0
-		ifTrue: [ selectionBlock value ifTrue: [ ^ true ] ]
-		ifFalse: [ 
-			(selectionBlock value: aRow) ifTrue: [ ^ true ] ].
-	^ false
+	^ selectionBlock value: aRow
 ]
 
 { #category : #navigating }
@@ -718,26 +622,11 @@ Query >> select: aBlock [
 
 	"Creates a new query with a composition of row matching condition"
 
-	| q composedWhereBlock selfTrue aBlockTrue |
-	selfTrue := self class isAlwaysMatchPredicate: selectionBlock.
-	aBlockTrue := self class isAlwaysMatchPredicate: aBlock.
-	composedWhereBlock := [ true ] switchCase: { 
-			                      ([ selfTrue and: aBlockTrue ]
-			                       -> [ selectionBlock ]).
-			                      ([ selfTrue and: aBlockTrue not ]
-			                       -> [ aBlock ]).
-			                      ([ selfTrue not and: aBlockTrue ]
-			                       -> [ selectionBlock ]).
-			                      ([ selfTrue not and: aBlockTrue not ] -> [ 
-			                       [ :anArg1 | 
-			                       (selectionBlock value: anArg1) and: [ 
-				                       aBlock value: anArg1 ] ] ]) }.
-	q := self class
-		     from: self fromDataSource
-		     select: composedWhereBlock
-		     collect: collectionBlock.
-
-	^ q
+	^ self class
+		  from: fromDataSource
+		  select:
+		  (BlockComposer selectionCompositionOf: selectionBlock and: aBlock)
+		  collect: collectionBlock
 ]
 
 { #category : #enumerating }

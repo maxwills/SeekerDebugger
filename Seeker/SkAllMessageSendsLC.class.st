@@ -16,15 +16,9 @@ SkAllMessageSendsLC >> description [
 SkAllMessageSendsLC >> executeCommand [
 
 	| res |
-	res := self tracer find allMessageSends asSeekerResultsCollection forMessageSends.
-	
+	res := self tracer find allMessageSends asSeekerResultsCollection
+		       forMessageSends.
 	self showResult: res
-	"	self showResult:
-		( cullFieldsWithMapping: { 
-				 (#bytecodeIndex -> #ebc).
-				 (#messageSelector -> #sel).
-				 (#messageReceiverClass -> #class).
-				 (#messageArguments -> #args) } asDictionary)"
 ]
 
 { #category : #accessing }

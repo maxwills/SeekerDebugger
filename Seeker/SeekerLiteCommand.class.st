@@ -62,26 +62,10 @@ SeekerLiteCommand >> description [
 { #category : #executing }
 SeekerLiteCommand >> execute [
 
-	| logCommands |
-	[ 
 	queryTitle := self createQueryTitle.
-	logCommands := true.
 	time := Time millisecondClockValue.
-	self pushesNavigation ifTrue: [ 
-		self seeker tracer pushNavigationHistory ].
-	UIManager default showWaitCursorWhile: [ 
-		logCommands
-			ifTrue: [ 
-				[ 
-				self seeker notifyCommandExecution: self subEvent: #clicked.
-				time := Time millisecondClockValue.
-				self executeCommand.
-				self seeker notifyCommandExecution: self subEvent: #done ]
-					on: Exception
-					do: [ :e | 
-						self seeker notifyCommandExecution: self subEvent: #failed.
-						self notifyError: e messageText ] ]
-			ifFalse: [ self executeCommand ] ] ] fork
+
+	UIManager default showWaitCursorWhile: [ self executeCommand ]
 ]
 
 { #category : #executing }

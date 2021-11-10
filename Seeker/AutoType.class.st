@@ -16,7 +16,7 @@ Class {
 	#instVars : [
 		'type'
 	],
-	#category : #'Seeker-QueryData'
+	#category : #'Seeker-Data'
 }
 
 { #category : #accessing }

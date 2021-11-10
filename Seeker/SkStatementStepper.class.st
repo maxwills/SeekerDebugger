@@ -490,7 +490,7 @@ SkStatementStepper >> stepBytecode [
 	self
 		doAstStepPostProcessWithPrevNode: startingNode
 		andPrevContext: previousContext.
-	byteCountCounter % 10000 = 0 ifTrue: [ self softUIUpdate ].
+	"byteCountCounter % 10000 = 0 ifTrue: [ self softUIUpdate ]."
 	^ true
 ]
 

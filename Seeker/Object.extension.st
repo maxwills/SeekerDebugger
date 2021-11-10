@@ -55,6 +55,12 @@ Object >> asScopedObjectDo: aBlock [
 ]
 
 { #category : #'*Seeker' }
+Object >> asyncSend [
+
+	^ TaskBuilder newForReceiver: self
+]
+
+{ #category : #'*Seeker' }
 Object class >> atSeekerAuxStorage1 [
 
 	^ SeekerGlobals instance auxiliaryTempStorage1

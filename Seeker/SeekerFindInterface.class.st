@@ -68,7 +68,6 @@ SeekerFindInterface >> allMessageSends [
 
 	| query result |
 	query := tracer queries forMessageSends.
-
 	result := query asTableForTimeTravel.
 	^ result
 ]

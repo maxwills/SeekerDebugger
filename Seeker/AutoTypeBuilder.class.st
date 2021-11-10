@@ -7,7 +7,7 @@ Class {
 		'assignments',
 		'autoType'
 	],
-	#category : #'Seeker-QueryData'
+	#category : #'Seeker-Data'
 }
 
 { #category : #'instance creation' }

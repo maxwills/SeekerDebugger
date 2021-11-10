@@ -15,6 +15,12 @@ QuerySolver class >> newForQuery: aQuery [
 		  yourself
 ]
 
+{ #category : #'instance creation' }
+QuerySolver class >> solve: aQuery [
+
+	^ (self newForQuery: aQuery) resolve
+]
+
 { #category : #accessing }
 QuerySolver >> query [
 

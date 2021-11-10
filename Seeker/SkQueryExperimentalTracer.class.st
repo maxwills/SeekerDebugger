@@ -118,7 +118,7 @@ SkQueryExperimentalTracer >> doAstStepPreProcess [
 						ofVar: node variable variable
 						inContext: currentStateInterfaceInstance context ] ].
 
-	astPreStepHooks do: [ :each | each value ]
+	"astPreStepHooks do: [ :each | each value ]"
 ]
 
 { #category : #'object - api' }

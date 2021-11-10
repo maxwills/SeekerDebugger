@@ -20,12 +20,6 @@ SkAllReceivedMessagesLC >> executeCommand [
 		       forReceivedMessages.
 
 	self showResult: res
-	"	self showResult:
-		( cullFieldsWithMapping: { 
-				 (#bytecodeIndex -> #ebc).
-				 (#messageSelector -> #sel).
-				 (#messageReceiverClass -> #class).
-				 (#messageArguments -> #args) } asDictionary)"
 ]
 
 { #category : #accessing }

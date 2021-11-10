@@ -48,25 +48,21 @@ SkProgramStates >> dataSourceIsTracedExecution [
 { #category : #enumerating }
 SkProgramStates >> do: aBlock [
 
-	"A specilized version of do:, made specifically to be used with queries"
+	"A specialized version of do:, made specifically to be used with queries"
 
-	"Note that is used only because, at the moment, I have no bytecode stepping, so the preBytecodeStepHook is executed instead."
+	"Old implementation used a preStepHook."
 
-	| currentTracetime preBytecodeStepHook |
+	| currentTracetime |
 	currentTracetime := tracer bytecodeIndex asExecutedBytecodeTraceTime.
 	tracer isMapped ifFalse: [ 
 		^ self error:
 			  'Time traveling needs to be enabled to execute Trace Queries' ].
-	preBytecodeStepHook := [ aBlock value: self currentRow ].
-
-	tracer doAndUpdateSessionAfter: [ 
+	self tracer doAndUpdateSessionAfter: [ 
 		SeekerGlobals instance startQueryingFromBytecodeOne
 			ifTrue: [ tracer restartAtBytecodeOne ]
 			ifFalse: [ tracer timeTravelToUserStart ].
 
-		tracer addAstPreStepHook: preBytecodeStepHook.
-		[ tracer stepBytecodeToExecutionEnd ] ensure: [ 
-			tracer removeAstPreStepHook: preBytecodeStepHook.
+		[ self stepWhileDoing: aBlock ] ensure: [ 
 			tracer checkPreventNextTimeRestoration ifFalse: [ 
 				tracer timeTravelToTraceTime: currentTracetime ] ] ]
 ]
@@ -137,6 +133,13 @@ SkProgramStates >> resetTableTraversing [
 
 	justRestarted := true.
 	tracer restartAtBytecodeOne
+]
+
+{ #category : #'as yet unclassified' }
+SkProgramStates >> stepWhileDoing: aBlock [
+
+	aBlock value: csi.
+	[ tracer stepBytecode ] whileTrue: [ aBlock value: csi ]
 ]
 
 { #category : #accessing }

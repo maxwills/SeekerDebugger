@@ -16,6 +16,7 @@ SkIterableDataSource >> advanceToNextRow [
 SkIterableDataSource >> currentRow [
 
 	"returns the object that represents the current row"
+	"Includes the projection transformation"
 
 	self subclassResponsibility
 ]
