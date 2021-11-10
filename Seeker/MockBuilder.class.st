@@ -19,6 +19,12 @@ MockBuilder class >> argumentNames [
 		                   #mock_arg_8_. #mock_arg_9_ } ] "add more or rename if needed. They are ugly on purpose, to avoid possible name collision"
 ]
 
+{ #category : #'instance creation' }
+MockBuilder class >> newMockedClass [
+
+	^ MockBuilder new builtClass
+]
+
 { #category : #'as yet unclassified' }
 MockBuilder >> builtClass [
 
@@ -73,33 +79,40 @@ MockBuilder >> formatSelector: selector withArgs: aCollection [
 { #category : #initialization }
 MockBuilder >> initialize [
 
-	type := (Object << #MockTypeX)
-		        slots: {  };
-		        tag: '';
-		        sharedVariables: { #blocks };
-		        package: '';
-		        build.
-	type class compile: 'initialize
-		blocks := Dictionary new'.
-	type class compile: 'mockBuilderAt: selector put: aBlock
-		blocks at: selector put: aBlock'.
-	type initialize
+	EpMonitor disableDuring: [ 
+		type := (Object << #MockTypeX)
+			        slots: {  };
+			        tag: '';
+			        sharedVariables: { #blocks__mock. #mock__builder };
+			        package: '';
+			        build.
+		type class compile: 'initialize
+		blocks__mock := Dictionary new'.
+		type class compile: 'mock__builder: builder
+		mock__builder := builder'.
+		type class compile: 'mockBuilderAt: selector put: aBlock
+		blocks__mock at: selector put: aBlock'.
+		type class compile: 'installMethod: aBlock at: selector
+		mock__builder installMethod: aBlock at: selector'.
+		type initialize.
+		type mock__builder: self ]
 ]
 
 { #category : #'as yet unclassified' }
 MockBuilder >> installMethod: aBlock at: selector [
 
-	| argumentCount arguments |
-	argumentCount := self countArguments: selector.
-	arguments := argumentCount = 0
-		             ifTrue: [ {  } ]
-		             ifFalse: [ 
-		             self class argumentNames copyFrom: 1 to: argumentCount ].
-	type mockBuilderAt: selector put: aBlock.
-	type compile:
-		(self formatSelector: selector withArgs: arguments) , '
-		^ (blocks at: #' , selector , ') '
-		, (self makeBlockValueMessageString: argumentCount)
+	EpMonitor disableDuring: [ 
+		| argumentCount arguments |
+		argumentCount := self countArguments: selector.
+		arguments := argumentCount = 0
+			             ifTrue: [ {  } ]
+			             ifFalse: [ 
+			             self class argumentNames copyFrom: 1 to: argumentCount ].
+		type mockBuilderAt: selector put: aBlock.
+		type compile:
+			(self formatSelector: selector withArgs: arguments) , '
+		^ (blocks__mock at: #' , selector , ') '
+			, (self makeBlockValueMessageString: argumentCount) ]
 ]
 
 { #category : #'as yet unclassified' }

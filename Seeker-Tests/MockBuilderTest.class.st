@@ -73,3 +73,34 @@ MockBuilderTest >> testInstallMethodAt [
 
 	self assert: capturedVar equals: 3
 ]
+
+{ #category : #test }
+MockBuilderTest >> testNormalUsage [
+
+	"Nominal cases"
+
+	| mockedInstance return expectedReturn capturedVar |
+	"Preparation"
+	mockedInstance := MockBuilder newMockedClass new.
+	mockedInstance class installMethod: [ :a :b | a + b ] at: #sum:with:.
+
+	capturedVar := 0.
+	mockedInstance class
+		installMethod: [ 
+			capturedVar := capturedVar + 1.
+			capturedVar ]
+		at: #counter.
+
+
+	"test method with arguments"
+	return := mockedInstance sum: 1 with: 2.
+	expectedReturn := 3.
+	self assert: expectedReturn equals: return.
+
+	"test method without arguments, with capture variable"
+	self assert: mockedInstance counter equals: 1.
+	self assert: mockedInstance counter equals: 2.
+	self assert: mockedInstance counter equals: 3.
+
+	self assert: capturedVar equals: 3
+]
