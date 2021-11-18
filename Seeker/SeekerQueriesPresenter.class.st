@@ -11,7 +11,10 @@ Class {
 		'filterMatchBlockForHighlighting',
 		'queryTitle',
 		'tableContainerPresenter',
-		'tableContainerLayout'
+		'tableContainerLayout',
+		'columns',
+		'trimmingBlock',
+		'columnsDefinition'
 	],
 	#category : #'Seeker-UI'
 }
@@ -25,6 +28,17 @@ SeekerQueriesPresenter class >> defaultSpec [
 		  add: #tableContainerPresenter expand: true fill: true;
 		  add: #summaryLabel expand: false fill: false;
 		  "fill: false"yourself
+]
+
+{ #category : #'as yet unclassified' }
+SeekerQueriesPresenter >> appendResults: aCollection [
+
+	"Called when using buffered results"
+
+	aCollection ifEmpty: [ ^ self ].
+	queryResults addAll: aCollection.
+	self applyResultFilter.
+	self updateDisplayedResults
 ]
 
 { #category : #'UI specific' }
@@ -155,6 +169,77 @@ Set the tables columns from the ordered collection
 
 	self applyResultFilter.
 	self updateDisplayedResults
+]
+
+{ #category : #'UI specific' }
+SeekerQueriesPresenter >> showResultsOfQuery: query withColumnsDefinition: aCollection [
+
+	| bufferedSolver |
+	columnsDefinition := aCollection.
+	trimmingBlock := nil. "it is restarted to nil"
+	bufferedSolver := QSTimeBufferedResult newForQuery: query.
+	bufferedSolver timespan: 500. "update every 500 ms"
+	bufferedSolver bufferReadyCallback: [ :b | self appendResults: b ].
+	bufferedSolver buffersCapacity: 100.
+	queryResults := OrderedCollection new: 10000.
+
+	"initialize columns and trimmingBlock"
+	columns := OrderedCollection new.
+	columns add: (SpIndexTableColumn new width: 40).
+
+	"queryTitle label: queryResults title."
+	trimmingBlock := [ :row :col | 
+	                 col expandable
+		                 ifTrue: [ col readValueIn: row ]
+		                 ifFalse: [ 
+			                 (col readValueIn: row)
+				                 trimForRenderWidth: col width
+				                 usingFont: StandardFonts listFont
+				                 autoEllipsis: true ] ].
+
+	"for every columunDefinition (SeekerResultsColumn) in my input collection :
+   - Create a SpTableColumn (SpLinkTableColumn or SpStringTableColumn).
+   - set it's properties based in the input column definition (expandable, with, etc)
+   add it to an OrderedCollection
+Set the tables columns from the ordered collection
+"
+
+	columnsDefinition do: [ :each | 
+		| spCol |
+		spCol := each name = #bytecodeIndex
+			         ifTrue: [ "it's a link"
+				         SpLinkTableColumn
+					         title: each label
+					         evaluated: [ :row | each readValueIn: row ]
+					         action: [ :row | 
+						         self notifyTimeTravel: row.
+						         tracer timeTravelToTraceTime:
+							         row bytecodeIndex asExecutedBytecodeTraceTime "row timeTravelToThis" ] ]
+			         ifFalse: [ 
+				         (SpStringTableColumn
+					          title: each label
+					          evaluated: [ :row | 
+						          trimmingBlock value: row value: each ])
+					         displayBold: [ :row | 
+						         self valueMatchesSearchFilter: (each value: row) ];
+					         yourself ].
+		"col beExpandable."
+		each expandable
+			ifTrue: [ 
+				spCol beExpandable
+				"self error: 'isExpandable'"
+				"Transcript show: 'It''s expandable' , String cr" ]
+			ifFalse: [ 
+				spCol beNotExpandable.
+				spCol width: each width
+				"Transcript show:
+					'not expandable with width: ' , col width asString , String cr " ].
+		columns add: spCol ].
+	table columns: columns.
+
+	self applyResultFilter.
+	self updateDisplayedResults.
+	bufferedSolver resolve
 ]
 
 { #category : #accessing }

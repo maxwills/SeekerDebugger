@@ -3,11 +3,18 @@ Class {
 	#superclass : #QuerySolver,
 	#instVars : [
 		'bufferReadyCallback',
-		'buffers',
 		'buffersCapacity'
 	],
 	#category : #'Seeker-Query'
 }
+
+{ #category : #'instance creation' }
+QSBufferedResult class >> newForQuery: aQuery withBufferCompletedCallback: aBlock [
+
+	^ (self newForQuery: aQuery)
+		  bufferReadyCallback: aBlock;
+		  yourself
+]
 
 { #category : #accessing }
 QSBufferedResult >> bufferReadyCallback [
@@ -19,18 +26,6 @@ QSBufferedResult >> bufferReadyCallback [
 QSBufferedResult >> bufferReadyCallback: anObject [
 
 	bufferReadyCallback := anObject
-]
-
-{ #category : #accessing }
-QSBufferedResult >> buffers [
-
-	^ buffers
-]
-
-{ #category : #accessing }
-QSBufferedResult >> buffers: anObject [
-
-	buffers := anObject
 ]
 
 { #category : #accessing }
@@ -49,6 +44,18 @@ QSBufferedResult >> buffersCapacity: anObject [
 QSBufferedResult >> initialize [
 
 	buffersCapacity := 10000.
-	buffers := WaitfreeQueue new.
 	bufferReadyCallback := [ :o |  ]
+]
+
+{ #category : #navigating }
+QSBufferedResult >> resolve [
+
+	| currentBuffer |
+	currentBuffer := OrderedCollection new: buffersCapacity.
+	query do: [ :each | 
+		currentBuffer add: each.
+		currentBuffer size >= buffersCapacity ifTrue: [ 
+			bufferReadyCallback value: currentBuffer.
+			currentBuffer := OrderedCollection new: buffersCapacity ] ].
+	currentBuffer ifNotEmpty: [ bufferReadyCallback value: currentBuffer ]
 ]

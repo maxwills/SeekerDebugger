@@ -50,13 +50,13 @@ SkProgramStates >> do: aBlock [
 
 	"A specialized version of do:, made specifically to be used with queries"
 
-	"Old implementation used a preStepHook."
-
 	| currentTracetime |
-	currentTracetime := tracer bytecodeIndex asExecutedBytecodeTraceTime.
 	tracer isMapped ifFalse: [ 
 		^ self error:
 			  'Time traveling needs to be enabled to execute Trace Queries' ].
+	
+	currentTracetime := tracer bytecodeIndex asExecutedBytecodeTraceTime.
+	
 	self tracer doAndUpdateSessionAfter: [ 
 		SeekerGlobals instance startQueryingFromBytecodeOne
 			ifTrue: [ tracer restartAtBytecodeOne ]

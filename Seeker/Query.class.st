@@ -404,6 +404,33 @@ Query >> do: aBlock [
 		(selectionBlock value: row) ifTrue: [ aBlock value: self currentRow ] ]
 ]
 
+{ #category : #enumerating }
+Query >> do: aBlock withTimedCallback: timedCallbackBlock every: anIntMilliseconds [
+
+	"timedCallbackBlock is a block without arguments. It is called each anIntMilliseconds ms during the iteration process.
+	First, the row is processed, and then the timecallback is executed in the corresponding case"
+
+	(fromDataSource class includesSelector: #do:withTimedCallback:every:)
+		ifTrue: [ 
+			fromDataSource
+				do: [ :row | 
+					(selectionBlock value: row) ifTrue: [ 
+						aBlock value: self currentRow ] ]
+				withTimedCallback: timedCallbackBlock
+				every: anIntMilliseconds ]
+		ifFalse: [ 
+			| startingTime |
+			startingTime := Time millisecondClockValue.
+			fromDataSource do: [ :row | 
+				| time |
+				(selectionBlock value: row) ifTrue: [ 
+					aBlock value: self currentRow ].
+				time := Time millisecondClockValue.
+				time - startingTime >= anIntMilliseconds ifTrue: [ 
+					timedCallbackBlock value.
+					startingTime := time ] ] ]
+]
+
 { #category : #'as yet unclassified' }
 Query >> endOfTableReached [
 

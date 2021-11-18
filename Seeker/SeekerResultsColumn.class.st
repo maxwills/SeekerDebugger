@@ -1,3 +1,6 @@
+"
+Base column class. The returned value is the same read from the model object. Use this for String fields (ie, when there is no need to convert). If a conversion to String is needed, use the corresponding subclass.
+"
 Class {
 	#name : #SeekerResultsColumn,
 	#superclass : #Object,
@@ -42,8 +45,6 @@ SeekerResultsColumn >> expandable: anObject [
 { #category : #initialization }
 SeekerResultsColumn >> initialize [
 
-	valueProjectionBlock := [ :a | "override this if there is a special need" 
-	                        a asString ].
 	width := 80.
 	expandable := false
 ]
@@ -105,19 +106,7 @@ SeekerResultsColumn >> value: aRow [
 
 	"Row is an object that responds to the key message"
 
-	^ valueProjectionBlock value: (aRow at: key)
-]
-
-{ #category : #accessing }
-SeekerResultsColumn >> valueProjectionBlock [
-
-	^ valueProjectionBlock
-]
-
-{ #category : #accessing }
-SeekerResultsColumn >> valueProjectionBlock: anObject [
-
-	valueProjectionBlock := anObject
+	^ aRow perform: #key
 ]
 
 { #category : #accessing }
