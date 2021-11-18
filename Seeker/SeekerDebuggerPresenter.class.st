@@ -377,6 +377,12 @@ SeekerDebuggerPresenter >> setSelectedContexAsStartingPointHandler [
 ]
 
 { #category : #'UI specific' }
+SeekerDebuggerPresenter >> showInResult: aQueryDisplayModel [
+
+	queriesPresenter executeAndShow: aQueryDisplayModel
+]
+
+{ #category : #'UI specific' }
 SeekerDebuggerPresenter >> showResult: anObject [
 
 	queriesPresenter showResult: anObject

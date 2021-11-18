@@ -34,7 +34,7 @@ ColumnDefinition class >> newForKey: aSymbol [
 			       initialize;
 			       yourself.
 		col privateKey: aSymbol.
-		col name: aSymbol.
+		col label: aSymbol.
 		^ col ]
 ]
 
@@ -59,7 +59,8 @@ ColumnDefinition >> expandable: anObject [
 { #category : #initialization }
 ColumnDefinition >> initialize [
 
-	expandable := false
+	expandable := false.
+	self md
 ]
 
 { #category : #accessing }

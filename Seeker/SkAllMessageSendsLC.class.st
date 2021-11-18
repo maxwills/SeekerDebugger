@@ -15,10 +15,17 @@ SkAllMessageSendsLC >> description [
 { #category : #executing }
 SkAllMessageSendsLC >> executeCommand [
 
-	| res |
-	res := self tracer find allMessageSends asSeekerResultsCollection
-		       forMessageSends.
-	self showResult: res
+	| query queryDisplayModel columns |
+	query := self tracer queries forMessageSends collect:
+		         SeekerProjectionFunctions projectionForMessageSends.
+	queryDisplayModel := QueryDisplayModel newForQuery: query.
+	columns := { 
+		           (ColumnDefinition newForKey: #bytecodeIndex).
+		           (ColumnDefinition newForKey: #methodSelector) }.
+	queryDisplayModel columns: columns.
+
+
+	self showResultFor: queryDisplayModel
 ]
 
 { #category : #accessing }

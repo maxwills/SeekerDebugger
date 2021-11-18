@@ -151,6 +151,31 @@ SeekerLiteCommand >> showResult: anObject [
 		resultsUI showResult: anObject ]
 ]
 
+{ #category : #'UI specific' }
+SeekerLiteCommand >> showResult: anObject withColumns: columns [
+
+	| resultsUI |
+	resultsUI := self seekerDebuggerPresenter.
+	resultsUI ifNil: [ anObject inspect ] ifNotNil: [ 
+		anObject title: queryTitle.
+		anObject timeToRun: Time millisecondClockValue - time.
+		resultsUI
+			showResultsOfQuery: anObject
+			withColumnsDefinition: columns ]
+]
+
+{ #category : #'UI specific' }
+SeekerLiteCommand >> showResultFor: aQueryDisplayModel [
+
+	| resultsUI |
+	resultsUI := self seekerDebuggerPresenter.
+	resultsUI
+		ifNil: [ ^ self error: 'no presenter available' ]
+		ifNotNil: [ 
+			aQueryDisplayModel title: queryTitle.
+			resultsUI showInResult: aQueryDisplayModel ]
+]
+
 { #category : #accessing }
 SeekerLiteCommand >> tracer [
 

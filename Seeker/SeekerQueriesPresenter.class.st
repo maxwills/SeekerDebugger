@@ -12,9 +12,9 @@ Class {
 		'queryTitle',
 		'tableContainerPresenter',
 		'tableContainerLayout',
-		'columns',
+		'queryDisplayModel',
 		'trimmingBlock',
-		'columnsDefinition'
+		'spColumns'
 	],
 	#category : #'Seeker-UI'
 }
@@ -37,7 +37,7 @@ SeekerQueriesPresenter >> appendResults: aCollection [
 
 	aCollection ifEmpty: [ ^ self ].
 	queryResults addAll: aCollection.
-	self applyResultFilter.
+	"self applyResultFilter."
 	self updateDisplayedResults
 ]
 
@@ -55,6 +55,84 @@ SeekerQueriesPresenter >> applyResultFilter [
 			                                   [ :val | 
 			                                   filterTokens anySatisfy: [ :f | 
 				                                   val includesSubstring: f ] ] ]
+]
+
+{ #category : #'UI specific' }
+SeekerQueriesPresenter >> executeAndShow: aQueryDisplayModel [
+
+	"aQueryDisplayModel: an instance of QueryDisplayModel"
+
+	| bufferedSolver startingTime |
+	startingTime := Time millisecondClockValue.
+	queryDisplayModel := aQueryDisplayModel.
+	trimmingBlock := nil. "it is restarted to nil"
+	bufferedSolver := QSAdaptiveTimeBufferedResult newForQuery:
+		                  aQueryDisplayModel query.
+
+	bufferedSolver bufferReadyCallback: [ :b | 
+		aQueryDisplayModel timeToRun:
+			Time millisecondClockValue - startingTime.
+		SeekerUIHelpers safeInvoke: [ self appendResults: b ] ].
+
+	queryResults := OrderedCollection new: 1000.
+
+	"initialize columns and trimmingBlock"
+	spColumns := OrderedCollection new.
+	spColumns add: (SpIndexTableColumn new width: 40).
+
+	"queryTitle label: queryResults title."
+	trimmingBlock := [ :row :col | 
+	                 col expandable
+		                 ifTrue: [ (col readValueIn: row) asString ]
+		                 ifFalse: [ 
+			                 (col readValueIn: row) asString
+				                 trimForRenderWidth: col width
+				                 usingFont: StandardFonts listFont
+				                 autoEllipsis: true ] ].
+
+	"for every columunDefinition (SeekerResultsColumn) in my input collection :
+   - Create a SpTableColumn (SpLinkTableColumn or SpStringTableColumn).
+   - set it's properties based in the input column definition (expandable, with, etc)
+   add it to an OrderedCollection
+Set the tables columns from the ordered collection
+"
+
+	queryDisplayModel columns do: [ :each | 
+		| spCol |
+		spCol := each key = #bytecodeIndex
+			         ifTrue: [ "it's a link"
+				         SpLinkTableColumn
+					         title: each label
+					         evaluated: [ :row | (each readValueIn: row) asString ]
+					         action: [ :row | 
+						         self notifyTimeTravel: row.
+						         tracer timeTravelToTraceTime:
+							         row bytecodeIndex asExecutedBytecodeTraceTime "row timeTravelToThis" ] ]
+			         ifFalse: [ 
+				         (SpStringTableColumn
+					          title: each label
+					          evaluated: [ :row | 
+						          trimmingBlock value: row value: each ])
+					         displayBold: [ :row | 
+						         self valueMatchesSearchFilter: (each readValueIn: row) ];
+					         yourself ].
+		"col beExpandable."
+		each expandable
+			ifTrue: [ 
+				spCol beExpandable
+				"self error: 'isExpandable'"
+				"Transcript show: 'It''s expandable' , String cr" ]
+			ifFalse: [ 
+				spCol beNotExpandable.
+				spCol width: each width
+				"Transcript show:
+					'not expandable with width: ' , col width asString , String cr " ].
+		spColumns add: spCol ].
+	table columns: spColumns.
+
+	"self applyResultFilter."
+	self updateDisplayedResults.
+	[ bufferedSolver resolve ] fork
 ]
 
 { #category : #'as yet unclassified' }
@@ -174,18 +252,21 @@ Set the tables columns from the ordered collection
 { #category : #'UI specific' }
 SeekerQueriesPresenter >> showResultsOfQuery: query withColumnsDefinition: aCollection [
 
+	"Of ColumnDefinition"
+
 	| bufferedSolver |
-	columnsDefinition := aCollection.
+	self halt.
+	columnsDefinition := aCollection. "of ColumnDefinition objects"
 	trimmingBlock := nil. "it is restarted to nil"
 	bufferedSolver := QSTimeBufferedResult newForQuery: query.
 	bufferedSolver timespan: 500. "update every 500 ms"
 	bufferedSolver bufferReadyCallback: [ :b | self appendResults: b ].
 	bufferedSolver buffersCapacity: 100.
 	queryResults := OrderedCollection new: 10000.
-
+self halt.
 	"initialize columns and trimmingBlock"
-	columns := OrderedCollection new.
-	columns add: (SpIndexTableColumn new width: 40).
+	spColumns := OrderedCollection new.
+	spColumns add: (SpIndexTableColumn new width: 40).
 
 	"queryTitle label: queryResults title."
 	trimmingBlock := [ :row :col | 
@@ -210,7 +291,7 @@ Set the tables columns from the ordered collection
 			         ifTrue: [ "it's a link"
 				         SpLinkTableColumn
 					         title: each label
-					         evaluated: [ :row | each readValueIn: row ]
+					         evaluated: [ :row | "(each readValueIn: row) asString"'1' ]
 					         action: [ :row | 
 						         self notifyTimeTravel: row.
 						         tracer timeTravelToTraceTime:
@@ -218,10 +299,10 @@ Set the tables columns from the ordered collection
 			         ifFalse: [ 
 				         (SpStringTableColumn
 					          title: each label
-					          evaluated: [ :row | 
-						          trimmingBlock value: row value: each ])
-					         displayBold: [ :row | 
-						         self valueMatchesSearchFilter: (each value: row) ];
+					          evaluated: [ :row | '2'"
+						          trimmingBlock value: (each readValueIn: row) asString" ])
+					         displayBold: [ :row | false"
+						         self valueMatchesSearchFilter: (each readValueIn: row)" ];
 					         yourself ].
 		"col beExpandable."
 		each expandable
@@ -234,8 +315,8 @@ Set the tables columns from the ordered collection
 				spCol width: each width
 				"Transcript show:
 					'not expandable with width: ' , col width asString , String cr " ].
-		columns add: spCol ].
-	table columns: columns.
+		spColumns add: spCol ].
+	table columns: spColumns.
 
 	self applyResultFilter.
 	self updateDisplayedResults.
@@ -257,11 +338,11 @@ SeekerQueriesPresenter >> tracer: t [
 { #category : #'UI specific' }
 SeekerQueriesPresenter >> updateDisplayedResults [
 
-	table items: filteredResult.
-	summaryLabel label: 'Showing ' , filteredResult size asString
+	table items: queryResults. "filteredResult"
+	summaryLabel label: 'Showing ' , queryResults size asString
 		, ' results ( from a total of ' , queryResults size asString
 		, ' unfiltered results, fetched in: '
-		, queryResults timeToRun asString , 'ms).'
+		, queryDisplayModel timeToRun asString , 'ms).' "filteredResult"
 ]
 
 { #category : #'as yet unclassified' }

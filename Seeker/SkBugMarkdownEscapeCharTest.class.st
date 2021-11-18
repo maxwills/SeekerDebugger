@@ -24,7 +24,10 @@ SkBugMarkdownEscapeCharTest >> testMarkdownEscapeCharMediumExample [
 
 	| micSplitter theStringWithEscapeChar |
 	micSplitter := MicInlineSplitter new.
-	theStringWithEscapeChar := 'Hi this is a joierjtoije oijfsdoijf###omd soi  sdf ds///ººººasjdj sfdoijsfijsd foisdj ndndfklgdfgm
+	theStringWithEscapeChar := 'Hi this is a joierjtoije oijdsf sdf  xvx
+	xzcvzcxvzcxv
+	zxcvzcxv zxfdfsdf fsdf  
+	fsdoijf###omd soi  sdf ds///ººººasjdj sfdoijsfijsd foisdj ndndfklgdfgm
 	sdfg 
 	s dfgdfg 
 	f sldkjf  das larg sdfe text to try the per oijj### ,//\\formance . .## asdnother onehey!!! \'.

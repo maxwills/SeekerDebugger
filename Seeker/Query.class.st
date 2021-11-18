@@ -41,6 +41,7 @@ Class {
 		'operationType',
 		'disableOptimization',
 		'timeIt',
+		'title',
 		'customPreparationBlock',
 		'collectionBlock',
 		'selectionBlock'
@@ -407,6 +408,7 @@ Query >> do: aBlock [
 { #category : #enumerating }
 Query >> do: aBlock withTimedCallback: timedCallbackBlock every: anIntMilliseconds [
 
+"anIntMilliseconds an int or a block that returns an int"
 	"timedCallbackBlock is a block without arguments. It is called each anIntMilliseconds ms during the iteration process.
 	First, the row is processed, and then the timecallback is executed in the corresponding case"
 
@@ -426,7 +428,7 @@ Query >> do: aBlock withTimedCallback: timedCallbackBlock every: anIntMillisecon
 				(selectionBlock value: row) ifTrue: [ 
 					aBlock value: self currentRow ].
 				time := Time millisecondClockValue.
-				time - startingTime >= anIntMilliseconds ifTrue: [ 
+				time - startingTime >= anIntMilliseconds value ifTrue: [ 
 					timedCallbackBlock value.
 					startingTime := time ] ] ]
 ]
@@ -526,6 +528,7 @@ Query >> initialize [
 	disableOptimization := false.
 	timeIt := #dontTimeIt.
 	customPreparationBlock := [  ].
+	title := 'No title'.
 	super initialize
 ]
 
@@ -694,4 +697,16 @@ Query >> timeIt [
 Query >> timeItDetailed [
 	timeIt := #timeItDetailed.
 	^ self
+]
+
+{ #category : #accessing }
+Query >> title [
+
+	^ title
+]
+
+{ #category : #accessing }
+Query >> title: anObject [
+
+	title := anObject
 ]

@@ -45,6 +45,7 @@ QSTimeBufferedResult >> buffersCapacity: anObject [
 QSTimeBufferedResult >> initialize [
 
 	buffersCapacity := 10000.
+	timespan := 1000.
 	bufferReadyCallback := [ :o |  ]
 ]
 
@@ -55,14 +56,14 @@ QSTimeBufferedResult >> resolve [
 
 	| currentBuffer shouldEmitBuffer |
 	shouldEmitBuffer := false.
-	currentBuffer := OrderedCollection new: buffersCapacity.
+	currentBuffer := OrderedCollection new: 1000.
 	query
 		do: [ :each | 
 			currentBuffer add: each.
 			(shouldEmitBuffer or: [ currentBuffer size >= buffersCapacity ]) 
 				ifTrue: [ 
-					bufferReadyCallback value: currentBuffer.
-					currentBuffer := OrderedCollection new: buffersCapacity ].
+					bufferReadyCallback value: currentBuffer copy.
+					currentBuffer := currentBuffer removeAll"OrderedCollection new: buffersCapacity" ].
 
 			shouldEmitBuffer := false ]
 		withTimedCallback: [ shouldEmitBuffer := true ]

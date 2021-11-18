@@ -382,33 +382,7 @@ SeekerTraceQueriesInterface >> forMarkers [
 { #category : #'as yet unclassified' }
 SeekerTraceQueriesInterface >> forMessageSends [
 
-	| t |
-	t := AutoType new.
-	^ self baseQueryForMessageSends collect: [ :row | 
-		  | msgRcvrNode msgRcvrClass msgRcvr receiverOid |
-		  msgRcvrNode := row node receiver.
-		  msgRcvr := row messageReceiver.
-		  receiverOid := row aliasOfObject: msgRcvr.
-		  msgRcvrClass := msgRcvr class.
-		  t newWith
-			  bytecodeIndex: row bytecodeIndex;
-			  methodSelector: row methodSelector;
-			  receiverClass: row receiverClass;
-			  messageArguments: row node arguments;
-			  messageReceiver: msgRcvr;
-			  messageReceiverOid: receiverOid;
-			  formattedMessageReceiver: (msgRcvrNode isVariable
-					   ifTrue: [ 
-						   msgRcvrNode variable name , ' ('
-						   ,
-							   (msgRcvrNode variable readInContext: row context) class
-								   asString , ')' ]
-					   ifFalse: [ 
-						   [ msgRcvr asString , ' (' , msgRcvrNode sourceCode , ')' ] 
-							   onErrorDo: [ "msgRcvr" msgRcvrNode sourceCode ] ]);
-			  messageReceiverClass: msgRcvrClass value;
-			  messageSelector: row node selector;
-			  endWith ]
+	^ self baseQueryForMessageSends
 ]
 
 { #category : #'as yet unclassified' }
