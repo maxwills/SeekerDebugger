@@ -11,7 +11,7 @@ QSBufferedResultTest >> testQSBufferedResult [
 	totalElements := 1000.
 	bufferCapacity := 100.
 	bufferCount := 0.
-	mockBuilder := MockBuilder new.
+	mockBuilder := MockFlexBuilder new.
 	lastValue := 0.
 	mockedQuery := mockBuilder builtClass new.
 	mockedQuery class

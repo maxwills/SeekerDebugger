@@ -9,7 +9,14 @@ BaselineOfSeeker >> baseline: spec [
 
 	<baseline>
 	spec for: #common do: [ 
+		spec
+			baseline: 'AutoType'
+			with: [ spec repository: 'github://maxwills/auto-type:main' ].
+		spec
+			baseline: 'MockFlex'
+			with: [ spec repository: 'github://maxwills/mock-flex:main' ].
 		spec postLoadDoIt: #postload:package:.
+		
 		spec
 			package: 'EvaluatorDebugger-Base';
 			package: 'Seeker'

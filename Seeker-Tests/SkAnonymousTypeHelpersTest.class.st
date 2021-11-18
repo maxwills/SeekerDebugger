@@ -11,7 +11,7 @@ Class {
 }
 
 { #category : #compiling }
-SkAnonymousTypeHelpersTest >> compileCode: aString inContect: aContext [
+SkAnonymousTypeHelpersTest >> compileCode: aString inContext: aContext [
 
    "Evaluates the expression coming from a stream. Uses the current context of the StDebugger"
    ^ aContext receiver class compiler
