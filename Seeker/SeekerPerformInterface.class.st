@@ -11,6 +11,11 @@ SeekerPerformInterface >> advanceToNextStatement [
 	"This method doesnt work. The reason is that the debugger is interrupted sometimes in the method node. Then, the first actual statement is a variant number of bytecodes away.
 Therefore, calculating the next statement in the sequence should be done differently from current implementation, trying to handle the case of such case. An idea would be to use the sequence node and the statement as an identity. However, doing that is sensitive to modifications during debugging of the code. "
 	startingNode := tracer currentNode.
+	startingNode isMethod ifTrue: [ 
+		tracer doAndUpdateSessionAfter: [ 
+			tracer stepBytecodeUntilConditionIsTrue: [ 
+				tracer currentNode isMethod not ] ].
+		^ self ].
 	startingStatement := startingNode statementNode.
 	startingStatementIndex := SkNodeHelpers 
 		                          statementNodeIndexInSequence:
@@ -101,8 +106,9 @@ SeekerPerformInterface >> restartFromBytecodeOne [
 { #category : #'as yet unclassified' }
 SeekerPerformInterface >> reverseToPreviousStatement [
 
-	| startingNode startingContext startingStatement startingStatementIndex startingStackDepth inSameDynanimcSequence |
-	startingNode := tracer currentNode.
+	| startingNode startingContext startingStatement startingStatementIndex startingStackDepth inSameDynanimcSequence csi |
+	csi := tracer currentStateInterfaceInstance.
+	startingNode := csi node.
 	startingStatement := startingNode statementNode.
 	startingStatementIndex := SkNodeHelpers 
 		                          statementNodeIndexInSequence:
@@ -110,22 +116,24 @@ SeekerPerformInterface >> reverseToPreviousStatement [
 	startingStatementIndex = 1 ifTrue: [ ^ false ].
 
 	tracer doAndUpdateSessionAfter: [ 
-		self restartContext: tracer currentContext. "note that this changes the identity of the currentContext"
-		startingContext := tracer currentContext.
+		self restartContext: csi context. "note that this changes the identity of the currentContext"
+		startingContext := csi context.
 		startingStackDepth := startingContext stackDepth.
 		inSameDynanimcSequence := [ 
-		                          tracer currentContext == startingContext ].
+		                          csi context == startingContext and: [ 
+			                          csi node isMethod not ] ].
 
 		tracer stepBytecodeUntilConditionIsTrue: [ 
-			tracer currentContext stackDepth < startingStackDepth or: [ 
+			csi context stackDepth < startingStackDepth or: [ 
 				inSameDynanimcSequence value and: [ 
-					| node statementIndex |
-					node := tracer currentNode.
-					statementIndex := SkNodeHelpers statementNodeIndexInSequence:
-						                  node statementNode.
+					csi willReturn or: [ 
+						| node statementIndex |
+						node := csi node.
+						statementIndex := SkNodeHelpers statementNodeIndexInSequence:
+							                  node statementNode.
 
-					statementIndex = 0 or: [ 
-						statementIndex = (startingStatementIndex - 1) ] ] ] ] ]
+						statementIndex = 0 or: [ 
+							statementIndex = (startingStatementIndex - 1) ] ] ] ] ] ]
 ]
 
 { #category : #'as yet unclassified' }

@@ -62,32 +62,10 @@ SeekerQueriesPresenter >> executeAndShow: aQueryDisplayModel [
 
 	"aQueryDisplayModel: an instance of QueryDisplayModel"
 
-	| solver startingTime makeAdaptiveSolver makeTimedSolver |
-	startingTime := Time millisecondClockValue.
-	queryDisplayModel := aQueryDisplayModel.
+	| solver |
 	trimmingBlock := nil. "it is restarted to nil"
-
-	makeTimedSolver := [ 
-	                   solver := QSTimedUpdateResult newForQuery:
-		                             aQueryDisplayModel query.
-	                   solver timespan: 500.
-	                   solver bufferReadyCallback: [ :b | 
-		                   aQueryDisplayModel timeToRun:
-			                   Time millisecondClockValue - startingTime.
-		                   SeekerUIHelpers safeInvoke: [ 
-			                   self appendResults: b ] ] ].
-
-	makeAdaptiveSolver := [ 
-	                      solver := QSAdaptiveTimeBufferedResult newForQuery:
-		                                aQueryDisplayModel query.
-	                      solver bufferReadyCallback: [ :b | 
-		                      aQueryDisplayModel timeToRun:
-			                      Time millisecondClockValue - startingTime.
-		                      SeekerUIHelpers safeInvoke:  [ 
-			                      self appendResults: b ] ] ].
-
-	"makeTimedSolver value."
-	makeAdaptiveSolver value.
+	queryDisplayModel := aQueryDisplayModel.
+	solver := self makeDefaultQuerySolverFor: aQueryDisplayModel.
 
 	queryResults := OrderedCollection new: 1000.
 
@@ -112,7 +90,7 @@ SeekerQueriesPresenter >> executeAndShow: aQueryDisplayModel [
 Set the tables columns from the ordered collection
 "
 
-	queryDisplayModel columns do: [ :each | 
+	aQueryDisplayModel columns do: [ :each | 
 		| spCol |
 		spCol := each key = #bytecodeIndex
 			         ifTrue: [ "it's a link"
@@ -193,6 +171,37 @@ SeekerQueriesPresenter >> initializeTable [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerQueriesPresenter >> makeDefaultQuerySolverFor: aQueryDisplayModel [
+
+	"QueryDisplayModel"
+
+	| solver startingTime |
+	startingTime := Time millisecondClockValue.
+	trimmingBlock := nil. "it is restarted to nil"
+
+
+	"solver := QSTimedUpdateResult newForQuery:
+		                             aQueryDisplayModel query.
+	                   solver timespan: 500.
+	                   solver bufferReadyCallback: [ :b | 
+		                   aQueryDisplayModel timeToRun:
+			                   Time millisecondClockValue - startingTime.
+		                   SeekerUIHelpers safeInvoke: [ 
+			                   self appendResults: b ] ]."
+
+
+	solver := QSAdaptiveTimeBufferedResult newForQuery:
+		          aQueryDisplayModel query.
+	solver bufferReadyCallback: [ :b | 
+		aQueryDisplayModel timeToRun:
+			Time millisecondClockValue - startingTime.
+		SeekerUIHelpers safeInvoke: [ self appendResults: b ] ].
+
+
+	^ solver
+]
+
+{ #category : #'as yet unclassified' }
 SeekerQueriesPresenter >> notifySeekerSearchInputActivated [
 
 	tracer seeker notifyQueryFilterTextEntered: resultsFilter text
@@ -201,7 +210,7 @@ SeekerQueriesPresenter >> notifySeekerSearchInputActivated [
 { #category : #'as yet unclassified' }
 SeekerQueriesPresenter >> notifyTimeTravel: row [
 
-	tracer seeker notifyTimeTravel: (self getRowSerialization: row)
+	"tracer seeker notifyTimeTravel: (self getRowSerialization: row)"
 ]
 
 { #category : #'UI specific' }
@@ -262,80 +271,6 @@ Set the tables columns from the ordered collection
 
 	self applyResultFilter.
 	self updateDisplayedResults
-]
-
-{ #category : #'UI specific' }
-SeekerQueriesPresenter >> showResultsOfQuery: query withColumnsDefinition: aCollection [
-
-	"Of ColumnDefinition"
-
-	| bufferedSolver |
-	self halt.
-	columnsDefinition := aCollection. "of ColumnDefinition objects"
-	trimmingBlock := nil. "it is restarted to nil"
-	bufferedSolver := QSTimeBufferedResult newForQuery: query.
-	bufferedSolver timespan: 500. "update every 500 ms"
-	bufferedSolver bufferReadyCallback: [ :b | self appendResults: b ].
-	bufferedSolver buffersCapacity: 100.
-	queryResults := OrderedCollection new: 10000.
-self halt.
-	"initialize columns and trimmingBlock"
-	spColumns := OrderedCollection new.
-	spColumns add: (SpIndexTableColumn new width: 40).
-
-	"queryTitle label: queryResults title."
-	trimmingBlock := [ :row :col | 
-	                 col expandable
-		                 ifTrue: [ col readValueIn: row ]
-		                 ifFalse: [ 
-			                 (col readValueIn: row)
-				                 trimForRenderWidth: col width
-				                 usingFont: StandardFonts listFont
-				                 autoEllipsis: true ] ].
-
-	"for every columunDefinition (SeekerResultsColumn) in my input collection :
-   - Create a SpTableColumn (SpLinkTableColumn or SpStringTableColumn).
-   - set it's properties based in the input column definition (expandable, with, etc)
-   add it to an OrderedCollection
-Set the tables columns from the ordered collection
-"
-
-	columnsDefinition do: [ :each | 
-		| spCol |
-		spCol := each name = #bytecodeIndex
-			         ifTrue: [ "it's a link"
-				         SpLinkTableColumn
-					         title: each label
-					         evaluated: [ :row | "(each readValueIn: row) asString"'1' ]
-					         action: [ :row | 
-						         self notifyTimeTravel: row.
-						         tracer timeTravelToTraceTime:
-							         row bytecodeIndex asExecutedBytecodeTraceTime "row timeTravelToThis" ] ]
-			         ifFalse: [ 
-				         (SpStringTableColumn
-					          title: each label
-					          evaluated: [ :row | '2'"
-						          trimmingBlock value: (each readValueIn: row) asString" ])
-					         displayBold: [ :row | false"
-						         self valueMatchesSearchFilter: (each readValueIn: row)" ];
-					         yourself ].
-		"col beExpandable."
-		each expandable
-			ifTrue: [ 
-				spCol beExpandable
-				"self error: 'isExpandable'"
-				"Transcript show: 'It''s expandable' , String cr" ]
-			ifFalse: [ 
-				spCol beNotExpandable.
-				spCol width: each width
-				"Transcript show:
-					'not expandable with width: ' , col width asString , String cr " ].
-		spColumns add: spCol ].
-	table columns: spColumns.
-
-	self applyResultFilter.
-	self updateDisplayedResults.
-	bufferedSolver resolve
 ]
 
 { #category : #accessing }

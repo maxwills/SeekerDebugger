@@ -64,9 +64,15 @@ SkQueryExperimentalTracer >> currentStateAsRow [
 SkQueryExperimentalTracer >> currentStateInterface [
 
 	| csi |
-	csi := SeekerCurrentStateInterface new. "why a new instance? Because sometimes when making changes to the CSI, the debugger still clings to an outdate instance(making modification during a debug session)"
+	csi := SeekerCurrentStateInterface new. "why a new instance? Because sometimes when making changes to the CSI, the debugger still clings to an outdate instance(making modification during a debug session)... not sure why"
 	csi tracer: self.
 	^ csi "currentStateInterfaceInstance"
+]
+
+{ #category : #'object - api' }
+SkQueryExperimentalTracer >> currentStateInterfaceInstance [
+
+	^ currentStateInterfaceInstance
 ]
 
 { #category : #accessing }

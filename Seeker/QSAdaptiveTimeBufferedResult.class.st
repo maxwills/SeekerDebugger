@@ -42,7 +42,7 @@ QSAdaptiveTimeBufferedResult >> resolve [
 	minTime := 250.
 	maxTime := 1500.
 	timeFormulaIterationsMin := 1000.
-	timeFormulaIterationMax := 200000.
+	timeFormulaIterationMax := 150000.
 	shouldEmitBuffer := false.
 	currentBuffer := OrderedCollection new: 1000.
 	iterationCounter := 0.
