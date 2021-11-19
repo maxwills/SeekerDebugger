@@ -93,8 +93,8 @@ Class {
 		'exceptionSignalSelectors'
 	],
 	#classVars : [
-		'instanceCreationPrimitives',
-		'instanceCreationPrimitivesArray',
+		'InstanceCreationPrimitives',
+		'InstanceCreationPrimitivesArray',
 		'writingPrimitivesArray'
 	],
 	#category : #'Seeker-Interfaces'
@@ -106,12 +106,12 @@ SeekerCurrentStateInterface class >> initialize [
 	"Read the class comments for details on the magic literals"
 
 	| writingPrimitives |
-	instanceCreationPrimitives := #( 70 71 79 148 160 ).
-	instanceCreationPrimitivesArray := Array new: 160.
-	1 to: instanceCreationPrimitivesArray size do: [ :i | 
-	instanceCreationPrimitivesArray at: i put: false ].
-	instanceCreationPrimitives do: [ :each | 
-		instanceCreationPrimitivesArray at: each put: true ].
+	InstanceCreationPrimitives := #( 70 71 79 148 160 ).
+	InstanceCreationPrimitivesArray := Array new: 160.
+	1 to: InstanceCreationPrimitivesArray size do: [ :i | 
+	InstanceCreationPrimitivesArray at: i put: false ].
+	InstanceCreationPrimitives do: [ :each | 
+		InstanceCreationPrimitivesArray at: each put: true ].
 	writingPrimitivesArray := Array new: 659.
 	writingPrimitives := self writingPrimitives.
 	1 to: writingPrimitivesArray size do: [ :i | 
@@ -126,7 +126,7 @@ SeekerCurrentStateInterface class >> isInstantiationPrimitive: aNumber [
 	^ (aNumber < 1 or: [ aNumber > 160 ])
 		  ifTrue: [ false ]
 		  ifFalse: [ "160 is the maxium instantiation primitive in current pharo version (october 2021), and the size of the array" 
-			  instanceCreationPrimitivesArray at: aNumber ]
+			  InstanceCreationPrimitivesArray at: aNumber ]
 ]
 
 { #category : #testing }

@@ -400,7 +400,8 @@ SkQueryExperimentalTracer >> stepToNextIteration [
 
 	"or until control is at the next pc of the sender"
 
-	| node nodeOwner receiver stopContext senderContext senderNode |
+	| node nodeOwner receiver stopContext senderContext senderNode csi |
+	csi := currentStateInterfaceInstance.
 	node := self currentNode.
 	nodeOwner := node nonInlinedOwner.
 	nodeOwner isBlock ifFalse: [ ^ false ].
@@ -417,8 +418,9 @@ SkQueryExperimentalTracer >> stepToNextIteration [
 		self stepBytecodeUntilConditionIsTrue: [ 
 			self currentContext == stopContext or: [ "and: [ self currentNode ~= senderNode ]"
 				self currentContext receiver == receiver and: [ 
-					self currentNode = node and: [ 
-						self currentNode nonInlinedOwner = nodeOwner ] ] ] ] ]
+					csi willReturn or: [ 
+						self currentNode = node and: [ 
+							self currentNode nonInlinedOwner = nodeOwner ] ] ] ] ] ]
 ]
 
 { #category : #'as yet unclassified' }
