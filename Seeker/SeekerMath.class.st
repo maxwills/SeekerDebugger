@@ -15,7 +15,7 @@ SeekerMath class >> clampedInverseLerp: t a: a b: b [
 { #category : #public }
 SeekerMath class >> clampedLerp: t a: a b: b [
 
-	^ (self lerp: t a: a b: b) min: b max: b
+	^ (self lerp: t a: a b: b) min: b max: a
 ]
 
 { #category : #public }

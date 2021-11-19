@@ -5,6 +5,12 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
+SeekerUIHelpers class >> deferInvoke: aBlock [
+
+	UIManager default defer: aBlock
+]
+
+{ #category : #'as yet unclassified' }
 SeekerUIHelpers class >> safeInvoke: aBlock [
 
 	UIManager default uiProcess == Processor activeProcess

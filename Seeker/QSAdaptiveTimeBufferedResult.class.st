@@ -38,13 +38,11 @@ QSAdaptiveTimeBufferedResult >> resolve [
 
 	"This will call the buffer callback every x milliseconds or when the buffer reaches its full capacity"
 
-	| currentBuffer shouldEmitBuffer iterationCounter minTime maxTime timeFormulaIterationsRange timeFormulaIterationsMin timeFormulaIterationMax |
-	minTime := 200.
+	| currentBuffer shouldEmitBuffer iterationCounter minTime maxTime  timeFormulaIterationsMin timeFormulaIterationMax |
+	minTime := 250.
 	maxTime := 1500.
 	timeFormulaIterationsMin := 1000.
-	timeFormulaIterationMax := 100000.
-	timeFormulaIterationsRange := timeFormulaIterationMax
-	                              - timeFormulaIterationsMin.
+	timeFormulaIterationMax := 200000.
 	shouldEmitBuffer := false.
 	currentBuffer := OrderedCollection new: 1000.
 	iterationCounter := 0.
@@ -59,9 +57,7 @@ QSAdaptiveTimeBufferedResult >> resolve [
 		withTimedCallback: [ shouldEmitBuffer := true ]
 		every: [ 
 			| normalized |
-			normalized := (iterationCounter - timeFormulaIterationsMin
-				               min: timeFormulaIterationsRange
-				               max: 0) / timeFormulaIterationsRange.
+			normalized := SeekerMath clampedInverseLerp: iterationCounter  a: timeFormulaIterationsMin b:timeFormulaIterationMax .
 		SeekerMath clampedLerp: normalized a: minTime b: maxTime  ].
 	currentBuffer ifNotEmpty: [ bufferReadyCallback value: currentBuffer ]
 ]

@@ -62,17 +62,32 @@ SeekerQueriesPresenter >> executeAndShow: aQueryDisplayModel [
 
 	"aQueryDisplayModel: an instance of QueryDisplayModel"
 
-	| bufferedSolver startingTime |
+	| solver startingTime makeAdaptiveSolver makeTimedSolver |
 	startingTime := Time millisecondClockValue.
 	queryDisplayModel := aQueryDisplayModel.
 	trimmingBlock := nil. "it is restarted to nil"
-	bufferedSolver := QSAdaptiveTimeBufferedResult newForQuery:
-		                  aQueryDisplayModel query.
 
-	bufferedSolver bufferReadyCallback: [ :b | 
-		aQueryDisplayModel timeToRun:
-			Time millisecondClockValue - startingTime.
-		SeekerUIHelpers safeInvoke: [ self appendResults: b ] ].
+	makeTimedSolver := [ 
+	                   solver := QSTimedUpdateResult newForQuery:
+		                             aQueryDisplayModel query.
+	                   solver timespan: 500.
+	                   solver bufferReadyCallback: [ :b | 
+		                   aQueryDisplayModel timeToRun:
+			                   Time millisecondClockValue - startingTime.
+		                   SeekerUIHelpers safeInvoke: [ 
+			                   self appendResults: b ] ] ].
+
+	makeAdaptiveSolver := [ 
+	                      solver := QSAdaptiveTimeBufferedResult newForQuery:
+		                                aQueryDisplayModel query.
+	                      solver bufferReadyCallback: [ :b | 
+		                      aQueryDisplayModel timeToRun:
+			                      Time millisecondClockValue - startingTime.
+		                      SeekerUIHelpers safeInvoke:  [ 
+			                      self appendResults: b ] ] ].
+
+	"makeTimedSolver value."
+	makeAdaptiveSolver value.
 
 	queryResults := OrderedCollection new: 1000.
 
@@ -132,7 +147,7 @@ Set the tables columns from the ordered collection
 
 	"self applyResultFilter."
 	self updateDisplayedResults.
-	[ bufferedSolver resolve ] fork
+	[ solver resolve ] fork
 ]
 
 { #category : #'as yet unclassified' }
