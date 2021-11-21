@@ -85,6 +85,19 @@ SeekerQueriesPresenter >> initializeTable [
 		         yourself
 ]
 
+{ #category : #accessing }
+SeekerQueriesPresenter >> inspectNewObjectInstanceAt: bytecodeIndex [
+
+	"The object is about to be isntantiated when time is bytecodeIndex. This means, it is exists in the next bytecode"
+
+	| firstLivingBytecodeIndex |
+	firstLivingBytecodeIndex := bytecodeIndex + 1.
+	tracer timeTravelToTraceTime:
+		firstLivingBytecodeIndex asExecutedBytecodeTraceTime.
+	"At this point the object exists, but there is no Tid (need to fix this later).. (corrected.. the tid should match this firstLivingBytecodeIndex now"
+	self tracer currentStateInterface context top inspect
+]
+
 { #category : #'as yet unclassified' }
 SeekerQueriesPresenter >> notifySeekerSearchInputActivated [
 
@@ -131,14 +144,23 @@ Set the tables columns from the ordered collection
 					       evaluated: [ :row | each value: row ]
 					       action: [ :row | 
 						       self notifyTimeTravel: row.
-						       tracer timeTravelToTraceTime: row bytecodeIndex asExecutedBytecodeTraceTime"row timeTravelToThis" ] ]
+						       tracer timeTravelToTraceTime:
+							       row bytecodeIndex asExecutedBytecodeTraceTime "row timeTravelToThis" ] ]
 			       ifFalse: [ 
-				       (SpStringTableColumn
-					        title: each label
-					        evaluated: [ :row | trimBlock value: row value: each ])
-					       displayBold: [ :row | 
-						       self valueMatchesSearchFilter: (each value: row) ];
-					       yourself ].
+				       each key = #inspectLabel
+					       ifTrue: [ 
+						       SpLinkTableColumn
+							       title: each label
+							       evaluated: [ :row | each value: row ]
+							       action: [ :row | 
+							       self inspectNewObjectInstanceAt: row bytecodeIndex ] ]
+					       ifFalse: [ 
+						       (SpStringTableColumn
+							        title: each label
+							        evaluated: [ :row | trimBlock value: row value: each ])
+							       displayBold: [ :row | 
+								       self valueMatchesSearchFilter: (each value: row) ];
+							       yourself ] ].
 		"col beExpandable."
 		each expandable
 			ifTrue: [ 

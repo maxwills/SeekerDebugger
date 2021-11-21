@@ -76,8 +76,12 @@ SkQueryExperimentalTracer >> doAstStepPostProcessWithPrevNode: preProcessAstNode
 		| instancedObj |
 		instancedObj := currentStateInterfaceInstance context top.
 		instantiationFlag := false.
-		instantiationCounter += 1.
-		instantiationIDDictionary at: instancedObj put: instantiationCounter ].
+		instancedObj class = Metaclass ifFalse: [ 
+			self registerAliasFor: instancedObj.
+			instantiationCounter += 1.
+			instantiationIDDictionary
+				at: instancedObj
+				put: instantiationCounter ] ].
 	super
 		doAstStepPostProcessWithPrevNode: preProcessAstNode
 		andPrevContext: preContext
@@ -185,6 +189,7 @@ SkQueryExperimentalTracer >> objectIsLocal: anObject [
 
 	"Beware that the execution corresponds only to the already executed part."
 
+	anObject class = Metaclass ifTrue: [ ^ true ].
 	^ instantiationIDDictionary includesKey: anObject
 ]
 
@@ -301,16 +306,13 @@ SkQueryExperimentalTracer >> recordSnapshotOfObject: anObject [
 { #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> registerAliasFor: anObject [
 
+	anObject class = Metaclass ifTrue: [ ^ self ].
 	aliasesDictionary
 		at: anObject
-		ifAbsentPut: [ "This could be also the executed bytecode, but this might be good enough and it is a smaller number ( may be even consider counting context jump!)" 
+		ifAbsentPut: [
 			byteCountCounter ].
 
 	(instantiationIDDictionary includesKey: anObject) ifFalse: [ 
-		"anObject seekMyAlias = 1841 ifTrue: [ 
-			Transcript
-				show: 'markA' , byteCountCounter asString;
-				cr ]."
 		(nonLocalObjects includes: anObject) ifFalse: [ 
 			nonLocalObjects add: anObject ] ]
 ]

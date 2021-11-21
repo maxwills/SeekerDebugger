@@ -335,26 +335,25 @@ SeekerTraceQueriesInterface >> forInstancesCreation [
 	| t |
 	t := AutoType new.
 	^ self baseQueryForInstancesCreation collect: [ :state | 
-		  | msgRcvrClass msgRcvrPackage instMsgReceiver |
-		  instMsgReceiver := state context at:
-			                     state context stackPtr - state node numArgs. "Heuristics"
-		  msgRcvrClass := instMsgReceiver.
-		  msgRcvrPackage := instMsgReceiver isClass
-			                    ifTrue: [ instMsgReceiver package name ]
-			                    ifFalse: [ instMsgReceiver class package name ].
+		  | msgRcvrPackage msgReceiver |
+		  msgReceiver := state messageReceiver.
+		  msgRcvrPackage := msgReceiver isClass
+			                    ifTrue: [ msgReceiver package name ]
+			                    ifFalse: [ msgReceiver class package name ].
 		  t newWith
 			  bytecodeIndex: state bytecodeIndex;
 			  methodSelector: state methodSelector;
 			  receiverClass: state receiverClass;
-			  messageReceiver: instMsgReceiver;
+			  messageReceiver: msgReceiver;
 			  messageArguments: state node arguments;
-			  messageReceiverClass: msgRcvrClass class;
+			  messageReceiverClass: msgReceiver class;
 			  messageSelector: state node selector;
 			  messageReceiverPackage: msgRcvrPackage;
-			  creationFormattedDescription: (instMsgReceiver isClass
-					   ifTrue: [ instMsgReceiver name ]
-					   ifFalse: [ instMsgReceiver class name ]) , ' ['
+			  creationFormattedDescription: (msgReceiver isClass
+					   ifTrue: [ msgReceiver name ]
+					   ifFalse: [ msgReceiver class name ]) , ' ['
 				  , msgRcvrPackage , ']';
+			  inspectLabel: 'inspect';
 			  endWith ]
 ]
 

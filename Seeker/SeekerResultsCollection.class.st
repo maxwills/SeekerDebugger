@@ -195,9 +195,9 @@ SeekerResultsCollection >> forInstancesCreation [
 	self addColumn bc
 		key: #bytecodeIndex;
 		label: 'ExecBC'.
-	"self addColumn sm
-		key: #messageReceiverPackage;
-		label: 'Package'."
+	self addColumn xs
+		key: #inspectLabel;
+		label: 'Inspect'.
 	self addColumn lg
 		key: #creationFormattedDescription;
 		label: 'About to instantiate a: '.
