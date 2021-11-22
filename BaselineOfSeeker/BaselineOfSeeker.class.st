@@ -20,7 +20,7 @@ BaselineOfSeeker >> baseline: spec [
 		spec
 			package: 'EvaluatorDebugger-Base';
 			package: 'Seeker'
-			with: [ spec requires: #( 'EvaluatorDebugger-Base' ) ];
+			with: [ spec requires: #( 'EvaluatorDebugger-Base' 'AutoType' 'MockFlex') ];
 			package: 'Seeker-Tests' with: [ ";
 			package: 'SeekerDebuggerSpy'
 			with: [ spec requires: #( 'Seeker' ) ]" 
