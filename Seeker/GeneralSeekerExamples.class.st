@@ -26,3 +26,51 @@ GeneralSeekerExamples class >> markersExample [
 	SeekerSessionHelpers marker. "Third one"
 	SeekerGlobals instance auxiliaryTempStorage1 value. "Fourth one is inside this block"
 ]
+
+{ #category : #'as yet unclassified' }
+GeneralSeekerExamples class >> reversibilityExample [
+
+	| aCollection |
+	aCollection := OrderedCollection new.
+	self reversibilityExampleWith: aCollection
+]
+
+{ #category : #'as yet unclassified' }
+GeneralSeekerExamples class >> reversibilityExampleWith: aCollection [
+
+	| aDistractingCollection |
+	aDistractingCollection := OrderedCollection new.
+
+	aCollection add: 1.
+	aCollection add: 2.
+	aCollection add: 3.
+
+	aDistractingCollection add: -1.
+
+	aCollection removeAll.
+	aCollection add: 4.
+	aCollection add: 5.
+
+	aDistractingCollection add: -2.
+
+	aCollection add: aCollection.
+	aCollection add: 6.
+	aCollection add: 7.
+	aDistractingCollection add: -3
+]
+
+{ #category : #'as yet unclassified' }
+GeneralSeekerExamples class >> tempClassBuilderExample [
+
+	| myNewClass obj1 obj2 result |
+	myNewClass := (Object << #MyNonInstalledClass)
+		              slots: {  };
+		              tag: 'BugCollection-Tests';
+		              package: 'Seeker';
+		              build.
+	myNewClass compile: '+ anObject
+		^ #aResultOf+'.
+	obj1 := myNewClass new.
+	obj2 := myNewClass new.
+	result := obj1 + obj2
+]

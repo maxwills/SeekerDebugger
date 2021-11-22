@@ -43,6 +43,15 @@ SeekerQueriesPresenter >> applyResultFilter [
 				                                   val includesSubstring: f ] ] ]
 ]
 
+{ #category : #accessing }
+SeekerQueriesPresenter >> getInstantiatedObjectAt: aNumber [
+
+	self tracer bytecodeIndex > aNumber ifFalse: [ 
+		self tracer timeTravelToTraceTime:
+			aNumber asExecutedBytecodeTraceTime ].
+	^ self tracer currentStateInterface context top
+]
+
 { #category : #'as yet unclassified' }
 SeekerQueriesPresenter >> getRowSerialization: row [
 
@@ -99,6 +108,12 @@ SeekerQueriesPresenter >> inspectNewObjectInstanceAt: bytecodeIndex [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerQueriesPresenter >> inspectOid: aNumber [
+
+	(self getInstantiatedObjectAt: aNumber) inspect
+]
+
+{ #category : #'as yet unclassified' }
 SeekerQueriesPresenter >> notifySeekerSearchInputActivated [
 
 	tracer seeker notifyQueryFilterTextEntered: resultsFilter text
@@ -108,6 +123,44 @@ SeekerQueriesPresenter >> notifySeekerSearchInputActivated [
 SeekerQueriesPresenter >> notifyTimeTravel: row [
 
 	tracer seeker notifyTimeTravel: (self getRowSerialization: row)
+]
+
+{ #category : #'as yet unclassified' }
+SeekerQueriesPresenter >> seekAllChangesFor: aNumber [
+
+	(self getInstantiatedObjectAt: aNumber)
+		seekAndDisplayAllMyChanges
+]
+
+{ #category : #'as yet unclassified' }
+SeekerQueriesPresenter >> seekAllMessagesFor: aNumber [
+
+	(self getInstantiatedObjectAt: aNumber)
+		seekAndDisplayAllMessagesSentToMe
+]
+
+{ #category : #'as yet unclassified' }
+SeekerQueriesPresenter >> showInstanceMenuFor: aNumber [
+
+	| menu |
+	menu := MenuMorph new.
+	menu
+		add: 'Inspect the instance'
+		target: self
+		selector: #inspectOid:
+		argument: aNumber.
+	menu
+		add: 'List all messages sent this object'
+		target: self
+		selector: #seekAllMessagesFor:
+		argument: aNumber.
+	menu
+		add:
+		'List all assignments to the instance variables of this object'
+		target: self
+		selector: #seekAllChangesFor:
+		argument: aNumber.
+	menu invokeModal
 ]
 
 { #category : #'UI specific' }
@@ -150,10 +203,10 @@ Set the tables columns from the ordered collection
 				       each key = #inspectLabel
 					       ifTrue: [ 
 						       SpLinkTableColumn
-							       title: each label
-							       evaluated: [ :row | each value: row ]
+							       title: 'Actions'
+							       evaluated: [ :row | 'menu...' ]
 							       action: [ :row | 
-							       self inspectNewObjectInstanceAt: row bytecodeIndex ] ]
+							       self showInstanceMenuFor: row bytecodeIndex + 1 ] ]
 					       ifFalse: [ 
 						       (SpStringTableColumn
 							        title: each label

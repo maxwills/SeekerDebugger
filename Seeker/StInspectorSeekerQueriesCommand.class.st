@@ -52,11 +52,11 @@ StInspectorSeekerQueriesCommand >> execute [
 { #category : #'as yet unclassified' }
 StInspectorSeekerQueriesCommand >> seekAllChanges: anObject [
 
-	anObject seekAndDisplayAllMessagesSentToMe  
+	anObject seekAndDisplayAllMyChanges  
 ]
 
 { #category : #'as yet unclassified' }
 StInspectorSeekerQueriesCommand >> seekAllMessages: anObject [
 
-	anObject seekAndDisplayAllMyChanges
+	anObject seekAndDisplayAllMessagesSentToMe
 ]
