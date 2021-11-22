@@ -243,22 +243,6 @@ SkMappingTracer >> exploreBytecodesForDoIt [
 ]
 
 { #category : #'as yet unclassified' }
-SkMappingTracer >> findStepIndexOfFirstStatementInSameSequenceOfStep: aNumber [
-
-	| step |
-	aNumber <= 0 ifTrue: [ ^ 0 ].
-	aNumber > trace size ifTrue: [ ^ 0 ].
-	step := trace at: aNumber.
-	step topStatementID indexInSequence = 1 ifTrue: [ ^ aNumber ].
-	"This could be implemented recursivelly, but there is a potential problem. If a step does not have indexInSequence as 1 even if it is the first, the search will continue and an erroneous step will be returned"
-	^ self
-		  reverseFindStep: [ :eachStep | 
-			  (step isSiblingOf: eachStep) and: [ 
-				  eachStep topStatementID indexInSequence = 1 ] ]
-		  startingIndex: aNumber - 1
-]
-
-{ #category : #'as yet unclassified' }
 SkMappingTracer >> findStepIndexOfLastStepOfTest [
 
 	| targetContext |
@@ -266,58 +250,6 @@ SkMappingTracer >> findStepIndexOfLastStepOfTest [
 		                 findContextInStack: [ :aContext | 
 		                 aContext sender methodSelector = #performTest ]
 		                 startingContext: self currentContext
-]
-
-{ #category : #'as yet unclassified' }
-SkMappingTracer >> findStepOfFirstRecursionCallFor: aNumber [
-
-	"First analize the stack path to search the original call, and its path"
-
-	| startingStep startingReceiversClass startingMethodSelector indexOfStatementNotInRecursion targetDescriptor |
-	startingStep := trace at: aNumber.
-	startingReceiversClass := startingStep receiverClass.
-	startingMethodSelector := startingStep methodSelector.
-	indexOfStatementNotInRecursion := 0.
-	indexOfStatementNotInRecursion := startingStep
-		                                  reverseFindStatement: [ 
-			                                  :aStatement | 
-			                                  | seqId |
-			                                  seqId := aStatement
-				                                           sequenceStaticID.
-			                                  seqId receiverClass
-			                                  ~= startingReceiversClass or: [ 
-				                                  seqId methodSelector
-				                                  ~= startingMethodSelector ] ]
-		                                  startingIndex:
-		                                  startingStep size - 1.
-
-	"Must create an indexless descriptor of the target path"
-	targetDescriptor := SkStepDescriptor new.
-	"Note that we have indexOfStatementNotInRecursion, so the first statement inside the recursion is the next one"
-	1 to: indexOfStatementNotInRecursion + 1 do: [ :index | 
-		| statement |
-		statement := startingStep at: index.
-		targetDescriptor add: statement clone].
-	"Now, we want to actually stop at the first statement, so we enforce that in the targetDescriptor"
-	targetDescriptor topStatementID indexInSequence: 1.
-	"Got the target descriptor path. Now I need the execution index of a step with the same path"
-	trace do: [ :eachStep | 
-		(eachStep hasSamePathAs: targetDescriptor) ifTrue: [ 
-			^ eachStep executionIndex ] ].
-	"This is an error, and in practice this should be unreachable"
-	^ 0
-]
-
-{ #category : #'as yet unclassified' }
-SkMappingTracer >> findStepsWhereMethodSelectorIs: aSymbol [
-^ trace select: [ :eachStepDescriptor| eachStepDescriptor methodSelector = aSymbol ].
-	
-]
-
-{ #category : #'as yet unclassified' }
-SkMappingTracer >> findStepsWhereMethodSelectorIs: aSymbol ofClass: aClass [
-^ trace select: [ :eachStepDescriptor| (eachStepDescriptor methodSelector = aSymbol) and:[eachStepDescriptor receiverClass = aClass] ].
-	
 ]
 
 { #category : #'as yet unclassified' }
@@ -676,62 +608,10 @@ SkMappingTracer >> restartTestAndStopAtFirstLine [
 		self currentStepDescriptor hasSamePathAs: indexlessStepDescriptor ]
 ]
 
-{ #category : #'as yet unclassified' }
-SkMappingTracer >> reverseFindStep: aBlock startingIndex: aNumber [
-"aBlock is predicate for a stepDescriptor. If it evaluates to true, the index of such step is returned"
-	|stepDescriptor|
-	(aNumber > trace size) ifTrue: [ ^ 0 ].
-	(aNumber <= 0) ifTrue: [ ^0 ].
-	stepDescriptor := trace at: aNumber.
-	(aBlock value: stepDescriptor) ifTrue: [ ^aNumber ].
-	^self reverseFindStep: aBlock startingIndex: aNumber -1.
-]
-
 { #category : #initialization }
 SkMappingTracer >> setStartingPointAndMap: aContext [
 	self setSelectedContextAsStartingPoint: aContext.
 	self autoMapFromStartingPoint.
-]
-
-{ #category : #'debug - stepping' }
-SkMappingTracer >> stepBackInto [
-
-	self doAndUpdateSessionAfter: [ 
-		| currentStep targetStepIndex targetStep stepCondition |
-		currentStep := self currentStepDescriptor.
-		targetStepIndex := currentStep executionIndex - 1.
-		targetStepIndex <= 0 ifTrue: [ ^ self error: 'something' ].
-		targetStep := trace at: targetStepIndex.
-
-		stepCondition := [ 
-		                 self currentStepDescriptor executionIndex
-		                 >= targetStepIndex ].
-		self restart. "Ideally, we would restart from the closes context. TODO that"
-		self stepUntilConditionIsTrue: stepCondition ]
-]
-
-{ #category : #'debug - stepping' }
-SkMappingTracer >> stepBackOver [
-
-	| startingStepDescriptor previousStepOverStepIndex targetStep stepCondition |
-	startingStepDescriptor := self currentStepDescriptor.
-	previousStepOverStepIndex := self previousBackOverStepIndex:
-		                             startingStepDescriptor.
-	previousStepOverStepIndex = 0 ifTrue: [ 
-		self error: 'There are no more "StepBackOver" step candidates' ].
-
-	targetStep := trace at: previousStepOverStepIndex.
-	(targetStep comparePathTo: userStartTraceTime) < 0
-		ifTrue: [ 
-			stepCondition := [ 
-			                 self currentStepDescriptor hasSamePathAs:
-				                 userStartTraceTime ] ]
-		ifFalse: [ 
-		stepCondition := [ currentStepIndex = previousStepOverStepIndex ] ].
-
-	self doAndUpdateSessionAfter: [ 
-		self restart. "Ideally, we would restart from the closes context. TODO that"
-		self stepUntilConditionIsTrue: stepCondition ]
 ]
 
 { #category : #'as yet unclassified' }

@@ -7,8 +7,28 @@ Class {
 		'width',
 		'expandable'
 	],
-	#category : #'Seeker-Data'
+	#classInstVars : [
+		'shouldLog'
+	],
+	#category : #'Seeker-UI'
 }
+
+{ #category : #testing }
+ColumnDefinition class >> acceptsLoggingOfCompilation [
+
+	^ shouldLog ifNil: [ shouldLog := true ]
+]
+
+{ #category : #'as yet unclassified' }
+ColumnDefinition class >> doWithoutLogging: aBlock [
+
+	| oldVal |
+	shouldLog ifNil: [ shouldLog := true ].
+	oldVal := shouldLog.
+	shouldLog := false.
+
+	aBlock ensure: [ shouldLog := oldVal ]
+]
 
 { #category : #'instance creation' }
 ColumnDefinition class >> new [
@@ -22,20 +42,21 @@ ColumnDefinition class >> newForKey: aSymbol [
 
 	| col colClass |
 	EpMonitor disableDuring: [ 
-		colClass := (self << #AnonymousColumnDefinitionX)
-			            slots: {  };
-			            tag: 'Data';
-			            package: 'Seeker';
-			            build.
+		self doWithoutLogging: [ 
+			colClass := (self << #AnonymousColumnDefinitionX)
+				            slots: {  };
+				            tag: 'Data';
+				            package: 'Seeker';
+				            build.
 
-		colClass compile: 'readValueIn: anObject
+			colClass compile: 'readValueIn: anObject
 	^ anObject ' , aSymbol.
-		col := colClass basicNew
-			       initialize;
-			       yourself.
-		col privateKey: aSymbol.
-		col label: aSymbol.
-		^ col ]
+			col := colClass basicNew
+				       initialize;
+				       yourself.
+			col privateKey: aSymbol.
+			col label: aSymbol.
+			^ col ] ]
 ]
 
 { #category : #'as yet unclassified' }

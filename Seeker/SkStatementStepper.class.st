@@ -191,7 +191,6 @@ SkStatementStepper >> initialize [
 	rememberContextStackDepth := false.
 	maxExecutedBytecode := 1.
 	astStepCounter := 0.
-	trace := SkTrace new.
 	currentStepIndex := 1.
 	byteCountCounter := 1.
 	stepBC := 1
@@ -279,21 +278,6 @@ SkStatementStepper >> onTracedStatementChanged [
 
 ]
 
-{ #category : #'debug - stepping' }
-SkStatementStepper >> previousBackOverStepIndex: aStepDescriptor [
-
-	| startingPathDepth |
-	startingPathDepth := aStepDescriptor pathDepth.
-	"First, should calculate the target step."
-	trace size to: 1 by: -1 do: [ :index | 
-		| stepDescriptor |
-		stepDescriptor := trace at: index.
-		(stepDescriptor pathDepth <= startingPathDepth and: [ 
-			 (stepDescriptor hasSamePathAs: aStepDescriptor) not ]) ifTrue: [ 
-			^ index ] ].
-	^ 0 "There was no previousBackOverStep"
-]
-
 { #category : #accessing }
 SkStatementStepper >> previousBytecodeContextStackDepth [
 
@@ -332,7 +316,6 @@ SkStatementStepper >> restartAtBytecodeOne [
 	astStepCounter := 0.
 	astStepCounter := 1.
 	contextJumpCount := 0.
-	trace removeAll.
 	currentStepIndex := 0.
 	preventNextTimeRestoration := false.
 
@@ -645,12 +628,6 @@ SkStatementStepper >> timeTravelToTraceTime: aTraceTime [
 SkStatementStepper >> timeTravelToUserStart [
 
 	self safeTimeTravelToTraceTime: userStartTraceTime
-]
-
-{ #category : #accessing }
-SkStatementStepper >> trace [
-	"Returns the collection of steps signatures"
-	^trace
 ]
 
 { #category : #'as yet unclassified' }
