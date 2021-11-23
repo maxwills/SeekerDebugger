@@ -3,24 +3,33 @@ Class {
 	#superclass : #SkStatementStepper,
 	#instVars : [
 		'cachedCurrentNode',
+		'cachedCurrentNodeTimeKey',
 		'cachedCurrentStatementNode',
-		'cachedCurrentContext'
+		'cachedCurrentContextTimeKey',
+		'cachedCurrentContext',
+		'cachedTimeKey'
 	],
 	#category : #'Seeker-Tracer'
 }
 
 { #category : #'as yet unclassified' }
-SkOptimizedStatementStepper >> currentNode [
+SkOptimizedStatementStepper >> currentContext [
 
-	cachedCurrentNode ifNotNil: [ ^ cachedCurrentNode ].
-	^ super currentNode
+	^ executedBytecode == cachedCurrentContextTimeKey
+		  ifTrue: [ cachedCurrentContext ]
+		  ifFalse: [ 
+			  cachedCurrentContextTimeKey := executedBytecode.
+			  cachedCurrentContext := super currentContext ]
 ]
 
 { #category : #'as yet unclassified' }
-SkOptimizedStatementStepper >> currentStatementNode [
+SkOptimizedStatementStepper >> currentNode [
 
-	cachedCurrentStatementNode ifNotNil: [ ^ cachedCurrentStatementNode ].
-	^ super currentStatementNode
+	^ executedBytecode == cachedCurrentNodeTimeKey
+		  ifTrue: [ cachedCurrentNode ]
+		  ifFalse: [ 
+			  cachedCurrentNodeTimeKey := executedBytecode.
+			  cachedCurrentNode := super currentNode ]
 ]
 
 { #category : #accessing }
@@ -28,8 +37,8 @@ SkOptimizedStatementStepper >> doAstStepPostProcessWithPrevNode: preProcessAstNo
 
 	| currentNode currentStatementNode contextChanged statementChanged |
 	"Dont do a super call here!"
-	currentNode := currentContext method sourceNodeForPC:
-		               currentContext pc.
+	currentNode := self currentNode "currentContext method sourceNodeForPC:
+		               currentContext pc".
 	currentStatementNode := currentNode statementNode.
 	contextChanged := currentContext ~~ preContext.
 	statementChanged := contextChanged or: [ 
@@ -51,6 +60,9 @@ SkOptimizedStatementStepper >> initialize [
 { #category : #starting }
 SkOptimizedStatementStepper >> restartAtBytecodeOne [
 
+	cachedTimeKey := nil.
+	cachedCurrentNodeTimeKey := nil.
+	cachedCurrentContextTimeKey := nil.
 	cachedCurrentNode := nil.
 	cachedCurrentContext := nil.
 	cachedCurrentStatementNode := nil.

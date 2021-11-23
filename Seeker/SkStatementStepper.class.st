@@ -44,7 +44,6 @@ Class {
 		'trace',
 		'currentStepIndex',
 		'astStepCounter',
-		'byteCountCounter',
 		'maxExecutedBytecode',
 		'stepBC',
 		'interruptedProcess',
@@ -59,7 +58,8 @@ Class {
 		'tracedContextCount',
 		'iteratingFlag',
 		'emergencyStopFlag',
-		'preventNextTimeRestoration'
+		'preventNextTimeRestoration',
+		'executedBytecode'
 	],
 	#category : #'Seeker-Tracer'
 }
@@ -69,7 +69,7 @@ SkStatementStepper >> bytecodeIndex [
 
 	"total number of bytecode steps executed"
 
-	^ byteCountCounter
+	^ executedBytecode
 ]
 
 { #category : #accessing }
@@ -158,7 +158,7 @@ SkStatementStepper >> executionProgress [
 
 	""
 
-	^ (100.0 * byteCountCounter / maxExecutedBytecode) asFloat
+	^ (100.0 * executedBytecode / maxExecutedBytecode) asFloat
 ]
 
 { #category : #'updating - session' }
@@ -178,6 +178,7 @@ SkStatementStepper >> hasSignalledUnhandledException [
 { #category : #initialization }
 SkStatementStepper >> initialize [
 
+	executedBytecode := 0.
 	super initialize.
 	iteratingFlag := false.
 	emergencyStopFlag := false.
@@ -192,7 +193,7 @@ SkStatementStepper >> initialize [
 	maxExecutedBytecode := 1.
 	astStepCounter := 0.
 	currentStepIndex := 1.
-	byteCountCounter := 1.
+	executedBytecode := 1.
 	stepBC := 1
 ]
 
@@ -312,7 +313,7 @@ SkStatementStepper >> restartAtBytecodeOne [
 	contextOfExecutedBytecodeOne ifNil: [ 
 		^ self error: 'Must specify a starting context for record' ].
 	self clearSeekerCache.
-	byteCountCounter := 1.
+	executedBytecode := 1.
 	astStepCounter := 0.
 	astStepCounter := 1.
 	contextJumpCount := 0.
@@ -467,8 +468,8 @@ SkStatementStepper >> stepBytecode [
 	self doAstStepPreProcess.
 	currentContext stepIntoQuickMethod: true.
 	currentContext := session interruptedProcess step.
-	byteCountCounter := byteCountCounter + 1.
-	maxExecutedBytecode := maxExecutedBytecode max: byteCountCounter.
+	executedBytecode := executedBytecode + 1.
+	maxExecutedBytecode := maxExecutedBytecode max: executedBytecode.
 	previousContext stepIntoQuickMethod: false.
 	self
 		doAstStepPostProcessWithPrevNode: startingNode
@@ -524,7 +525,7 @@ SkStatementStepper >> stepBytecodes: aNumber [
 
 	self doAndUpdateSessionAfter: [ 
 		| targetBytecode |
-		targetBytecode := 1 max: byteCountCounter + aNumber.
+		targetBytecode := 1 max: executedBytecode + aNumber.
 		self timeTravelToBytecodeIndex: targetBytecode ]
 ]
 
@@ -603,8 +604,8 @@ SkStatementStepper >> stepUntilConditionIsTrue: aBlock [
 SkStatementStepper >> timeTravelToBytecodeIndex: aNumber [
 
 	self doAndUpdateSessionAfter: [ 
-		aNumber = byteCountCounter ifTrue: [ ^ self ].
-		aNumber > byteCountCounter
+		aNumber = executedBytecode ifTrue: [ ^ self ].
+		aNumber > executedBytecode
 			ifTrue: [ "no need to restart"
 				| targetTraceTime |
 				targetTraceTime := aNumber asExecutedBytecodeTraceTime.

@@ -38,6 +38,12 @@ ColumnDefinition class >> new [
 ]
 
 { #category : #'instance creation' }
+ColumnDefinition class >> newCollectionForKeys: aCollection [
+
+	^ aCollection collect: [ :each | self newForKey: each ]
+]
+
+{ #category : #'instance creation' }
 ColumnDefinition class >> newForKey: aSymbol [
 
 	| col colClass |
@@ -63,6 +69,16 @@ ColumnDefinition class >> newForKey: aSymbol [
 ColumnDefinition class >> unitWidth [
 
 	^ 60
+]
+
+{ #category : #'as yet unclassified' }
+ColumnDefinition >> bc [
+
+	"makes the column width of bytecode column"
+
+	self width: 70.
+	self expandable: false.
+	^ self
 ]
 
 { #category : #accessing }

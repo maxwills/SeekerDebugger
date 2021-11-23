@@ -238,7 +238,7 @@ SkMappingTracer >> exploreBytecodesForDoIt [
 		                    asTraceTimeReference.
 	self doAndUpdateSessionAfter: [ 
 		self restartAtBytecodeOne andThen stepToEnd.
-		userFinalBytecode := byteCountCounter - 1.
+		userFinalBytecode := executedBytecode - 1.
 		self safeTimeTravelToTraceTime: currentTraceTime ]
 ]
 

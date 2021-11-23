@@ -310,7 +310,7 @@ SkQueryExperimentalTracer >> registerAliasFor: anObject [
 	aliasesDictionary
 		at: anObject
 		ifAbsentPut: [ "This could be also the executed bytecode, but this might be good enough and it is a smaller number ( may be even consider counting context jump!)" 
-			byteCountCounter ].
+			executedBytecode ].
 
 	(instantiationIDDictionary includesKey: anObject) ifFalse: [ 
 		"anObject seekMyAlias = 1841 ifTrue: [ 

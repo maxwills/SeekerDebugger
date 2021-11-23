@@ -72,6 +72,10 @@ SeekerQueriesPresenter >> executeAndShow: aQueryDisplayModel [
 	"initialize columns and trimmingBlock"
 	spColumns := OrderedCollection new.
 	spColumns add: (SpIndexTableColumn new width: 40).
+	spColumns add: (SpImageTableColumn new
+						  width: 20;
+						  evaluated: [ self iconNamed: #glamorousInspect ];
+						  yourself).
 
 	"queryTitle label: queryResults title."
 	trimmingBlock := [ :row :col | 
@@ -167,6 +171,23 @@ SeekerQueriesPresenter >> initializeTable [
 
 	table := self newTable
 		         beResizable;
+		         " beCellSelection;""whenActivatedDo: [ :item | self tableItemActivated: item ];
+					activateOnSingleClick;"
+		         contextMenu: [ 
+			         SpMenuPresenter new
+				         addItem: [ :item | 
+					         item
+						         name: 'Test 1';
+						         action: [ "Action" ] ];
+				         addItem: [ :item | 
+					         item
+						         name: 'Test 2';
+						         action: [ "Action" ] ];
+				         addItem: [ :item | 
+					         item
+						         name: 'Test 3';
+						         action: [ "Action" ] ];
+				         "openWithSpecAt: self currentHand position"yourself ];
 		         yourself
 ]
 
@@ -271,6 +292,13 @@ Set the tables columns from the ordered collection
 
 	self applyResultFilter.
 	self updateDisplayedResults
+]
+
+{ #category : #'as yet unclassified' }
+SeekerQueriesPresenter >> tableItemActivated: item [
+
+	self halt.
+	^ SeekerMessageDialog showDialog: 'activated' withTitle: 'activated'
 ]
 
 { #category : #accessing }

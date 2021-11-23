@@ -15,13 +15,22 @@ SkAllMessageSendsLC >> description [
 { #category : #executing }
 SkAllMessageSendsLC >> executeCommand [
 
-	| query queryDisplayModel columns |
-	query := self tracer queries forMessageSends collect:
-		         SeekerProjectionFunctions projectionForMessageSends.
+	| query queryDisplayModel columns projection |
+	projection := SkProjectionMessageSends new.
+	query := self tracer queries forMessageSends collect: projection.
 	queryDisplayModel := QueryDisplayModel newForQuery: query.
 	columns := { 
-		           (ColumnDefinition newForKey: #bytecodeIndex).
-		           (ColumnDefinition newForKey: #methodSelector) }.
+		           (ColumnDefinition newForKey: #bytecodeIndex) bc.
+		           (ColumnDefinition newForKey: #methodSelector) sm.
+		           (ColumnDefinition newForKey: #receiverClass) sm.
+		           (ColumnDefinition newForKey: #messageArguments) sm.
+		           (ColumnDefinition newForKey: #messageReceiver) sm.
+		           (ColumnDefinition newForKey: #messageReceiverOid) xs.
+		           (ColumnDefinition newForKey: #formattedMessageReceiver)
+			           md.
+		           (ColumnDefinition newForKey: #messageReceiverClass) sm.
+		           (ColumnDefinition newForKey: #messageSelector) sm }.
+
 	queryDisplayModel columns: columns.
 
 
