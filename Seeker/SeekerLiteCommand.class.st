@@ -72,15 +72,10 @@ SeekerLiteCommand >> execute [
 	UIManager default showWaitCursorWhile: [ 
 		logCommands
 			ifTrue: [ 
-				[ 
 				self seeker notifyCommandExecution: self subEvent: #clicked.
 				time := Time millisecondClockValue.
 				self executeCommand.
 				self seeker notifyCommandExecution: self subEvent: #done ]
-					on: Exception
-					do: [ :e | 
-						self seeker notifyCommandExecution: self subEvent: #failed.
-						self notifyError: e messageText ] ]
 			ifFalse: [ self executeCommand ] ] ] fork
 ]
 

@@ -66,6 +66,37 @@ SeekerResultsCollection >> filteredItems: aString [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerResultsCollection >> forAssignmentsOfAnyInstanceVariables [
+
+	columns removeAll.
+	self addColumn bc
+		key: #bytecodeIndex;
+		label: 'ExecBC'.
+	self addColumn sm
+		key: #receiverClass;
+		label: 'Object Class'.
+	self addColumn sm
+		key: #isExternal;
+		label: 'isExternal'.
+	self addColumn sm
+		key: #methodSelector;
+		label: 'Method Selector'.
+	self addColumn sm
+		key: #variableName;
+		label: 'Variable'.
+	self addColumn sm
+		key: #valueChangedFrom;
+		label: 'Current Value'.
+	self addColumn sm
+		key: #valueChangedTo;
+		label: 'To be Assigned'.
+	"self addColumn sm
+		key: #receiverPackage;
+		label: 'Object Package'."
+	^ self
+]
+
+{ #category : #'as yet unclassified' }
 SeekerResultsCollection >> forAssignmentsOfAnyVariable [
 
 	columns removeAll.
@@ -220,6 +251,9 @@ SeekerResultsCollection >> forMessageSends [
 	self addColumn md
 		key: #messageSelector;
 		label: 'Selector'.
+	self addColumn sm
+		key: #isExternal;
+		label: 'isExternal'.
 	^ self
 ]
 

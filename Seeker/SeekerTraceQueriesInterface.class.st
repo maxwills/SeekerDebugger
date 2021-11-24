@@ -192,6 +192,40 @@ SeekerTraceQueriesInterface >> forAliases [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerTraceQueriesInterface >> forAssignmentsOfAnyInstanceVariable [
+
+	| t |
+	t := AutoType new.
+	^ self baseQueryForAssignments
+		  select: [ :state | 
+		  state node variable variable isInstanceVariable ]
+		  collect: [ :state | 
+			  | isExternal |
+			  isExternal := (state objectIsLocal: state receiver) not.
+			  t newWith
+				  methodSelector: state methodSelector;
+				  receiverClass: state receiverClass;
+				  receiverClassAndPackage:
+					  state receiverClass name , ' [' , state receiverPackage name
+					  , ']';
+				  bytecodeIndex: state bytecodeIndex;
+				  node: state node;
+				  receiverAlias: state receiverAlias;
+				  variableNode: state node variable;
+				  variableName: state node variable variable name;
+				  valueChangedFrom:
+					  (state node variable variable readInContext: state context);
+				  valueChangedTo: (state context at: state context basicSize);
+				  receiverPackage: state receiverPackage;
+				  variableClass: state node variable variable class;
+				  isExternal: (isExternal ifTrue: [ #external ] ifFalse: [ #internal ]);
+				  externalObject: (isExternal
+						   ifTrue: [ state receiver ]
+						   ifFalse: [ nil ]);
+				  endWith ]
+]
+
+{ #category : #'as yet unclassified' }
 SeekerTraceQueriesInterface >> forAssignmentsOfAnyVariable [
 
 	| t |
@@ -384,9 +418,10 @@ SeekerTraceQueriesInterface >> forMessageSends [
 	| t |
 	t := AutoType new.
 	^ self baseQueryForMessageSends collect: [ :row | 
-		  | msgRcvrNode msgRcvrClass msgRcvr receiverOid |
+		  | msgRcvrNode msgRcvrClass msgRcvr receiverOid isExternal |
 		  msgRcvrNode := row node receiver.
 		  msgRcvr := row messageReceiver.
+		  isExternal := (row objectIsLocal: msgRcvr) not.
 		  receiverOid := row aliasOfObject: msgRcvr.
 		  msgRcvrClass := msgRcvr class.
 		  t newWith
@@ -407,6 +442,8 @@ SeekerTraceQueriesInterface >> forMessageSends [
 							   onErrorDo: [ "msgRcvr" msgRcvrNode sourceCode ] ]);
 			  messageReceiverClass: msgRcvrClass value;
 			  messageSelector: row node selector;
+			  isExternal: (isExternal ifTrue: [ #external ] ifFalse: [ #internal ]);
+			  externalObject: (isExternal ifTrue: [ msgRcvr ] ifFalse: [ nil ]);
 			  endWith ]
 ]
 

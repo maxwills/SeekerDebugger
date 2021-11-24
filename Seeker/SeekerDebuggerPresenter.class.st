@@ -268,6 +268,11 @@ SeekerDebuggerPresenter >> initializeToolbar [
 				            icon: (self application iconNamed: #stop);
 				            action: [ self emergencyStoptHandler ];
 				            yourself);
+				add: (self newToolbarButton
+				            label: 'inspect results';
+				            icon: (self application iconNamed: #glamorousInspect);
+				            action: [ self inspectResults ];
+				            yourself);
 		           "add: (self newToolbarButton
 				            label: 'Enable Time Travel';
 				            icon: (self application iconNamed: #smallProfile);
@@ -283,6 +288,12 @@ SeekerDebuggerPresenter >> initializeToolbar [
 { #category : #initialization }
 SeekerDebuggerPresenter >> insertCodeText: aString [
 code text: (code text, aString)
+]
+
+{ #category : #'as yet unclassified' }
+SeekerDebuggerPresenter >> inspectResults [
+
+	SeekerSessionHelpers lastQueryResults inspect
 ]
 
 { #category : #'as yet unclassified' }

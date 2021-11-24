@@ -123,6 +123,16 @@ SeekerFindInterface >> allReceivedMessagesForExceptions [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerFindInterface >> changesOfAllInstanceVariables [
+
+	| query result |
+	query := tracer queries forAssignmentsOfAnyInstanceVariable.
+
+	result := query asTableForTimeTravel.
+	^ result
+]
+
+{ #category : #'as yet unclassified' }
 SeekerFindInterface >> changesOfAllVariables [
 
 	| query result |
@@ -152,6 +162,16 @@ SeekerFindInterface >> changesOfAllVariablesNamedAsSelectedCode [
 	| selection |
 	selection := tracer selectedCode.
 	^ self changesOfAllVariablesNamed: selection
+]
+
+{ #category : #'as yet unclassified' }
+SeekerFindInterface >> changesOfAnyInstanceVariables [
+
+	| query result |
+	query := tracer queries forAssignmentsOfAnyInstanceVariable .
+
+	result := query asTableForTimeTravel.
+	^ result
 ]
 
 { #category : #'as yet unclassified' }

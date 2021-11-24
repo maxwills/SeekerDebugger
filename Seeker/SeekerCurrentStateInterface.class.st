@@ -523,6 +523,12 @@ SeekerCurrentStateInterface >> nodeOrdinalIndex [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerCurrentStateInterface >> objectIsLocal: anObject [
+
+	^ tracer objectIsLocal: anObject
+]
+
+{ #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> objectTidIsLocal: aNumber [
 
 	^ tracer objectTidIsLocal: aNumber

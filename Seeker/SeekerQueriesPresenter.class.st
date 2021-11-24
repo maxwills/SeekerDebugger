@@ -27,6 +27,12 @@ SeekerQueriesPresenter class >> defaultSpec [
 		  "fill: false"yourself
 ]
 
+{ #category : #'as yet unclassified' }
+SeekerQueriesPresenter >> activation: obj [
+
+	obj selectedItem inspect
+]
+
 { #category : #'UI specific' }
 SeekerQueriesPresenter >> applyResultFilter [
 
@@ -90,8 +96,9 @@ SeekerQueriesPresenter >> initializePresenters [
 SeekerQueriesPresenter >> initializeTable [
 
 	table := self newTable
+		         activateOnDoubleClick;
 		         beResizable;
-		         yourself
+		         whenActivatedDo: [ :obj | self activation: obj ] yourself
 ]
 
 { #category : #accessing }
