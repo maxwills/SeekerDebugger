@@ -14,7 +14,8 @@ Class {
 		'tableContainerLayout',
 		'queryDisplayModel',
 		'trimmingBlock',
-		'spColumns'
+		'spColumns',
+		'menuBuilderSelector'
 	],
 	#category : #'Seeker-UI'
 }
@@ -72,11 +73,7 @@ SeekerQueriesPresenter >> executeAndShow: aQueryDisplayModel [
 	"initialize columns and trimmingBlock"
 	spColumns := OrderedCollection new.
 	spColumns add: (SpIndexTableColumn new width: 40).
-	spColumns add: (SpImageTableColumn new
-						  width: 20;
-						  evaluated: [ self iconNamed: #glamorousInspect ];
-						  yourself).
-
+	
 	"queryTitle label: queryResults title."
 	trimmingBlock := [ :row :col | 
 	                 col expandable
@@ -174,20 +171,12 @@ SeekerQueriesPresenter >> initializeTable [
 		         " beCellSelection;""whenActivatedDo: [ :item | self tableItemActivated: item ];
 					activateOnSingleClick;"
 		         contextMenu: [ 
-			         SpMenuPresenter new
-				         addItem: [ :item | 
-					         item
-						         name: 'Test 1';
-						         action: [ "Action" ] ];
-				         addItem: [ :item | 
-					         item
-						         name: 'Test 2';
-						         action: [ "Action" ] ];
-				         addItem: [ :item | 
-					         item
-						         name: 'Test 3';
-						         action: [ "Action" ] ];
-				         "openWithSpecAt: self currentHand position"yourself ];
+			         queryDisplayModel
+				         ifNotNil: [ 
+					         queryDisplayModel
+						         buildContextMenuForResults: table items
+						         withSelectedItem: table selectedItem ]
+				         ifNil: [ nil ] ];
 		         yourself
 ]
 
@@ -220,6 +209,60 @@ SeekerQueriesPresenter >> makeDefaultQuerySolverFor: aQueryDisplayModel [
 
 
 	^ solver
+]
+
+{ #category : #'as yet unclassified' }
+SeekerQueriesPresenter >> menuBuilderForAllInstancesCreation [
+
+	^ SpMenuPresenter new
+		  addItem: [ :item | 
+			  item
+				  name: 'Inspect the object about to be Instantiated';
+				  action: [ "Action" ] ];
+		  addItem: [ :item | 
+			  item
+				  name: 'List all messages send to the object';
+				  action: [ "Action" ] ];
+		  addItem: [ :item | 
+			  item
+				  name: 'List all assignments of the instance variables of the obeject';
+				  action: [ "Action" ] ];
+		  addItem: [ :item | 
+			  item
+				  name: 'Inspect the query result item';
+				  action: [ "Action" ] ];
+		  addItem: [ :item | 
+			  item
+				  name: 'Inspect the query result collection';
+				  action: [ "Action" ] ];
+		  yourself
+]
+
+{ #category : #'as yet unclassified' }
+SeekerQueriesPresenter >> menuBuilderForAssignments [
+
+	^ SpMenuPresenter new
+		  addItem: [ :item | 
+			  item
+				  name: 'Inspect object owner of variable';
+				  action: [ "Action" ] ];
+		  addItem: [ :item | 
+			  item
+				  name: 'Inspect object in variable';
+				  action: [ "Action" ] ];
+		  addItem: [ :item | 
+			  item
+				  name: 'List all changes of this variable';
+				  action: [ "Action" ] ];
+			addItem: [ :item | 
+			  item
+				  name: 'Inspect the query result item';
+				  action: [ "Action" ] ];
+		  addItem: [ :item | 
+			  item
+				  name: 'Inspect the query result collection';
+				  action: [ "Action" ] ];
+		  "openWithSpecAt: self currentHand position"yourself
 ]
 
 { #category : #'as yet unclassified' }
@@ -292,13 +335,6 @@ Set the tables columns from the ordered collection
 
 	self applyResultFilter.
 	self updateDisplayedResults
-]
-
-{ #category : #'as yet unclassified' }
-SeekerQueriesPresenter >> tableItemActivated: item [
-
-	self halt.
-	^ SeekerMessageDialog showDialog: 'activated' withTitle: 'activated'
 ]
 
 { #category : #accessing }

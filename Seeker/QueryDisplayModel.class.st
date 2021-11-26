@@ -19,6 +19,14 @@ QueryDisplayModel class >> newForQuery: aQuery [
 		           yourself
 ]
 
+{ #category : #'as yet unclassified' }
+QueryDisplayModel >> buildContextMenuForResults: aQueryResutls withSelectedItem: selection [
+
+	"builds a context menu for an item of this display model"
+
+	^self subclassResponsibility
+]
+
 { #category : #accessing }
 QueryDisplayModel >> columns [
 
@@ -36,7 +44,14 @@ QueryDisplayModel >> initialize [
 
 	title := 'No title'.
 	timeToRun := 0.
-	columns := {  }
+	columns := {  }.
+	self initializeModel
+]
+
+{ #category : #initialization }
+QueryDisplayModel >> initializeModel [
+
+	^ self subclassResponsibility
 ]
 
 { #category : #accessing }

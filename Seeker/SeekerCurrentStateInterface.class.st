@@ -447,6 +447,12 @@ SeekerCurrentStateInterface >> messageSelector [
 	^ self node selector
 ]
 
+{ #category : #accessing }
+SeekerCurrentStateInterface >> method [
+
+	^ tracer currentContext method
+]
+
 { #category : #testing }
 SeekerCurrentStateInterface >> methodAboutToExecute [
 
@@ -523,9 +529,15 @@ SeekerCurrentStateInterface >> nodeOrdinalIndex [
 ]
 
 { #category : #'as yet unclassified' }
-SeekerCurrentStateInterface >> objectTidIsLocal: aNumber [
+SeekerCurrentStateInterface >> objectOid: object [
 
-	^ tracer objectTidIsLocal: aNumber
+	^ self aliasOfObject: object
+]
+
+{ #category : #'as yet unclassified' }
+SeekerCurrentStateInterface >> objectOidIsLocal: aNumber [
+
+	^ tracer objectOidIsLocal: aNumber
 ]
 
 { #category : #'as yet unclassified' }
@@ -557,6 +569,12 @@ SeekerCurrentStateInterface >> receiverClass [
 SeekerCurrentStateInterface >> receiverIsLocalToExecution [
 
 	^ tracer objectIsLocal: self receiver
+]
+
+{ #category : #'as yet unclassified' }
+SeekerCurrentStateInterface >> receiverOid [
+
+	^ tracer readAliasOf: tracer currentContext receiver
 ]
 
 { #category : #accessing }
@@ -649,23 +667,56 @@ SeekerCurrentStateInterface >> valueToBeAssigned [
 { #category : #testing }
 SeekerCurrentStateInterface >> willCreateBlock [
 
-	^ self context willCreateBlock
+	"next bytecode is a block creation"
+
+	^ (self method encoderClass
+		   isCreateBlockAt: self contextPC
+		   in: self method) or: [ 
+		  self method encoderClass
+			  isCreateFullBlockAt: self contextPC
+			  in: self method ]
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> willJumpIfFalse [
+
+	"Answer whether the next bytecode is a jump-if-false."
+
+	^ self method encoderClass
+		  isBranchIfFalseAt: self contextPC
+		  in: self method
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> willJumpIfTrue [
+
+	"Answer whether the next bytecode is a jump-if-true."
+
+	^ self method encoderClass
+		  isBranchIfTrueAt: self contextPC
+		  in: self method
 ]
 
 { #category : #testing }
 SeekerCurrentStateInterface >> willReturn [
 
-	^ self context willReturn
+	"Answer whether the next bytecode is a return."
+
+	^ self method encoderClass isReturnAt: self contextPC in: self method
 ]
 
 { #category : #testing }
 SeekerCurrentStateInterface >> willSend [
 
-	^ self context willSend
+	"Answer whether the next bytecode is a message-send."
+
+	^ self method encoderClass isSendAt: self contextPC in: self method
 ]
 
 { #category : #testing }
 SeekerCurrentStateInterface >> willStore [
 
-	^ self context willStore
+	"Answer whether the next bytecode is a store or store-pop"
+
+	^ self method encoderClass isStoreAt: self contextPC in: self method
 ]

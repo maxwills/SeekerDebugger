@@ -15,24 +15,24 @@ SkAllMessageSendsToObjectInVariableLC >> description [
 { #category : #executing }
 SkAllMessageSendsToObjectInVariableLC >> executeCommand [
 
-	| res oid selectedNode obj selectedContext |
+	| oid selectedNode obj objClass selectedContext query queryDisplayModel |
 	selectedContext := self tracer selectedContext.
 	selectedNode := self tracer selectedNode.
 	selectedNode ifNil: [ ^ self error: 'No variable selected' ].
 	selectedNode isVariable ifFalse: [ 
 		^ self error: 'Only works for variables' ].
 	obj := selectedContext readVariableNamed: selectedNode variable name.
+	objClass := obj class.
 	oid := self tracer readAliasOf: obj.
-	res := (self tracer find allMessageSendsToOid: oid)
-		       asSeekerResultsCollection forMessageSends.
 
-	self showResult: res
-	"	self showResult:
-		( cullFieldsWithMapping: { 
-				 (#bytecodeIndex -> #ebc).
-				 (#messageSelector -> #sel).
-				 (#messageReceiverClass -> #class).
-				 (#messageArguments -> #args) } asDictionary)"
+	query := self tracer queries forMessageSends
+		         select: [ :state | 
+			         state messageReceiver class == objClass "innecessary, but it's faster than getting the oid"and: [ 
+				         state messageReceiverOid == oid ] ]
+		         collect: SkProjectionMessageSends new.
+	queryDisplayModel := QdmForMessageSends newForQuery: query.
+
+	self showResultFor: queryDisplayModel
 ]
 
 { #category : #accessing }

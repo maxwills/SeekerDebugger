@@ -64,7 +64,7 @@ SkQueryExperimentalTracer >> currentStateAsRow [
 SkQueryExperimentalTracer >> currentStateInterface [
 
 	| csi |
-	csi := SeekerCurrentStateInterface new. "why a new instance? Because sometimes when making changes to the CSI, the debugger still clings to an outdate instance(making modification during a debug session)... not sure why"
+	csi := SeekerCurrentStateInterfaceCached new. "why a new instance? Because sometimes when making changes to the CSI, the debugger still clings to an outdate instance(making modification during a debug session)... not sure why"
 	csi tracer: self.
 	^ csi "currentStateInterfaceInstance"
 ]
@@ -195,7 +195,7 @@ SkQueryExperimentalTracer >> objectIsLocal: anObject [
 ]
 
 { #category : #accessing }
-SkQueryExperimentalTracer >> objectTidIsLocal: aNumber [
+SkQueryExperimentalTracer >> objectOidIsLocal: aNumber [
 
 	"Returns true if the object that corresponds to the given Tid is instantiated during the execution"
 

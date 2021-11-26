@@ -15,18 +15,19 @@ SkAllMessageSendsToSelfLC >> description [
 { #category : #executing }
 SkAllMessageSendsToSelfLC >> executeCommand [
 
-	| res oid |
-	oid := self tracer readAliasOf: self tracer currentContext receiver.
-	res := (self tracer find allMessageSendsToOid: oid)
-		       asSeekerResultsCollection forMessageSends.
+	| oid obj objClass query queryDisplayModel |
+	obj := self tracer currentContext receiver.
+	objClass := obj class.
+	oid := self tracer readAliasOf: obj.
 
-	self showResult: res
-	"	self showResult:
-		( cullFieldsWithMapping: { 
-				 (#bytecodeIndex -> #ebc).
-				 (#messageSelector -> #sel).
-				 (#messageReceiverClass -> #class).
-				 (#messageArguments -> #args) } asDictionary)"
+	query := self tracer queries forMessageSends
+		         select: [ :state | 
+			         state messageReceiver class == objClass and: [ 
+				         state messageReceiverOid == oid ] ]
+		         collect: SkProjectionMessageSends new.
+	queryDisplayModel := QdmForMessageSends newForQuery: query.
+
+	self showResultFor: queryDisplayModel
 ]
 
 { #category : #accessing }
