@@ -60,27 +60,12 @@ SkQueryExperimentalTracer >> currentStateAsRow [
 	^ q currentRow
 ]
 
-{ #category : #'object - api' }
-SkQueryExperimentalTracer >> currentStateInterface [
-
-	| csi |
-	csi := SeekerCurrentStateInterfaceCached new. "why a new instance? Because sometimes when making changes to the CSI, the debugger still clings to an outdate instance(making modification during a debug session)... not sure why"
-	csi tracer: self.
-	^ csi "currentStateInterfaceInstance"
-]
-
-{ #category : #'object - api' }
-SkQueryExperimentalTracer >> currentStateInterfaceInstance [
-
-	^ currentStateInterfaceInstance
-]
-
 { #category : #accessing }
 SkQueryExperimentalTracer >> doAstStepPostProcessWithPrevNode: preProcessAstNode andPrevContext: preContext [
 
 	instantiationFlag ifTrue: [ 
 		| instancedObj |
-		instancedObj := currentStateInterfaceInstance context top.
+		instancedObj := currentState contextTop.
 		instantiationFlag := false.
 		instantiationCounter += 1.
 		instantiationIDDictionary at: instancedObj put: instantiationCounter ].
@@ -92,10 +77,10 @@ SkQueryExperimentalTracer >> doAstStepPostProcessWithPrevNode: preProcessAstNode
 { #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> doAstStepPreProcess [
 
-	currentStateInterfaceInstance isMessageSend
+	currentState isMessageSend
 		ifTrue: [ "handling message sends cases"
 			| method primitive |
-			method := currentStateInterfaceInstance methodAboutToExecute.
+			method := currentState methodAboutToExecute.
 			primitive := method ifNil: [ 0 ] ifNotNil: [ method primitive ].
 			shouldAlwaysRunToEnd ifFalse: [ 
 				shouldAlwaysRunToEnd := SeekerCurrentStateInterface 
@@ -103,28 +88,23 @@ SkQueryExperimentalTracer >> doAstStepPreProcess [
 			(SeekerCurrentStateInterface isInstantiationPrimitive: primitive)
 				ifTrue: [ instantiationFlag := true ]
 				ifFalse: [ 
-					(SeekerCurrentStateInterface isWritingPrimitive: primitive) 
-						ifTrue: [ 
-							| messageReceiver |
-							messageReceiver := currentStateInterfaceInstance
-								                   messageReceiver.
-							(self objectIsLocal: messageReceiver) ifFalse: [ "We store a copy of the object if this is writing primitive" 
-								self recordSnapshotOfObject: messageReceiver ] ] ] ]
-		ifFalse: [ "assignment cases"
+					(SeekerCurrentStateInterface isWritingPrimitive: primitive) ifTrue: [ 
+						| messageReceiver |
+						messageReceiver := currentState messageReceiver.
+						(self objectIsLocal: messageReceiver) ifFalse: [ "We store a copy of the object if this is writing primitive" 
+							self recordSnapshotOfObject: messageReceiver ] ] ] ]
+		ifFalse: [ "assignment cases""astPreStepHooks do: [ :each | each value ]"
 			| node |
-			node := currentStateInterfaceInstance node.
+			node := currentState node.
 			"putting the tracing for restoration (of assignments)logic here"
 			(node isAssignment and: [ 
 				 node variable isWorkspaceVariable or: [ 
 					 node variable variable isLocalVariable not and: [ 
-						 currentStateInterfaceInstance receiverIsLocalToExecution not ] ] ]) 
-				ifTrue: [ "if the receiver is an object that was instantiated from outside the execution, or in case of a workspace variable"
-					self
-						recordChangeForReceiver: currentStateInterfaceInstance receiver
-						ofVar: node variable variable
-						inContext: currentStateInterfaceInstance context ] ].
-
-	"astPreStepHooks do: [ :each | each value ]"
+						 currentState receiverIsLocalToExecution not ] ] ]) ifTrue: [ "if the receiver is an object that was instantiated from outside the execution, or in case of a workspace variable"
+				self
+					recordChangeForReceiver: currentState receiver
+					ofVar: node variable variable
+					inContext: currentState context ] ]
 ]
 
 { #category : #'object - api' }
@@ -170,7 +150,6 @@ SkQueryExperimentalTracer >> initialize [
 	instantiationCounter := 0.
 	instantiationIDDictionary := WeakIdentityKeyDictionary new.
 	instantiationFlag := false.
-	currentStateInterfaceInstance := self currentStateInterface.
 	nonLocalObjects := WeakIdentitySet new.
 	shouldAlwaysRunToEnd := false.
 	storedNonLocalChanges := OrderedCollection new.
@@ -327,6 +306,13 @@ SkQueryExperimentalTracer >> removeAstPreStepHook: aBlock [
 	astPreStepHooks remove: aBlock
 ]
 
+{ #category : #initialization }
+SkQueryExperimentalTracer >> resetCacheTimeKey [
+
+	currentState ifNotNil: [ 
+		currentState resetCacheTimeKey ]
+]
+
 { #category : #starting }
 SkQueryExperimentalTracer >> restartAtBytecodeOne [
 
@@ -341,7 +327,7 @@ SkQueryExperimentalTracer >> restartAtBytecodeOne [
 	instantiationIDDictionary removeAll.
 	instantiationIDDictionary := WeakIdentityKeyDictionary new.
 	instantiationFlag := false.
-	currentStateInterfaceInstance := self currentStateInterface.
+	currentState resetCacheTimeKey.
 	nonLocalObjects := WeakIdentitySet new.
 	storedNonLocalChanges := OrderedCollection new.
 	storedNonLocalChangesDictionary removeAll.
@@ -400,9 +386,8 @@ SkQueryExperimentalTracer >> stepToNextIteration [
 
 	"or until control is at the next pc of the sender"
 
-	| node nodeOwner receiver stopContext senderContext senderNode csi |
-	csi := currentStateInterfaceInstance.
-	node := self currentNode.
+	| node nodeOwner receiver stopContext senderContext senderNode |
+	node := currentState node.
 	nodeOwner := node nonInlinedOwner.
 	nodeOwner isBlock ifFalse: [ ^ false ].
 	nodeOwner isInlined ifTrue: [ ^ false ].
@@ -418,9 +403,9 @@ SkQueryExperimentalTracer >> stepToNextIteration [
 		self stepBytecodeUntilConditionIsTrue: [ 
 			self currentContext == stopContext or: [ "and: [ self currentNode ~= senderNode ]"
 				self currentContext receiver == receiver and: [ 
-					csi willReturn or: [ 
-						self currentNode = node and: [ 
-							self currentNode nonInlinedOwner = nodeOwner ] ] ] ] ] ]
+					currentState willReturn or: [ 
+						currentState node = node and: [ 
+							currentState node nonInlinedOwner = nodeOwner ] ] ] ] ] ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -443,4 +428,11 @@ SkQueryExperimentalTracer >> tables [
 	tableCreator := SeekerExecutionTablesInterface new.
 	tableCreator tracer: self.
 	^ tableCreator
+]
+
+{ #category : #initialization }
+SkQueryExperimentalTracer >> updateCacheTimeKey [
+
+	currentState ifNotNil: [ 
+		currentState updateCacheTimeKey ]
 ]

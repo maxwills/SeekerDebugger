@@ -24,7 +24,7 @@ QueryDisplayModel >> buildContextMenuForResults: aQueryResutls withSelectedItem:
 
 	"builds a context menu for an item of this display model"
 
-	^self subclassResponsibility
+	^ self subclassResponsibility
 ]
 
 { #category : #accessing }

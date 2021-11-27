@@ -114,7 +114,7 @@ SeekerStDebuggerDebuggerActionModel >> stepOver: aContext [
 				               ifFalse: [ self class shouldFilterStack ].
 
 
-			startingNode := tracer currentNode.
+			startingNode := tracer currentStateInterface node.
 			startingContext := tracer currentContext.
 			startingStackDepth := startingContext stackDepth.
 			startingTraceTime := startingContext tracedInstructionPC

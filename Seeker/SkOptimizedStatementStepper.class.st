@@ -22,22 +22,12 @@ SkOptimizedStatementStepper >> currentContext [
 			  cachedCurrentContext := super currentContext ]
 ]
 
-{ #category : #'as yet unclassified' }
-SkOptimizedStatementStepper >> currentNode [
-
-	^ executedBytecode == cachedCurrentNodeTimeKey
-		  ifTrue: [ cachedCurrentNode ]
-		  ifFalse: [ 
-			  cachedCurrentNodeTimeKey := executedBytecode.
-			  cachedCurrentNode := super currentNode ]
-]
-
 { #category : #accessing }
 SkOptimizedStatementStepper >> doAstStepPostProcessWithPrevNode: preProcessAstNode andPrevContext: preContext [
 
 	| currentNode currentStatementNode contextChanged statementChanged |
 	"Dont do a super call here!"
-	currentNode := self currentNode "currentContext method sourceNodeForPC:
+	currentNode := currentState node "currentContext method sourceNodeForPC:
 		               currentContext pc".
 	currentStatementNode := currentNode statementNode.
 	contextChanged := currentContext ~~ preContext.
@@ -77,11 +67,6 @@ SkOptimizedStatementStepper >> slowCurrentContext [
 
 	currentContext := stDebugger interruptedContext.
 	^ currentContext
-]
-
-{ #category : #'as yet unclassified' }
-SkOptimizedStatementStepper >> slowCurrentNode [
-	^ super currentNode
 ]
 
 { #category : #'as yet unclassified' }

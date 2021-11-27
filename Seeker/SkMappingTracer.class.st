@@ -167,62 +167,6 @@ SkMappingTracer >> automapForTestCaseScenario [
 ]
 
 { #category : #'as yet unclassified' }
-SkMappingTracer >> automapForUIExceptionScenario [
-
-	| initialRestartContext navInitialStep baseClasesOfUI inheritsFromUIClass |
-	baseClasesOfUI := { Morph }.
-	inheritsFromUIClass := [ :aClass | 
-	                       baseClasesOfUI anySatisfy: [ :uiBaseClass | 
-		                       aClass = uiBaseClass or: [ 
-			                       aClass inheritsFrom: uiBaseClass ] ] ].
-	initialRestartContext := SkContextHelpers
-		                         findContextInStack: [ :aContext | 
-			                         | senderContext |
-			                         senderContext := aContext sender.
-			                         senderContext
-				                         ifNotNil: [ 
-					                         | receiverClass |
-					                         receiverClass := senderContext receiver
-						                                          class.
-					                         inheritsFromUIClass value: receiverClass ]
-				                         ifNil: [ false ] ]
-		                         startingContext: self currentContext.
-	initialRestartContext ifNil: [ 
-		self error:
-			'Could not detect the initial context for this Generic Scenario.'.
-		^ false ].
-	contextOfExecutedBytecodeOne := initialRestartContext.
-	navInitialStep := SkStepDescriptor
-		                  newFromNode: (SkContextHelpers
-				                   currentNodeOf: initialRestartContext
-				                   isTopContext: false)
-		                  inContext: initialRestartContext
-		                  isTopContext: false.
-	userStartTraceTime := navInitialStep.
-	pressumedEndStepForKnownScenario := userStartTraceTime
-		                                    getParentIndexlessDescriptor.
-	pressumedEndStepForKnownScenario isReturning: true.
-	pressumedEndStepForKnownScenario topStatementID isReturning: true.
-
-	pressumedEndCondition := [ 
-	                         | compareToValue |
-	                         compareToValue := self currentStepDescriptor 
-		                                           comparePathTo:
-		                                           pressumedEndStepForKnownScenario.
-	                         compareToValue > 0
-		                         ifTrue: [ 
-		                         true "In fact, we are past that point!" ]
-		                         ifFalse: [ 
-			                         compareToValue = 0
-				                         ifTrue: [ self currentNode isReturn ]
-				                         ifFalse: [ false ] ] ].
-
-	self recountExecutedBytecodes.
-	isMapped := true.
-	^ true
-]
-
-{ #category : #'as yet unclassified' }
 SkMappingTracer >> clearStepBuffers [
 	^self
 ]

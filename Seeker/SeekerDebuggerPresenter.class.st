@@ -453,7 +453,7 @@ SeekerDebuggerPresenter >> syncWithDebugSession [
 		tracer blockingDoAndUpdateSessionAfter: [ 
 			| context |
 			context := stDebugger interruptedContext.
-			tracer currentNode
+			tracer currentStateInterface node
 			~= (context compiledCode sourceNodeForPC: context pc) ifTrue: [ 
 				tracer recountExecutedBytecodes ] ] ]
 ]

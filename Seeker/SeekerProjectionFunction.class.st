@@ -4,7 +4,7 @@ Class {
 	#instVars : [
 		'autoType'
 	],
-	#category : #'Seeker-Projections'
+	#category : #'Seeker-Query'
 }
 
 { #category : #'field definition' }

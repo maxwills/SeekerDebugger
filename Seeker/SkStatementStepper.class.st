@@ -59,7 +59,8 @@ Class {
 		'iteratingFlag',
 		'emergencyStopFlag',
 		'preventNextTimeRestoration',
-		'executedBytecode'
+		'executedBytecode',
+		'currentState'
 	],
 	#category : #'Seeker-Tracer'
 }
@@ -102,18 +103,16 @@ SkStatementStepper >> currentContext [
 		  currentContext := session interruptedProcess suspendedContext ]
 ]
 
-{ #category : #'as yet unclassified' }
-SkStatementStepper >> currentNode [
+{ #category : #accessing }
+SkStatementStepper >> currentStateInterface [
 
-	| context |
-	context := self currentContext.
-	context pc ifNil: [ ^ nil ].
-	^ context method sourceNodeForPC: context pc
+	^ currentState
 ]
 
 { #category : #'as yet unclassified' }
 SkStatementStepper >> currentStatementNode [
-^self currentNode statementNode
+
+	^ currentState node statementNode
 ]
 
 { #category : #'as yet unclassified' }
@@ -178,6 +177,9 @@ SkStatementStepper >> hasSignalledUnhandledException [
 { #category : #initialization }
 SkStatementStepper >> initialize [
 
+	currentState := SeekerCurrentStateInterfaceCached new
+		                         tracer: self;
+		                         yourself.
 	executedBytecode := 0.
 	super initialize.
 	iteratingFlag := false.
@@ -214,35 +216,23 @@ SkStatementStepper >> isExecutionFinished [
 
 	"Returns whether the debugged execution is finished"
 
-	^ self currentContext sender isNil or: [ 
-		  currentContext isDead or: [ interruptedProcess isTerminating ] ]
+	^ currentState context sender isNil or: [ 
+		  currentState isDead or: [ interruptedProcess isTerminating ] ]
 ]
 
 { #category : #testing }
 SkStatementStepper >> isRiskyStep [
 
-	| context receiver contextInsideInstanceOfExceptionSubclass contextInsideSubclassOfException contextInsideAssertionFailure primitiveFailed contextInsideUnhandledException |
-	context := self currentContext.
+	| context receiver |
+	context := currentState context.
 	receiver := context receiver.
-	contextInsideInstanceOfExceptionSubclass := [ 
-	                                            context receiver 
-		                                            isKindOf: Exception ].
-	contextInsideSubclassOfException := [ 
-	                                    context receiver inheritsFrom:
-		                                    Exception ].
-	contextInsideAssertionFailure := [ 
-	                                 context receiver = TestResult and: [ 
-		                                 context methodSelector = #failure ] ].
-	contextInsideUnhandledException := [ 
-	                                   context selector = #defaultAction 
-		                                   and: [ 
-		                                   context receiver class 
-			                                   inheritsFrom: Exception ] ].
-	primitiveFailed := [ context methodSelector = #primitiveFailed ].
-	^ primitiveFailed value or: [ 
+	^ currentState methodSelector = #primitiveFailed or: [ 
 		  receiver isClass
-			  ifTrue: contextInsideAssertionFailure
-			  ifFalse: contextInsideUnhandledException ]
+			  ifTrue: [ 
+			  receiver = TestResult and: [ context methodSelector = #failure ] ]
+			  ifFalse: [ 
+				  currentState methodSelector = #defaultAction and: [ 
+					  receiver class inheritsFrom: Exception ] ] ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -313,6 +303,7 @@ SkStatementStepper >> restartAtBytecodeOne [
 	contextOfExecutedBytecodeOne ifNil: [ 
 		^ self error: 'Must specify a starting context for record' ].
 	self clearSeekerCache.
+	self resetCacheTimeKey.
 	executedBytecode := 1.
 	astStepCounter := 0.
 	astStepCounter := 1.
@@ -325,6 +316,7 @@ SkStatementStepper >> restartAtBytecodeOne [
 	currentStepIndex := currentStepIndex + 1.
 	currentContext := session interruptedProcess suspendedContext.
 	currentContextStackDepth := currentContext stackDepth.
+	self updateCacheTimeKey.
 	self onTracedContextChanged.
 	self onTracedStatementChanged
 ]
@@ -464,11 +456,12 @@ SkStatementStepper >> stepBytecode [
 	(self isExecutionFinished or: [ self isRiskyStep ]) ifTrue: [ "self inform: 'Reached execution safe end point'" 
 		^ false ].
 	previousContext := currentContext.
-	startingNode := self currentNode.
+	startingNode := currentState node.
 	self doAstStepPreProcess.
 	currentContext stepIntoQuickMethod: true.
 	currentContext := session interruptedProcess step.
 	executedBytecode := executedBytecode + 1.
+	self updateCacheTimeKey.
 	maxExecutedBytecode := maxExecutedBytecode max: executedBytecode.
 	previousContext stepIntoQuickMethod: false.
 	self

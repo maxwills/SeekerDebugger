@@ -1,7 +1,7 @@
 Class {
 	#name : #SkProjectionMessageSends,
 	#superclass : #SeekerProjectionFunction,
-	#category : #'Seeker-Projections'
+	#category : #'Seeker-Query'
 }
 
 { #category : #accessing }
