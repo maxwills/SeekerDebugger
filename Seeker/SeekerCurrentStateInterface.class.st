@@ -89,7 +89,6 @@ Class {
 	#name : #SeekerCurrentStateInterface,
 	#superclass : #SeekerInterfaceObject,
 	#instVars : [
-		'cachedValues',
 		'exceptionSignalSelectors'
 	],
 	#classVars : [
@@ -142,6 +141,13 @@ SeekerCurrentStateInterface class >> isWritingPrimitive: aNumber [
 		  ifTrue: [ false ]
 		  ifFalse: [ "659 is the maxium writing primitive in current pharo version (october 2021) we have listed, and the size of the array" 
 			  writingPrimitivesArray at: aNumber ]
+]
+
+{ #category : #'instance creation' }
+SeekerCurrentStateInterface class >> new [
+
+	<subCacheDelegated>
+	^ self basicNew
 ]
 
 { #category : #'as yet unclassified' }
@@ -197,7 +203,7 @@ SeekerCurrentStateInterface >> assignmentNodeVariable [
 
 { #category : #accessing }
 SeekerCurrentStateInterface >> bytecode [
-<superCached>
+
 	^ self context compiledCode symbolicBytecodes
 		  detect: [ :each | each offset = self context pc ]
 		  ifNone: [ nil ]
@@ -225,7 +231,7 @@ SeekerCurrentStateInterface >> compiledCode [
 { #category : #accessing }
 SeekerCurrentStateInterface >> context [
 
-	<superCached>
+	<subCached>
 	^ tracer currentContext
 ]
 
