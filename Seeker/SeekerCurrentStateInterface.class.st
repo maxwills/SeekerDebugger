@@ -231,7 +231,6 @@ SeekerCurrentStateInterface >> compiledCode [
 { #category : #accessing }
 SeekerCurrentStateInterface >> context [
 
-	<subCached>
 	^ tracer currentContext
 ]
 

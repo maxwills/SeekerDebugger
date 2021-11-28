@@ -177,7 +177,7 @@ SkStatementStepper >> hasSignalledUnhandledException [
 { #category : #initialization }
 SkStatementStepper >> initialize [
 
-	currentState := SeekerCurrentStateInterfaceCached new
+	currentState := SeekerCurrentStateInterface new
 		                         tracer: self;
 		                         yourself.
 	executedBytecode := 0.

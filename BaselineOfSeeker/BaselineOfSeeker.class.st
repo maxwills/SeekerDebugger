@@ -15,12 +15,15 @@ BaselineOfSeeker >> baseline: spec [
 		spec
 			baseline: 'MockFlex'
 			with: [ spec repository: 'github://maxwills/mock-flex:main' ].
+		spec
+			baseline: 'QuickWrap'
+			with: [ spec repository: 'github://maxwills/quick-wrap:main' ].
 		spec postLoadDoIt: #postload:package:.
 		
 		spec
 			package: 'EvaluatorDebugger-Base';
 			package: 'Seeker'
-			with: [ spec requires: #( 'EvaluatorDebugger-Base' 'AutoType' 'MockFlex') ];
+			with: [ spec requires: #( 'EvaluatorDebugger-Base' 'AutoType' 'MockFlex' 'QuickWrap') ];
 			package: 'Seeker-Tests' with: [ ";
 			package: 'SeekerDebuggerSpy'
 			with: [ spec requires: #( 'Seeker' ) ]" 

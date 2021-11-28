@@ -15,7 +15,17 @@ SeekerInstallHelpers class >> install [
 
 	self overrideStDebuggerActionModel.
 	self enableDebuggerExtension.
-	self overrideHandMorph
+	self overrideHandMorph.
+	self installQuickWrapSystem.
+	self refreshSubChacheDelegationProxies
+]
+
+{ #category : #'as yet unclassified' }
+SeekerInstallHelpers class >> installQuickWrapSystem [
+
+	"After installing the debugger packages, this is necessary to actually use the SubCached methods"
+
+	QuickWrap installQuickWrapSystem
 ]
 
 { #category : #actions }
@@ -51,4 +61,14 @@ SeekerInstallHelpers class >> overrideStDebuggerActionModel [
 	StDebugger compile: methodSource
 
 	"(StDebugger >> #debuggerActionModel) browse"
+]
+
+{ #category : #'as yet unclassified' }
+SeekerInstallHelpers class >> refreshSubChacheDelegationProxies [
+
+	"After installing the debugger packages, this is necessary to actually use the SubCached methods"
+
+	"Requires QuickWrap to be installed (not just loaded)"
+
+	SubCacheDelegatedInstantiation refreshAllMethodsDelegations
 ]
