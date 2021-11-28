@@ -21,6 +21,16 @@ SeekerInstallHelpers class >> install [
 	self refreshSubChacheDelegationProxies
 ]
 
+{ #category : #actions }
+SeekerInstallHelpers class >> installAndShowMessageOnCompletion [
+
+	self install.
+	SeekerMessageDialog
+		showModalDialog:
+		'SeekerDebugger installation is finished. The debugger is ready to use.'
+		withTitle: 'Installation complete'
+]
+
 { #category : #'as yet unclassified' }
 SeekerInstallHelpers class >> installQuickWrapSystem [
 
