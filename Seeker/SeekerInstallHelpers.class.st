@@ -25,10 +25,12 @@ SeekerInstallHelpers class >> install [
 SeekerInstallHelpers class >> installAndShowMessageOnCompletion [
 
 	self install.
-	SeekerMessageDialog
-		showModalDialog:
-		'SeekerDebugger installation is finished. The debugger is ready to use.'
-		withTitle: 'Installation complete'
+	[ 
+	UIManager default defer: [ 
+		SeekerMessageDialog
+			showModalDialog:
+			'SeekerDebugger installation is finished. The debugger is ready to use.'
+			withTitle: 'Installation complete' ] ] fork "Done this way to avoid blocking the progressbar with the modal"
 ]
 
 { #category : #'as yet unclassified' }
