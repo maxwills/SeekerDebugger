@@ -67,7 +67,7 @@ SkQueryExperimentalTracer >> doAstStepPostProcessWithPrevNode: preProcessAstNode
 		| instancedObj |
 		instancedObj := currentState contextTop.
 		instantiationFlag := false.
-		instantiationCounter += 1.
+		instantiationCounter := instantiationCounter + 1.
 		instantiationIDDictionary at: instancedObj put: instantiationCounter ].
 	super
 		doAstStepPostProcessWithPrevNode: preProcessAstNode
