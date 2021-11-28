@@ -17,6 +17,7 @@ SeekerInstallHelpers class >> install [
 	self enableDebuggerExtension.
 	self overrideHandMorph.
 	self installQuickWrapSystem.
+	self refreshSubChachedMethods.
 	self refreshSubChacheDelegationProxies
 ]
 
@@ -71,4 +72,14 @@ SeekerInstallHelpers class >> refreshSubChacheDelegationProxies [
 	"Requires QuickWrap to be installed (not just loaded)"
 
 	SubCacheDelegatedInstantiation refreshAllMethodsDelegations
+]
+
+{ #category : #'as yet unclassified' }
+SeekerInstallHelpers class >> refreshSubChachedMethods [
+
+	"After installing the debugger packages, this is necessary to actually use the SubCached methods"
+
+	"Requires QuickWrap to be installed (not just loaded)"
+
+	SubCache refreshAllMethodsCaches
 ]

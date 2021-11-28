@@ -3,6 +3,10 @@ Class {
 	#superclass : #SeekerCurrentStateInterface,
 	#instVars : [
 		'_cacheTimeKey',
+		'__cached_compiledCode',
+		'__cached_compiledCodeTimeKey',
+		'__cached_contextPC',
+		'__cached_contextPCTimeKey',
 		'__cached_context',
 		'__cached_contextTimeKey'
 	],
@@ -12,5 +16,5 @@ Class {
 { #category : #'as yet unclassified' }
 SubCachedSeekerCurrentStateInterface >> updateCacheTimeKey [
 
-	_cacheTimeKey := tracer bytecodeIndex 
+	_cacheTimeKey := tracer bytecodeIndex
 ]

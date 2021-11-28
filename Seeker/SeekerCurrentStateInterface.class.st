@@ -224,20 +224,21 @@ SeekerCurrentStateInterface >> bytecodeStepInTracedStatement [
 { #category : #accessing }
 SeekerCurrentStateInterface >> compiledCode [
 
-	<superCached>
+	<subCached>
 	^ self context compiledCode
 ]
 
 { #category : #accessing }
 SeekerCurrentStateInterface >> context [
 
+	<subCached>
 	^ tracer currentContext
 ]
 
 { #category : #accessing }
 SeekerCurrentStateInterface >> contextPC [
 
-	<superCached>
+	<subCached>
 	^ self context pc
 ]
 
