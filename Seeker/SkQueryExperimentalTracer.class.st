@@ -433,6 +433,5 @@ SkQueryExperimentalTracer >> tables [
 { #category : #initialization }
 SkQueryExperimentalTracer >> updateCacheTimeKey [
 
-	currentState ifNotNil: [ 
-		currentState updateCacheTimeKey ]
+	currentState updateCacheTimeKey
 ]
