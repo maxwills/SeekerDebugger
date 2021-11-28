@@ -36,6 +36,6 @@ BaselineOfSeeker >> baseline: spec [
 { #category : #actions }
 BaselineOfSeeker >> postload: loader package: packageSpec [
 
-	(self class environment at: #installAndShowMessageOnCompletion)
+	(self class environment at: #SeekerInstallHelpers)
 		installAndShowMessageOnCompletion
 ]
