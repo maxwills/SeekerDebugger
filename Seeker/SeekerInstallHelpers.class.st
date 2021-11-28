@@ -18,7 +18,8 @@ SeekerInstallHelpers class >> install [
 	self overrideHandMorph.
 	self installQuickWrapSystem.
 	self refreshSubChachedMethods.
-	self refreshSubChacheDelegationProxies
+	self refreshSubChacheDelegationProxies.
+	self installMoosePatch
 ]
 
 { #category : #actions }
@@ -31,6 +32,20 @@ SeekerInstallHelpers class >> installAndShowMessageOnCompletion [
 			showModalDialog:
 			'SeekerDebugger installation is finished. The debugger is ready to use.'
 			withTitle: 'Installation complete' ] ] fork "Done this way to avoid blocking the progressbar with the modal"
+]
+
+{ #category : #'as yet unclassified' }
+SeekerInstallHelpers class >> installMoosePatch [
+
+	| f |
+	f := self environment at: #FamixStClass ifAbsent: [ nil ].
+	f ifNil: [ ^ self ].
+	(f methodDictionary includesKey: #package) ifTrue: [ ^ self ].
+	f
+		compile: 'package
+		"A hacky fix for Seeker"
+		^ self class package'
+		classified: '*Seeker'
 ]
 
 { #category : #'as yet unclassified' }
