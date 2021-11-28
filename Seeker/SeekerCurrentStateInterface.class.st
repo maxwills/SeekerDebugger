@@ -245,7 +245,7 @@ SeekerCurrentStateInterface >> contextPC [
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> contextTop [
 
-	<superCached>
+	<subCached>
 	^ self context stackPtr > 0
 		  ifTrue: [ self context top ]
 		  ifFalse: [ #contextTopUnavailable ]
