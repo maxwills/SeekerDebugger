@@ -23,7 +23,7 @@ SkAllMessageSendsToObjectInVariableLC >> executeCommand [
 		^ self error: 'Only works for variables' ].
 	obj := selectedContext readVariableNamed: selectedNode variable name.
 	objClass := obj class.
-	oid := self tracer readAliasOf: obj.
+	oid := self tracer getOidOf: obj.
 
 	query := self tracer queries forMessageSends
 		         select: [ :state | 

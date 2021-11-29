@@ -164,7 +164,7 @@ Object >> seekMe [
 		((s tracer isNotNil and: [ s tracer isSessionActive isNotNil ]) 
 			 and: [ s tracer isSessionActive ]) ifTrue: [ 
 			| alias |
-			alias := s tracer readAliasOf: self.
+			alias := s tracer getOidOf: self.
 			alias ifNotNil: [ ^ s tracer ] ] ].
 	^ nil
 ]
@@ -176,7 +176,7 @@ Object >> seekMyAlias [
 	SeekerDebugger allInstances reverseDo: [ :s | 
 		s tracer isSessionActive ifTrue: [ 
 			| alias |
-			alias := s tracer readAliasOf: self.
+			alias := s tracer getOidOf: self.
 			alias ifNotNil: [ ^ alias ] ] ].
 	^ nil
 ]

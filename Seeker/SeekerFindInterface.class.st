@@ -159,7 +159,7 @@ SeekerFindInterface >> changesOfInstanceVariable: aSymbol ofObject: anObject [
 	"Care that the object must be monitored by seeker (have an alias)"
 
 	| alias query |
-	alias := tracer readAliasOf: anObject.
+	alias := tracer getOidOf: anObject.
 
 	"then, get all the changes of that alias"
 	query := Query
@@ -192,7 +192,7 @@ SeekerFindInterface >> changesOfObject: anObject [
 	"Care that the object must be monitored by seeker (have an alias)"
 
 	| alias query |
-	alias := tracer readAliasOf: anObject.
+	alias := tracer getOidOf: anObject.
 
 	"then, get all the changes of that alias"
 	query := tracer queries forAssignmentsOfInstanceVariables select: [ 

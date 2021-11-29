@@ -1,17 +1,13 @@
 Class {
 	#name : #SkQueryExperimentalTracer,
-	#superclass : #SkMappingTracer,
+	#superclass : #SkOptimizedBytecodeStepper,
 	#instVars : [
 		'astPreStepHooks',
-		'currentStateInterfaceInstance',
-		'queriesLibrary',
 		'aliasesDictionary',
-		'virtualTablesInterface',
 		'instantiationFlag',
 		'instantiationCounter',
 		'instantiationIDDictionary',
 		'nonLocalObjects',
-		'storedNonLocalChanges',
 		'storedNonLocalChangesDictionary',
 		'shouldAlwaysRunToEnd'
 	],
@@ -21,13 +17,6 @@ Class {
 { #category : #adding }
 SkQueryExperimentalTracer >> addAstPreStepHook: aBlock [
 	astPreStepHooks add: aBlock
-]
-
-{ #category : #accessing }
-SkQueryExperimentalTracer >> aliasesDictionary [
-
-	^ aliasesDictionary
-	"For code transition only. This will be removed in the future"
 ]
 
 { #category : #'as yet unclassified' }
@@ -142,6 +131,12 @@ SkQueryExperimentalTracer >> getObjectByOid: aNumber [
 	^ nil
 ]
 
+{ #category : #'as yet unclassified' }
+SkQueryExperimentalTracer >> getOidOf: anObject [
+
+	^ aliasesDictionary at: anObject ifAbsent: [ nil ]
+]
+
 { #category : #initialization }
 SkQueryExperimentalTracer >> initialize [
 
@@ -152,7 +147,6 @@ SkQueryExperimentalTracer >> initialize [
 	instantiationFlag := false.
 	nonLocalObjects := WeakIdentitySet new.
 	shouldAlwaysRunToEnd := false.
-	storedNonLocalChanges := OrderedCollection new.
 	storedNonLocalChangesDictionary := WeakIdentityKeyDictionary new. "Keys are the object owning the variable, and the value is a dictionary of keys variable name (symbol) with values the Undo block"
 	^ super initialize
 ]
@@ -181,12 +175,6 @@ SkQueryExperimentalTracer >> objectOidIsLocal: aNumber [
 	"Beware that the execution corresponds only to the already executed part."
 
 	^ (nonLocalObjects includes: aNumber) not
-]
-
-{ #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> oidOf: anObject [
-
-	^ aliasesDictionary at: anObject ifAbsent: nil
 ]
 
 { #category : #'as yet unclassified' }
@@ -239,12 +227,6 @@ SkQueryExperimentalTracer >> queries [
 ]
 
 { #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> readAliasOf: anObject [
-
-	^ aliasesDictionary at: anObject ifAbsent: nil
-]
-
-{ #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> recordChangeForReceiver: anObject ofVar: aVariable inContext: aContext [
 
 	"Note that this method stores only the first change of a variable."
@@ -257,10 +239,10 @@ SkQueryExperimentalTracer >> recordChangeForReceiver: anObject ofVar: aVariable 
 		| varValue varName |
 		varName := aVariable name.
 		varValue := aVariable readInContext: aContext.
-		(isMappedForDoIt and: [ aVariable isWorkspaceVariable ])
+		(executionMappper isMappedForDoIt and: [ aVariable isWorkspaceVariable ])
 			ifTrue: [ 
 				[ 
-				aVariable write: varValue inContext: doItContext "I used the stored doItContext, because I don't know how to make the assignment without that context reference" ] ]
+				aVariable write: varValue inContext: executionMappper doItContext "I used the stored doItContext, because I don't know how to make the assignment without that context reference" ] ]
 			ifFalse: [ "Why not using write:inContext:? because most likely the context will not exists when undoing changes for these variables." 
 				[ anObject writeSlotNamed: varName value: varValue ] ] ]
 ]
@@ -291,26 +273,17 @@ SkQueryExperimentalTracer >> registerAliasFor: anObject [
 		ifAbsentPut: [ "This could be also the executed bytecode, but this might be good enough and it is a smaller number ( may be even consider counting context jump!)" 
 			executedBytecode ].
 
-	(instantiationIDDictionary includesKey: anObject) ifFalse: [ 
-		"anObject seekMyAlias = 1841 ifTrue: [ 
+	(instantiationIDDictionary includesKey: anObject) ifFalse: [ "anObject seekMyAlias = 1841 ifTrue: [ 
 			Transcript
 				show: 'markA' , byteCountCounter asString;
-				cr ]."
-		(nonLocalObjects includes: anObject) ifFalse: [ 
-			nonLocalObjects add: anObject ] ]
+				cr ]." 
+		nonLocalObjects add: anObject "Set will only add it if it is not present yet" ]
 ]
 
 { #category : #adding }
 SkQueryExperimentalTracer >> removeAstPreStepHook: aBlock [
 
 	astPreStepHooks remove: aBlock
-]
-
-{ #category : #initialization }
-SkQueryExperimentalTracer >> resetCacheTimeKey [
-
-	currentState ifNotNil: [ 
-		currentState resetCacheTimeKey ]
 ]
 
 { #category : #starting }
@@ -321,17 +294,16 @@ SkQueryExperimentalTracer >> restartAtBytecodeOne [
 	shouldAlwaysRunToEnd ifTrue: [ self stepToEnd ].
 	shouldAlwaysRunToEnd := false.
 	self restoreNonLocalChanges.
-	aliasesDictionary removeAll.
-	aliasesDictionary := WeakIdentityKeyDictionary new.
+	aliasesDictionary removeAll."
+	aliasesDictionary := WeakIdentityKeyDictionary new."
 	instantiationCounter := 0.
-	instantiationIDDictionary removeAll.
-	instantiationIDDictionary := WeakIdentityKeyDictionary new.
+	instantiationIDDictionary removeAll."
+	instantiationIDDictionary := WeakIdentityKeyDictionary new."
 	instantiationFlag := false.
 	currentState resetCacheTimeKey.
 	nonLocalObjects := WeakIdentitySet new.
-	storedNonLocalChanges := OrderedCollection new.
-	storedNonLocalChangesDictionary removeAll.
-	storedNonLocalChangesDictionary := WeakIdentityKeyDictionary new. "Keys are the object owning the variable, and the value is a dictionary of keys variable name (symbol) with values the Undo block"
+	storedNonLocalChangesDictionary removeAll."
+	storedNonLocalChangesDictionary := WeakIdentityKeyDictionary new." "Keys are the object owning the variable, and the value is a dictionary of keys variable name (symbol) with values the Undo block"
 	super restartAtBytecodeOne
 ]
 
@@ -411,27 +383,8 @@ SkQueryExperimentalTracer >> stepToNextIteration [
 { #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> stepToNextMarker [
 
-	| csi |
-	csi := self currentStateInterface.
 	self doAndUpdateSessionAfter: [ 
 		self stepBytecode.
 		self stepBytecodeUntilConditionIsTrue: [ 
-			csi isMessageSend and: [ csi messageIsSeekerMarkerMethod ] ] ]
-]
-
-{ #category : #'object - api' }
-SkQueryExperimentalTracer >> tables [
-
-	"^ executionVirtualTableCreator"
-
-	| tableCreator |
-	tableCreator := SeekerExecutionTablesInterface new.
-	tableCreator tracer: self.
-	^ tableCreator
-]
-
-{ #category : #initialization }
-SkQueryExperimentalTracer >> updateCacheTimeKey [
-
-	currentState updateCacheTimeKey
+			currentState isMessageSend and: [ currentState messageIsSeekerMarkerMethod ] ] ]
 ]

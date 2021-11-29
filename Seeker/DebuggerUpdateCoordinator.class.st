@@ -23,7 +23,7 @@ DebuggerUpdateCoordinator >> coordinateUpdatesFor: aBlock [
 		inspectorsAndOids := OrderedCollection new. "This ui code should go somewhere else?"
 		StInspector allInstances do: [ :each | 
 			| oid |
-			oid := tracer oidOf: each model inspectedObject.
+			oid := tracer getOidOf: each model inspectedObject.
 			oid ifNotNil: [ 
 				inspectorsAndOids add: { 
 						each.

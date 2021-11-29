@@ -1,6 +1,6 @@
 Class {
-	#name : #SkOptimizedStatementStepper,
-	#superclass : #SkStatementStepper,
+	#name : #SkOptimizedBytecodeStepper,
+	#superclass : #SkBytecodeStepper,
 	#instVars : [
 		'cachedCurrentNode',
 		'cachedCurrentNodeTimeKey',
@@ -13,7 +13,7 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
-SkOptimizedStatementStepper >> currentContext [
+SkOptimizedBytecodeStepper >> currentContext [
 
 	^ executedBytecode == cachedCurrentContextTimeKey
 		  ifTrue: [ cachedCurrentContext ]
@@ -23,7 +23,7 @@ SkOptimizedStatementStepper >> currentContext [
 ]
 
 { #category : #accessing }
-SkOptimizedStatementStepper >> doAstStepPostProcessWithPrevNode: preProcessAstNode andPrevContext: preContext [
+SkOptimizedBytecodeStepper >> doAstStepPostProcessWithPrevNode: preProcessAstNode andPrevContext: preContext [
 
 	| currentNode currentStatementNode contextChanged statementChanged |
 	"Dont do a super call here!"
@@ -43,12 +43,12 @@ SkOptimizedStatementStepper >> doAstStepPostProcessWithPrevNode: preProcessAstNo
 ]
 
 { #category : #initialization }
-SkOptimizedStatementStepper >> initialize [
+SkOptimizedBytecodeStepper >> initialize [
 	super initialize
 ]
 
 { #category : #starting }
-SkOptimizedStatementStepper >> restartAtBytecodeOne [
+SkOptimizedBytecodeStepper >> restartAtBytecodeOne [
 
 	cachedTimeKey := nil.
 	cachedCurrentNodeTimeKey := nil.
@@ -60,7 +60,7 @@ SkOptimizedStatementStepper >> restartAtBytecodeOne [
 ]
 
 { #category : #'accessing context' }
-SkOptimizedStatementStepper >> slowCurrentContext [
+SkOptimizedBytecodeStepper >> slowCurrentContext [
 
 	"currentContext := nil.
 	^ super currentContext"
@@ -70,7 +70,7 @@ SkOptimizedStatementStepper >> slowCurrentContext [
 ]
 
 { #category : #'as yet unclassified' }
-SkOptimizedStatementStepper >> slowCurrentStatementNode [
+SkOptimizedBytecodeStepper >> slowCurrentStatementNode [
 
 	^ super currentStatementNode
 ]

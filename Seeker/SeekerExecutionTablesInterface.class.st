@@ -179,7 +179,7 @@ SeekerExecutionTablesInterface >> tableOfAliasesForInstancesReferredByVariablesO
 	csi := tracer currentStateInterface.
 	getCreationStepOfVariable := [ :objInst | 
 	                             objInst ifNil: [ nil ] ifNotNil: [ 
-		                             tracer readAliasOf: objInst
+		                             tracer getOidOf: objInst
 		                             "(instancesDictionary includesKey:
 			                              objInst)
 			                             ifTrue: [ 
@@ -248,7 +248,7 @@ SeekerExecutionTablesInterface >> tableOfAliasesForInstancesReferredByVariablesV
 	"instancesDictionary := IdentityDictionary new. ""TODO add an onFinish to the table so I can clear the dictionary"
 	getCreationStepOfVariable := [ :objInst :stepIndex | 
 	                             objInst ifNil: [ nil ] ifNotNil: [ 
-		                             tracer readAliasOf: objInst
+		                             tracer getOidOf: objInst
 		                             "(instancesDictionary includesKey:
 			                              objInst)
 			                             ifTrue: [ 

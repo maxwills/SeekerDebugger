@@ -169,7 +169,7 @@ SeekerCurrentStateInterface >> aboutToSwitchContext [
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> aliasOfObject: anObject [
 
-	^ tracer readAliasOf: anObject
+	^ tracer getOidOf: anObject
 ]
 
 { #category : #'as yet unclassified' }
@@ -583,7 +583,7 @@ SeekerCurrentStateInterface >> receiver [
 SeekerCurrentStateInterface >> receiverAlias [
 
 	<subCached>
-	^ tracer readAliasOf: self receiver
+	^ tracer getOidOf: self receiver
 ]
 
 { #category : #accessing }
@@ -604,7 +604,7 @@ SeekerCurrentStateInterface >> receiverIsLocalToExecution [
 SeekerCurrentStateInterface >> receiverOid [
 
 	<subCached>
-	^ tracer readAliasOf: tracer currentContext receiver
+	^ tracer getOidOf: tracer currentContext receiver
 ]
 
 { #category : #accessing }
@@ -622,7 +622,7 @@ SeekerCurrentStateInterface >> receiverPackage [
 SeekerCurrentStateInterface >> receiverTid [
 
 	<subCached>
-	^ tracer readAliasOf: self receiver
+	^ tracer getOidOf: self receiver
 ]
 
 { #category : #'as yet unclassified' }

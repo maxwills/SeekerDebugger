@@ -18,7 +18,7 @@ SkAllMessageSendsToSelfLC >> executeCommand [
 	| oid obj objClass query queryDisplayModel |
 	obj := self tracer currentContext receiver.
 	objClass := obj class.
-	oid := self tracer readAliasOf: obj.
+	oid := self tracer getOidOf: obj.
 
 	query := self tracer queries forMessageSends
 		         select: [ :state | 

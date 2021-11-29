@@ -20,7 +20,7 @@ SkAliasOfSelectedVariableTestLC >> executeCommand [
 	selectedNode isVariable ifFalse: [ 
 		^ self error: 'Only works for variables' ].
 	obj := selectedNode variable readInContext: selectedContext.
-	(self tracer readAliasOf: obj) inspect
+	(self tracer getOidOf: obj) inspect
 ]
 
 { #category : #accessing }
