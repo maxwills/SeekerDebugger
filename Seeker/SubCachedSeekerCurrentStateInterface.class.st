@@ -90,7 +90,13 @@ Class {
 		'__cached_willJumpIfTrue',
 		'__cached_willJumpIfTrueTimeKey',
 		'__cached_willJumpIfFalse',
-		'__cached_willJumpIfFalseTimeKey'
+		'__cached_willJumpIfFalseTimeKey',
+		'__cached_messageIsSeekerMarkerMethod',
+		'__cached_messageIsSeekerMarkerMethodTimeKey',
+		'__cached_methodReturnValue',
+		'__cached_methodReturnValueTimeKey',
+		'__cached_nodeIndexInAst',
+		'__cached_nodeIndexInAstTimeKey'
 	],
 	#category : #'Seeker-Interfaces'
 }

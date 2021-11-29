@@ -5,10 +5,10 @@ Class {
 		'navigationHistory',
 		'navigationForward',
 		'isMapped',
-		'pressumedEndCondition',
 		'userFinalBytecode',
 		'isMappedForDoIt',
-		'doItContext'
+		'doItContext',
+		'endCondition'
 	],
 	#category : #'Seeker-Tracer'
 }
@@ -50,7 +50,7 @@ SkMappingTracer >> automapForCustomScenario: aContext withEndingCondition: aBloc
 	
 	userStartTraceTime := 1 asExecutedBytecodeTraceTime.
 	
-	pressumedEndCondition := aBlock.
+	endCondition := aBlock.
 	self blockingDoAndUpdateSessionAfter: [ self recountExecutedBytecodes ].
 	isMapped := true.
 	^ true
@@ -83,14 +83,13 @@ SkMappingTracer >> automapForDoItScenario [
 	endTracedInstructionPC := endingContext tracedInstructionPC.
 	endTracedInstructionPC pc: endingContext endPC. "The last step is the endPC?"
 	endTraceTime := endTracedInstructionPC asTraceTimeReference.
-	pressumedEndCondition := [ "self traceTime @>="
-	                         self currentContext == doItContext
-		                         ifTrue: [ "self currentContext = endingContext" 
-			                         self currentContext willReturn ]
-		                         ifFalse: [ 
-		                         endTraceTime 
-			                         referencesTheLocalPastOrPresent: self ] ].
-	self blockingDoAndUpdateSessionAfter: [ self recountExecutedBytecodes ].
+	endCondition := (SkEndOfDoIt newForTracer: self)
+		                         doItContext: doItContext;
+		                         endTraceTime: endTraceTime;
+		                         yourself.
+
+	self blockingDoAndUpdateSessionAfter: [ 
+		self recountExecutedBytecodes ].
 	isMapped := true.
 	isMappedForDoIt := true.
 	^ true
@@ -118,11 +117,8 @@ SkMappingTracer >> automapForSeekerMarkedSessionScenario [
 	userStartTraceTime := 11 asExecutedBytecodeTraceTime. "Manually calculated" "testInitialContext tracedContextPC
 		                      asTraceTimeReference"
 	endingContext := testInitialContext sender.
-	pressumedEndCondition := [ "this is not a proper solution. If there is a returing block, these conditions might never be met."
-	                         self currentContext receiver
-	                         == SeekerSessionHelpers and: [ 
-		                         self currentContext selector
-		                         = #seekerSessionEndMarker ] ].
+	endCondition := SkEndOfMarkedSession newForTracer: self.
+
 	self blockingDoAndUpdateSessionAfter: [ 
 		self timeTravelToTraceTime: userStartTraceTime ].
 	isMapped := true.
@@ -156,10 +152,10 @@ SkMappingTracer >> automapForTestCaseScenario [
 	endTracedInstructionPC := endingContext tracedInstructionPC.
 	endTracedInstructionPC pc: endingContext endPC. "The last step is the endPC?"
 	endTraceTime := endTracedInstructionPC asTraceTimeReference.
-	pressumedEndCondition := [ "self traceTime @>="
-	                         endTraceTime 
-		                         referencesTheLocalPastOrPresent: self
-	                         "self currentContext = endingContext" ].
+	endCondition := (SkEndOfTestCase newForTracer: self)
+		                         endTraceTime: endTraceTime;
+		                         yourself.
+
 	self blockingDoAndUpdateSessionAfter: [ 
 		self recountExecutedBytecodes ].
 	isMapped := true.
@@ -267,6 +263,7 @@ SkMappingTracer >> initialize [
 	navigationForward := OrderedCollection new.
 	isMappedForDoIt := false.
 	doItContext := nil.
+	endCondition := SkEndImmediately new.
 	super initialize
 ]
 
@@ -291,7 +288,7 @@ SkMappingTracer >> isDoItScenario [
 { #category : #testing }
 SkMappingTracer >> isExecutionFinished [
 
-	^ self isPressumedEndingStepReached or: [ super isExecutionFinished ]
+	^ endCondition isEndReached or: [ super isExecutionFinished ]
 ]
 
 { #category : #accessing }
@@ -304,17 +301,6 @@ SkMappingTracer >> isMapped [
 SkMappingTracer >> isMapped: anObject [
 
 	isMapped := anObject
-]
-
-{ #category : #testing }
-SkMappingTracer >> isPressumedEndingStepReached [
-
-	"Only valid if quickmap was used (or automp for test and doit), for we need a pressumed ending step"
-
-	"Presummed ending step is a statement that should be reached in a good execution (no exceptions, or assertion failures)"
-
-	pressumedEndCondition ifNotNil: [ ^ pressumedEndCondition value ].
-	^ false
 ]
 
 { #category : #testing }
@@ -441,23 +427,19 @@ SkMappingTracer >> recordFromHereWithExecutionEndingConditionOnState: aPredicate
 { #category : #'as yet unclassified' }
 SkMappingTracer >> recordOnThisContext [
 
-	| csi endCondition initialContext endingContext endTracedInstructionPC endTraceTime |
+	| initialContext endingContext endTracedInstructionPC endTraceTime |
 	initialContext := self slowCurrentContext.
 	endingContext := initialContext.
 	endTracedInstructionPC := endingContext tracedInstructionPC.
 	endTracedInstructionPC pc: endingContext endPC. "The last step is the endPC?"
 	endTraceTime := endTracedInstructionPC asTraceTimeReference.
-	pressumedEndCondition := [ "self traceTime @>="
-	                         self currentContext == initialContext
-		                         ifTrue: [ "self currentContext = endingContext" 
-			                         self currentContext willReturn ]
-		                         ifFalse: [ 
-		                         endTraceTime 
-			                         referencesTheLocalPastOrPresent: self ] ].
-	csi := self currentStateInterface.
+	endCondition := (SkEndOfContext newForTracer: self)
+		                         context: initialContext;
+		                         endTraceTime: endTraceTime;
+		                         yourself.
 	self
 		automapForCustomScenario: self slowCurrentContext
-		withEndingCondition: pressumedEndCondition.
+		withEndingCondition: endCondition.
 	self inform: 'New execution parameters set.'
 ]
 

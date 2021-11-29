@@ -51,9 +51,6 @@ Class {
 		'userStartTraceTime',
 		'contextOfExecutedBytecodeOne',
 		'currentTraceTimeReference',
-		'currentContextStackDepth',
-		'previousContextStackDepth',
-		'rememberContextStackDepth',
 		'contextJumpCount',
 		'tracedContextCount',
 		'iteratingFlag',
@@ -166,6 +163,15 @@ SkStatementStepper >> forceSessionUpdate [
 	self debuggerUpdateCoordinator forceUpdate
 ]
 
+{ #category : #'as yet unclassified' }
+SkStatementStepper >> handleEmergencyStopFlag [
+
+	emergencyStopFlag := false.
+	self inform: 'Seeker Emergency Stop'.
+	self updateUI.
+	^ false
+]
+
 { #category : #testing }
 SkStatementStepper >> hasSignalledUnhandledException [
 	"Returns true if the debugged execution has signalled an exception that has not been handled by any on:do: (i.e. the #defaultAction of the exception is about to be executed. This default action typically leads to opening a debugger on the process that signalled the exception)"
@@ -189,9 +195,7 @@ SkStatementStepper >> initialize [
 		                             self.
 	contextJumpCount := 0.
 	tracedContextCount := 0.
-	currentContextStackDepth := 0.
-	previousContextStackDepth := 0.
-	rememberContextStackDepth := false.
+
 	maxExecutedBytecode := 1.
 	astStepCounter := 0.
 	currentStepIndex := 1.
@@ -229,7 +233,7 @@ SkStatementStepper >> isRiskyStep [
 	^ currentState methodSelector = #primitiveFailed or: [ 
 		  receiver isClass
 			  ifTrue: [ 
-			  receiver = TestResult and: [ context methodSelector = #failure ] ]
+			  receiver == TestResult and: [ context methodSelector = #failure ] ]
 			  ifFalse: [ 
 				  currentState methodSelector = #defaultAction and: [ 
 					  receiver class inheritsFrom: Exception ] ] ]
@@ -315,7 +319,6 @@ SkStatementStepper >> restartAtBytecodeOne [
 	stDebugger session restart: contextOfExecutedBytecodeOne.
 	currentStepIndex := currentStepIndex + 1.
 	currentContext := session interruptedProcess suspendedContext.
-	currentContextStackDepth := currentContext stackDepth.
 	self updateCacheTimeKey.
 	self onTracedContextChanged.
 	self onTracedStatementChanged
@@ -367,7 +370,6 @@ SkStatementStepper >> signalExceptionIfDebuggedExecutionHasSignalledUnhandledExc
 	| unhandledException |
 	(self hasSignalledUnhandledException)
 		ifTrue: [ 
-			Transcript show: 'ENTROOOO'.
 			unhandledException := self currentContext receiver.
 			UnhandledExceptionSignalledByADebuggedExecution
 				signalWithException: unhandledException.
@@ -445,13 +447,11 @@ SkStatementStepper >> stepBackOver [
 { #category : #'debug - stepping' }
 SkStatementStepper >> stepBytecode [
 
-	"Steps the debugger. No skipping. No recording. No updates (rememeber to force update after)"
+	"Steps the debugger. No skipping. No recording. No updates (remember to force update after)"
 
 	| previousContext startingNode |
 	emergencyStopFlag ifTrue: [ 
-		emergencyStopFlag := false.
-		self inform: 'Seeker Emergency Stop'.
-		self updateUI.
+		self handleEmergencyStopFlag.
 		^ false ].
 	(self isExecutionFinished or: [ self isRiskyStep ]) ifTrue: [ "self inform: 'Reached execution safe end point'" 
 		^ false ].

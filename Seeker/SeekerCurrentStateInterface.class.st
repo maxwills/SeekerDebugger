@@ -392,23 +392,26 @@ SeekerCurrentStateInterface >> messageArgumentAt: aNumber [
 
 	"Clients should take care that the argument index is within limits"
 
-	^ self node isInlined
+	| node context |
+	context := self context.
+	node := self node.
+	^ node isInlined
 		  ifTrue: [ 
 		  self contextTop "inlined messages should not have arguments" ]
 		  ifFalse: [ 
 			  | pointer |
-			  pointer := 1 + self context stackPtr - self node numArgs. "Heuristics"
+			  pointer := 1 + context stackPtr - node numArgs. "Heuristics"
 			  pointer <= 0 ifTrue: [ pointer := 1 ]. "I'm not sure these cases happen"
-			  pointer > self context size ifTrue: [ ^ nil ].
-			  self context at: pointer "Heuristics" ]
+			  pointer > context size ifTrue: [ ^ nil ].
+			  context at: pointer "Heuristics" ]
 ]
 
 { #category : #testing }
 SeekerCurrentStateInterface >> messageIsSeekerMarkerMethod [
-<superCached>
-	| messageReceiver messageSelector |
-	messageReceiver := self messageReceiver.
-	messageReceiver == SeekerSessionHelpers ifFalse: [ ^ false ].
+
+	<subCached>
+	| messageSelector |
+	self messageReceiver == SeekerSessionHelpers ifFalse: [ ^ false ].
 	messageSelector := self messageSelector.
 	^ messageSelector == #marker or: [ messageSelector == #marker: ]
 ]
@@ -420,17 +423,20 @@ SeekerCurrentStateInterface >> messageReceiver [
 "
 
 	<subCached>
-	^ self node isInlined
+	| node context |
+	context := self context.
+	node := self node.
+	^ node isInlined
 		  ifTrue: [ 
-			  self context stackPtr = 0
+			  context stackPtr = 0
 				  ifTrue: [ nil "emptyStack" ]
-				  ifFalse: [ self context top ] ]
+				  ifFalse: [ context top ] ]
 		  ifFalse: [ 
 			  | pointer |
-			  pointer := self context stackPtr - self node numArgs. "Heuristics"
+			  pointer := context stackPtr - node numArgs. "Heuristics"
 			  pointer <= 0 ifTrue: [ pointer := 1 ]. "I'm not sure these cases happen"
-			  pointer > self context size ifTrue: [ ^ nil ].
-			  self context at: pointer "Heuristics" ]
+			  pointer > context size ifTrue: [ ^ nil ].
+			  context at: pointer "Heuristics" ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -486,15 +492,17 @@ SeekerCurrentStateInterface >> methodClass [
 
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> methodNotation [
-<superCached>
-	^tracer currentContext method asSeekerOfflineExpressionString
+
+	<superCached>
+	^ self method asSeekerOfflineExpressionString
 ]
 
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> methodReturnValue [
-<superCached>
+
 	"Alias for context top"
 
+	<subCached>
 	^ self contextTop
 ]
 
@@ -502,7 +510,7 @@ SeekerCurrentStateInterface >> methodReturnValue [
 SeekerCurrentStateInterface >> methodSelector [
 
 	<subCached>
-	^ tracer currentContext methodSelector
+	^ self context methodSelector
 ]
 
 { #category : #accessing }
@@ -517,7 +525,8 @@ SeekerCurrentStateInterface >> node [
 SeekerCurrentStateInterface >> nodeIndexInAst [
 
 	"This is not useful"
-<superCached>
+
+	<subCached>
 	| astNodes |
 	astNodes := self compiledCode sourceNode allChildren.
 	^ astNodes indexOf: self node
