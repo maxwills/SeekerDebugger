@@ -23,20 +23,6 @@ SkAllMessageSendsToObjectInVariableLC >> executeCommand [
 			 withObjectOid: oid)
 ]
 
-{ #category : #'as yet unclassified' }
-SkAllMessageSendsToObjectInVariableLC >> getSelectedObjectOid [
-
-	| selectedNode obj objClass selectedContext |
-	selectedContext := self tracer selectedContext.
-	selectedNode := self tracer selectedNode.
-	selectedNode ifNil: [ ^ self error: 'No variable selected' ].
-	selectedNode isVariable ifFalse: [ 
-		^ self error: 'Only works for variables' ].
-	obj := selectedContext readVariableNamed: selectedNode variable name.
-	objClass := obj class.
-	^ self tracer getOidOf: obj
-]
-
 { #category : #accessing }
 SkAllMessageSendsToObjectInVariableLC >> icon [
 

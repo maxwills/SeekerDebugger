@@ -553,17 +553,19 @@ SeekerCurrentStateInterface >> nodeIndexInAst [
 ]
 
 { #category : #'as yet unclassified' }
-SeekerCurrentStateInterface >> nodeIsAssignement [
+SeekerCurrentStateInterface >> nodeIsAssignment [
 
 	<subCached>
 	^ self node isAssignment
 ]
 
 { #category : #'as yet unclassified' }
-SeekerCurrentStateInterface >> nodeIsAssignment [
+SeekerCurrentStateInterface >> nodeIsAssignmentOfInstanceVariable [
 
 	<subCached>
-	^ self node isAssignment
+	| node |
+	node := self node.
+	^ node isAssignment and: [ node variable isInstanceVariable ]
 ]
 
 { #category : #'as yet unclassified' }

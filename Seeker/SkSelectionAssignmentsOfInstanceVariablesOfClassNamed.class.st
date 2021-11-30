@@ -22,6 +22,6 @@ SkSelectionAssignmentsOfInstanceVariablesOfClassNamed >> objectClassName: anObje
 { #category : #accessing }
 SkSelectionAssignmentsOfInstanceVariablesOfClassNamed >> value: programState [
 
-	^ programState nodeIsAssignment and: [ 
+	^ programState nodeIsAssignmentOfInstanceVariable and: [ 
 		  programState receiverClass name == objectClassName ]
 ]
