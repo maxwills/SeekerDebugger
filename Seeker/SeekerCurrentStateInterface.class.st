@@ -205,6 +205,15 @@ SeekerCurrentStateInterface >> assignmentNodeVariable [
 	^ self node variable variable
 ]
 
+{ #category : #stackAccessHelpers }
+SeekerCurrentStateInterface >> assignmentVariableName [
+
+	"The variable name of the curent assignment node"
+
+	<subCached>
+	^ self node variable variable name
+]
+
 { #category : #accessing }
 SeekerCurrentStateInterface >> bytecode [
 

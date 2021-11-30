@@ -100,7 +100,9 @@ Class {
 		'__cached_nodeIsAssignment',
 		'__cached_nodeIsAssignmentTimeKey',
 		'__cached_classNameOfObjectAboutToBeInstantiated',
-		'__cached_classNameOfObjectAboutToBeInstantiatedTimeKey'
+		'__cached_classNameOfObjectAboutToBeInstantiatedTimeKey',
+		'__cached_assignmentVariableName',
+		'__cached_assignmentVariableNameTimeKey'
 	],
 	#category : #'Seeker-Interfaces'
 }
