@@ -15,7 +15,7 @@ Class {
 TimeTravelingQuery class >> checkCompatibilityOfDisplayModelAndProjection [
 
 	<script>
-	self displayModel checkColumnsAgainsProjectionClass:
+	self displayModel checkColumnsAgainstProjectionClass:
 		self projectionFunction.
 
 	self inform: 'All display model columns found in the projection'
@@ -101,6 +101,12 @@ TimeTravelingQuery class >> showProjectionExample [
 TimeTravelingQuery >> displayModel [
 
 	^ displayModel
+]
+
+{ #category : #'as yet unclassified' }
+TimeTravelingQuery >> displayModel: anObject [
+
+	displayModel := anObject
 ]
 
 { #category : #initialization }

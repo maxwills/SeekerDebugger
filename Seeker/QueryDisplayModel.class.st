@@ -11,12 +11,18 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
-QueryDisplayModel class >> checkColumnsAgainsProjectionClass: projectionClass [
+QueryDisplayModel class >> checkColumnsAgainstProjectionClass: projectionClass [
 
-	| dm col_keys projectionFields |
+	^ self checkColumnsAgainstProjectionFields:
+		  projectionClass new fields
+]
+
+{ #category : #'as yet unclassified' }
+QueryDisplayModel class >> checkColumnsAgainstProjectionFields: projectionFields [
+
+	| dm col_keys |
 	dm := self new.
 	col_keys := dm columns collect: [ :c | c key ].
-	projectionFields := projectionClass new fields.
 	col_keys do: [ :c_key | 
 		(projectionFields includes: c_key) ifFalse: [ 
 			self error: 'Column not found in projection fields'.

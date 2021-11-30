@@ -129,7 +129,8 @@ Query >> advanceToNextRow [
 
 { #category : #converting }
 Query >> asCollection [
-  ^ self asTableForTimeTravel rows
+
+	^ QSCollection solve: self
 ]
 
 { #category : #converting }
