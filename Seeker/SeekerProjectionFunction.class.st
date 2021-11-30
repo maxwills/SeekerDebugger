@@ -4,7 +4,7 @@ Class {
 	#instVars : [
 		'autoType'
 	],
-	#category : #'Seeker-Query'
+	#category : #'Seeker-TimeTravelingQueries'
 }
 
 { #category : #'field definition' }

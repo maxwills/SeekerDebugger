@@ -5,6 +5,13 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
+TTQAllInstanceCreationsOfClassWithName class >> performWith: tracer withArg: arg [
+
+	tracer ui showInResult:
+		(self queryFrom: tracer programStates withClassName: arg) displayModel 
+]
+
+{ #category : #'as yet unclassified' }
 TTQAllInstanceCreationsOfClassWithName class >> queryFrom: source withClassName: anObject [
 
 	^ (self queryFrom: source)

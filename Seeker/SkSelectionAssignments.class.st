@@ -1,11 +1,11 @@
 Class {
-	#name : #SkSelectionMessageSends,
+	#name : #SkSelectionAssignments,
 	#superclass : #SeekerSelectionFunction,
 	#category : #'Seeker-TimeTravelingQueries'
 }
 
 { #category : #accessing }
-SkSelectionMessageSends >> value: programState [
+SkSelectionAssignments >> value: programState [
 
-	^ programState isMessageSend
+	^ programState nodeIsAssignment
 ]

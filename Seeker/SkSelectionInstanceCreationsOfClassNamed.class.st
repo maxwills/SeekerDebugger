@@ -4,7 +4,7 @@ Class {
 	#instVars : [
 		'newInstanceClassName'
 	],
-	#category : #'Seeker-Query'
+	#category : #'Seeker-TimeTravelingQueries'
 }
 
 { #category : #accessing }

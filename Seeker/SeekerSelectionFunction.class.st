@@ -1,7 +1,7 @@
 Class {
 	#name : #SeekerSelectionFunction,
 	#superclass : #Object,
-	#category : #'Seeker-Query'
+	#category : #'Seeker-TimeTravelingQueries'
 }
 
 { #category : #accessing }

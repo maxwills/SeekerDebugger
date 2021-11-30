@@ -33,6 +33,15 @@ QueryDisplayModel class >> newForQuery: aQuery [
 		           yourself
 ]
 
+{ #category : #adding }
+QueryDisplayModel >> addColumn: aSymbol [
+
+	| col |
+	col := ColumnDefinition newForKey: aSymbol.
+	columns add: col.
+	^ col
+]
+
 { #category : #'as yet unclassified' }
 QueryDisplayModel >> buildContextMenuForResults: aQueryResutls withSelectedItem: selection [
 
@@ -58,7 +67,7 @@ QueryDisplayModel >> initialize [
 
 	title := 'No title'.
 	timeToRun := 0.
-	columns := {  }.
+	columns := OrderedCollection new.
 	self initializeModel
 ]
 

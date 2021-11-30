@@ -1,7 +1,7 @@
 Class {
 	#name : #SkSelectionReceivedMessages,
 	#superclass : #SeekerSelectionFunction,
-	#category : #'Seeker-Query'
+	#category : #'Seeker-TimeTravelingQueries'
 }
 
 { #category : #accessing }

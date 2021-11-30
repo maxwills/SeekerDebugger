@@ -1,7 +1,7 @@
 Class {
 	#name : #SkProjectionInstanceCreations,
 	#superclass : #SeekerProjectionFunction,
-	#category : #'Seeker-Query'
+	#category : #'Seeker-TimeTravelingQueries'
 }
 
 { #category : #accessing }

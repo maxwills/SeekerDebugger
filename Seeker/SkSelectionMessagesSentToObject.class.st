@@ -4,7 +4,7 @@ Class {
 	#instVars : [
 		'messageReceiverOid'
 	],
-	#category : #'Seeker-Query'
+	#category : #'Seeker-TimeTravelingQueries'
 }
 
 { #category : #accessing }

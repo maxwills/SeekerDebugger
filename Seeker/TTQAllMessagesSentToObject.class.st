@@ -5,6 +5,13 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
+TTQAllMessagesSentToObject class >> performWith: tracer withArg: arg [
+
+	tracer ui showInResult:
+		(self queryFrom: tracer programStates withObjectOid: arg) displayModel 
+]
+
+{ #category : #'as yet unclassified' }
 TTQAllMessagesSentToObject class >> queryFrom: source withObjectOid: aNumber [
 
 	^ (self queryFrom: source)
