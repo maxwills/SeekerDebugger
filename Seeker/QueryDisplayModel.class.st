@@ -10,6 +10,20 @@ Class {
 	#category : #'Seeker-UI'
 }
 
+{ #category : #'as yet unclassified' }
+QueryDisplayModel class >> checkColumnsAgainsProjectionClass: projectionClass [
+
+	| dm col_keys projectionFields |
+	dm := self new.
+	col_keys := dm columns collect: [ :c | c key ].
+	projectionFields := projectionClass new fields.
+	col_keys do: [ :c_key | 
+		(projectionFields includes: c_key) ifFalse: [ 
+			self error: 'Column not found in projection fields'.
+			^ false ] ].
+	^ true
+]
+
 { #category : #'instance creation' }
 QueryDisplayModel class >> newForQuery: aQuery [
 

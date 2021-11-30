@@ -5,7 +5,7 @@ Class {
 }
 
 { #category : #accessing }
-SkSelectionMessageSends >> value: programSate [
+SkSelectionMessageSends >> value: programState [
 
-	^ programSate isMessageSend
+	^ programState isMessageSend
 ]

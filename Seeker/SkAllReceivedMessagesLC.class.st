@@ -15,11 +15,8 @@ SkAllReceivedMessagesLC >> description [
 { #category : #executing }
 SkAllReceivedMessagesLC >> executeCommand [
 
-	| res |
-	res := self tracer find allReceivedMessages asSeekerResultsCollection
-		       forReceivedMessages.
-
-	self showResult: res
+	self showResultFor:
+		(TTQAllReceivedMessages queryFrom: self tracer programStates)
 ]
 
 { #category : #accessing }

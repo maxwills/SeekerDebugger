@@ -226,6 +226,17 @@ SeekerCurrentStateInterface >> bytecodeStepInTracedStatement [
 	^ tracer executedBytecodesInTracedStatement + 1
 ]
 
+{ #category : #'as yet unclassified' }
+SeekerCurrentStateInterface >> classNameOfObjectAboutToBeInstantiated [
+
+	<subCached>
+	| instMsgReceiver |
+	instMsgReceiver := self messageReceiver.
+	^ instMsgReceiver isClass
+		  ifTrue: [ instMsgReceiver name ]
+		  ifFalse: [ instMsgReceiver class name ]
+]
+
 { #category : #accessing }
 SeekerCurrentStateInterface >> compiledCode [
 
@@ -534,6 +545,13 @@ SeekerCurrentStateInterface >> nodeIndexInAst [
 
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> nodeIsAssignement [
+
+	<subCached>
+	^ self node isAssignment
+]
+
+{ #category : #'as yet unclassified' }
+SeekerCurrentStateInterface >> nodeIsAssignment [
 
 	<subCached>
 	^ self node isAssignment

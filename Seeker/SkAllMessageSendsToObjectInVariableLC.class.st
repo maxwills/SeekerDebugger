@@ -15,7 +15,18 @@ SkAllMessageSendsToObjectInVariableLC >> description [
 { #category : #executing }
 SkAllMessageSendsToObjectInVariableLC >> executeCommand [
 
-	| oid selectedNode obj objClass selectedContext query queryDisplayModel |
+	| oid |
+	oid := self getSelectedObjectOid.
+
+	self showResultFor: (TTQAllMessagesSentToObject
+			 queryFrom: self tracer programStates
+			 withObjectOid: oid)
+]
+
+{ #category : #'as yet unclassified' }
+SkAllMessageSendsToObjectInVariableLC >> getSelectedObjectOid [
+
+	| selectedNode obj objClass selectedContext |
 	selectedContext := self tracer selectedContext.
 	selectedNode := self tracer selectedNode.
 	selectedNode ifNil: [ ^ self error: 'No variable selected' ].
@@ -23,16 +34,7 @@ SkAllMessageSendsToObjectInVariableLC >> executeCommand [
 		^ self error: 'Only works for variables' ].
 	obj := selectedContext readVariableNamed: selectedNode variable name.
 	objClass := obj class.
-	oid := self tracer getOidOf: obj.
-
-	query := self tracer queries forMessageSends
-		         select: [ :state | 
-			         state messageReceiver class == objClass "innecessary, but it's faster than getting the oid"and: [ 
-				         state messageReceiverOid == oid ] ]
-		         collect: SkProjectionMessageSends new.
-	queryDisplayModel := QdmForMessageSends newForQuery: query.
-
-	self showResultFor: queryDisplayModel
+	^ self tracer getOidOf: obj
 ]
 
 { #category : #accessing }

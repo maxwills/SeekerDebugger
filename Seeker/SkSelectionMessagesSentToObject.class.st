@@ -22,6 +22,6 @@ SkSelectionMessagesSentToObject >> messageReceiverOid: anObject [
 { #category : #accessing }
 SkSelectionMessagesSentToObject >> value: programState [
 
-	(super value: programState) ifFalse: [ ^ false ].
+	programState isMessageSend ifFalse: [ ^ false ].
 	^ programState messageReceiverOid == messageReceiverOid
 ]

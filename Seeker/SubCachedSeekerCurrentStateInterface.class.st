@@ -96,7 +96,11 @@ Class {
 		'__cached_methodReturnValue',
 		'__cached_methodReturnValueTimeKey',
 		'__cached_nodeIndexInAst',
-		'__cached_nodeIndexInAstTimeKey'
+		'__cached_nodeIndexInAstTimeKey',
+		'__cached_nodeIsAssignment',
+		'__cached_nodeIsAssignmentTimeKey',
+		'__cached_classNameOfObjectAboutToBeInstantiated',
+		'__cached_classNameOfObjectAboutToBeInstantiatedTimeKey'
 	],
 	#category : #'Seeker-Interfaces'
 }

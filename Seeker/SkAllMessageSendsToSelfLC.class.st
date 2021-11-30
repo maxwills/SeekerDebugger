@@ -15,19 +15,12 @@ SkAllMessageSendsToSelfLC >> description [
 { #category : #executing }
 SkAllMessageSendsToSelfLC >> executeCommand [
 
-	| oid obj objClass query queryDisplayModel |
-	obj := self tracer currentContext receiver.
-	objClass := obj class.
-	oid := self tracer getOidOf: obj.
+	| oid |
+	oid := self tracer currentStateInterface receiverOid.
 
-	query := self tracer queries forMessageSends
-		         select: [ :state | 
-			         state messageReceiver class == objClass and: [ 
-				         state messageReceiverOid == oid ] ]
-		         collect: SkProjectionMessageSends new.
-	queryDisplayModel := QdmForMessageSends newForQuery: query.
-
-	self showResultFor: queryDisplayModel
+	self showResultFor: (TTQAllMessagesSentToObject
+			 queryFrom: self tracer programStates
+			 withObjectOid: oid)
 ]
 
 { #category : #accessing }

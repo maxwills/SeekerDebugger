@@ -15,14 +15,8 @@ SkAllMessageSendsLC >> description [
 { #category : #executing }
 SkAllMessageSendsLC >> executeCommand [
 
-	| query queryDisplayModel |
-	query := Query
-		         from: self tracer programStates
-		         select: SkSelectionMessageSends new
-		         collect: SkProjectionMessageSends new.
-	queryDisplayModel := QdmForMessageSends newForQuery: query.
-
-	self showResultFor: queryDisplayModel
+	self showResultFor:
+		(TTQAllMessageSends queryFrom: self tracer programStates)
 ]
 
 { #category : #accessing }
