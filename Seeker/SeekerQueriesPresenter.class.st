@@ -58,7 +58,6 @@ SeekerQueriesPresenter >> applyResultFilter [
 				                                   val includesSubstring: f ] ] ]
 ]
 
-
 { #category : #'UI specific' }
 SeekerQueriesPresenter >> executeAndShow: aQueryDisplayModel [
 

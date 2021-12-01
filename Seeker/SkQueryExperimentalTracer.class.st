@@ -39,16 +39,6 @@ SkQueryExperimentalTracer >> createContextCacheFor: aContext [
 	^ aContext stackPtr = (contextVars + 1)
 ]
 
-{ #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> currentStateAsRow [
-
-	"Debug help. Don't use this. No filtering or optimizations. Create a baseQuery instead and use it with select: collect:"
-
-	| q |
-	q := self queries baseQueryOld.
-	^ q currentRow
-]
-
 { #category : #accessing }
 SkQueryExperimentalTracer >> doAstStepPostProcessWithPrevNode: preProcessAstNode andPrevContext: preContext [
 
@@ -96,24 +86,6 @@ SkQueryExperimentalTracer >> doAstStepPreProcess [
 					recordChangeForReceiver: currentState receiver
 					ofVar: node variable variable
 					inContext: currentState context ] ]
-]
-
-{ #category : #'object - api' }
-SkQueryExperimentalTracer >> find [
-
-	| interface |
-	interface := SeekerFindInterface new.
-	interface tracer: self.
-	^ interface 
-]
-
-{ #category : #'object - api' }
-SkQueryExperimentalTracer >> findAndShow: aQuery [
-
-	| interface |
-	interface := SeekerFindInterface new.
-	interface tracer: self.
-	^ interface 
 ]
 
 { #category : #'object - api' }
@@ -216,17 +188,6 @@ SkQueryExperimentalTracer >> perform [
 SkQueryExperimentalTracer >> programStates [
 
 	^ SkProgramStates newForTracer: self
-]
-
-{ #category : #'object - api' }
-SkQueryExperimentalTracer >> queries [
-
-	"Should return the instance variable, but it works better like this when changint the libary class during a debug session (it is not updated)"
-
-	| lib |
-	lib := SeekerTraceQueriesInterface new.
-	lib tracer: self.
-	^ lib
 ]
 
 { #category : #'as yet unclassified' }

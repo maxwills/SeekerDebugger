@@ -94,17 +94,11 @@ Object >> seekAllMessagesSentToMe [
 	| seeker |
 	seeker := self seekMe.
 	seeker ifNotNil: [ 
-		| oid inspectors res newRef |
+		| oid res |
 		oid := self seekMyAlias.
-		inspectors := self seekMyInspectors.
-		res := (seeker find allMessageSendsToOid: oid)
-			       asSeekerResultsCollection forMessageSends.
-		"newRef := seeker getObjectByOid: oid.
-		inspectors do: [ :each | 
-			each
-				model: (StInspectorModel on: newRef);
-				updateList;
-				updateTitle ]."
+		res := (TTQAllMessagesSentToObject
+			        queryFrom: seeker programStates
+			        withObjectOid: oid) asCollection.
 		^ res ].
 	^ nil
 ]
@@ -115,16 +109,11 @@ Object >> seekAllMyChanges [
 	| seeker |
 	seeker := self seekMe.
 	seeker ifNotNil: [ 
-		| oid inspectors res newRef |
+		| oid res |
 		oid := self seekMyAlias.
-		inspectors := self seekMyInspectors.
-		res := (seeker find changesOfObject: self) asSeekerResultsCollection
-			       forAssignmentsOfInstanceVariables.
-		"newRef := seeker getObjectByOid: oid.
-		inspectors do: [ :each | 
-			each
-				model: (StInspectorModel on: newRef);
-				updateList; updateTitle]."
+		res := (TTQAllAssignmentsOfInstanceVariablesOfObject
+			        queryFrom: seeker programStates
+			        withObjectOid: oid) asCollection.
 		^ res ].
 
 	^ nil
@@ -133,27 +122,44 @@ Object >> seekAllMyChanges [
 { #category : #'*Seeker' }
 Object >> seekAndDisplayAllMessagesSentToMe [
 
-	| results seeker |
+	| seeker error |
+	error := true.
+
+	[ 
 	seeker := self seekMe.
-	results := self seekAllMessagesSentToMe.
-	results
-		ifNotNil: [ 
-			seeker seekerResultsPresenter showResult: results.
-			self inform: 'Results being shown in Results table' ]
-		ifNil: [ self error: 'Could not execute query' ]
+	seeker ifNotNil: [ 
+		| oid |
+		oid := self seekMyAlias.
+		oid ifNil: [ ^ self error: 'Seeker: obtained Oid was nil.' ].
+		seeker ui showInResult: (TTQAllMessagesSentToObject
+				 queryFrom: seeker programStates
+				 withObjectOid: oid) displayModel.
+		error := false ] ] ensure: [ 
+		error
+			ifFalse: [ self inform: 'Results being shown in results table' ]
+			ifTrue: [ self error: 'Could not execute query' ] ]
 ]
 
 { #category : #'*Seeker' }
 Object >> seekAndDisplayAllMyChanges [
 
-	| results seeker |
+	| seeker error |
+	error := true.
+
+	[ 
 	seeker := self seekMe.
-	results := self seekAllMyChanges.
-	results
-		ifNotNil: [ 
-			seeker seekerResultsPresenter showResult: results.
-			self inform: 'Results being shown in Results table' ]
-		ifNil: [ self error: 'Could not execute query' ]
+	seeker ifNotNil: [ 
+		| oid |
+		oid := self seekMyAlias.
+		oid ifNil: [ ^ self error: 'Seeker: obtained Oid was nil.' ].
+		seeker ui showInResult:
+			(TTQAllAssignmentsOfInstanceVariablesOfObject
+				 queryFrom: seeker programStates
+				 withObjectOid: oid) displayModel.
+		error := false ] ] ensure: [ 
+		error
+			ifFalse: [ self inform: 'Results being shown in tesults table' ]
+			ifTrue: [ self error: 'Could not execute query' ] ]
 ]
 
 { #category : #'*Seeker' }
