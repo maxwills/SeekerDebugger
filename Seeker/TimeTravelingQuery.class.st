@@ -113,5 +113,11 @@ TimeTravelingQuery >> displayModel: anObject [
 TimeTravelingQuery >> initialize [
 
 	super initialize.
+	self ttqInitialize
+]
+
+{ #category : #'as yet unclassified' }
+TimeTravelingQuery >> ttqInitialize [
+
 	displayModel := self class displayModel newForQuery: self
 ]

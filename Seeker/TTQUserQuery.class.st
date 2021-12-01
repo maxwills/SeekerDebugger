@@ -68,11 +68,9 @@ TTQUserQuery >> displayModel [
 ]
 
 { #category : #initialization }
-TTQUserQuery >> initialize [
+TTQUserQuery >> ttqInitialize [
 
-	"Skipping super initialize"
+	"dont call super here. The super method should not be called"
 
-	(Query methodDictionary at: #initialize)
-		valueWithReceiver: self
-		arguments: #(  )
+	
 ]
