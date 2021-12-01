@@ -46,10 +46,10 @@ SkQueryExperimentalTracer >> doAstStepPostProcessWithPrevNode: preProcessAstNode
 		| instancedObj |
 		instancedObj := currentState contextTop.
 		instantiationFlag := false.
-		currentState isMessageNode ifTrue: [ 
-			self
-				registerAliasFor: currentState messageReceiver
-				withOid: executedBytecode - 1 ].
+
+		self
+			registerAliasFor: currentState contextTop
+			withOid: executedBytecode - 1.
 		instantiationCounter := instantiationCounter + 1.
 		instantiationIDDictionary at: instancedObj put: instantiationCounter ].
 

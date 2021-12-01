@@ -25,21 +25,21 @@ SkOptimizedBytecodeStepper >> currentContext [
 { #category : #accessing }
 SkOptimizedBytecodeStepper >> doAstStepPostProcessWithPrevNode: preProcessAstNode andPrevContext: preContext [
 
-	| currentNode currentStatementNode contextChanged statementChanged |
+	| currentNode "currentStatementNode" contextChanged "statementChanged" |
 	"Dont do a super call here!"
 	currentNode := currentState node "currentContext method sourceNodeForPC:
 		               currentContext pc".
-	currentStatementNode := currentNode statementNode.
+	"currentStatementNode := currentNode statementNode."
 	contextChanged := currentContext ~~ preContext.
-	statementChanged := contextChanged or: [ 
+	"statementChanged := contextChanged or: [ 
 		                    cachedCurrentStatementNode
-		                    ~~ currentStatementNode ].
+		                    ~~ currentStatementNode ]."
 	"Note that during the OnXChanged, the cachedValues are the ones before the change"
-	contextChanged ifTrue: [ self onTracedContextChanged ].
-	statementChanged ifTrue: [ self onTracedStatementChanged ].
+	contextChanged ifTrue: [ self onTracedContextChanged ]."
+	statementChanged ifTrue: [ self onTracedStatementChanged ]."
 	cachedCurrentContext := currentContext.
 	cachedCurrentNode := currentNode.
-	cachedCurrentStatementNode := currentStatementNode
+	"cachedCurrentStatementNode := currentStatementNode"
 ]
 
 { #category : #initialization }

@@ -357,7 +357,7 @@ SeekerCurrentStateInterface >> isMessageNode [
 
 { #category : #testing }
 SeekerCurrentStateInterface >> isMessageSend [
-
+"A more realiable version of isMessageNode. The difference is that several bytecodes might correspond to the same message node. This method returns true only once for the bytecode when the message will be sent."
 	^ self isMessageNode and: [ 
 		  self willSend or: [ 
 			  self node isInlined and: [ 

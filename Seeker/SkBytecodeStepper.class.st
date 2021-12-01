@@ -453,14 +453,68 @@ SkBytecodeStepper >> stepBytecode [
 	(self isExecutionFinished or: [ self isRiskyStep ]) ifTrue: [ "self inform: 'Reached execution safe end point'" 
 		^ false ].
 	previousContext := currentContext.
-	startingNode := currentState node.
+	startingNode := nil"currentState node".
 	self doAstStepPreProcess.
-	currentContext stepIntoQuickMethod: true.
+	"currentContext stepIntoQuickMethod: true."
 	currentContext := session interruptedProcess step.
 	executedBytecode := executedBytecode + 1.
 	currentState updateCacheTimeKey.
 	maxExecutedBytecode := maxExecutedBytecode max: executedBytecode.
-	previousContext stepIntoQuickMethod: false.
+	"previousContext stepIntoQuickMethod: false."
+	self
+		doAstStepPostProcessWithPrevNode: startingNode
+		andPrevContext: previousContext.
+	"byteCountCounter % 10000 = 0 ifTrue: [ self softUIUpdate ]."
+	^ true
+]
+
+{ #category : #'debug - stepping' }
+SkBytecodeStepper >> stepBytecodeLightly [
+
+	"Steps the debugger. No skipping. No recording. No updates (remember to force update after)"
+
+	| previousContext startingNode |
+	emergencyStopFlag ifTrue: [ 
+		self handleEmergencyStopFlag.
+		^ false ].
+	(self isExecutionFinished or: [ self isRiskyStep ]) ifTrue: [ "self inform: 'Reached execution safe end point'" 
+		^ false ].
+	previousContext := currentContext.
+	startingNode := nil"currentState node".
+	self doAstStepPreProcess.
+	"currentContext stepIntoQuickMethod: true."
+	currentContext := session interruptedProcess "step".
+	executedBytecode := executedBytecode + 1.
+	currentState updateCacheTimeKey.
+	maxExecutedBytecode := maxExecutedBytecode max: executedBytecode.
+	"previousContext stepIntoQuickMethod: false."
+	self
+		doAstStepPostProcessWithPrevNode: startingNode
+		andPrevContext: previousContext.
+	"byteCountCounter % 10000 = 0 ifTrue: [ self softUIUpdate ]."
+	^ true
+]
+
+{ #category : #'debug - stepping' }
+SkBytecodeStepper >> stepBytecodeToCallee [
+
+	"Steps the debugger. No skipping. No recording. No updates (remember to force update after)"
+
+	| previousContext startingNode |
+	emergencyStopFlag ifTrue: [ 
+		self handleEmergencyStopFlag.
+		^ false ].
+	(self isExecutionFinished or: [ self isRiskyStep ]) ifTrue: [ "self inform: 'Reached execution safe end point'" 
+		^ false ].
+	previousContext := currentContext.
+	startingNode := nil"currentState node".
+	self doAstStepPreProcess.
+	"currentContext stepIntoQuickMethod: true."
+	currentContext := session interruptedProcess stepToCallee "step".
+	executedBytecode := executedBytecode + 1.
+	currentState updateCacheTimeKey.
+	maxExecutedBytecode := maxExecutedBytecode max: executedBytecode.
+	"previousContext stepIntoQuickMethod: false."
 	self
 		doAstStepPostProcessWithPrevNode: startingNode
 		andPrevContext: previousContext.
