@@ -1,5 +1,5 @@
 Class {
-	#name : #TTQUserQuery,
+	#name : #UserTTQ,
 	#superclass : #TimeTravelingQuery,
 	#instVars : [
 		'autoType'
@@ -8,7 +8,7 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
-TTQUserQuery class >> checkCompatibilityOfDisplayModelAndProjection [
+UserTTQ class >> checkCompatibilityOfDisplayModelAndProjection [
 
 	<script>
 	self displayModel checkColumnsAgainstProjectionFields:
@@ -18,31 +18,31 @@ TTQUserQuery class >> checkCompatibilityOfDisplayModelAndProjection [
 ]
 
 { #category : #'as yet unclassified' }
-TTQUserQuery class >> displayModel [
+UserTTQ class >> displayModel [
 
 	^ QdmAuto
 ]
 
 { #category : #'as yet unclassified' }
-TTQUserQuery class >> projectionFields [
+UserTTQ class >> projectionFields [
 
 	^ self projectionSample class fields
 ]
 
 { #category : #'as yet unclassified' }
-TTQUserQuery class >> projectionFunction [
+UserTTQ class >> projectionFunction [
 
 	^ (self queryFrom: {}) projectionFunction
 ]
 
 { #category : #'as yet unclassified' }
-TTQUserQuery class >> projectionSample [
+UserTTQ class >> projectionSample [
 
 	^ self projectionFunction value: AutoDummyObject new
 ]
 
 { #category : #'instance creation' }
-TTQUserQuery class >> queryFrom: aDataSource [
+UserTTQ class >> queryFrom: aDataSource [
 
 	| autoType |
 	autoType := AutoType new.
@@ -56,19 +56,19 @@ TTQUserQuery class >> queryFrom: aDataSource [
 ]
 
 { #category : #'as yet unclassified' }
-TTQUserQuery class >> selectionFunction [
+UserTTQ class >> selectionFunction [
 
 	^ (self queryFrom: {  }) selectionFunction
 ]
 
 { #category : #accessing }
-TTQUserQuery >> displayModel [
+UserTTQ >> displayModel [
 
 	^ self class displayModel newForQuery: self
 ]
 
 { #category : #initialization }
-TTQUserQuery >> ttqInitialize [
+UserTTQ >> ttqInitialize [
 
 	"dont call super here. The super method should not be called"
 

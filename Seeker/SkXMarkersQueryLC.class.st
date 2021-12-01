@@ -15,7 +15,7 @@ SkXMarkersQueryLC >> description [
 SkXMarkersQueryLC >> executeCommand [
 
 	self showResultFor:
-		(TTQUSeekerMarkers queryFrom: self tracer programStates)
+		(UTTQSeekerMarkers queryFrom: self tracer programStates)
 ]
 
 { #category : #accessing }

@@ -1,11 +1,11 @@
 Class {
-	#name : #TTQUSeekerMarkers,
-	#superclass : #TTQUserQuery,
+	#name : #UTTQSeekerMarkers,
+	#superclass : #UserTTQ,
 	#category : #'Seeker-TimeTravelingQueries'
 }
 
 { #category : #'instance creation' }
-TTQUSeekerMarkers class >> queryFrom: aDataSource [
+UTTQSeekerMarkers class >> queryFrom: aDataSource [
 
 	| autoType |
 	autoType := AutoType new.
