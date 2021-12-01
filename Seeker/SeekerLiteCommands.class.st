@@ -92,8 +92,8 @@ SeekerLiteCommands >> stCodeCommandsTree [
 			  'Instances Creations'.
 			  { 
 				  SkAllInstanceCreationsLC.
-				  SkAllInstanceCreationsOfClassLC.
-				  SkAllInstanceCreationsOfExceptionLC }.
+				  SkAllInstanceCreationsOfClassLC".
+				  SkAllInstanceCreationsOfExceptionLC "}.
 			  #smallNew.
 			  'Queries for listing instances creations' }.
 		  { 

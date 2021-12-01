@@ -15,12 +15,12 @@ SkChangesOfAnyObjectOfClassLC >> description [
 { #category : #executing }
 SkChangesOfAnyObjectOfClassLC >> executeCommand [
 
-	| res |
-	res := (self tracer find changesOfInstanceVariablesOfClassName:
-		        self tracer selectedCode) asSeekerResultsCollection
-		       forAssignmentsOfInstanceVariablesWithPackage.
-
-	self showResult: res
+	| objecClassName |
+	objecClassName := self tracer selectedCode asSymbol.
+	self showResultFor:
+		(TTQAllAssignmentsOfInstanceVariablesOfClassWithName
+			 queryFrom: self tracer programStates
+			 withClassName: objecClassName)
 ]
 
 { #category : #accessing }

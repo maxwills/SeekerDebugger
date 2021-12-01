@@ -15,7 +15,45 @@ SeekerInstallHelpers class >> install [
 
 	self overrideStDebuggerActionModel.
 	self enableDebuggerExtension.
-	self overrideHandMorph
+	self overrideHandMorph.
+	self installQuickWrapSystem.
+	self refreshSubChachedMethods.
+	self refreshSubChacheDelegationProxies.
+	self installMoosePatch
+]
+
+{ #category : #actions }
+SeekerInstallHelpers class >> installAndShowMessageOnCompletion [
+
+	self install.
+	[ 
+	UIManager default defer: [ 
+		SeekerMessageDialog
+			showModalDialog:
+			'SeekerDebugger installation is finished. The debugger is ready to use.'
+			withTitle: 'Installation complete' ] ] fork "Done this way to avoid blocking the progressbar with the modal"
+]
+
+{ #category : #'as yet unclassified' }
+SeekerInstallHelpers class >> installMoosePatch [
+
+	| f |
+	f := self environment at: #FamixStClass ifAbsent: [ nil ].
+	f ifNil: [ ^ self ].
+	(f methodDictionary includesKey: #package) ifTrue: [ ^ self ].
+	f
+		compile: 'package
+		"A hacky fix for Seeker"
+		^ self class package'
+		classified: '*Seeker'
+]
+
+{ #category : #'as yet unclassified' }
+SeekerInstallHelpers class >> installQuickWrapSystem [
+
+	"After installing the debugger packages, this is necessary to actually use the SubCached methods"
+
+	QuickWrap installQuickWrapSystem
 ]
 
 { #category : #actions }
@@ -51,4 +89,24 @@ SeekerInstallHelpers class >> overrideStDebuggerActionModel [
 	StDebugger compile: methodSource
 
 	"(StDebugger >> #debuggerActionModel) browse"
+]
+
+{ #category : #'as yet unclassified' }
+SeekerInstallHelpers class >> refreshSubChacheDelegationProxies [
+
+	"After installing the debugger packages, this is necessary to actually use the SubCached methods"
+
+	"Requires QuickWrap to be installed (not just loaded)"
+
+	SubCacheDelegatedInstantiation refreshAllMethodsDelegations
+]
+
+{ #category : #'as yet unclassified' }
+SeekerInstallHelpers class >> refreshSubChachedMethods [
+
+	"After installing the debugger packages, this is necessary to actually use the SubCached methods"
+
+	"Requires QuickWrap to be installed (not just loaded)"
+
+	SubCache refreshAllMethodsCaches
 ]

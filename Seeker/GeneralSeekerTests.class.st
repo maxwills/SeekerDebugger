@@ -198,6 +198,8 @@ GeneralSeekerTests >> testNonLocalObjectVariable [
 { #category : #tests }
 GeneralSeekerTests >> testPlusEqual [
 
+	"the the tested code is in another project now.. search for operators in my github"
+
 	| a b |
 	a := 0.
 	self assert: a equals: 0.

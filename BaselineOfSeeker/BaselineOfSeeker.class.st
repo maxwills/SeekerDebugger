@@ -9,11 +9,21 @@ BaselineOfSeeker >> baseline: spec [
 
 	<baseline>
 	spec for: #common do: [ 
+		spec
+			baseline: 'AutoType'
+			with: [ spec repository: 'github://maxwills/auto-type:main' ].
+		spec
+			baseline: 'MockFlex'
+			with: [ spec repository: 'github://maxwills/mock-flex:main' ].
+		spec
+			baseline: 'QuickWrap'
+			with: [ spec repository: 'github://maxwills/quick-wrap:main' ].
 		spec postLoadDoIt: #postload:package:.
+		
 		spec
 			package: 'EvaluatorDebugger-Base';
 			package: 'Seeker'
-			with: [ spec requires: #( 'EvaluatorDebugger-Base' ) ];
+			with: [ spec requires: #( 'EvaluatorDebugger-Base' 'AutoType' 'MockFlex' 'QuickWrap') ];
 			package: 'Seeker-Tests' with: [ ";
 			package: 'SeekerDebuggerSpy'
 			with: [ spec requires: #( 'Seeker' ) ]" 
@@ -26,5 +36,6 @@ BaselineOfSeeker >> baseline: spec [
 { #category : #actions }
 BaselineOfSeeker >> postload: loader package: packageSpec [
 
-	(self class environment at: #SeekerInstallHelpers) install
+	(self class environment at: #SeekerInstallHelpers)
+		installAndShowMessageOnCompletion
 ]

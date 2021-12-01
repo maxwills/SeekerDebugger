@@ -1,11 +1,11 @@
 Class {
 	#name : #SkCollectionBasedDataTable,
-	#superclass : #SkIterableDataTableBase,
+	#superclass : #SkIterableDataSource,
 	#instVars : [
 		'traversingCursorIndex',
 		'data'
 	],
-	#category : #'Seeker-QueryData'
+	#category : #'Seeker-Query'
 }
 
 { #category : #'instance creation' }

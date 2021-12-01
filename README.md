@@ -12,7 +12,10 @@ Metacello new
     onWarning: [ :ex | ex resume ];
     load.
 ```
+Requires the following projects (installed automatically with this Seeker Baseline):
 
+- https://github.com/maxwills/auto-type
+- https://github.com/maxwills/mock-flex
 
 The baseline will:
 - Enable the debugger extension in the StDebugger UI.

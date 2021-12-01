@@ -15,11 +15,11 @@ SkChangesOfVariableByNameLC >> description [
 { #category : #executing }
 SkChangesOfVariableByNameLC >> executeCommand [
 
-	| res |
-	res := self tracer find changesOfAllVariablesNamedAsSelectedCode
-		       asSeekerResultsCollection forAssignmentsOfAnyVariable.
-
-	self showResult: res
+	| variableName |
+	variableName := self tracer selectedCode asSymbol.
+	self showResultFor: (TTQAllAssignmentsOfVariablesWithName
+			 queryFrom: self tracer programStates
+			 withVariableName: variableName)
 ]
 
 { #category : #accessing }

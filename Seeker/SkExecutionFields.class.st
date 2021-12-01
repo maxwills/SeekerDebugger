@@ -1,7 +1,7 @@
 Class {
 	#name : #SkExecutionFields,
 	#superclass : #Object,
-	#category : #'Seeker-QueryData'
+	#category : #'Seeker-Experimental'
 }
 
 { #category : #'as yet unclassified' }

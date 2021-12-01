@@ -28,68 +28,6 @@ SeekerBasicFindInterface >> aliasOfVariableNode: aNode inContext: aContext [
 ]
 
 { #category : #'as yet unclassified' }
-SeekerBasicFindInterface >> aliasOfVariableNode: aNode inContext: aContext atStep: aNumber [
-
-	| node stepDescriptor aliasResult aliasQuery |
-	node := aNode.
-	node isVariable ifFalse: [ ^ self error: 'Not a variable node' ].
-
-	stepDescriptor := SkStepDescriptor
-		                      newFromNode: node
-		                      inContext: aContext
-		                      isTopContext: (tracer isTopContext: aContext).
-	aliasQuery := self tracer queries
-		              forAliasOfObjectReferredByVariableNode: aNode atContextOfStepPath: stepDescriptor atExecutionStepIndex: aNumber.
-
-	aliasResult := (aliasQuery asTable rows select: [ :row | 
-		                row variableValueAlias isNotNil ]) first.
-	(aliasResult isNil or: [ aliasResult variableValueAlias isNil ]) 
-		ifTrue: [ ^ self error: 'Unable to identify object instance' ].
-	^ aliasResult variableValueAlias
-]
-
-{ #category : #'as yet unclassified' }
-SeekerBasicFindInterface >> aliasOfVariableNode: aNode inContext: aContext atStepIndex: aNumber [
-
-	| node stepDescriptor aliasResult aliasQuery |
-	node := aNode.
-	node isVariable ifFalse: [ ^ self error: 'Not a variable node' ].
-
-	stepDescriptor := SkStepDescriptor
-		                      newFromNode: node
-		                      inContext: aContext
-		                      isTopContext: (tracer isTopContext: aContext).
-	aliasQuery := self tracer queries
-		              forAliasOfObjectReferredByVariableNode: aNode atContextOfStepPath: stepDescriptor atExecutionStepIndex: aNumber.
-
-	aliasResult := (aliasQuery asTable rows select: [ :row | 
-		                row variableValueAlias isNotNil ]) first.
-	(aliasResult isNil or: [ aliasResult variableValueAlias isNil ]) 
-		ifTrue: [ ^ self error: 'Unable to identify object instance' ].
-	^ aliasResult variableValueAlias
-]
-
-{ #category : #'as yet unclassified' }
-SeekerBasicFindInterface >> receiverAliasOfContext: aContext [
-
-	"This is mostly unnecessary since the omniscientTableForAliases already includes receiverAlias in every row. Avoid using this if you can"
-
-	| stepDescriptor query |
-	stepDescriptor := SkStepDescriptor newFromCurrentNodeInContext:
-		                  aContext.
-	stepDescriptor topStatementID indexInSequence: 1.
-
-	query := Query
-		         from: tracer tables omniscientTableForAliases
-		         select: [ :row | 
-		         row tracedStatementDescriptor hasSamePathAs: stepDescriptor ]
-		         collect: [ :row | 
-		         New with: { (#receiverAlias -> row receiverAlias) } ].
-
-	^ query first receiverAlias
-]
-
-{ #category : #'as yet unclassified' }
 SeekerBasicFindInterface >> receiverAliasOfMessageNode: aNode inContext: aContext [
 
 	aNode isMessage ifFalse: [ ^ self error: 'Not a message node' ].

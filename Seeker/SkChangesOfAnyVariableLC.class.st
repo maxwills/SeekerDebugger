@@ -14,14 +14,8 @@ SkChangesOfAnyVariableLC >> description [
 { #category : #executing }
 SkChangesOfAnyVariableLC >> executeCommand [
 
-	| res |
-	res := self tracer find changesOfAllVariables
-		       asSeekerResultsCollection forAssignmentsOfAnyVariable.
-
-	self showResult: res.
-	"[ DSSeekerActionRecord for: self ]
-		on: Error
-		do: [ :e | DSSpy log: #ERROR key: #PROCEED ]"
+	self showResultFor:
+		(TTQAllAssignments queryFrom: self tracer programStates)
 ]
 
 { #category : #accessing }

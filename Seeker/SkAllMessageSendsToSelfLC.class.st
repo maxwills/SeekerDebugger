@@ -15,18 +15,12 @@ SkAllMessageSendsToSelfLC >> description [
 { #category : #executing }
 SkAllMessageSendsToSelfLC >> executeCommand [
 
-	| res oid |
-	oid := self tracer readAliasOf: self tracer currentContext receiver.
-	res := (self tracer find allMessageSendsToOid: oid)
-		       asSeekerResultsCollection forMessageSends.
+	| oid |
+	oid := self tracer currentStateInterface receiverOid.
 
-	self showResult: res
-	"	self showResult:
-		( cullFieldsWithMapping: { 
-				 (#bytecodeIndex -> #ebc).
-				 (#messageSelector -> #sel).
-				 (#messageReceiverClass -> #class).
-				 (#messageArguments -> #args) } asDictionary)"
+	self showResultFor: (TTQAllMessagesSentToObject
+			 queryFrom: self tracer programStates
+			 withObjectOid: oid)
 ]
 
 { #category : #accessing }

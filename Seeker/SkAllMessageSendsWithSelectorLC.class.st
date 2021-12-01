@@ -15,11 +15,11 @@ SkAllMessageSendsWithSelectorLC >> description [
 { #category : #executing }
 SkAllMessageSendsWithSelectorLC >> executeCommand [
 
-	| res |
-	res := self tracer find allMessageSendsWithSelectedSelector
-		       asSeekerResultsCollection forMessageSends.
-
-	self showResult: res
+	| selector |
+	selector := self tracer selectedSelector.
+	self showResultFor: (TTQAllMessagesSentWithSelector
+			 queryFrom: self tracer programStates
+			 withSelector: selector)
 ]
 
 { #category : #accessing }
