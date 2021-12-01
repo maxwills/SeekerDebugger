@@ -117,8 +117,8 @@ SeekerLiteCommands >> stCodeCommandsTree [
 			  'SeekerDebug'.
 			  { 
 				  SkXMarkersQueryLC.
-				  SkXDeltaQueryLC.
-				  SkXInstantiationPrimitivesInstancesLC }.
+				 " SkXDeltaQueryLC.
+				  SkXInstantiationPrimitivesInstancesLC" }.
 			  #changeUpdate.
 			  'Experimental Queries for Seeker Development' } }
 ]
