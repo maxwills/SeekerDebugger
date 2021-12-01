@@ -46,10 +46,13 @@ SkQueryExperimentalTracer >> doAstStepPostProcessWithPrevNode: preProcessAstNode
 		| instancedObj |
 		instancedObj := currentState contextTop.
 		instantiationFlag := false.
-
+		currentState isMessageNode ifTrue: [ 
+			self
+				registerAliasFor: currentState messageReceiver
+				withOid: executedBytecode - 1 ].
 		instantiationCounter := instantiationCounter + 1.
 		instantiationIDDictionary at: instancedObj put: instantiationCounter ].
-    
+
 	super
 		doAstStepPostProcessWithPrevNode: preProcessAstNode
 		andPrevContext: preContext
@@ -61,6 +64,10 @@ SkQueryExperimentalTracer >> doAstStepPreProcess [
 	currentState isMessageSend
 		ifTrue: [ "handling message sends cases"
 			| method primitive |
+			"register the receiver"
+			self
+				registerAliasFor: currentState messageReceiver
+				withOid: executedBytecode.
 			method := currentState methodAboutToExecute.
 			primitive := method ifNil: [ 0 ] ifNotNil: [ method primitive ].
 			shouldAlwaysRunToEnd ifFalse: [ 
@@ -69,11 +76,12 @@ SkQueryExperimentalTracer >> doAstStepPreProcess [
 			(SeekerCurrentStateInterface isInstantiationPrimitive: primitive)
 				ifTrue: [ instantiationFlag := true ]
 				ifFalse: [ 
-					(SeekerCurrentStateInterface isWritingPrimitive: primitive) ifTrue: [ 
-						| messageReceiver |
-						messageReceiver := currentState messageReceiver.
-						(self objectIsLocal: messageReceiver) ifFalse: [ "We store a copy of the object if this is writing primitive" 
-							self recordSnapshotOfObject: messageReceiver ] ] ] ]
+					(SeekerCurrentStateInterface isWritingPrimitive: primitive) 
+						ifTrue: [ 
+							| messageReceiver |
+							messageReceiver := currentState messageReceiver.
+							(self objectIsLocal: messageReceiver) ifFalse: [ "We store a copy of the object if this is writing primitive" 
+								self recordSnapshotOfObject: messageReceiver ] ] ] ]
 		ifFalse: [ "assignment cases""astPreStepHooks do: [ :each | each value ]"
 			| node |
 			node := currentState node.
@@ -171,7 +179,9 @@ SkQueryExperimentalTracer >> onTracedContextChanged [
 
 	"self createContextCacheFor: self currentContext."
 
-	self registerAliasFor: self currentContext receiver.
+	self
+		registerAliasFor: self currentContext receiver
+		withOid: executedBytecode - 1.
 	super onTracedContextChanged
 ]
 
@@ -237,6 +247,20 @@ SkQueryExperimentalTracer >> registerAliasFor: anObject [
 		at: anObject
 		ifAbsentPut: [ "This could be also the executed bytecode, but this might be good enough and it is a smaller number ( may be even consider counting context jump!)" 
 			executedBytecode ].
+
+	(instantiationIDDictionary includesKey: anObject) ifFalse: [ "anObject seekMyAlias = 1841 ifTrue: [ 
+			Transcript
+				show: 'markA' , byteCountCounter asString;
+				cr ]." 
+		nonLocalObjects add: anObject "Set will only add it if it is not present yet" ]
+]
+
+{ #category : #'as yet unclassified' }
+SkQueryExperimentalTracer >> registerAliasFor: anObject withOid: aNumber [
+
+
+	"anObject class = Metaclass ifTrue: [ ^ self ]."
+	aliasesDictionary at: anObject ifAbsentPut: [ aNumber ].
 
 	(instantiationIDDictionary includesKey: anObject) ifFalse: [ "anObject seekMyAlias = 1841 ifTrue: [ 
 			Transcript
