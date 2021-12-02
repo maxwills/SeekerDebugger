@@ -16,7 +16,8 @@ Class {
 { #category : #accessing }
 DebuggerUpdateCoordinator >> coordinateUpdatesFor: aBlock [
 
-	| oldFlagValue caughtException inspectorsAndOids |
+	| oldFlagValue caughtException inspectorsAndOids inspectorOidPairType |
+	inspectorOidPairType := AutoType new.
 	caughtException := nil.
 	preventUpdate ifFalse: [ 
 		stDebugger removeSessionHolderSubscriptions.
@@ -25,9 +26,10 @@ DebuggerUpdateCoordinator >> coordinateUpdatesFor: aBlock [
 			| oid |
 			oid := tracer getOidOf: each model inspectedObject.
 			oid ifNotNil: [ 
-				inspectorsAndOids add: { 
-						each.
-						oid } ] ] ].
+				inspectorsAndOids add: (inspectorOidPairType newWith
+						 inspector: each;
+						 objectOid: oid;
+						 endWith) ] ] ].
 	oldFlagValue := preventUpdate.
 	preventUpdate := true.
 	aBlock ensure: [ 
@@ -44,13 +46,11 @@ DebuggerUpdateCoordinator >> coordinateUpdatesFor: aBlock [
 					"Refresh inspectors"
 					inspectorsAndOids ifNotNil: [ 
 						inspectorsAndOids do: [ :each | 
-							| inspector oid |
-							inspector := each at: 1.
-							oid := each at: 2.
-							inspector
-								model: (StInspectorModel on: (tracer getObjectByOid: oid));
+							each inspector
+								model:
+									(StInspectorModel on: (tracer getObjectByOid: each objectOid));
 								updateList.
-							inspector window title: inspector windowTitle "Manually updating the title. The only way I could make it work" ] ].
+							each inspector window title: each inspector windowTitle "Manually updating the title. The only way I could make it work" ] ].
 
 					preventUpdate := oldFlagValue ] ]
 			ifTrue: [ preventUpdate := oldFlagValue ] ]
