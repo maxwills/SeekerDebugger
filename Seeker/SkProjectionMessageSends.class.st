@@ -17,7 +17,7 @@ SkProjectionMessageSends >> value: state [
 		  bytecodeIndex: state bytecodeIndex;
 		  methodSelector: state methodSelector;
 		  receiverClass: state receiverClass;
-		  messageArguments: state node arguments;
+		  messageArguments: state messageArguments;
 		  messageReceiver: msgRcvr;
 		  messageReceiverOid: receiverOid;
 		  formattedMessageReceiver: (msgRcvrNode isVariable

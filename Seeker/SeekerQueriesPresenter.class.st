@@ -175,7 +175,7 @@ SeekerQueriesPresenter >> initializeTable [
 				         ifNotNil: [ 
 					         queryDisplayModel
 						         buildContextMenuForResults: table items
-						         withSelectedItem: table selectedItem ]
+						         withSelectedItem: table selectedItem forTracer: tracer ]
 				         ifNil: [ nil ] ];
 		         yourself
 ]

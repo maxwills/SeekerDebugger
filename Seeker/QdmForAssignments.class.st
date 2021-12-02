@@ -5,7 +5,7 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
-QdmForAssignments >> buildContextMenuForResults: aQueryResutls withSelectedItem: selection [
+QdmForAssignments >> buildContextMenuForResults: aQueryResutls withSelectedItem: selection forTracer: tracer [
 
 	"builds a context menu for an item of this display model"
 
@@ -38,19 +38,11 @@ QdmForAssignments >> buildContextMenuForResults: aQueryResutls withSelectedItem:
 QdmForAssignments >> initializeModel [
 
 	(self addColumn: #bytecodeIndex)
-		label: 'ExecBC';
+		label: 'Step';
 		bc.
-	(self addColumn: #receiverClassAndPackage)
-		label: 'Method Class [Package]';
-		md.
-
-	(self addColumn: #methodSelector)
-		label: 'Method Selector';
-		sm.
 	(self addColumn: #variableName)
 		label: 'Variable';
 		sm.
-
 	(self addColumn: #valueChangedFrom)
 		label: 'Current Value';
 		sm.
@@ -58,6 +50,16 @@ QdmForAssignments >> initializeModel [
 	(self addColumn: #valueChangedTo)
 		label: 'To be Assigned';
 		sm.
+	(self addColumn: #receiverClassAndPackage)
+		label: 'Method Class [Package]';
+		md.
+
+	(self addColumn: #methodSelector)
+		label: 'Method Selector';
+		sm.
+
+
+
 
 	(self addColumn: #variableClass)
 		label: 'Var Class';

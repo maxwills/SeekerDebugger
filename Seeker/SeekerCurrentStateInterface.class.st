@@ -427,6 +427,29 @@ SeekerCurrentStateInterface >> messageArgumentAt: aNumber [
 ]
 
 { #category : #testing }
+SeekerCurrentStateInterface >> messageArguments [
+
+	<subCached>
+	| node context nArgs args firstArgIndex |
+	context := self context.
+	node := self node.
+	nArgs := node arguments size.
+	nArgs = 0 ifTrue: [ ^ #(  ) ].
+	args := Array new: nArgs.
+	firstArgIndex := context stackPtr - nArgs.
+	node isInlined
+		ifTrue: [ 
+			1 to: nArgs do: [ :i | "self contextTop" "inlined messages should not have arguments" 
+				args at: i put: (context at: (firstArgIndex + i - 1 max: 1)) ] ]
+		ifFalse: [ 
+			1 to: nArgs do: [ :i | 
+				args
+					at: i
+					put: (context at: ((firstArgIndex + i max: 1) min: context size)) ] ].
+	^ args
+]
+
+{ #category : #testing }
 SeekerCurrentStateInterface >> messageIsSeekerMarkerMethod [
 
 	<subCached>

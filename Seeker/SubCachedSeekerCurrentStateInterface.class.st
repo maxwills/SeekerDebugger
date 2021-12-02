@@ -102,7 +102,9 @@ Class {
 		'__cached_isDead',
 		'__cached_isDeadTimeKey',
 		'__cached_willReturn',
-		'__cached_willReturnTimeKey'
+		'__cached_willReturnTimeKey',
+		'__cached_messageArguments',
+		'__cached_messageArgumentsTimeKey'
 	],
 	#category : #'Seeker-Interfaces'
 }
