@@ -257,9 +257,8 @@ SkQueryExperimentalTracer >> registerObjectInstance: anObject withOid: aNumber [
 
 	"anObject class = Metaclass ifTrue: [ ^ self ]."
 
-	reverseOidsDictionary at: aNumber ifAbsentPut: [ 
-		oidsDictionary at: anObject ifAbsentPut: [ aNumber ].
-		anObject ].
+	reverseOidsDictionary at: aNumber ifAbsentPut: [ anObject ].
+	oidsDictionary at: anObject ifAbsentPut: [ aNumber ].
 
 
 	(instantiationIDDictionary includesKey: anObject) ifFalse: [ "anObject seekMyAlias = 1841 ifTrue: [ 
