@@ -38,5 +38,5 @@ SkEndOfDoIt >> isEndReached [
 	^ currentState context == doItContext
 		  ifTrue: [ "self currentContext = endingContext" 
 		  currentState willReturn ]
-		  ifFalse: [ endTraceTime referencesTheLocalPastOrPresent: self ]
+		  ifFalse: [ endTraceTime referencesTheLocalPastOrPresent: tracer ]
 ]

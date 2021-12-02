@@ -3,13 +3,16 @@ Class {
 	#superclass : #SkOptimizedBytecodeStepper,
 	#instVars : [
 		'astPreStepHooks',
-		'aliasesDictionary',
 		'instantiationFlag',
 		'instantiationCounter',
 		'instantiationIDDictionary',
 		'nonLocalObjects',
 		'storedNonLocalChangesDictionary',
-		'shouldAlwaysRunToEnd'
+		'shouldAlwaysRunToEnd',
+		'oidsDictionary',
+		'reverseOidsDictionary',
+		'previousReverseOidsDictionary',
+		'firstRunFlag'
 	],
 	#category : #'Seeker-Tracer'
 }
@@ -43,12 +46,19 @@ SkQueryExperimentalTracer >> createContextCacheFor: aContext [
 SkQueryExperimentalTracer >> doAstStepPostProcessWithPrevNode: preProcessAstNode andPrevContext: preContext [
 
 	instantiationFlag ifTrue: [ 
-		| instancedObj |
+		| instancedObj previousIdentity |
 		instancedObj := currentState contextTop.
 		instantiationFlag := false.
-
+		previousIdentity := reverseOidsDictionary
+			                    at: executedBytecode
+			                    ifAbsent: [ nil ].
+		previousIdentity ifNotNil: [ 
+			"There are exceptional cases where objects oid differ by -1 (the previous identity is executedBytecode). Not sure yet why. The next if patches that."
+			previousIdentity class = instancedObj class ifTrue: [ 
+				previousIdentity copyFrom: instancedObj.
+				previousIdentity becomeForward: instancedObj copyHash: true ] ].
 		self
-			registerAliasFor: currentState contextTop
+			registerObjectInstance: currentState contextTop
 			withOid: executedBytecode - 1.
 		instantiationCounter := instantiationCounter + 1.
 		instantiationIDDictionary at: instancedObj put: instantiationCounter ].
@@ -66,9 +76,10 @@ SkQueryExperimentalTracer >> doAstStepPreProcess [
 			| method primitive |
 			"register the receiver"
 			self
-				registerAliasFor: currentState messageReceiver
+				registerObjectInstance: currentState messageReceiver
 				withOid: executedBytecode.
 			method := currentState methodAboutToExecute.
+			skipFlag := skippableMethods includes: method.
 			primitive := method ifNil: [ 0 ] ifNotNil: [ method primitive ].
 			shouldAlwaysRunToEnd ifFalse: [ 
 				shouldAlwaysRunToEnd := SeekerCurrentStateInterface 
@@ -108,7 +119,7 @@ SkQueryExperimentalTracer >> findContextInStack [
 { #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> getObjectByOid: aNumber [
 
-	aliasesDictionary associationsDo: [ :assoc | 
+	oidsDictionary associationsDo: [ :assoc | 
 		assoc value == aNumber ifTrue: [ ^ assoc key ] ].
 	^ nil
 ]
@@ -116,14 +127,16 @@ SkQueryExperimentalTracer >> getObjectByOid: aNumber [
 { #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> getOidOf: anObject [
 
-	^ aliasesDictionary at: anObject ifAbsent: [ nil ]
+	^ oidsDictionary at: anObject ifAbsent: [ nil ]
 ]
 
 { #category : #initialization }
 SkQueryExperimentalTracer >> initialize [
 
 	astPreStepHooks := OrderedCollection new.
-	aliasesDictionary := WeakIdentityKeyDictionary new.
+	oidsDictionary := IdentityDictionary new. "WeakIdentityKeyDictionary"
+	reverseOidsDictionary := Dictionary new.
+	previousReverseOidsDictionary := Dictionary new.
 	instantiationCounter := 0.
 	instantiationIDDictionary := WeakIdentityKeyDictionary new.
 	instantiationFlag := false.
@@ -180,7 +193,7 @@ SkQueryExperimentalTracer >> onTracedContextChanged [
 	"self createContextCacheFor: self currentContext."
 
 	self
-		registerAliasFor: self currentContext receiver
+		registerObjectInstance: self currentContext receiver
 		withOid: executedBytecode - 1.
 	super onTracedContextChanged
 ]
@@ -240,27 +253,14 @@ SkQueryExperimentalTracer >> recordSnapshotOfObject: anObject [
 ]
 
 { #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> registerAliasFor: anObject [
-
-	anObject class = Metaclass ifTrue: [ ^ self ].
-	aliasesDictionary
-		at: anObject
-		ifAbsentPut: [ "This could be also the executed bytecode, but this might be good enough and it is a smaller number ( may be even consider counting context jump!)" 
-			executedBytecode ].
-
-	(instantiationIDDictionary includesKey: anObject) ifFalse: [ "anObject seekMyAlias = 1841 ifTrue: [ 
-			Transcript
-				show: 'markA' , byteCountCounter asString;
-				cr ]." 
-		nonLocalObjects add: anObject "Set will only add it if it is not present yet" ]
-]
-
-{ #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> registerAliasFor: anObject withOid: aNumber [
-
+SkQueryExperimentalTracer >> registerObjectInstance: anObject withOid: aNumber [
 
 	"anObject class = Metaclass ifTrue: [ ^ self ]."
-	aliasesDictionary at: anObject ifAbsentPut: [ aNumber ].
+
+	reverseOidsDictionary at: aNumber ifAbsentPut: [ 
+		oidsDictionary at: anObject ifAbsentPut: [ aNumber ].
+		anObject ].
+
 
 	(instantiationIDDictionary includesKey: anObject) ifFalse: [ "anObject seekMyAlias = 1841 ifTrue: [ 
 			Transcript
@@ -283,15 +283,18 @@ SkQueryExperimentalTracer >> restartAtBytecodeOne [
 	shouldAlwaysRunToEnd ifTrue: [ self stepToEnd ].
 	shouldAlwaysRunToEnd := false.
 	self restoreNonLocalChanges.
-	aliasesDictionary removeAll."
+	oidsDictionary removeAll.
+	"previousReverseOidsDictionary := reverseOidsDictionary.
+	reverseOidsDictionary := Dictionary new."
+	"
 	aliasesDictionary := WeakIdentityKeyDictionary new."
 	instantiationCounter := 0.
-	instantiationIDDictionary removeAll."
+	instantiationIDDictionary removeAll. "
 	instantiationIDDictionary := WeakIdentityKeyDictionary new."
 	instantiationFlag := false.
 	currentState resetCacheTimeKey.
 	nonLocalObjects := WeakIdentitySet new.
-	storedNonLocalChangesDictionary removeAll."
+	storedNonLocalChangesDictionary removeAll. "
 	storedNonLocalChangesDictionary := WeakIdentityKeyDictionary new." "Keys are the object owning the variable, and the value is a dictionary of keys variable name (symbol) with values the Undo block"
 	super restartAtBytecodeOne
 ]

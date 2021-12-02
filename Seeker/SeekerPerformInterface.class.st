@@ -60,7 +60,7 @@ SeekerPerformInterface >> restartFromBytecodeOne [
 SeekerPerformInterface >> reverseToPreviousStatement [
 
 	| startingNode startingContext startingStatement startingStatementIndex startingStackDepth inSameDynanimcSequence csi |
-	csi := tracer currentStateInterfaceInstance.
+	csi := tracer currentStateInterface.
 	startingNode := csi node.
 	startingStatement := startingNode statementNode.
 	startingStatementIndex := SkNodeHelpers 

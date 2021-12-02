@@ -56,7 +56,9 @@ Class {
 		'preventNextTimeRestoration',
 		'executedBytecode',
 		'currentState',
-		'executionMappper'
+		'executionMappper',
+		'skippableMethods',
+		'skipFlag'
 	],
 	#category : #'Seeker-Tracer'
 }
@@ -182,13 +184,14 @@ SkBytecodeStepper >> hasSignalledUnhandledException [
 { #category : #initialization }
 SkBytecodeStepper >> initialize [
 
+	self initializeSkippableMethods.
 	executedBytecode := 0.
 	currentState := SeekerCurrentStateInterface new
 		                tracer: self;
 		                yourself.
-	currentState updateCacheTimeKey "The key is needed for other initialization steps".
+	currentState updateCacheTimeKey. "The key is needed for other initialization steps"
 	executionMappper := SkExecutionMapper newForTracer: self.
-
+	skipFlag := false.
 	super initialize.
 	iteratingFlag := false.
 	emergencyStopFlag := false.
@@ -203,6 +206,15 @@ SkBytecodeStepper >> initialize [
 	currentStepIndex := 1.
 	executedBytecode := 1.
 	stepBC := 1
+]
+
+{ #category : #initialization }
+SkBytecodeStepper >> initializeSkippableMethods [
+
+	skippableMethods := #identityHash senders asSet.
+	skippableMethods add: HashedCollection >> #grow.
+	skippableMethods add: WeakKeyDictionary >> #noCheckAdd:.
+	skippableMethods add: HashedCollection >> #fullCheck
 ]
 
 { #category : #accessing }
@@ -323,6 +335,7 @@ SkBytecodeStepper >> restartAtBytecodeOne [
 	contextJumpCount := 0.
 	currentStepIndex := 0.
 	preventNextTimeRestoration := false.
+	skipFlag := false.
 
 	tracedContextCount := 0.
 	stDebugger session restart:
@@ -453,64 +466,15 @@ SkBytecodeStepper >> stepBytecode [
 	(self isExecutionFinished or: [ self isRiskyStep ]) ifTrue: [ "self inform: 'Reached execution safe end point'" 
 		^ false ].
 	previousContext := currentContext.
-	startingNode := nil"currentState node".
+	startingNode := nil. "currentState node"
 	self doAstStepPreProcess.
 	"currentContext stepIntoQuickMethod: true."
-	currentContext := session interruptedProcess step.
-	executedBytecode := executedBytecode + 1.
-	currentState updateCacheTimeKey.
-	maxExecutedBytecode := maxExecutedBytecode max: executedBytecode.
-	"previousContext stepIntoQuickMethod: false."
-	self
-		doAstStepPostProcessWithPrevNode: startingNode
-		andPrevContext: previousContext.
-	"byteCountCounter % 10000 = 0 ifTrue: [ self softUIUpdate ]."
-	^ true
-]
+	currentContext := skipFlag
+		                  ifTrue: [ 
+			                  skipFlag := false.
+			                  interruptedProcess completeStep: currentContext ]
+		                  ifFalse: [ session interruptedProcess step ].
 
-{ #category : #'debug - stepping' }
-SkBytecodeStepper >> stepBytecodeLightly [
-
-	"Steps the debugger. No skipping. No recording. No updates (remember to force update after)"
-
-	| previousContext startingNode |
-	emergencyStopFlag ifTrue: [ 
-		self handleEmergencyStopFlag.
-		^ false ].
-	(self isExecutionFinished or: [ self isRiskyStep ]) ifTrue: [ "self inform: 'Reached execution safe end point'" 
-		^ false ].
-	previousContext := currentContext.
-	startingNode := nil"currentState node".
-	self doAstStepPreProcess.
-	"currentContext stepIntoQuickMethod: true."
-	currentContext := session interruptedProcess "step".
-	executedBytecode := executedBytecode + 1.
-	currentState updateCacheTimeKey.
-	maxExecutedBytecode := maxExecutedBytecode max: executedBytecode.
-	"previousContext stepIntoQuickMethod: false."
-	self
-		doAstStepPostProcessWithPrevNode: startingNode
-		andPrevContext: previousContext.
-	"byteCountCounter % 10000 = 0 ifTrue: [ self softUIUpdate ]."
-	^ true
-]
-
-{ #category : #'debug - stepping' }
-SkBytecodeStepper >> stepBytecodeToCallee [
-
-	"Steps the debugger. No skipping. No recording. No updates (remember to force update after)"
-
-	| previousContext startingNode |
-	emergencyStopFlag ifTrue: [ 
-		self handleEmergencyStopFlag.
-		^ false ].
-	(self isExecutionFinished or: [ self isRiskyStep ]) ifTrue: [ "self inform: 'Reached execution safe end point'" 
-		^ false ].
-	previousContext := currentContext.
-	startingNode := nil"currentState node".
-	self doAstStepPreProcess.
-	"currentContext stepIntoQuickMethod: true."
-	currentContext := session interruptedProcess stepToCallee "step".
 	executedBytecode := executedBytecode + 1.
 	currentState updateCacheTimeKey.
 	maxExecutedBytecode := maxExecutedBytecode max: executedBytecode.

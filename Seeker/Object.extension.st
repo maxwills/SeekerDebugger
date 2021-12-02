@@ -95,7 +95,7 @@ Object >> seekAllMessagesSentToMe [
 	seeker := self seekMe.
 	seeker ifNotNil: [ 
 		| oid res |
-		oid := self seekMyAlias.
+		oid := self seekMyOid.
 		res := (TTQAllMessagesSentToObject
 			        queryFrom: seeker programStates
 			        withObjectOid: oid) asCollection.
@@ -110,7 +110,7 @@ Object >> seekAllMyChanges [
 	seeker := self seekMe.
 	seeker ifNotNil: [ 
 		| oid res |
-		oid := self seekMyAlias.
+		oid := self seekMyOid.
 		res := (TTQAllAssignmentsOfInstanceVariablesOfObject
 			        queryFrom: seeker programStates
 			        withObjectOid: oid) asCollection.
@@ -129,7 +129,7 @@ Object >> seekAndDisplayAllMessagesSentToMe [
 	seeker := self seekMe.
 	seeker ifNotNil: [ 
 		| oid |
-		oid := self seekMyAlias.
+		oid := self seekMyOid.
 		oid ifNil: [ ^ self error: 'Seeker: obtained Oid was nil.' ].
 		seeker ui showInResult: (TTQAllMessagesSentToObject
 				 queryFrom: seeker programStates
@@ -150,7 +150,7 @@ Object >> seekAndDisplayAllMyChanges [
 	seeker := self seekMe.
 	seeker ifNotNil: [ 
 		| oid |
-		oid := self seekMyAlias.
+		oid := self seekMyOid.
 		oid ifNil: [ ^ self error: 'Seeker: obtained Oid was nil.' ].
 		seeker ui showInResult:
 			(TTQAllAssignmentsOfInstanceVariablesOfObject
@@ -176,7 +176,14 @@ Object >> seekMe [
 ]
 
 { #category : #'*Seeker' }
-Object >> seekMyAlias [
+Object >> seekMyInspectors [
+
+	^ StInspector allInstances select: [ :insp | 
+		  insp model inspectedObject == self ]
+]
+
+{ #category : #'*Seeker' }
+Object >> seekMyOid [
 
 	SeekerDebugger allInstances.
 	SeekerDebugger allInstances reverseDo: [ :s | 
@@ -185,13 +192,6 @@ Object >> seekMyAlias [
 			alias := s tracer getOidOf: self.
 			alias ifNotNil: [ ^ alias ] ] ].
 	^ nil
-]
-
-{ #category : #'*Seeker' }
-Object >> seekMyInspectors [
-
-	^ StInspector allInstances select: [ :insp | 
-		  insp model inspectedObject == self ]
 ]
 
 { #category : #'*Seeker' }
