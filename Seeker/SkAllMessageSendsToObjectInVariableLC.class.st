@@ -15,24 +15,12 @@ SkAllMessageSendsToObjectInVariableLC >> description [
 { #category : #executing }
 SkAllMessageSendsToObjectInVariableLC >> executeCommand [
 
-	| res oid selectedNode obj selectedContext |
-	selectedContext := self tracer selectedContext.
-	selectedNode := self tracer selectedNode.
-	selectedNode ifNil: [ ^ self error: 'No variable selected' ].
-	selectedNode isVariable ifFalse: [ 
-		^ self error: 'Only works for variables' ].
-	obj := selectedContext readVariableNamed: selectedNode variable name.
-	oid := self tracer readAliasOf: obj.
-	res := (self tracer find allMessageSendsToOid: oid)
-		       asSeekerResultsCollection forMessageSends.
+	| oid |
+	oid := self getSelectedObjectOid.
 
-	self showResult: res
-	"	self showResult:
-		( cullFieldsWithMapping: { 
-				 (#bytecodeIndex -> #ebc).
-				 (#messageSelector -> #sel).
-				 (#messageReceiverClass -> #class).
-				 (#messageArguments -> #args) } asDictionary)"
+	self showResultFor: (TTQAllMessagesSentToObject
+			 queryFrom: self tracer programStates
+			 withObjectOid: oid)
 ]
 
 { #category : #accessing }

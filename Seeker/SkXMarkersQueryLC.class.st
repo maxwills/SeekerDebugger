@@ -14,13 +14,8 @@ SkXMarkersQueryLC >> description [
 { #category : #executing }
 SkXMarkersQueryLC >> executeCommand [
 
-	| res |
-	res := self tracer find markers asSeekerResultsCollection. "forAssignmentsOfAnyVariable"
-
-	self showResult: res
-	"[ DSSeekerActionRecord for: self ]
-		on: Error
-		do: [ :e | DSSpy log: #ERROR key: #PROCEED ]"
+	self showResultFor:
+		(UTTQSeekerMarkers queryFrom: self tracer programStates)
 ]
 
 { #category : #accessing }

@@ -3,5 +3,5 @@ Class {
 	#superclass : #Query,
 	#traits : 'TSeekerTableWithMemory',
 	#classTraits : 'TSeekerTableWithMemory classTrait',
-	#category : #'Seeker-QueryData'
+	#category : #'Seeker-Experimental'
 }

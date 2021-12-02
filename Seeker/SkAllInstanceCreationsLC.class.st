@@ -15,9 +15,8 @@ SkAllInstanceCreationsLC >> description [
 { #category : #executing }
 SkAllInstanceCreationsLC >> executeCommand [
 
-	self showResult:
-		self tracer find allInstanceCreations asSeekerResultsCollection
-			forInstancesCreation
+	self showResultFor:
+		(TTQAllInstanceCreations queryFrom: self tracer programStates)
 ]
 
 { #category : #accessing }

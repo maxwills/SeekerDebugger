@@ -317,7 +317,6 @@ SeekerDebuggerPresenter >> restartHandler [
 
 	self mapExecutionIfNotMappedAlready.
 	self doAndUpdateSessionAfter: [ 
-		self seekerDebugger tracer pushNavigationHistory.
 		self seekerDebugger restart ]
 ]
 
@@ -364,16 +363,25 @@ SeekerDebuggerPresenter >> setModelBeforeInitialization: aStDebugger [
 	evaluatorDebugger stDebugger: aStDebugger.
 	debuggerUpdateCoordinator := seekerDebugger debuggerUpdateCoordinator.
 	stDebugger debuggerActionModel tracer: seekerDebugger tracer.
-	seekerDebugger quickSetup.
 	seekerDebugger stDebugger: aStDebugger.
-	seekerDebugger notifyDebuggerInitialized.
-	
+
+	"[ 
+	0.5 seconds asDelay wait."
+	UIManager default defer: [ " ] fork"
+		seekerDebugger quickSetup.
+		seekerDebugger notifyDebuggerInitialized ]
 ]
 
 { #category : #'event handling' }
 SeekerDebuggerPresenter >> setSelectedContexAsStartingPointHandler [
 "Called when pressing the icon in the toolbar"
 	self seekerDebugger setSelectedContextAsStartingPoint: stDebugger selectedContext
+]
+
+{ #category : #'UI specific' }
+SeekerDebuggerPresenter >> showInResult: aQueryDisplayModel [
+
+	queriesPresenter executeAndShow: aQueryDisplayModel
 ]
 
 { #category : #'UI specific' }
@@ -431,8 +439,10 @@ self doAndUpdateSessionAfter: [ self seekerDebugger tracer pushNavigationHistory
 { #category : #'as yet unclassified' }
 SeekerDebuggerPresenter >> stepToEndHandler [
 
+	self seekerDebugger tracer isMapped ifFalse: [ 
+		^ self error:
+			  'The execution needs to be mapped to perform this action. Ensure that the code was debugged using a "Debug it with Seeker" option' ].
 	self seekerDebugger tracer doAndUpdateSessionAfter: [ 
-		self seekerDebugger tracer mapExecutionIfNotMappedAlready.
 		self seekerDebugger tracer stepToEnd ]
 ]
 
@@ -447,7 +457,7 @@ SeekerDebuggerPresenter >> syncWithDebugSession [
 		tracer blockingDoAndUpdateSessionAfter: [ 
 			| context |
 			context := stDebugger interruptedContext.
-			tracer currentNode
+			tracer currentStateInterface node
 			~= (context compiledCode sourceNodeForPC: context pc) ifTrue: [ 
 				tracer recountExecutedBytecodes ] ] ]
 ]

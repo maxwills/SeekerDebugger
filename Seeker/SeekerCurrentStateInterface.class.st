@@ -89,12 +89,11 @@ Class {
 	#name : #SeekerCurrentStateInterface,
 	#superclass : #SeekerInterfaceObject,
 	#instVars : [
-		'cachedValues',
 		'exceptionSignalSelectors'
 	],
 	#classVars : [
-		'instanceCreationPrimitives',
-		'instanceCreationPrimitivesArray',
+		'InstanceCreationPrimitives',
+		'InstanceCreationPrimitivesArray',
 		'writingPrimitivesArray'
 	],
 	#category : #'Seeker-Interfaces'
@@ -106,12 +105,12 @@ SeekerCurrentStateInterface class >> initialize [
 	"Read the class comments for details on the magic literals"
 
 	| writingPrimitives |
-	instanceCreationPrimitives := #( 70 71 79 148 160 ).
-	instanceCreationPrimitivesArray := Array new: 160.
-	1 to: instanceCreationPrimitivesArray size do: [ :i | 
-	instanceCreationPrimitivesArray at: i put: false ].
-	instanceCreationPrimitives do: [ :each | 
-		instanceCreationPrimitivesArray at: each put: true ].
+	InstanceCreationPrimitives := #( 70 71 79 148 160 ).
+	InstanceCreationPrimitivesArray := Array new: 160.
+	1 to: InstanceCreationPrimitivesArray size do: [ :i | 
+	InstanceCreationPrimitivesArray at: i put: false ].
+	InstanceCreationPrimitives do: [ :each | 
+		InstanceCreationPrimitivesArray at: each put: true ].
 	writingPrimitivesArray := Array new: 659.
 	writingPrimitives := self writingPrimitives.
 	1 to: writingPrimitivesArray size do: [ :i | 
@@ -126,7 +125,7 @@ SeekerCurrentStateInterface class >> isInstantiationPrimitive: aNumber [
 	^ (aNumber < 1 or: [ aNumber > 160 ])
 		  ifTrue: [ false ]
 		  ifFalse: [ "160 is the maxium instantiation primitive in current pharo version (october 2021), and the size of the array" 
-			  instanceCreationPrimitivesArray at: aNumber ]
+			  InstanceCreationPrimitivesArray at: aNumber ]
 ]
 
 { #category : #testing }
@@ -144,6 +143,13 @@ SeekerCurrentStateInterface class >> isWritingPrimitive: aNumber [
 			  writingPrimitivesArray at: aNumber ]
 ]
 
+{ #category : #'instance creation' }
+SeekerCurrentStateInterface class >> new [
+
+	<subCacheDelegated>
+	^ self basicNew
+]
+
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface class >> writingPrimitives [
 
@@ -155,6 +161,7 @@ SeekerCurrentStateInterface class >> writingPrimitives [
 { #category : #testing }
 SeekerCurrentStateInterface >> aboutToSwitchContext [
 
+	<subCached>
 	^ self willSend or: [ 
 		  self willReturn or: [ self willStore or: [ self willCreateBlock ] ] ]
 ]
@@ -162,7 +169,7 @@ SeekerCurrentStateInterface >> aboutToSwitchContext [
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> aliasOfObject: anObject [
 
-	^ tracer readAliasOf: anObject
+	^ tracer getOidOf: anObject
 ]
 
 { #category : #'as yet unclassified' }
@@ -172,7 +179,8 @@ SeekerCurrentStateInterface >> assignmentCurrentValue [
 
 	"The developer must ensure this is called when the current node is an assigment"
 
-	^ self node variable variable readInContext: self context
+	<subCached>
+	^ self assignmentNodeVariable readInContext: self context
 ]
 
 { #category : #'as yet unclassified' }
@@ -182,6 +190,7 @@ SeekerCurrentStateInterface >> assignmentNextValue [
 
 	"The developer must ensure this is called when the current node is an assigment"
 
+	<subCached>
 	| context |
 	context := self context.
 	^ context at: context basicSize
@@ -192,14 +201,25 @@ SeekerCurrentStateInterface >> assignmentNodeVariable [
 
 	"Returns the Variable object of the RBVariableNode of the current RBAssignmentNode"
 
+	<subCached>
 	^ self node variable variable
+]
+
+{ #category : #stackAccessHelpers }
+SeekerCurrentStateInterface >> assignmentVariableName [
+
+	"The variable name of the curent assignment node"
+
+	<subCached>
+	^ self node variable variable name
 ]
 
 { #category : #accessing }
 SeekerCurrentStateInterface >> bytecode [
 
-	^ self context compiledCode symbolicBytecodes
-		  detect: [ :each | each offset = self context pc ]
+	<subCached>
+	^ self compiledCode symbolicBytecodes
+		  detect: [ :each | each offset = self contextPC ]
 		  ifNone: [ nil ]
 ]
 
@@ -216,58 +236,58 @@ SeekerCurrentStateInterface >> bytecodeStepInTracedStatement [
 ]
 
 { #category : #'as yet unclassified' }
-SeekerCurrentStateInterface >> cached: aSymbol orGet: aBlock [
+SeekerCurrentStateInterface >> classNameOfObjectAboutToBeInstantiated [
 
-	"Use this in cases where the returned value is not directly accessible. Specially if it needs to be calculated. By using this, the value will be cached for the current bytecode step"
-
-	"Follow usage example of sequenceNode and sequenceStatementCount of this class"
-
-	| val bc |
-	bc := tracer bytecodeIndex.
-	val := cachedValues at: aSymbol.
-	^ (cachedValues at: aSymbol) key = bc
-		  ifTrue: [ val value ]
-		  ifFalse: [ 
-			  | getVal |
-			  getVal := aBlock value.
-			  val key: bc.
-			  val value: getVal.
-			  getVal ]
+	<subCached>
+	| instMsgReceiver |
+	instMsgReceiver := self messageReceiver.
+	^ instMsgReceiver isClass
+		  ifTrue: [ instMsgReceiver name ]
+		  ifFalse: [ instMsgReceiver class name ]
 ]
 
 { #category : #accessing }
 SeekerCurrentStateInterface >> compiledCode [
 
-	^ tracer currentContext compiledCode
+	<subCached>
+	^ self context compiledCode
 ]
 
 { #category : #accessing }
 SeekerCurrentStateInterface >> context [
-	^tracer currentContext
+
+	<subCached>
+	^ tracer currentContext
 ]
 
 { #category : #accessing }
 SeekerCurrentStateInterface >> contextPC [
-	^tracer currentContext pc
+
+	<subCached>
+	^ self context pc
 ]
 
 { #category : #'as yet unclassified' }
-SeekerCurrentStateInterface >> contextStackSize [
+SeekerCurrentStateInterface >> contextTop [
 
-	^ tracer currentFastTracedInstructionPath contextFastPath size + 1
+	<subCached>
+	^ self context stackPtr > 0
+		  ifTrue: [ self context top ]
+		  ifFalse: [ #contextTopUnavailable ]
 ]
 
-{ #category : #'as yet unclassified' }
-SeekerCurrentStateInterface >> contextTop [ 
-	^(tracer currentContext stackPtr > 0
-					  ifTrue: [ tracer currentContext top ]
-					  ifFalse: [ #contextTopUnavailable ]) 
+{ #category : #testing }
+SeekerCurrentStateInterface >> encoderClass [
+
+	<subCached>
+	^ self method encoderClass
 ]
 
 { #category : #accessing }
 SeekerCurrentStateInterface >> endPC [
 
-	^ tracer currentContext compiledCode endPC
+	<subCached>
+	^ self compiledCode endPC
 ]
 
 { #category : #accessing }
@@ -281,43 +301,34 @@ SeekerCurrentStateInterface >> fieldNames [
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> initialPC [
 
-	^ tracer currentContext compiledCode initialPC
-]
-
-{ #category : #initialization }
-SeekerCurrentStateInterface >> initialize [
-
-	"initialize a dictionary with all the accessors(getters only) of this class"
-
-	"cachedValues has been discontinued"
-
-	cachedValues := Dictionary new.
-	self class methodDictionary keysDo: [ :selector | 
-		cachedValues at: selector put: -1 -> nil ].
-	exceptionSignalSelectors := #( #signalIn: #signal: #signal ) "This is not a good solution."
+	<subCached>
+	^ self compiledCode initialPC
 ]
 
 { #category : #testing }
 SeekerCurrentStateInterface >> isDead [
 
+	<subCached>
 	^ self context isDead
 ]
 
 { #category : #testing }
 SeekerCurrentStateInterface >> isExceptionSignaledMethod [
 
+	<subCached>
 	^ (self receiverClass inheritsFromOrSameAs: Exception) and: [ 
 		  exceptionSignalSelectors includes: self methodSelector ]
 ]
 
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> isFirstBytecodeOfMethod [
+<superCached>
 	^self contextPC = self initialPC
 ]
 
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> isFirstBytecodeOfStatement [
-
+<superCached>
 	^ tracer executedBytecodesInTracedStatement = 1
 ]
 
@@ -328,9 +339,9 @@ SeekerCurrentStateInterface >> isInstantiationMessage [
 and the method called corresponds to an instantiation primitive.
 "
 
-	| methodAboutToExecute node |
-	node := self node.
-	node isMessage ifFalse: [ ^ false ].
+	<subCached>
+	| methodAboutToExecute |
+	self isMessageNode ifFalse: [ ^ false ].
 	methodAboutToExecute := self methodAboutToExecute.
 	^ methodAboutToExecute notNil and: [ 
 		  self class isInstantiationPrimitive:
@@ -338,32 +349,41 @@ and the method called corresponds to an instantiation primitive.
 ]
 
 { #category : #testing }
-SeekerCurrentStateInterface >> isMessageSend [
+SeekerCurrentStateInterface >> isMessageNode [
 
-	^ self node isMessage and: [ 
-		  self context willSend or: [ 
+	<subCached>
+	^ self node isMessage
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> isMessageSend [
+"A more realiable version of isMessageNode. The difference is that several bytecodes might correspond to the same message node. This method returns true only once for the bytecode when the message will be sent."
+	^ self isMessageNode and: [ 
+		  self willSend or: [ 
 			  self node isInlined and: [ 
-				  self context willJumpIfFalse or: [ self context willJumpIfTrue ] ] ] ]
+				  self willJumpIfFalse or: [ self willJumpIfTrue ] ] ] ]
 ]
 
 { #category : #testing }
 SeekerCurrentStateInterface >> isMethodReturn [
 
+	<subCached>
 	^ self contextPC = self endPC
 ]
 
 { #category : #testing }
 SeekerCurrentStateInterface >> isVariable [
 
+	<subCached>
 	^ self node isVariable
 ]
 
 { #category : #testing }
 SeekerCurrentStateInterface >> isWaitPrimitive [
 
-	| methodAboutToExecute node |
-	node := self node.
-	node isMessage ifFalse: [ ^ false ].
+	<subCached>
+	| methodAboutToExecute |
+	self isMessageNode ifFalse: [ ^ false ].
 	methodAboutToExecute := self methodAboutToExecute.
 	^ methodAboutToExecute notNil and: [ 
 		  self class isWaitPrimitive: methodAboutToExecute primitive ]
@@ -376,9 +396,9 @@ SeekerCurrentStateInterface >> isWritingPrimitiveMessage [
 and the method called corresponds to a writing primitive.
 "
 
-	| methodAboutToExecute node |
-	node := self node.
-	node isMessage ifFalse: [ ^ false ].
+	<subCached>
+	| methodAboutToExecute |
+	self isMessageNode ifFalse: [ ^ false ].
 	methodAboutToExecute := self methodAboutToExecute.
 	^ methodAboutToExecute notNil and: [ 
 		  self class isWritingPrimitive: methodAboutToExecute primitive ]
@@ -392,23 +412,26 @@ SeekerCurrentStateInterface >> messageArgumentAt: aNumber [
 
 	"Clients should take care that the argument index is within limits"
 
-	^ self node isInlined
+	| node context |
+	context := self context.
+	node := self node.
+	^ node isInlined
 		  ifTrue: [ 
-		  self context top "inlined messages should not have arguments" ]
+		  self contextTop "inlined messages should not have arguments" ]
 		  ifFalse: [ 
 			  | pointer |
-			  pointer := 1 + self context stackPtr - self node numArgs. "Heuristics"
+			  pointer := 1 + context stackPtr - node numArgs. "Heuristics"
 			  pointer <= 0 ifTrue: [ pointer := 1 ]. "I'm not sure these cases happen"
-			  pointer > self context size ifTrue: [ ^ nil ].
-			  self context at: pointer "Heuristics" ]
+			  pointer > context size ifTrue: [ ^ nil ].
+			  context at: pointer "Heuristics" ]
 ]
 
 { #category : #testing }
 SeekerCurrentStateInterface >> messageIsSeekerMarkerMethod [
 
-	| messageReceiver messageSelector |
-	messageReceiver := self messageReceiver.
-	messageReceiver == SeekerSessionHelpers ifFalse: [ ^ false ].
+	<subCached>
+	| messageSelector |
+	self messageReceiver == SeekerSessionHelpers ifFalse: [ ^ false ].
 	messageSelector := self messageSelector.
 	^ messageSelector == #marker or: [ messageSelector == #marker: ]
 ]
@@ -419,22 +442,27 @@ SeekerCurrentStateInterface >> messageReceiver [
 	"Returns the message receiver of the current message node. Assumes the current node is a message node
 "
 
-	^ self node isInlined
+	<subCached>
+	| node context |
+	context := self context.
+	node := self node.
+	^ node isInlined
 		  ifTrue: [ 
-			  self context stackPtr = 0
+			  context stackPtr = 0
 				  ifTrue: [ nil "emptyStack" ]
-				  ifFalse: [ self context top ] ]
+				  ifFalse: [ context top ] ]
 		  ifFalse: [ 
 			  | pointer |
-			  pointer := self context stackPtr - self node numArgs. "Heuristics"
+			  pointer := context stackPtr - node numArgs. "Heuristics"
 			  pointer <= 0 ifTrue: [ pointer := 1 ]. "I'm not sure these cases happen"
-			  pointer > self context size ifTrue: [ ^ nil ].
-			  self context at: pointer "Heuristics" ]
+			  pointer > context size ifTrue: [ ^ nil ].
+			  context at: pointer "Heuristics" ]
 ]
 
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> messageReceiverOid [
 
+	<subCached>
 	^ self aliasOfObject: self messageReceiver
 ]
 
@@ -444,7 +472,15 @@ SeekerCurrentStateInterface >> messageSelector [
 	"Returns the message selector of the current message node. Assumes the current node is a message node
 "
 
+	<subCached>
 	^ self node selector
+]
+
+{ #category : #accessing }
+SeekerCurrentStateInterface >> method [
+
+	<subCached>
+	^ self context method
 ]
 
 { #category : #testing }
@@ -452,6 +488,7 @@ SeekerCurrentStateInterface >> methodAboutToExecute [
 
 	"Returns the method (CompiledMethod) about to be executed for the current message node. Assuems that the current node is a message node"
 
+	<subCached>
 	| methodAboutToExecute node messageReceiver messageReceiverClass |
 	node := self node.
 	messageReceiver := self messageReceiver.
@@ -468,12 +505,16 @@ SeekerCurrentStateInterface >> methodAboutToExecute [
 
 { #category : #accessing }
 SeekerCurrentStateInterface >> methodClass [
-	^tracer currentContext methodClass
+
+	<subCached>
+	^ self context methodClass
 ]
 
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> methodNotation [
-	^tracer currentContext method asSeekerOfflineExpressionString
+
+	<superCached>
+	^ self method asSeekerOfflineExpressionString
 ]
 
 { #category : #'as yet unclassified' }
@@ -481,17 +522,23 @@ SeekerCurrentStateInterface >> methodReturnValue [
 
 	"Alias for context top"
 
+	<subCached>
 	^ self contextTop
 ]
 
 { #category : #accessing }
 SeekerCurrentStateInterface >> methodSelector [
-	^tracer currentContext methodSelector
+
+	<subCached>
+	^ self context methodSelector
 ]
 
 { #category : #accessing }
 SeekerCurrentStateInterface >> node [
-	^tracer currentNode
+
+	<subCached>
+	self contextPC ifNil: [ ^ nil ].
+	^ self method sourceNodeForPC: self contextPC
 ]
 
 { #category : #'as yet unclassified' }
@@ -499,20 +546,32 @@ SeekerCurrentStateInterface >> nodeIndexInAst [
 
 	"This is not useful"
 
+	<subCached>
 	| astNodes |
 	astNodes := self compiledCode sourceNode allChildren.
 	^ astNodes indexOf: self node
 ]
 
 { #category : #'as yet unclassified' }
-SeekerCurrentStateInterface >> nodeIsAssignement [
+SeekerCurrentStateInterface >> nodeIsAssignment [
 
+	<subCached>
 	^ self node isAssignment
+]
+
+{ #category : #'as yet unclassified' }
+SeekerCurrentStateInterface >> nodeIsAssignmentOfInstanceVariable [
+
+	<subCached>
+	| node |
+	node := self node.
+	^ node isAssignment and: [ node variable isInstanceVariable ]
 ]
 
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> nodeIsVariable [
 
+	<subCached>
 	^ self node isVariable
 ]
 
@@ -523,9 +582,15 @@ SeekerCurrentStateInterface >> nodeOrdinalIndex [
 ]
 
 { #category : #'as yet unclassified' }
-SeekerCurrentStateInterface >> objectTidIsLocal: aNumber [
+SeekerCurrentStateInterface >> objectOid: object [
 
-	^ tracer objectTidIsLocal: aNumber
+	^ self aliasOfObject: object
+]
+
+{ #category : #'as yet unclassified' }
+SeekerCurrentStateInterface >> objectOidIsLocal: aNumber [
+
+	^ tracer objectOidIsLocal: aNumber
 ]
 
 { #category : #'as yet unclassified' }
@@ -539,29 +604,42 @@ SeekerCurrentStateInterface >> previousNoi [
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> receiver [
 
+	<subCached>
 	^ tracer currentContext receiver
 ]
 
 { #category : #accessing }
 SeekerCurrentStateInterface >> receiverAlias [
 
-	^ tracer readAliasOf: self receiver
+	<subCached>
+	^ tracer getOidOf: self receiver
 ]
 
 { #category : #accessing }
 SeekerCurrentStateInterface >> receiverClass [
-	^tracer currentContext receiver class
+
+	<subCached>
+	^ tracer currentContext receiver class
 ]
 
 { #category : #accessing }
 SeekerCurrentStateInterface >> receiverIsLocalToExecution [
 
+	<subCached>
 	^ tracer objectIsLocal: self receiver
+]
+
+{ #category : #'as yet unclassified' }
+SeekerCurrentStateInterface >> receiverOid [
+
+	<subCached>
+	^ tracer getOidOf: tracer currentContext receiver
 ]
 
 { #category : #accessing }
 SeekerCurrentStateInterface >> receiverPackage [
 
+	<subCached>
 	| rcvr |
 	rcvr := self receiver.
 	^ rcvr isClass
@@ -572,29 +650,13 @@ SeekerCurrentStateInterface >> receiverPackage [
 { #category : #accessing }
 SeekerCurrentStateInterface >> receiverTid [
 
-	^ tracer readAliasOf: self receiver
-]
-
-{ #category : #accessing }
-SeekerCurrentStateInterface >> sequenceNode [
-
-	^ self
-		  cached: thisContext methodSelector
-		  orGet: [ 
-		  SkNodeHelpers sequenceNodeOf: tracer currentStatementNode ]
-]
-
-{ #category : #'as yet unclassified' }
-SeekerCurrentStateInterface >> sequenceStatementCount [
-
-	^ self
-		  cached: thisContext methodSelector
-		  orGet: [ SkNodeHelpers statementCountOfSequenceNode: self sequenceNode ]
+	<subCached>
+	^ tracer getOidOf: self receiver
 ]
 
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> sourceCodeOfNode [
-
+<superCached>
 	^ self node sourceCode
 ]
 
@@ -606,24 +668,26 @@ SeekerCurrentStateInterface >> sourceCodeOfStatement [
 
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> stackDepth [
-
+<superCached>
 	^ tracer currentContext stackDepth
 ]
 
 { #category : #accessing }
 SeekerCurrentStateInterface >> statementIndex [
 
-	^ tracer currentNode statementIndex
+	<superCached>
+	^ self node statementIndex
 ]
 
 { #category : #accessing }
 SeekerCurrentStateInterface >> statementNode [
-
+<superCached>
 	^ tracer currentStatementNode
 ]
 
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> statementNotation [
+<superCached>
 	^tracer currentStatementNode statementNotation 
 ]
 
@@ -641,6 +705,7 @@ SeekerCurrentStateInterface >> tracedStatementStepIndex [
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> valueToBeAssigned [
 
+	<subCached>
 	| context |
 	context := self context.
 	^ context at: context basicSize
@@ -649,23 +714,58 @@ SeekerCurrentStateInterface >> valueToBeAssigned [
 { #category : #testing }
 SeekerCurrentStateInterface >> willCreateBlock [
 
-	^ self context willCreateBlock
+	"next bytecode is a block creation"
+
+	<subCached>
+	^ (self encoderClass
+		   isCreateBlockAt: self contextPC
+		   in: self method) or: [ 
+		  self encoderClass
+			  isCreateFullBlockAt: self contextPC
+			  in: self method ]
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> willJumpIfFalse [
+
+	"Answer whether the next bytecode is a jump-if-false."
+
+	<subCached>
+	^ self encoderClass isBranchIfFalseAt: self contextPC in: self method
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> willJumpIfTrue [
+
+	"Answer whether the next bytecode is a jump-if-true."
+
+	<subCached>
+	^ self encoderClass isBranchIfTrueAt: self contextPC in: self method
 ]
 
 { #category : #testing }
 SeekerCurrentStateInterface >> willReturn [
 
-	^ self context willReturn
+	"Answer whether the next bytecode is a return."
+
+	<subCached>
+	^ self encoderClass isReturnAt: self contextPC in: self method
 ]
 
 { #category : #testing }
 SeekerCurrentStateInterface >> willSend [
 
-	^ self context willSend
+	"Answer whether the next bytecode is a message-send."
+
+	<subCached>
+	^ self encoderClass isSendAt: self contextPC in: self method
 ]
 
 { #category : #testing }
 SeekerCurrentStateInterface >> willStore [
 
-	^ self context willStore
+	"Answer whether the next bytecode is a store or store-pop"
+
+	<subCached>
+	^ self encoderClass isStoreAt: self contextPC in: self method
 ]

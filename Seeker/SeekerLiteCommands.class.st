@@ -92,8 +92,8 @@ SeekerLiteCommands >> stCodeCommandsTree [
 			  'Instances Creations'.
 			  { 
 				  SkAllInstanceCreationsLC.
-				  SkAllInstanceCreationsOfClassLC.
-				  SkAllInstanceCreationsOfExceptionLC }.
+				  SkAllInstanceCreationsOfClassLC".
+				  SkAllInstanceCreationsOfExceptionLC "}.
 			  #smallNew.
 			  'Queries for listing instances creations' }.
 		  { 
@@ -117,8 +117,8 @@ SeekerLiteCommands >> stCodeCommandsTree [
 			  'SeekerDebug'.
 			  { 
 				  SkXMarkersQueryLC.
-				  SkXDeltaQueryLC.
-				  SkXInstantiationPrimitivesInstancesLC }.
+				 " SkXDeltaQueryLC.
+				  SkXInstantiationPrimitivesInstancesLC" }.
 			  #changeUpdate.
 			  'Experimental Queries for Seeker Development' } }
 ]

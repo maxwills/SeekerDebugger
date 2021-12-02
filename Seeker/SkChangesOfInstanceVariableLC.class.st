@@ -15,11 +15,14 @@ SkChangesOfInstanceVariableLC >> description [
 { #category : #executing }
 SkChangesOfInstanceVariableLC >> executeCommand [
 
-	| res |
-	res := self tracer find changesOfSelectedInstanceVariable
-		       asSeekerResultsCollection forAssignmentsOfInstanceVariables.
+	| objectOid variableName |
+	objectOid := self tracer currentStateInterface receiverOid.
+	variableName := self tracer selectedCode asSymbol.
 
-	self showResult: res
+	self showResultFor: (TTQAllAssignmentsOfAnInstanceVariableOfObject
+			 queryFrom: self tracer programStates
+			 withObjectOid: objectOid
+			 withVariableName: variableName)
 ]
 
 { #category : #accessing }

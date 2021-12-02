@@ -62,31 +62,29 @@ SeekerLiteCommand >> description [
 { #category : #executing }
 SeekerLiteCommand >> execute [
 
-	| logCommands |
-	[ 
 	queryTitle := self createQueryTitle.
-	logCommands := true.
 	time := Time millisecondClockValue.
-	self pushesNavigation ifTrue: [ 
-		self seeker tracer pushNavigationHistory ].
-	UIManager default showWaitCursorWhile: [ 
-		logCommands
-			ifTrue: [ 
-				[ 
-				self seeker notifyCommandExecution: self subEvent: #clicked.
-				time := Time millisecondClockValue.
-				self executeCommand.
-				self seeker notifyCommandExecution: self subEvent: #done ]
-					on: Exception
-					do: [ :e | 
-						self seeker notifyCommandExecution: self subEvent: #failed.
-						self notifyError: e messageText ] ]
-			ifFalse: [ self executeCommand ] ] ] fork
+
+	UIManager default showWaitCursorWhile: [ self executeCommand ]
 ]
 
 { #category : #executing }
 SeekerLiteCommand >> executeCommand [
 	self subclassResponsibility
+]
+
+{ #category : #'as yet unclassified' }
+SeekerLiteCommand >> getSelectedObjectOid [
+
+	| selectedNode obj objClass selectedContext |
+	selectedContext := self tracer selectedContext.
+	selectedNode := self tracer selectedNode.
+	selectedNode ifNil: [ ^ self error: 'No variable selected' ].
+	selectedNode isVariable ifFalse: [ 
+		^ self error: 'Only works for variables' ].
+	obj := selectedContext readVariableNamed: selectedNode variable name.
+	objClass := obj class.
+	^ self tracer getOidOf: obj
 ]
 
 { #category : #accessing }
@@ -157,14 +155,15 @@ SeekerLiteCommand >> selectionTitleString [
 ]
 
 { #category : #'UI specific' }
-SeekerLiteCommand >> showResult: anObject [
+SeekerLiteCommand >> showResultFor: aTTQ [
 
 	| resultsUI |
 	resultsUI := self seekerDebuggerPresenter.
-	resultsUI ifNil: [ anObject inspect ] ifNotNil: [ 
-		anObject title: queryTitle.
-		anObject timeToRun: Time millisecondClockValue - time.
-		resultsUI showResult: anObject ]
+	resultsUI
+		ifNil: [ ^ self error: 'Seeker: No presenter available' ]
+		ifNotNil: [ 
+			aTTQ displayModel title: queryTitle.
+			resultsUI showInResult: aTTQ displayModel ]
 ]
 
 { #category : #accessing }

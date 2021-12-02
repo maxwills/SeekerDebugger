@@ -8,7 +8,7 @@ Class {
 		'columnLabels',
 		'tableName'
 	],
-	#category : #'Seeker-QueryData'
+	#category : #'Seeker-Query'
 }
 
 { #category : #'instance creation' }

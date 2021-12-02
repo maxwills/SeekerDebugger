@@ -15,9 +15,12 @@ SkChangesOfSelfLC >> description [
 { #category : #executing }
 SkChangesOfSelfLC >> executeCommand [
 
-	 self showResult:
-		self tracer find changesOfSelf asSeekerResultsCollection
-			forAssignmentsOfInstanceVariables
+	| objectOid |
+	objectOid := self tracer currentStateInterface receiverOid.
+
+	self showResultFor: (TTQAllAssignmentsOfInstanceVariablesOfObject
+			 queryFrom: self tracer programStates
+			 withObjectOid: objectOid)
 ]
 
 { #category : #accessing }

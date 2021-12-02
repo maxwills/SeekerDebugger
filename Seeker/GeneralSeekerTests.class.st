@@ -159,6 +159,18 @@ GeneralSeekerTests >> testFindTestContextInStack [
 ]
 
 { #category : #tests }
+GeneralSeekerTests >> testIdentitySND [
+
+	| objects numbers hashes |
+	objects := IdentityDictionary new.
+	numbers := OrderedCollection new.
+	1 to: 10 do: [ :i | objects at: SeekerCache new put: i ].
+	hashes := objects keys collect: [ :o | o identityHash ].
+	objects keysDo: [ :k | numbers add: (objects at: k) ].
+	^ objects yourself
+]
+
+{ #category : #tests }
 GeneralSeekerTests >> testMarkers [
 
 	| aCol aNumber aMarkerBlock |
@@ -197,6 +209,8 @@ GeneralSeekerTests >> testNonLocalObjectVariable [
 
 { #category : #tests }
 GeneralSeekerTests >> testPlusEqual [
+
+	"the the tested code is in another project now.. search for operators in my github"
 
 	| a b |
 	a := 0.

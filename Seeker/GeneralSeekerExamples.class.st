@@ -56,7 +56,8 @@ GeneralSeekerExamples class >> reversibilityExampleWith: aCollection [
 	aCollection add: aCollection.
 	aCollection add: 6.
 	aCollection add: 7.
-	aDistractingCollection add: -3
+	aDistractingCollection add: -3.
+	1 to: 10 do: [ :i | aCollection add: i ]
 ]
 
 { #category : #'as yet unclassified' }

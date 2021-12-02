@@ -50,7 +50,7 @@ Class {
 { #category : #'instance creation' }
 SeekerDebugger class >> newFor: aStDebugger [
 
-	"Initializes a seeker debugger with a statement-level stepper and trace.
+	"Initializes a seeker debugger with a default-level stepper and trace.
     Returns a SeekerDebugger"
 
 	| debugger stepper updateCoordinator |
@@ -58,7 +58,7 @@ SeekerDebugger class >> newFor: aStDebugger [
 	updateCoordinator stDebugger: aStDebugger.
 
 	"Initialize the DebuggerStepperBase subclass to be injected in the seeker debugger"
-	stepper := SkQueryableTracer new. "SeekerGlobals instance defaultStepperClass new"
+	stepper := SkQueryExperimentalTracer new. "SeekerGlobals instance defaultStepperClass new"
 	stepper stDebugger: aStDebugger.
 	stepper interruptedProcess: aStDebugger interruptedProcess. "aStDebugger session interruptedProcess"
 	stepper debuggerUpdateCoordinator: updateCoordinator.

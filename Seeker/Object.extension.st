@@ -55,6 +55,12 @@ Object >> asScopedObjectDo: aBlock [
 ]
 
 { #category : #'*Seeker' }
+Object >> asyncSend [
+
+	^ TaskBuilder newForReceiver: self
+]
+
+{ #category : #'*Seeker' }
 Object class >> atSeekerAuxStorage1 [
 
 	^ SeekerGlobals instance auxiliaryTempStorage1
@@ -88,17 +94,11 @@ Object >> seekAllMessagesSentToMe [
 	| seeker |
 	seeker := self seekMe.
 	seeker ifNotNil: [ 
-		| oid inspectors res newRef |
-		oid := self seekMyAlias.
-		inspectors := self seekMyInspectors.
-		res := (seeker find allMessageSendsToOid: oid)
-			       asSeekerResultsCollection forMessageSends.
-		"newRef := seeker getObjectByOid: oid.
-		inspectors do: [ :each | 
-			each
-				model: (StInspectorModel on: newRef);
-				updateList;
-				updateTitle ]."
+		| oid res |
+		oid := self seekMyOid.
+		res := (TTQAllMessagesSentToObject
+			        queryFrom: seeker programStates
+			        withObjectOid: oid) asCollection.
 		^ res ].
 	^ nil
 ]
@@ -109,16 +109,11 @@ Object >> seekAllMyChanges [
 	| seeker |
 	seeker := self seekMe.
 	seeker ifNotNil: [ 
-		| oid inspectors res newRef |
-		oid := self seekMyAlias.
-		inspectors := self seekMyInspectors.
-		res := (seeker find changesOfObject: self) asSeekerResultsCollection
-			       forAssignmentsOfInstanceVariables.
-		"newRef := seeker getObjectByOid: oid.
-		inspectors do: [ :each | 
-			each
-				model: (StInspectorModel on: newRef);
-				updateList; updateTitle]."
+		| oid res |
+		oid := self seekMyOid.
+		res := (TTQAllAssignmentsOfInstanceVariablesOfObject
+			        queryFrom: seeker programStates
+			        withObjectOid: oid) asCollection.
 		^ res ].
 
 	^ nil
@@ -127,27 +122,44 @@ Object >> seekAllMyChanges [
 { #category : #'*Seeker' }
 Object >> seekAndDisplayAllMessagesSentToMe [
 
-	| results seeker |
+	| seeker error |
+	error := true.
+
+	[ 
 	seeker := self seekMe.
-	results := self seekAllMessagesSentToMe.
-	results
-		ifNotNil: [ 
-			seeker seekerResultsPresenter showResult: results.
-			self inform: 'Results being shown in Results table' ]
-		ifNil: [ self error: 'Could not execute query' ]
+	seeker ifNotNil: [ 
+		| oid |
+		oid := self seekMyOid.
+		oid ifNil: [ ^ self error: 'Seeker: obtained Oid was nil.' ].
+		seeker ui showInResult: (TTQAllMessagesSentToObject
+				 queryFrom: seeker programStates
+				 withObjectOid: oid) displayModel.
+		error := false ] ] ensure: [ 
+		error
+			ifFalse: [ self inform: 'Results being shown in results table' ]
+			ifTrue: [ self error: 'Could not execute query' ] ]
 ]
 
 { #category : #'*Seeker' }
 Object >> seekAndDisplayAllMyChanges [
 
-	| results seeker |
+	| seeker error |
+	error := true.
+
+	[ 
 	seeker := self seekMe.
-	results := self seekAllMyChanges.
-	results
-		ifNotNil: [ 
-			seeker seekerResultsPresenter showResult: results.
-			self inform: 'Results being shown in Results table' ]
-		ifNil: [ self error: 'Could not execute query' ]
+	seeker ifNotNil: [ 
+		| oid |
+		oid := self seekMyOid.
+		oid ifNil: [ ^ self error: 'Seeker: obtained Oid was nil.' ].
+		seeker ui showInResult:
+			(TTQAllAssignmentsOfInstanceVariablesOfObject
+				 queryFrom: seeker programStates
+				 withObjectOid: oid) displayModel.
+		error := false ] ] ensure: [ 
+		error
+			ifFalse: [ self inform: 'Results being shown in tesults table' ]
+			ifTrue: [ self error: 'Could not execute query' ] ]
 ]
 
 { #category : #'*Seeker' }
@@ -158,20 +170,8 @@ Object >> seekMe [
 		((s tracer isNotNil and: [ s tracer isSessionActive isNotNil ]) 
 			 and: [ s tracer isSessionActive ]) ifTrue: [ 
 			| alias |
-			alias := s tracer readAliasOf: self.
+			alias := s tracer getOidOf: self.
 			alias ifNotNil: [ ^ s tracer ] ] ].
-	^ nil
-]
-
-{ #category : #'*Seeker' }
-Object >> seekMyAlias [
-
-	SeekerDebugger allInstances.
-	SeekerDebugger allInstances reverseDo: [ :s | 
-		s tracer isSessionActive ifTrue: [ 
-			| alias |
-			alias := s tracer readAliasOf: self.
-			alias ifNotNil: [ ^ alias ] ] ].
 	^ nil
 ]
 
@@ -180,6 +180,18 @@ Object >> seekMyInspectors [
 
 	^ StInspector allInstances select: [ :insp | 
 		  insp model inspectedObject == self ]
+]
+
+{ #category : #'*Seeker' }
+Object >> seekMyOid [
+
+	SeekerDebugger allInstances.
+	SeekerDebugger allInstances reverseDo: [ :s | 
+		s tracer isSessionActive ifTrue: [ 
+			| alias |
+			alias := s tracer getOidOf: self.
+			alias ifNotNil: [ ^ alias ] ] ].
+	^ nil
 ]
 
 { #category : #'*Seeker' }
