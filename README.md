@@ -3,13 +3,13 @@
 ## Baseline
 
 Seeker Prototype Queryable Time-Traveling Debugger.
+Compatible with Pharo 9.0 and Moose Suite 9.0.
 
 Do this:
 ```Smalltalk
 Metacello new
     baseline: 'Seeker';
     repository: 'github://maxwills/SeekerDebugger:main';
-    onWarning: [ :ex | ex resume ];
     load.
 ```
 Requires the following projects (installed automatically with this Seeker Baseline):
