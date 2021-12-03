@@ -49,7 +49,7 @@ QueryDisplayModel >> addColumn: aSymbol [
 ]
 
 { #category : #'as yet unclassified' }
-QueryDisplayModel >> buildContextMenuForResults: aQueryResutls withSelectedItem: selection [
+QueryDisplayModel >> buildContextMenuForResults: aQueryResutls withSelectedItem: selection forTracer: tracer [
 
 	"builds a context menu for an item of this display model"
 

@@ -5,7 +5,7 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
-QdmForInstanceCreations >> buildContextMenuForResults: aQueryResutls withSelectedItem: selection [
+QdmForInstanceCreations >> buildContextMenuForResults: aQueryResutls withSelectedItem: selection forTracer: tracer [
 
 	"builds a context menu for an item of this display model"
 
@@ -38,12 +38,18 @@ QdmForInstanceCreations >> buildContextMenuForResults: aQueryResutls withSelecte
 QdmForInstanceCreations >> initializeModel [
 
 	columns := { 
-		           (ColumnDefinition newForKey: #bytecodeIndex) bc.
+		           ((ColumnDefinition newForKey: #bytecodeIndex)
+			            label: 'Step';
+			            bc).
 		           ((ColumnDefinition newForKey:
 				             #creationFormattedDescription)
 			            label: 'About to instantiate a: ';
-			            sm).
+			            lg).
 		           ((ColumnDefinition newForKey: #receiverClass)
 			            label: 'Sender''s Class';
-			            sm) }
+			            md).
+
+		           ((ColumnDefinition newForKey: #methodSelector)
+			            label: 'Sender method';
+			            md) }
 ]

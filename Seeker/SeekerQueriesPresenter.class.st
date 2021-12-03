@@ -15,7 +15,8 @@ Class {
 		'queryDisplayModel',
 		'trimmingBlock',
 		'spColumns',
-		'menuBuilderSelector'
+		'menuBuilderSelector',
+		'filterText'
 	],
 	#category : #'Seeker-UI'
 }
@@ -25,7 +26,7 @@ SeekerQueriesPresenter class >> defaultSpec [
 
 	^ SpBoxLayout newVertical
 		  add: #queryTitle expand: false fill: false;
-		  add: #resultsFilter expand: false fill: true;
+		  "add: #resultsFilter expand: false fill: true;"
 		  add: #tableContainerPresenter expand: true fill: true;
 		  add: #summaryLabel expand: false fill: false;
 		  "fill: false"yourself
@@ -46,7 +47,7 @@ SeekerQueriesPresenter >> appendResults: aCollection [
 SeekerQueriesPresenter >> applyResultFilter [
 
 	| filterTokens |
-	filteredResult := queryResults filteredItems: resultsFilter text.
+	"filteredResult := queryResults filteredItems: resultsFilter text."
 
 	filterTokens := resultsFilter text splitOn: Character space.
 	filterTokens := filterTokens select: [ :s | s isNotEmpty ].
@@ -63,17 +64,17 @@ SeekerQueriesPresenter >> executeAndShow: aQueryDisplayModel [
 
 	"aQueryDisplayModel: an instance of QueryDisplayModel"
 
-	| solver |
+	| solver highlighBlock |
 	trimmingBlock := nil. "it is restarted to nil"
 	queryDisplayModel := aQueryDisplayModel.
 	solver := self makeDefaultQuerySolverFor: aQueryDisplayModel.
-
+	highlighBlock := self makeHighlightBlock.
 	queryResults := OrderedCollection new: 1000.
 
 	"initialize columns and trimmingBlock"
 	spColumns := OrderedCollection new.
 	spColumns add: (SpIndexTableColumn new width: 40).
-	
+
 	"queryTitle label: queryResults title."
 	trimmingBlock := [ :row :col | 
 	                 col expandable
@@ -108,7 +109,7 @@ Set the tables columns from the ordered collection
 					          evaluated: [ :row | 
 						          trimmingBlock value: row value: each ])
 					         displayBold: [ :row | 
-						         self valueMatchesSearchFilter: (each readValueIn: row) ];
+						         highlighBlock value: (each readValueIn: row) asString ];
 					         yourself ].
 		"col beExpandable."
 		each expandable
@@ -140,7 +141,7 @@ SeekerQueriesPresenter >> getRowSerialization: row [
 SeekerQueriesPresenter >> initializePresenters [
 
 	filterMatchBlockForHighlighting := [ :val | false ].
-
+	filterText := ''.
 	tableContainerPresenter := self newPresenter.
 	tableContainerLayout := SpScrollableLayout new.
 	tableContainerPresenter layout: tableContainerLayout.
@@ -148,14 +149,11 @@ SeekerQueriesPresenter >> initializePresenters [
 
 	self initializeTable.
 	tableContainerLayout child: table.
+
+	"resultsFilter := self newTextInput.
 	
-	resultsFilter := self newTextInput.
-	resultsFilter whenSubmitDo: [ 
-		self applyResultFilter.
-		self updateDisplayedResults.
-		self notifySeekerSearchInputActivated ].
 	resultsFilter placeholder:
-		'Case sensitive filter... (Press enter to apply)'.
+		'Case sensitive filter... (Press enter to apply)'."
 	summaryLabel := self newLabel.
 	summaryLabel label: 'Showing 0 results.'.
 	queryTitle := self newLabel.
@@ -170,14 +168,23 @@ SeekerQueriesPresenter >> initializeTable [
 		         beResizable;
 		         " beCellSelection;""whenActivatedDo: [ :item | self tableItemActivated: item ];
 					activateOnSingleClick;"
+		         items: {  };
 		         contextMenu: [ 
 			         queryDisplayModel
 				         ifNotNil: [ 
 					         queryDisplayModel
 						         buildContextMenuForResults: table items
-						         withSelectedItem: table selectedItem ]
+						         withSelectedItem: table selectedItem
+						         forTracer: tracer ]
 				         ifNil: [ nil ] ];
-		         yourself
+		         itemFilter: [ :row :str | 
+			         filterText := str.
+			         queryDisplayModel
+				         ifNotNil: [ 
+					         queryDisplayModel columns anySatisfy: [ :col | 
+							         (col readValueIn: row) asString includesSubstring: str ] ]
+				         ifNil: [ true ] ];
+		         yourself "Without item, the filter signal an error"
 ]
 
 { #category : #accessing }
@@ -228,6 +235,19 @@ SeekerQueriesPresenter >> makeDefaultQuerySolverFor: aQueryDisplayModel [
 
 
 	^ solver
+]
+
+{ #category : #'as yet unclassified' }
+SeekerQueriesPresenter >> makeHighlightBlock [
+
+	^ [ :val | 
+	  | filterTokens |
+	  filterTokens := (filterText splitOn: Character space) select: [ :s | 
+		                  s isNotEmpty ].
+	  filterTokens
+		  ifEmpty: [ false ]
+		  ifNotEmpty: [ 
+		  filterTokens anySatisfy: [ :f | val includesSubstring: f ] ] ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -420,9 +440,8 @@ SeekerQueriesPresenter >> updateDisplayedResults [
 
 	table items: queryResults. "filteredResult"
 	summaryLabel label: 'Showing ' , queryResults size asString
-		, ' results ( from a total of ' , queryResults size asString
-		, ' unfiltered results, fetched in: '
-		, queryDisplayModel timeToRun asString , 'ms).' "filteredResult"
+		, ' results, fetched in: '
+		, queryDisplayModel timeToRun asString , 'ms.' "filteredResult"
 ]
 
 { #category : #'as yet unclassified' }

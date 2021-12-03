@@ -5,7 +5,7 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
-QdmAuto >> buildContextMenuForResults: aQueryResutls withSelectedItem: selection [
+QdmAuto >> buildContextMenuForResults: aQueryResutls withSelectedItem: selection forTracer: tracer [
 
 	"builds a context menu for an item of this display model"
 

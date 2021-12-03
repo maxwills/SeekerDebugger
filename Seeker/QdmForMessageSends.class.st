@@ -5,7 +5,7 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
-QdmForMessageSends >> buildContextMenuForResults: aQueryResutls withSelectedItem: selection [
+QdmForMessageSends >> buildContextMenuForResults: aQueryResutls withSelectedItem: selection forTracer: tracer [
 
 	"builds a context menu for an item of this display model"
 
@@ -13,15 +13,17 @@ QdmForMessageSends >> buildContextMenuForResults: aQueryResutls withSelectedItem
 		  addItem: [ :item | 
 			  item
 				  name: 'Inspect the message receiver object';
-				  action: [ "Action" ] ];
+				  action: [ selection messageReceiver inspect ] ];
 		  addItem: [ :item | 
 			  item
 				  name: 'Inspect the arguments';
-				  action: [ "Action" ] ];
+				  action: [ selection messageArguments inspect ] ];
 		  addItem: [ :item | 
 			  item
 				  name: 'Time-Travel to its instantiation message';
-				  action: [ "Action" ] ];
+				  action: [ 
+					  tracer timeTravelToTraceTime:
+							  selection messageReceiverOid asExecutedBytecodeTraceTime ] ];
 		  addItem: [ :item | 
 			  item
 				  name: 'Inspect the query result item';
@@ -37,15 +39,31 @@ QdmForMessageSends >> buildContextMenuForResults: aQueryResutls withSelectedItem
 QdmForMessageSends >> initializeModel [
 
 	columns := { 
-		           (ColumnDefinition newForKey: #bytecodeIndex) bc.
-		           (ColumnDefinition newForKey: #methodSelector) sm.
-		           (ColumnDefinition newForKey: #receiverClass) sm.
-		           (ColumnDefinition newForKey: #messageArguments) sm.
-		           (ColumnDefinition newForKey: #messageReceiver) sm.
-		           (ColumnDefinition newForKey: #messageReceiverOid) xs.
-		           (ColumnDefinition newForKey: #formattedMessageReceiver)
-			           md.
-		           (ColumnDefinition newForKey: #messageReceiverClass) sm.
-		           (ColumnDefinition newForKey: #messageSelector) sm }.
+		           ((ColumnDefinition newForKey: #bytecodeIndex)
+			            label: 'Step';
+			            bc).
 
+		           ((ColumnDefinition newForKey: #formattedMessageReceiver)
+			            label: 'Msg Receiver';
+			            md).
+		           ((ColumnDefinition newForKey: #messageReceiverOid)
+			            label: 'Oid';
+			            xs).
+		           "(ColumnDefinition newForKey: #messageReceiver) sm."
+		           ((ColumnDefinition newForKey: #messageSelector)
+			            label: 'Msg Selector';
+			            sm).
+		           ((ColumnDefinition newForKey: #messageArguments)
+			            label: 'Arguments';
+			            md).
+		           ((ColumnDefinition newForKey: #receiverClass)
+			            label: 'Msg Sender Class';
+			            md).
+		           ((ColumnDefinition newForKey: #methodSelector)
+			            label: 'Msg Sender Method';
+			            sm)
+
+
+
+		           " (ColumnDefinition newForKey: #messageReceiverClass) sm" }
 ]
