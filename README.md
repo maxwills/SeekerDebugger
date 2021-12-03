@@ -15,7 +15,7 @@ Metacello new
 Requires the following projects (installed automatically with this Seeker Baseline):
 
 - https://github.com/maxwills/auto-type
-- https://github.com/maxwills/mock-flex
+- https://github.com/maxwills/quick-wrap
 
 The baseline will:
 - Enable the debugger extension in the StDebugger UI.
