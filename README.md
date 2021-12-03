@@ -29,7 +29,7 @@ The baseline will:
 - Single thread executions only.
 - No UI executions support.
 - The execution reversal mechanism can only undo changes that originates from within an execution (the debugged execution call tree). Changes made from outside the execution could affect the reversal mechanism.
-- Performance: Executing code with Seeker is slow. The emergency stop (STOP button in the toolbar) mightbe useful... consider closing it by force if necessary.
+- Performance: Executing code with Seeker is slow. The emergency stop (STOP button in the toolbar) might be useful. Consider closing it by force if necessary.
 - No support yet for "Debug Drive development". Modifying the debugged code during a debug session might produce problems with time-indices.
 
 ## Quick reference:
