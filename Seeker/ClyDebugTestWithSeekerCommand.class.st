@@ -6,9 +6,9 @@ Class {
 
 { #category : #activation }
 ClyDebugTestWithSeekerCommand class >> fullBrowserShortcutActivation [
+
 	<classAnnotation>
-	
-	^CmdShortcutActivation by: $d meta for: self contextClass
+	^ CmdShortcutActivation by: $x shift meta for: self contextClass
 ]
 
 { #category : #activation }
@@ -40,5 +40,6 @@ ClyDebugTestWithSeekerCommand >> runTest: testSelector of: testClass [
 		process: process;
 		compiledMethod: testClass >> testSelector;
 		label: 'debuging the test';
-		submit
+		submit.
+	self inform: 'SeekerDebugger: Time-Traveling enabled'
 ]

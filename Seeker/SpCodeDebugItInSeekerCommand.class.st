@@ -19,9 +19,7 @@ SpCodeDebugItInSeekerCommand class >> defaultName [
 { #category : #default }
 SpCodeDebugItInSeekerCommand class >> defaultShortcutKey [
 
-	^ $d shift command mac 
-		| $d shift control win
-		| $d shift control unix
+	^ $x shift meta mac | $x alt control win | $x alt control unix
 ]
 
 { #category : #private }
@@ -83,10 +81,11 @@ SpCodeDebugItInSeekerCommand >> debug: aCompiledMethod receiver: anObject in: ev
 
 { #category : #execution }
 SpCodeDebugItInSeekerCommand >> execute [
+
 	| selection |
-	
 	selection := self selectedTextOrLine.
 	selection ifEmpty: [ ^ '' ].
-	
-	self debug: selection readStream	
+
+	self debug: selection readStream.
+	self inform: 'SeekerDebugger: Time-Traveling enabled'
 ]
