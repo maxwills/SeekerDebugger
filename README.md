@@ -35,29 +35,9 @@ The baseline will:
 ## Quick reference:
 The Quick Reference pdf document is included in the repository, and can be accessed [here](./Resources/TTQs-QuickReference.pdf).
 
-## UI Integrated Query Example
+## User Defined Queries
 
-To show query results in the UI (the Query Tab of Seeker), follow this example.
-
-1. Go to the Scripting Tab, as shown here. 
-<img src="./Resources/scripting.png" width="700px">  
-
-
-2. Paste and execute the following code.
-```Smalltalk
-|query t|
-"Lists the variable name for all the assignments of an execution."
-t := AutoType new.
-query := Query from: seeker programStates
- select: [:state| state node isAssignment] 
- collect: [:state| t newWith
-		bytecodeIndex: state bytecodeIndex;
-		varNam: state node variable variable name;
-		endWith]
-.
-seeker ui showResult: query asSeekerResultsCollection  
-```
-3. See the results in the Query Tab. Click on any bytecodeIndex to time-travel to the result.
+(Obsolete information removed)
 
 ### Time-Traveling Queries Notes:
 
