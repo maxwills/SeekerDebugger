@@ -10,7 +10,7 @@ Class {
 { #category : #'as yet unclassified' }
 SeekerSessionHelpers class >> debugSession: aBlock [
 
-	self innerSeekerSessionFor: aBlock withFlag: self makeOnceFlag
+	self innerSeekerSessionFor2: aBlock withFlag: self makeOnceFlag
 ]
 
 { #category : #'as yet unclassified' }
@@ -27,7 +27,7 @@ SeekerSessionHelpers class >> debugSessionIfKeysPressed: aBlock [
 { #category : #'as yet unclassified' }
 SeekerSessionHelpers class >> innerSeekerSessionFor: aBlock withFlag: aFlagBlock [
 
-	aFlagBlock value ifTrue: [ self openDebugger ].
+	aFlagBlock value ifTrue: [ Exception new signal ].
 	aBlock value.
 	self seekerSessionEndMarker
 ]

@@ -87,7 +87,7 @@ SkExecutionMapper >> automapForSeekerMarkedSessionScenario [
 
 	| recordingInitialContext testInitialContext endingContext findContext currentCompiledMethod |
 	"Only works if used the option: debug with Seeker""findContext is a SeekerFindContextInStackInterface object"
-	currentCompiledMethod := currentState compiledCode.
+	currentCompiledMethod := tracer slowCurrentContext compiledCode.
 	findContext := tracer findContextInStack.
 
 	recordingInitialContext := findContext
@@ -108,6 +108,7 @@ SkExecutionMapper >> automapForSeekerMarkedSessionScenario [
 
 	self recountBytecodes.
 	isMapped := true.
+	tracer timeTravelToUserStart.
 	^ true
 ]
 
@@ -254,8 +255,8 @@ SkExecutionMapper >> isQuickMapAvailable [
 { #category : #'as yet unclassified' }
 SkExecutionMapper >> isSeekerMarkedSessionScenario [
 
-	^ currentState receiver = SeekerSessionHelpers and: [ 
-		  currentState context selector = #openDebugger ]
+	^ tracer slowCurrentContext receiver = SeekerSessionHelpers and: [ 
+		  tracer slowCurrentContext selector = #innerSeekerSessionFor:withFlag: ]
 ]
 
 { #category : #testing }
