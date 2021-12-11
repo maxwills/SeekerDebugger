@@ -72,39 +72,67 @@ SkQueryExperimentalTracer >> doAstStepPostProcessWithPrevNode: preProcessAstNode
 SkQueryExperimentalTracer >> doAstStepPreProcess [
 
 	currentState isMessageSend
-		ifTrue: [ "handling message sends cases"
-			| method primitive |
-			"register the receiver"
-			self
-				registerObjectInstance: currentState messageReceiver
-				withOid: executedBytecode.
-			method := currentState methodAboutToExecute.
-			skipFlag := skippableMethods includes: method.
-			primitive := method ifNil: [ 0 ] ifNotNil: [ method primitive ].
-			shouldAlwaysRunToEnd ifFalse: [ 
-				shouldAlwaysRunToEnd := SeekerCurrentStateInterface 
-					                        isWaitPrimitive: primitive ].
-			(SeekerCurrentStateInterface isInstantiationPrimitive: primitive)
-				ifTrue: [ instantiationFlag := true ]
-				ifFalse: [ 
-					(SeekerCurrentStateInterface isWritingPrimitive: primitive) 
-						ifTrue: [ 
-							| messageReceiver |
-							messageReceiver := currentState messageReceiver.
-							(self objectIsLocal: messageReceiver) ifFalse: [ "We store a copy of the object if this is writing primitive" 
-								self recordSnapshotOfObject: messageReceiver ] ] ] ]
-		ifFalse: [ "assignment cases""astPreStepHooks do: [ :each | each value ]"
+		ifTrue: [ "handling message sends cases" 
+			self doAstStepPreProcessForMessageSends ]
+		ifFalse: [ 
 			| node |
 			node := currentState node.
-			"putting the tracing for restoration (of assignments)logic here"
-			(node isAssignment and: [ 
-				 node variable isWorkspaceVariable or: [ 
-					 node variable variable isLocalVariable not and: [ 
-						 currentState receiverIsLocalToExecution not ] ] ]) ifTrue: [ "if the receiver is an object that was instantiated from outside the execution, or in case of a workspace variable"
+			node isAssignment ifTrue: [ self doAstStepPreProcessForAssignments ] ]
+]
+
+{ #category : #'as yet unclassified' }
+SkQueryExperimentalTracer >> doAstStepPreProcessForAssignments [
+
+	| variable |
+	"the current node is an assignment node"
+	variable := currentState node variable variable.
+	"putting the tracing for restoration (of assignments)logic here"
+	variable isGlobalVariable
+		ifTrue: [ 
+			| variablesChangesOfReceiver globalName |
+			globalName := variable name.
+			variablesChangesOfReceiver := storedNonLocalChangesDictionary
+				                              at: #_GLOBALS_
+				                              ifAbsentPut: [ Dictionary new ].
+			variablesChangesOfReceiver at: globalName ifAbsentPut: [ 
+				| pinnedValue |
+				pinnedValue := Smalltalk globals at: globalName.
+				[ Smalltalk globals at: globalName put: pinnedValue ] ] ]
+		ifFalse: [ 
+			(variable isWorkspaceVariable or: [ 
+				 variable isLocalVariable not and: [ 
+					 currentState receiverIsLocalToExecution not ] ]) ifTrue: [ "if the receiver is an object that was instantiated from outside the execution, or in case of a workspace variable"
 				self
 					recordChangeForReceiver: currentState receiver
-					ofVar: node variable variable
+					ofVar: variable
 					inContext: currentState context ] ]
+]
+
+{ #category : #'as yet unclassified' }
+SkQueryExperimentalTracer >> doAstStepPreProcessForMessageSends [
+
+	"handling message sends cases"
+
+	| method primitive |
+	"register the receiver"
+	self
+		registerObjectInstance: currentState messageReceiver
+		withOid: executedBytecode.
+	method := currentState methodAboutToExecute.
+	skipFlag := skippableMethods includes: method.
+	primitive := method ifNil: [ 0 ] ifNotNil: [ method primitive ].
+	shouldAlwaysRunToEnd ifFalse: [ 
+		shouldAlwaysRunToEnd := SeekerCurrentStateInterface 
+			                        isWaitPrimitive: primitive ].
+	(SeekerCurrentStateInterface isInstantiationPrimitive: primitive)
+		ifTrue: [ instantiationFlag := true ]
+		ifFalse: [ 
+			(SeekerCurrentStateInterface isWritingPrimitive: primitive) 
+				ifTrue: [ 
+					| messageReceiver |
+					messageReceiver := currentState messageReceiver.
+					(self objectIsLocal: messageReceiver) ifFalse: [ "We store a copy of the object if this is writing primitive" 
+						self recordSnapshotOfObject: messageReceiver ] ] ]
 ]
 
 { #category : #'object - api' }
