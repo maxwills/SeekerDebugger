@@ -63,6 +63,21 @@ Class {
 	#category : #'Seeker-Tracer'
 }
 
+{ #category : #'as yet unclassified' }
+SkBytecodeStepper >> benchmarkTracedBytecodes: aNumber [
+
+	self doAndUpdateSessionAfter: [ 
+		| time |
+		time := [ 
+		        | counter |
+		        counter := 0.
+
+		        [ counter >= aNumber ] whileFalse: [ 
+			        self stepBytecode.
+			        counter := counter + 1 ] ] timeToRun.
+		self inform: time asString ]
+]
+
 { #category : #mapping }
 SkBytecodeStepper >> bytecodeIndex [
 
@@ -156,6 +171,17 @@ SkBytecodeStepper >> executionProgress [
 	""
 
 	^ (100.0 * executedBytecode / maxExecutedBytecode) asFloat
+]
+
+{ #category : #'as yet unclassified' }
+SkBytecodeStepper >> fastForwardToCondition: block [
+
+	"unsafe method"
+
+	"Steps the debugger. No skipping. No updates (remember to force update after)"
+
+	self doAndUpdateSessionAfter: [ 
+		block whileFalse: [ self unsafeBytecodeStep ] ]
 ]
 
 { #category : #'updating - session' }
@@ -370,9 +396,10 @@ SkBytecodeStepper >> safeTimeTravelToTraceTime: aTraceTime [
 { #category : #'as yet unclassified' }
 SkBytecodeStepper >> setEmergencyStopFlag [
 
-	iteratingFlag ifTrue: [ 
-		emergencyStopFlag := true.
-		preventNextTimeRestoration := true ]
+	"iteratingFlag ifTrue: [ "
+
+	emergencyStopFlag := true.
+	preventNextTimeRestoration := true "]"
 ]
 
 { #category : #signalling }
@@ -457,7 +484,7 @@ SkBytecodeStepper >> stepBackOver [
 { #category : #'debug - stepping' }
 SkBytecodeStepper >> stepBytecode [
 
-	"Steps the debugger. No skipping. No recording. No updates (remember to force update after)"
+	"Steps the debugger. No skipping. No updates (remember to force update after)"
 
 	| previousContext startingNode |
 	emergencyStopFlag ifTrue: [ 
@@ -468,7 +495,7 @@ SkBytecodeStepper >> stepBytecode [
 	previousContext := currentContext.
 	startingNode := nil. "currentState node"
 	self doAstStepPreProcess.
-	"currentContext stepIntoQuickMethod: true."
+	currentContext stepIntoQuickMethod: true.
 	currentContext := skipFlag
 		                  ifTrue: [ 
 			                  skipFlag := false.
@@ -492,10 +519,12 @@ SkBytecodeStepper >> stepBytecodeToExecutionEnd [
 	"Steps the AST. No skipping. No recording. No Updates
 TODO: Add error management. There are two kind, one from the executed code, and the other is from the debugger code"
 
+	| oldVal |
+	oldVal := iteratingFlag.
 	iteratingFlag := true.
 	[ 
 	[ false ] whileFalse: [ self stepBytecode ifFalse: [ ^ false ] ].
-	^ true ] ensure: [ iteratingFlag := false ]
+	^ true ] ensure: [ iteratingFlag := oldVal ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -508,10 +537,12 @@ TODO: Add error management. There are two kind, one from the executed code, and 
 		whileFalseAlt: [ self stepBytecode ifFalse: [ ^ false ] ]
 		lvl: 8."
 
+	| oldVal |
+	oldVal := iteratingFlag.
 	iteratingFlag := true.
 	[ 
 	aBlock whileFalse: [ self stepBytecode ifFalse: [ ^ false ] ].
-	^ true ] ensure: [ iteratingFlag := false ]
+	^ true ] ensure: [ iteratingFlag := oldVal ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -632,6 +663,26 @@ SkBytecodeStepper >> traceTime [
 SkBytecodeStepper >> tracedStatementIndex [
 
 	^ currentStepIndex
+]
+
+{ #category : #'as yet unclassified' }
+SkBytecodeStepper >> unsafeBytecodeStep [
+
+	"unsafe method"
+
+	"Steps the debugger. No skipping. No updates (remember to force update after)"
+
+	| previousContext |
+	previousContext := currentContext.
+
+	currentContext := session interruptedProcess step.
+
+	executedBytecode := executedBytecode + 1.
+	currentState updateCacheTimeKey.
+	maxExecutedBytecode := maxExecutedBytecode max: executedBytecode.
+	"previousContext stepIntoQuickMethod: false."
+
+	^ true
 ]
 
 { #category : #updating }
