@@ -7,12 +7,11 @@ Class {
 { #category : #accessing }
 SkProjectionMessageSends >> value: state [
 
-	| msgRcvrNode msgRcvrClass msgRcvr receiverOid |
+	| msgRcvrNode msgRcvrClass msgRcvr receiverOid|
 	msgRcvrNode := state node receiver.
 	msgRcvr := state messageReceiver.
 	receiverOid := state aliasOfObject: msgRcvr.
 	msgRcvrClass := msgRcvr class.
-
 	^ autoType newWith
 		  bytecodeIndex: state bytecodeIndex;
 		  methodSelector: state methodSelector;
@@ -24,7 +23,7 @@ SkProjectionMessageSends >> value: state [
 				   ifTrue: [ 
 					   msgRcvrNode variable name , ' ('
 					   ,
-						   (msgRcvrNode variable readInContext: state context) class
+						   msgRcvrClass
 							   asString , ')' ]
 				   ifFalse: [ 
 					   [ msgRcvr asString , ' (' , msgRcvrNode sourceCode , ')' ] 
