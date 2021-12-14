@@ -9,7 +9,8 @@ Class {
 		'isMapped',
 		'isMappedForDoIt',
 		'contextOfExecutedBytecodeOne',
-		'userStartTraceTime'
+		'userStartTraceTime',
+		'mappingAlgorithm'
 	],
 	#category : #'Seeker-Tracer'
 }
@@ -102,6 +103,36 @@ SkExecutionMapper >> automapForSeekerMarkedSessionScenario [
 		self error: 'Could not detect the initial context.'.
 		^ false ].
 	userStartTraceTime := 11 asExecutedBytecodeTraceTime. "Manually calculated" "testInitialContext tracedContextPC
+		                      asTraceTimeReference"
+	endingContext := testInitialContext sender.
+	endCondition := SkEndOfMarkedSession newForTracer: tracer.
+
+	self recountBytecodes.
+	isMapped := true.
+	tracer timeTravelToUserStart.
+	^ true
+]
+
+{ #category : #'as yet unclassified' }
+SkExecutionMapper >> automapForSeekerPragmaDebugSessionScenario [
+
+	| recordingInitialContext testInitialContext endingContext findContext currentCompiledMethod |
+	"Only works if used the option: debug with Seeker""findContext is a SeekerFindContextInStackInterface object"
+	currentCompiledMethod := tracer slowCurrentContext compiledCode.
+	findContext := tracer findContextInStack.
+
+	recordingInitialContext := findContext
+		                           recordStartContextForPragmaDebugSession.
+	recordingInitialContext ifNil: [ 
+		self error: 'Could not detect the initial context for recording.'.
+		^ false ].
+	contextOfExecutedBytecodeOne := recordingInitialContext.
+
+	testInitialContext := recordingInitialContext.
+	testInitialContext ifNil: [ 
+		self error: 'Could not detect the initial context.'.
+		^ false ].
+	userStartTraceTime := 19 asExecutedBytecodeTraceTime. "Manually calculated" "testInitialContext tracedContextPC
 		                      asTraceTimeReference"
 	endingContext := testInitialContext sender.
 	endCondition := SkEndOfMarkedSession newForTracer: tracer.
@@ -207,8 +238,6 @@ SkExecutionMapper >> initialize [
 { #category : #testing }
 SkExecutionMapper >> isDoItScenario [
 
-	"don't use currentState here. It might not be initialized (althought changing the timeKet to any negative number might work too)"
-
 	^ currentState compiledCode isDoIt
 ]
 
@@ -259,6 +288,13 @@ SkExecutionMapper >> isSeekerMarkedSessionScenario [
 		  tracer slowCurrentContext selector = #innerSeekerSessionFor:withFlag: ]
 ]
 
+{ #category : #'as yet unclassified' }
+SkExecutionMapper >> isSeekerPragmaDebugSessionScenario [
+
+	^ tracer slowCurrentContext receiver = SeekerSessionHelpers and: [ 
+		  tracer slowCurrentContext selector = #innerSeekerPragmaDebugSessionFor:withFlag: ]
+]
+
 { #category : #testing }
 SkExecutionMapper >> isTestCaseScenario [
 
@@ -278,12 +314,18 @@ SkExecutionMapper >> isTestCaseScenario [
 
 { #category : #'as yet unclassified' }
 SkExecutionMapper >> quickMap [
-"TODO: Move out the inform calls"
-(self isSeekerMarkedSessionScenario) ifTrue: [ ^self automapForSeekerMarkedSessionScenario ".^self inform: 'Time Traveling enabled'" ].
-	(self isDoItScenario) ifTrue: [ ^self automapForDoItScenario ".^self inform: 'Time Traveling enabled'" ].
-	(self isTestCaseScenario ) ifTrue: [ ^self automapForTestCaseScenario".^self inform: 'Time Traveling enabled' "].
-^ false "self inform: 'Could not enable Time Traveling automatically. The session needs a manual set up' ."
-	
+
+	"TODO: Move out the inform calls"
+
+	self isSeekerMarkedSessionScenario ifTrue: [ 
+		^ self automapForSeekerMarkedSessionScenario ".^self inform: 'Time Traveling enabled'" ].
+	self isSeekerPragmaDebugSessionScenario ifTrue: [ 
+		^ self automapForSeekerPragmaDebugSessionScenario ".^self inform: 'Time Traveling enabled'" ].
+	self isDoItScenario ifTrue: [ 
+		^ self automapForDoItScenario ".^self inform: 'Time Traveling enabled'" ].
+	self isTestCaseScenario ifTrue: [ 
+		^ self automapForTestCaseScenario ".^self inform: 'Time Traveling enabled' " ].
+	^ false "self inform: 'Could not enable Time Traveling automatically. The session needs a manual set up' ."
 ]
 
 { #category : #'as yet unclassified' }

@@ -267,9 +267,10 @@ SkBytecodeStepper >> isRiskyStep [
 ]
 
 { #category : #testing }
-SkBytecodeStepper >> isSeekerMarkedSessionScenario [
+SkBytecodeStepper >> isSeekerAnyMarkedSessionScenario [
 
-	^ executionMappper isSeekerMarkedSessionScenario
+	^ executionMappper isSeekerMarkedSessionScenario or: [ 
+		  executionMappper isSeekerPragmaDebugSessionScenario ]
 ]
 
 { #category : #'as yet unclassified' }

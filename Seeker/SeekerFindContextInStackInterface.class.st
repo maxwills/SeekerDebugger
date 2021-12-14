@@ -101,6 +101,16 @@ SeekerFindContextInStackInterface >> recordStartContextForMarkedSession [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerFindContextInStackInterface >> recordStartContextForPragmaDebugSession [
+
+	^ SkContextHelpers
+		  findContextInStack: [ :aContext | 
+			  aContext receiver = SeekerSessionHelpers and: [ 
+				  aContext methodSelector = #innerSeekerPragmaDebugSessionFor:withFlag: ] ]
+		  startingContext: tracer slowCurrentContext
+]
+
+{ #category : #'as yet unclassified' }
 SeekerFindContextInStackInterface >> recordStartContextForTestCase [
 
 	"Returns the context that seeker Debugger restarts to begin a new replay"

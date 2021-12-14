@@ -28,6 +28,13 @@ GeneralSeekerExamples class >> markersExample [
 ]
 
 { #category : #'as yet unclassified' }
+GeneralSeekerExamples class >> otherInstanceWrapper: receiver wrappedMethod: aMethod arguments: args [
+	| res |
+	res := receiver execute: aMethod withArgs: args.
+	^ 'result is new: ' , res asString
+]
+
+{ #category : #'as yet unclassified' }
 GeneralSeekerExamples class >> reversibilityExample [
 
 	| aCollection |
