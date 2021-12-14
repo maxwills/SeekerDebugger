@@ -94,6 +94,20 @@ SeekerSessionHelpers class >> openDebugger [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerSessionHelpers class >> seekerKeyConditionSessionWrapper: receiver method: aMethod arguments: args [
+
+	| val |
+	SeekerGlobals instance debugCommandKeysPressed
+		ifTrue: [ 
+			self
+				innerSeekerPragmaDebugSessionFor: [ 
+				val := receiver withArgs: args executeMethod: aMethod ]
+				withFlag: self makeOnceFlag ]
+		ifFalse: [ val := receiver withArgs: args executeMethod: aMethod ].
+	^ val
+]
+
+{ #category : #'as yet unclassified' }
 SeekerSessionHelpers class >> seekerSession: aBlock [
 
 	SeekerGlobals instance debugCommandKeysPressed
