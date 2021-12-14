@@ -193,20 +193,13 @@ SeekerDebugger >> notifyTimeTravel: stateString [
 { #category : #'as yet unclassified' }
 SeekerDebugger >> quickSetup [
 
-	"Automatic initialization logic. Happens when chossing debugging option from context menu commands. Options are stored in globals for the moment"
-
-	| process isWatchedProcess |
+	| process |
 	tracer ifNil: [ ^ self ].
 	stDebugger ifNil: [ ^ self ].
 	process := stDebugger interruptedProcess.
 	process ifNil: [ ^ self ].
 	tracer session: stDebugger session.
-	isWatchedProcess := SeekerGlobals instance isWatchedProcess: process.
-	isWatchedProcess ifTrue: [ 
-		[ tracer isQuickMapAvailable ifTrue: [ tracer quickMap ] ] ensure: [ 
-			SeekerGlobals instance stopWatchingProcess: process ] ].
-	"If the current method is SeekerSessionStarted seekerSessionStartMaker then automap this!"
-	tracer isSeekerAnyMarkedSessionScenario ifTrue: [ tracer quickMap ]
+	tracer doMappingIfCorresponds
 ]
 
 { #category : #starting }

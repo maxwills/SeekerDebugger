@@ -37,11 +37,10 @@ SkMapAlgoDoIt >> mapExecution [
 	endTracedInstructionPC := endingContext tracedInstructionPC.
 	endTracedInstructionPC pc: endingContext endPC. "The last step is the endPC?"
 	endTraceTime := endTracedInstructionPC asTraceTimeReference.
-	mapper endCondition: [ 
-		(SkEndOfDoIt newForTracer: tracer)
-			doItContext: mapper doItContext;
-			endTraceTime: endTraceTime;
-			yourself ].
+	mapper endCondition: ((SkEndOfDoIt newForTracer: tracer)
+			 doItContext: mapper doItContext;
+			 endTraceTime: endTraceTime;
+			 yourself).
 
 	mapper recountBytecodes.
 	mapper isMapped: true.

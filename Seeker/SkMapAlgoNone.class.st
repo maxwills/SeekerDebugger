@@ -15,3 +15,9 @@ SkMapAlgoNone class >> matchesExecutionScenario: tracer [
 
 	^ false
 ]
+
+{ #category : #'as yet unclassified' }
+SkMapAlgoNone >> mapExecution [
+
+	^ false
+]
