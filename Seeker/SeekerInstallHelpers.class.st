@@ -17,8 +17,7 @@ SeekerInstallHelpers class >> install [
 	self enableDebuggerExtension.
 	self overrideHandMorph.
 	self installQuickWrapSystem.
-	self refreshSubChachedMethods.
-	self refreshSubChacheDelegationProxies.
+	self refreshAllWrappers.
 	self installMoosePatch
 ]
 
@@ -89,6 +88,12 @@ SeekerInstallHelpers class >> overrideStDebuggerActionModel [
 	StDebugger compile: methodSource
 
 	"(StDebugger >> #debuggerActionModel) browse"
+]
+
+{ #category : #'as yet unclassified' }
+SeekerInstallHelpers class >> refreshAllWrappers [
+
+	QuickWrap refreshAllWrappers
 ]
 
 { #category : #'as yet unclassified' }

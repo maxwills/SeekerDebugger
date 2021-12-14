@@ -130,6 +130,31 @@ SkBytecodeStepper >> doAstStepPreProcess [
 ]
 
 { #category : #'as yet unclassified' }
+SkBytecodeStepper >> doMappingIfCorresponds [
+
+	"Short decription: Was the StDebugger opened with the intention of using seeker? if true, map the execution"
+
+	"This method is called to perform the mapping of an execution when the StDebugger is opened. The reason is that the StDebugger can be opened in any of these scenarios
+(TestCase or DoIt) with or without Seeker enabled. So, to know if the user wanted to use seeker,
+the process is placed in a *global* watchlist. When the stDebugger is loaded, this method is launched
+when we detect that the process is in the watchlist (therefore, the user wanted to use seeker,
+and therefore, we need to map the execution).
+
+Note that for the other SeekerDebugging scenarios, the StDebugger is always opened with the 
+intent of using seeker. So the process is not placed in the watchlist.
+"
+
+	executionMappper isTestCaseOrDoIT
+		ifFalse: [ executionMappper quickMap "always map these"]
+		ifTrue: [ "map only in it is a watchedProcess"
+			| proc |
+			proc := stDebugger interruptedProcess.
+			(SeekerGlobals instance isWatchedProcess: proc) ifTrue: [ 
+				[ executionMappper quickMap ] ensure: [ 
+					SeekerGlobals instance stopWatchingProcess: proc ] ] ]
+]
+
+{ #category : #'as yet unclassified' }
 SkBytecodeStepper >> doesAnyContextsInTheStackStatisfies: aPredicateBlock [
 
 	"the predicate block receives a context as parameter"
@@ -267,9 +292,10 @@ SkBytecodeStepper >> isRiskyStep [
 ]
 
 { #category : #testing }
-SkBytecodeStepper >> isSeekerMarkedSessionScenario [
+SkBytecodeStepper >> isSeekerAnyMarkedSessionScenario [
 
-	^ executionMappper isSeekerMarkedSessionScenario
+	^ executionMappper isSeekerMarkedSessionScenario or: [ 
+		  executionMappper isSeekerPragmaDebugSessionScenario ]
 ]
 
 { #category : #'as yet unclassified' }

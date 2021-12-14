@@ -10,7 +10,7 @@ Class {
 { #category : #'as yet unclassified' }
 SeekerSessionHelpers class >> debugSession: aBlock [
 
-	self innerSeekerSessionFor2: aBlock withFlag: self makeOnceFlag
+	self innerSeekerSessionFor: aBlock withFlag: self makeOnceFlag
 ]
 
 { #category : #'as yet unclassified' }
@@ -22,6 +22,13 @@ SeekerSessionHelpers class >> debugSessionIfKeysPressed: aBlock [
 		ifTrue: [ 
 		self innerSeekerSessionFor: aBlock withFlag: self makeOnceFlag ]
 		ifFalse: [ aBlock value ]
+]
+
+{ #category : #'as yet unclassified' }
+SeekerSessionHelpers class >> innerSeekerPragmaDebugSessionFor: aBlock withFlag: aFlagBlock [
+
+	aFlagBlock value ifTrue: [ Exception new signal ].
+	aBlock ensure: [ self seekerSessionEndMarker ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -87,6 +94,20 @@ SeekerSessionHelpers class >> openDebugger [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerSessionHelpers class >> seekerKeyConditionSessionWrapper: receiver method: aMethod arguments: args [
+
+	| val |
+	SeekerGlobals instance debugCommandKeysPressed
+		ifTrue: [ 
+			self
+				innerSeekerPragmaDebugSessionFor: [ 
+				val := receiver withArgs: args executeMethod: aMethod ]
+				withFlag: self makeOnceFlag ]
+		ifFalse: [ val := receiver withArgs: args executeMethod: aMethod ].
+	^ val
+]
+
+{ #category : #'as yet unclassified' }
 SeekerSessionHelpers class >> seekerSession: aBlock [
 
 	SeekerGlobals instance debugCommandKeysPressed
@@ -113,4 +134,15 @@ SeekerSessionHelpers class >> seekerSessionStartMaker [
 as the starting point recording and replaying. "
 
 	self openDebugger
+]
+
+{ #category : #'as yet unclassified' }
+SeekerSessionHelpers class >> seekerSessionWrapper: receiver method: aMethod arguments: args [
+
+	| val |
+	self
+		innerSeekerPragmaDebugSessionFor: [ 
+		val := receiver withArgs: args executeMethod: aMethod ]
+		withFlag: self makeOnceFlag.
+	^ val
 ]
