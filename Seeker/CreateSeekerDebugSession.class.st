@@ -1,25 +1,19 @@
 Class {
 	#name : #CreateSeekerDebugSession,
 	#superclass : #QwPostCompilationHandler,
-	#category : #Seeker
+	#category : #'Seeker-Annotations'
 }
 
 { #category : #'as yet unclassified' }
 CreateSeekerDebugSession class >> handleCompiledMethod: aMethod [
 
-	"This is called by the quickWrap system if the method pragmas contains the prama of this class"
+	"This is called by the quickWrap system if the method pragmas contains the pragma of this class"
 
-	| proxy pragma wrapperClassName wrapperSelector |
-	pragma := (aMethod pragmas select: [ :p | 
-		           p selector = self handledPragma ]) first.
-
-	wrapperClassName := pragma arguments first.
-	wrapperSelector := pragma arguments second.
-
+	| proxy |
 	proxy := QuickWrapMethodProxy
 		         onMethod: aMethod
-		         delegateHandler: [ self class environment at: wrapperClassName ]
-		         selector: wrapperSelector.
+		         delegateHandler: [ SeekerSessionHelpers ]
+		         selector: #seekerSessionWrapper:method:arguments:.
 	proxy install
 ]
 

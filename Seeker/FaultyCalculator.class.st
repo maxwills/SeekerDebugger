@@ -18,8 +18,8 @@ FaultyCalculator class >> aMethod [
 { #category : #'test methods' }
 FaultyCalculator class >> aMethodToDebug [
 
-	<quickWrappedBy: #SeekerSessionHelpers selector:
-	#seekerSessionWrapper:method:arguments:>
+	<seekerDebugSessionHere>
+	1 asString.
 	^ self aMethod
 ]
 
