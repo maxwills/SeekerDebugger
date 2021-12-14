@@ -18,7 +18,7 @@ FaultyCalculator class >> aMethod [
 { #category : #'test methods' }
 FaultyCalculator class >> aMethodToDebug [
 
-	<quickWrapBy: #SeekerSessionHelpers selector:
+	<quickWrappedBy: #SeekerSessionHelpers selector:
 	#seekerSessionWrapper:method:arguments:>
 	^ self aMethod
 ]
