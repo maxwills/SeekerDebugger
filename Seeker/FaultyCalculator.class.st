@@ -18,6 +18,7 @@ FaultyCalculator class >> aMethod [
 { #category : #'test methods' }
 FaultyCalculator class >> aMethodToDebug [
 
+	<seekerDebug>
 	1 asString.
 	^ self aMethod
 ]
