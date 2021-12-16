@@ -130,19 +130,41 @@ SeekerDebuggerPresenter >> enableTimeTravelingHandler [
 		ifFalse: [ self mapExecutionIfNotMappedAlready ]
 ]
 
+{ #category : #'as yet unclassified' }
+SeekerDebuggerPresenter >> getDefaultCodeText [
+
+	^ '"Put your debugger scripts here...
+
+Example1: a Query with inspectable results
+(TTQAllAssignments queryFrom: programStates) asCollection.
+ 
+Example2: Composing a query and showing results in the UI
+((TTQAllMessageSends queryFrom: programStates) select: [:state| state methodSelector=#new]) showInSeeker
+
+Workspace variables.
+
+seeker : the main debugger object
+programStates : an iterable collection representing the program states.
+currentState : an object that is able to read the current state of an execution. Do (SeekerCurrentStateInterface browse) for details.
+"'
+]
+
 { #category : #initialization }
 SeekerDebuggerPresenter >> initializeCode [
+
 	"comment stating purpose of instance-side method"
-	"scope: class-variables  &  instance-variables"	
-		|codeText|
+
+	"scope: class-variables  &  instance-variables"
+
+	| codeText |
 	code := self newCode.
-	code interactionModel: StSindarinContextInteractionModel  new.
+	code interactionModel: StSindarinContextInteractionModel new.
 	code syntaxHighlight: true.
 	codeText := SeekerGlobals instance seekerCodePresenterText.
-	((codeText isKindOf: String) or: [codeText isKindOf: Text]) ifTrue: [ code text: codeText  ] ifFalse: [ code text: ('"Put your debugger scripts here..."', String cr) ].
-	code whenTextChangedDo: [ self onCodeTextChanged ].
-
-	
+	((codeText isKindOf: String) or: [ codeText isKindOf: Text ])
+		ifTrue: [ code text: codeText ]
+		ifFalse: [ code text: self getDefaultCodeText , String cr ].
+	code whenTextChangedDo: [ self onCodeTextChanged ]
 ]
 
 { #category : #initialization }

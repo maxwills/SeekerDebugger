@@ -8,16 +8,23 @@ Class {
 BlockComposer class >> isAlwaysMatchPredicate: aBlock [
 
 	| node |
-	node := aBlock compiledBlock ast.
-	^ (node isBlock and: [ 
-		   node arguments size = 1 and: [ node body statements isNotEmpty ] ])
-		  ifFalse: [ false ]
+	^ aBlock isClosure
 		  ifTrue: [ 
-			  | lastStatementNode |
-			  lastStatementNode := node body statements last.
-			  lastStatementNode isLiteralNode
-				  ifFalse: [ false ]
-				  ifTrue: [ lastStatementNode value = true "ignore the codesmell, and leave it like this. If the last node is not a boolean, this forces a true/false value"] ]
+			  node := aBlock compiledBlock ast.
+			  ^ (node isBlock and: [ 
+				     node arguments size = 1 and: [ 
+					     node body statements isNotEmpty ] ])
+				    ifFalse: [ false ]
+				    ifTrue: [ 
+					    | lastStatementNode |
+					    lastStatementNode := node body statements last.
+					    lastStatementNode isLiteralNode
+						    ifFalse: [ false ]
+						    ifTrue: [ 
+							    lastStatementNode value = true "ignore the codesmell, and leave it like this. If the last node is not a boolean, this forces a true/false value" ] ] ]
+		  ifFalse: [ 
+			  (aBlock class methodDictionary at: #value: ifAbsent: [ ^ true ])
+			  == (SeekerSelectionFunction methodDictionary at: #value:) ]
 ]
 
 { #category : #testing }

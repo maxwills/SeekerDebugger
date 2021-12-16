@@ -5,7 +5,7 @@ Class {
 }
 
 { #category : #accessing }
-SeekerSelectionFunction >> value: programSate [
+SeekerSelectionFunction >> value: programState [
 
 	^ self subclassResponsibility
 ]
