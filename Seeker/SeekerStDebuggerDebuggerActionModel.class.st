@@ -22,7 +22,7 @@ SeekerStDebuggerDebuggerActionModel >> clearDebugSession [
 	[ session interruptedProcess resume ]
 		on: Error
 		do: [ :e | "hide the error" ].
-	tracer notifySessionEnd.
+	tracer ifNotNil: [ tracer notifySessionEnd ].
 	super clearDebugSession
 ]
 
