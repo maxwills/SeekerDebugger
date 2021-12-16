@@ -60,14 +60,14 @@ SeekerQueriesPresenter >> applyResultFilter [
 ]
 
 { #category : #'UI specific' }
-SeekerQueriesPresenter >> executeAndShow: aQueryDisplayModel [
+SeekerQueriesPresenter >> executeAndShow: aQuery [
 
 	"aQueryDisplayModel: an instance of QueryDisplayModel"
 
 	| solver highlighBlock |
 	trimmingBlock := nil. "it is restarted to nil"
-	queryDisplayModel := aQueryDisplayModel.
-	solver := self makeDefaultQuerySolverFor: aQueryDisplayModel.
+	queryDisplayModel := aQuery displayModel.
+	solver := self makeDefaultQuerySolverFor: queryDisplayModel.
 	highlighBlock := self makeHighlightBlock.
 	queryResults := OrderedCollection new: 1000.
 
@@ -92,7 +92,7 @@ SeekerQueriesPresenter >> executeAndShow: aQueryDisplayModel [
 Set the tables columns from the ordered collection
 "
 
-	aQueryDisplayModel columns do: [ :each | 
+	queryDisplayModel columns do: [ :each | 
 		| spCol |
 		spCol := each key = #bytecodeIndex
 			         ifTrue: [ "it's a link"

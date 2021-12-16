@@ -109,11 +109,28 @@ TimeTravelingQuery >> displayModel: anObject [
 	displayModel := anObject
 ]
 
+{ #category : #execution }
+TimeTravelingQuery >> executeAndShowIn: aSeekerTracer [
+
+	"Starts a parallalel process that solves the query, while updating the UI. This method doesn't return the results"
+
+	^ aSeekerTracer executeAndShow: self
+]
+
 { #category : #initialization }
 TimeTravelingQuery >> initialize [
 
 	super initialize.
 	self ttqInitialize
+]
+
+{ #category : #execution }
+TimeTravelingQuery >> showInSeeker [
+
+	| tr |
+	tr := self findTracer.
+	tr ifNil: [ ^ self error: 'Could not detect Seeker Instance' ].
+	tr executeAndShow: self
 ]
 
 { #category : #'as yet unclassified' }

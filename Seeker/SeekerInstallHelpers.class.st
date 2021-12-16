@@ -13,6 +13,7 @@ SeekerInstallHelpers class >> enableDebuggerExtension [
 { #category : #actions }
 SeekerInstallHelpers class >> install [
 
+	<script>
 	self overrideStDebuggerActionModel.
 	self enableDebuggerExtension.
 	self overrideHandMorph.

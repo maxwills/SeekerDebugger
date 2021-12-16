@@ -138,6 +138,12 @@ SkQueryExperimentalTracer >> doAstStepPreProcessForMessageSends [
 						self recordSnapshotOfObject: messageReceiver ] ] ]
 ]
 
+{ #category : #'UI specific' }
+SkQueryExperimentalTracer >> executeAndShow: aQuery [
+
+	seeker seekerDebuggerPresenter showInResult: aQuery displayModel
+]
+
 { #category : #'object - api' }
 SkQueryExperimentalTracer >> findContextInStack [
 

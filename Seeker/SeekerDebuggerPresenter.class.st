@@ -381,7 +381,7 @@ SeekerDebuggerPresenter >> setSelectedContexAsStartingPointHandler [
 { #category : #'UI specific' }
 SeekerDebuggerPresenter >> showInResult: aQueryDisplayModel [
 
-	queriesPresenter executeAndShow: aQueryDisplayModel
+	queriesPresenter executeAndShow: aQueryDisplayModel query
 ]
 
 { #category : #'UI specific' }
@@ -522,6 +522,14 @@ SeekerDebuggerPresenter >> updatePresenter [
 			at: #seeker
 			put:
 			(WorkspaceVariable key: #seeker value: self seekerDebugger tracer).
+		code interactionModel bindings at: #currentState put: (WorkspaceVariable
+				 key: #currentState
+				 value: self seekerDebugger tracer currentStateInterface).
+		code interactionModel bindings
+			at: #programStates
+			put: (WorkspaceVariable
+					 key: #programStates
+					 value: self seekerDebugger tracer programStates).
 
 		self updateLabelOnly.
 		"	self updateEvaluatorCode."
