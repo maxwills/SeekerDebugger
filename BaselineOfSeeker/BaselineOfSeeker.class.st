@@ -17,7 +17,7 @@ BaselineOfSeeker >> baseline: spec [
 			with: [ spec repository: 'github://maxwills/mock-flex:main' ].
 		spec
 			baseline: 'QuickWrap'
-			with: [ spec repository: 'github://maxwills/quick-wrap:main' ].
+			with: [ spec repository: 'github://maxwills/quick-wrap:fixtemp' ].
 		spec postLoadDoIt: #postload:package:.
 		
 		spec
