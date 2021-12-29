@@ -9,7 +9,7 @@ Class {
 		'cachedCurrentContext',
 		'cachedTimeKey'
 	],
-	#category : #'Seeker-Tracer'
+	#category : #'Seeker-Trace'
 }
 
 { #category : #'as yet unclassified' }
