@@ -14,12 +14,16 @@ SeekerInstallHelpers class >> enableDebuggerExtension [
 SeekerInstallHelpers class >> install [
 
 	<script>
+	| authorName |
+	authorName := Author uniqueInstance fullNamePerSe.
+	Author uniqueInstance fullName: 'SeekerInstaller'.
 	self overrideStDebuggerActionModel.
 	self enableDebuggerExtension.
 	self overrideHandMorph.
 	self installQuickWrapSystem.
 	self refreshAllWrappers.
-	self installMoosePatch
+	self installMoosePatch.
+	Author uniqueInstance fullName: authorName
 ]
 
 { #category : #actions }
