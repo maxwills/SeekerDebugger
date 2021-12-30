@@ -18,7 +18,7 @@ FaultyCalculator class >> aMethod [
 { #category : #'test methods' }
 FaultyCalculator class >> aMethodToDebug [
 
-	<seekerDebug>
+	<skpDebugWithSeeker>
 	1 asString.
 	^ self aMethod
 ]
@@ -26,7 +26,7 @@ FaultyCalculator class >> aMethodToDebug [
 { #category : #'test methods' }
 FaultyCalculator class >> aMethodToDebug2 [
 
-	<seekerDebugIfKeysPressed>
+	<skpDebugWithSeekerIfKeysPressed>
 	1 asString.
 	^ self aMethod
 ]

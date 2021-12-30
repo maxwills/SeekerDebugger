@@ -30,8 +30,10 @@ SeekerMouseButtonEventSentToDebugSessionQWPCH class >> handleCompiledMethod: aMe
 
 { #category : #'as yet unclassified' }
 SeekerMouseButtonEventSentToDebugSessionQWPCH class >> handledPragma [
-
-	^ #seekerDebugMouseButtonEventSentTo
+"Don't add this to auto completion. It is only used once, and not by the debugger developer"
+	"<qwpAddPragmaToAutocompletionIn:
+	#SeekerActivePragmasAutocompletionHelper>"
+	^ #skpDebugMouseButtonEventSentTo
 ]
 
 { #category : #'as yet unclassified' }

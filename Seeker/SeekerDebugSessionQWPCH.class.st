@@ -20,5 +20,7 @@ SeekerDebugSessionQWPCH class >> handleCompiledMethod: aMethod [
 { #category : #'as yet unclassified' }
 SeekerDebugSessionQWPCH class >> handledPragma [
 
-	^ #seekerDebug
+	<qwpAddPragmaToAutocompletionIn:
+	#SeekerActivePragmasAutocompletionHelper>
+	^ #skpDebugWithSeeker
 ]

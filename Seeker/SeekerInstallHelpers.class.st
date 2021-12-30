@@ -20,6 +20,7 @@ SeekerInstallHelpers class >> install [
 	self overrideStDebuggerActionModel.
 	self enableDebuggerExtension.
 	self overrideHandMorph.
+	self overrideMouseButtonEventSendTo.
 	self installQuickWrapSystem.
 	self refreshAllWrappers.
 	self installMoosePatch.
@@ -75,6 +76,24 @@ SeekerInstallHelpers class >> overrideHandMorph [
 		                'evt := anEvent "this comment prevent a second installation". 
 		SeekerGlobals instance updateModifierKeys: anEvent.'.
 	HandMorph compile: methodSource
+
+	"(StDebugger >> #debuggerActionModel) browse"
+]
+
+{ #category : #actions }
+SeekerInstallHelpers class >> overrideMouseButtonEventSendTo [
+
+	| methodSource |
+	self flag: 'Hacky. Should be changed in the future'.
+
+	methodSource := (MouseButtonEvent >> #sentTo:) sourceCode.
+	(methodSource includesSubstring: '<skpDebugMouseButtonEventSentTo>') 
+		ifTrue: [ ^ self ].
+	methodSource := methodSource
+		                copyReplaceAll: 'type == #mouseDown'
+		                with: '<skpDebugMouseButtonEventSentTo>
+	type == #mouseDown'.
+	MouseButtonEvent compile: methodSource
 
 	"(StDebugger >> #debuggerActionModel) browse"
 ]

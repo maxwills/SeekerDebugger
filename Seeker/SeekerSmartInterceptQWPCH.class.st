@@ -26,7 +26,9 @@ SeekerSmartInterceptQWPCH class >> handleCompiledMethod: aMethod [
 { #category : #'as yet unclassified' }
 SeekerSmartInterceptQWPCH class >> handledPragma [
 
-	^ #seekerSmartIntercept
+	<qwpAddPragmaToAutocompletionIn:
+	#SeekerActivePragmasAutocompletionHelper>
+	^ #skpSmartIntercept
 ]
 
 { #category : #'as yet unclassified' }
