@@ -677,6 +677,14 @@ SeekerCurrentStateInterface >> receiverTid [
 	^ tracer getOidOf: self receiver
 ]
 
+{ #category : #initialization }
+SeekerCurrentStateInterface >> resetCacheTimeKey [
+
+	"THIS NEEDS TO BE DEFINED. OTHERWISE THE DEBUGGER WILL CRASH WHEN UNINSTALLING THE WRAPPERS!"
+
+	^ self
+]
+
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> sourceCodeOfNode [
 <superCached>
@@ -723,6 +731,14 @@ SeekerCurrentStateInterface >> tracedStatementPath [
 SeekerCurrentStateInterface >> tracedStatementStepIndex [
 
 	^ tracer tracedStatementIndex
+]
+
+{ #category : #'as yet unclassified' }
+SeekerCurrentStateInterface >> updateCacheTimeKey [
+
+	"THIS NEEDS TO BE DEFINED. OTHERWISE THE DEBUGGER WILL CRASH WHEN UNINSTALLING THE WRAPPERS!"
+
+	^ self
 ]
 
 { #category : #'as yet unclassified' }

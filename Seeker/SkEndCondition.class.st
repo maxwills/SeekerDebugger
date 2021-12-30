@@ -5,7 +5,7 @@ Class {
 		'tracer',
 		'currentState'
 	],
-	#category : #'Seeker-Tracer'
+	#category : #'Seeker-Trace'
 }
 
 { #category : #'instance creation' }

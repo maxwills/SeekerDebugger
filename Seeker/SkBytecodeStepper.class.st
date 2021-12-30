@@ -60,7 +60,7 @@ Class {
 		'skippableMethods',
 		'skipFlag'
 	],
-	#category : #'Seeker-Tracer'
+	#category : #'Seeker-Trace'
 }
 
 { #category : #mapping }

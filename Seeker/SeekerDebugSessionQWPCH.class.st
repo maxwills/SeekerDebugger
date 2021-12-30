@@ -1,11 +1,11 @@
 Class {
-	#name : #CreateKeyConditionSeekerDebugSession,
+	#name : #SeekerDebugSessionQWPCH,
 	#superclass : #QwPostCompilationHandler,
-	#category : #'Seeker-Annotations'
+	#category : #'Seeker-ActivePragmas'
 }
 
 { #category : #'as yet unclassified' }
-CreateKeyConditionSeekerDebugSession class >> handleCompiledMethod: aMethod [
+SeekerDebugSessionQWPCH class >> handleCompiledMethod: aMethod [
 
 	"This is called by the quickWrap system if the method pragmas contains the pragma of this class"
 
@@ -13,12 +13,12 @@ CreateKeyConditionSeekerDebugSession class >> handleCompiledMethod: aMethod [
 	proxy := QuickWrapMethodProxy
 		         onMethod: aMethod
 		         delegateHandler: [ SeekerSessionHelpers ]
-		         selector: #seekerKeyConditionSessionWrapper:method:arguments:.
+		         selector: #seekerSessionWrapper:method:arguments:.
 	proxy install
 ]
 
 { #category : #'as yet unclassified' }
-CreateKeyConditionSeekerDebugSession class >> handledPragma [
+SeekerDebugSessionQWPCH class >> handledPragma [
 
-	^ #seekerDebugIfKeysPressed
+	^ #seekerDebug
 ]

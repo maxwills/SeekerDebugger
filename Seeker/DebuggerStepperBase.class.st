@@ -13,7 +13,7 @@ Class {
 		'session',
 		'isSessionActive'
 	],
-	#category : #'Seeker-Tracer'
+	#category : #'Seeker-Trace'
 }
 
 { #category : #starting }

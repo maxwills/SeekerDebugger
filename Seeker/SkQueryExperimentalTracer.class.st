@@ -14,7 +14,7 @@ Class {
 		'previousReverseOidsDictionary',
 		'firstRunFlag'
 	],
-	#category : #'Seeker-Tracer'
+	#category : #'Seeker-Trace'
 }
 
 { #category : #adding }
