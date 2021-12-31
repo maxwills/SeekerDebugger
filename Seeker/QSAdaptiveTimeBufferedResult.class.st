@@ -40,7 +40,7 @@ QSAdaptiveTimeBufferedResult >> resolve [
 
 	| currentBuffer shouldEmitBuffer iterationCounter minTime maxTime  timeFormulaIterationsMin timeFormulaIterationMax |
 	minTime := 250.
-	maxTime := 1500.
+	maxTime := 1800.
 	timeFormulaIterationsMin := 1000.
 	timeFormulaIterationMax := 150000.
 	shouldEmitBuffer := false.
@@ -51,7 +51,7 @@ QSAdaptiveTimeBufferedResult >> resolve [
 			iterationCounter := iterationCounter + 1.
 			currentBuffer add: each.
 			shouldEmitBuffer ifTrue: [ 
-				bufferReadyCallback value: currentBuffer copy.
+				bufferReadyCallback value: currentBuffer copy. "This copy might be slow. try to profile this later"
 				currentBuffer := currentBuffer removeAll ].
 			shouldEmitBuffer := false ]
 		withTimedCallback: [ shouldEmitBuffer := true ]
