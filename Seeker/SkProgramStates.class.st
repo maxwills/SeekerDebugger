@@ -57,12 +57,12 @@ SkProgramStates >> do: aBlock [
 	
 	currentTracetime := tracer bytecodeIndex asExecutedBytecodeTraceTime.
 	
-	self tracer doAndUpdateSessionAfter: [ 
+	self tracer doAndUpdateSessionAfter: [ "we don't need the update after. This is just to prevent inner updates"
 		SeekerGlobals instance startQueryingFromBytecodeOne
 			ifTrue: [ tracer restartAtBytecodeOne ]
 			ifFalse: [ tracer timeTravelToUserStart ].
 
-		[ self stepWhileDoing: aBlock ] ensure: [ 
+		[ self stepAndInEachStateDo: aBlock ] ensure: [ 
 			tracer checkPreventNextTimeRestoration ifFalse: [ 
 				tracer timeTravelToTraceTime: currentTracetime ] ] ]
 ]
@@ -136,10 +136,13 @@ SkProgramStates >> resetTableTraversing [
 ]
 
 { #category : #'as yet unclassified' }
-SkProgramStates >> stepWhileDoing: aBlock [
+SkProgramStates >> stepAndInEachStateDo: aBlock [
 
 	aBlock value: csi.
-	[ tracer stepBytecode ] whileTrue: [ aBlock value: csi ]
+	"[ tracer stepBytecode ] whileTrue:"
+	tracer
+		stepBytecodeUntilConditionIsTrue: [ false ]
+		doingAfterEachStep: [ aBlock value: csi ]
 ]
 
 { #category : #accessing }
