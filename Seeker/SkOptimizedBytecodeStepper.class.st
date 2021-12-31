@@ -63,17 +63,15 @@ This will fail if the code relies on more encoders (Need to test in Pharo 9.0)"
 					startingNode := nil. "currentState node"
 					self doAstStepPreProcess.
 					"currentContext stepIntoQuickMethod: true."
-					"	currentContext := skipFlag
-					                  ifTrue: [ 
-						                  skipFlag := false.
-						                  interruptedProcess completeStep:
-							                  currentContext ]
-					                  ifFalse: [ session interruptedProcess step ]."
-
-					"Do the step"
-					currentContext := instrStream 
-						                  interpretNextSistaV1InstructionFor:
-						                  currentContext.
+					currentContext := skipFlag
+						                  ifTrue: [ 
+							                  skipFlag := false.
+							                  interruptedProcess completeStep:
+								                  currentContext ]
+						                  ifFalse: [ 
+						                  instrStream 
+							                  interpretNextSistaV1InstructionFor:
+							                  currentContext ].
 					instrStream
 						method: currentContext compiledCode
 						pc: currentContext pc.

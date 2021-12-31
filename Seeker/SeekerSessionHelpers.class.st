@@ -32,6 +32,32 @@ SeekerSessionHelpers class >> innerSeekerPragmaDebugSessionFor: aBlock withFlag:
 ]
 
 { #category : #'as yet unclassified' }
+SeekerSessionHelpers class >> innerSeekerSessionFor2: aBlock [
+
+	"Not used, but saved for later"
+
+	(OupsDebugRequest newForContext: thisContext)
+		process: Processor activeProcess;
+		label: 'SeekerDebugger Session';
+		submit.
+	aBlock value.
+	self seekerSessionEndMarker
+]
+
+{ #category : #'as yet unclassified' }
+SeekerSessionHelpers class >> innerSeekerSessionFor: aBlock [
+
+	"Not used, but saved for later"
+
+	UIManager default
+		requestDebuggerOpeningForProcess: Processor activeProcess
+		named: 'SeekerDebugger Session'
+		inContext: thisContext.
+	aBlock value.
+	self seekerSessionEndMarker
+]
+
+{ #category : #'as yet unclassified' }
 SeekerSessionHelpers class >> innerSeekerSessionFor: aBlock withFlag: aFlagBlock [
 
 	aFlagBlock value ifTrue: [ Exception new signal ].

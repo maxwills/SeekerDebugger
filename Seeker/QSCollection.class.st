@@ -10,7 +10,7 @@ QSCollection >> resolve [
 	"Triggers the solution of the query"
 
 	| resultsCollection |
-	resultsCollection := OrderedCollection new.
+	resultsCollection := OrderedCollection new: 1024.
 
 	query do: [ :item | resultsCollection add: query currentRow ].
 	^ resultsCollection
