@@ -80,7 +80,7 @@ RecursionExamples >> testContextStackSize [
 { #category : #tests }
 RecursionExamples >> testDirectRecursion [
 	|result|
-	result := self directFibonacci: 5.
+	result := self directFibonacci: 22.
 	self assert: result equals: -8
 ]
 

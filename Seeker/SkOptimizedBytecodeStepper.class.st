@@ -13,6 +13,33 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
+SkOptimizedBytecodeStepper >> AstepBytecodeUntilConditionIsTrue: aBlock [
+
+	"an optimized stepping mechanisms. Skips a lot of potentiall unnecessary code"
+
+	"In Pharo 10, current date 2021/12 there is only one class encoder. So, we directly use it to interpret instructions.
+This will fail if the code relies on more encoders (Need to test in Pharo 9.0)"
+
+	| debuggedProcess instrStream currentCtx |
+	debuggedProcess := session interruptedProcess.
+	iteratingFlag := true.
+	[ 
+	currentCtx := self currentContext.
+	instrStream := InstructionStream
+		               on: currentCtx compiledCode
+		               pc: currentCtx pc.
+	Processor activeProcess
+		evaluate: [ 
+			aBlock whileFalse: [ 
+				currentCtx := instrStream interpretNextSistaV1InstructionFor:
+					              currentCtx.
+				instrStream method: currentCtx compiledCode pc: currentCtx pc.
+				debuggedProcess suspendedContext: currentCtx ] ]
+		onBehalfOf: debuggedProcess.
+	^ true ] ensure: [ iteratingFlag := false ]
+]
+
+{ #category : #'as yet unclassified' }
 SkOptimizedBytecodeStepper >> currentContext [
 
 	^ executedBytecode == cachedCurrentContextTimeKey
