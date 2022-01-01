@@ -69,17 +69,20 @@ SeekerMouseButtonEventSentToDebugSessionQWPCH class >> seekerDebugMouseButtonEve
 	"We know the method. It is sentTo:. Just a sanity check"
 	(MouseButtonEvent methodDict at: #sentTo: ifAbsent: abort)
 		unproxifiedMethod == aMethod ifFalse: abort.
-	eventDispatcher := args first "copy".
+	eventDispatcher := args first. "copy"
 	"Might put this condition in a global"
 	mouseButtonCondition := self debugSessionCondition: receiver.
 	mouseButtonCondition
 		ifTrue: [ 
-			| targetObject |
+			| targetObject tmp newArgs |
 			targetObject := eventDispatcher morph.
 			self actAccordingToMorphType: targetObject.
+			tmp := eventDispatcher shallowCopy.
+			tmp morph: targetObject.
+			newArgs := { tmp }.
 			SeekerSessionHelpers
 				innerSeekerPragmaDebugSessionFor: [ 
-				val := receiver withArgs: args executeMethod: aMethod ]
+				val := receiver withArgs: newArgs executeMethod: aMethod ]
 				withFlag: SeekerSessionHelpers makeOnceFlag ]
 		ifFalse: [ val := receiver withArgs: args executeMethod: aMethod ].
 	^ val

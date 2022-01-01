@@ -12,6 +12,6 @@ QSCollection >> resolve [
 	| resultsCollection |
 	resultsCollection := OrderedCollection new: 1024.
 
-	query do: [ :item | resultsCollection add: query currentRow ].
+	self queryToSolve  do: [ :item | resultsCollection add: item].
 	^ resultsCollection
 ]

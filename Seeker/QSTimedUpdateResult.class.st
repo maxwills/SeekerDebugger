@@ -43,7 +43,7 @@ QSTimedUpdateResult >> resolve [
 	| currentBuffer shouldEmitBuffer |
 	shouldEmitBuffer := false.
 	currentBuffer := OrderedCollection new: 1000.
-	query
+	self queryToSolve
 		do: [ :each | 
 			currentBuffer add: each.
 			shouldEmitBuffer ifTrue: [ 

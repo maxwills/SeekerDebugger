@@ -9,6 +9,6 @@ QSCount >> resolve [
 
 	| count |
 	count := 0.
-	query do: [ :item | count := count + 1 ].
+	self queryToSolve  do: [ :item | count := count + 1 ].
 	^ count
 ]

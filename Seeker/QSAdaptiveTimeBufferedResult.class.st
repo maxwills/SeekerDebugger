@@ -46,7 +46,7 @@ QSAdaptiveTimeBufferedResult >> resolve [
 	shouldEmitBuffer := false.
 	currentBuffer := OrderedCollection new: 1000.
 	iterationCounter := 0.
-	query
+	self queryToSolve 
 		do: [ :each | 
 			iterationCounter := iterationCounter + 1.
 			currentBuffer add: each.

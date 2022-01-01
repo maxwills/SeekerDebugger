@@ -57,13 +57,13 @@ QSTimeBufferedResult >> resolve [
 	| currentBuffer shouldEmitBuffer |
 	shouldEmitBuffer := false.
 	currentBuffer := OrderedCollection new: 1000.
-	query
+	self queryToSolve
 		do: [ :each | 
 			currentBuffer add: each.
 			(shouldEmitBuffer or: [ currentBuffer size >= buffersCapacity ]) 
 				ifTrue: [ 
 					bufferReadyCallback value: currentBuffer copy.
-					currentBuffer := currentBuffer removeAll"OrderedCollection new: buffersCapacity" ].
+					currentBuffer := currentBuffer removeAll "OrderedCollection new: buffersCapacity" ].
 
 			shouldEmitBuffer := false ]
 		withTimedCallback: [ shouldEmitBuffer := true ]
