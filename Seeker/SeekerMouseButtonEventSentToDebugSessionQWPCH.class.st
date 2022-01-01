@@ -69,7 +69,7 @@ SeekerMouseButtonEventSentToDebugSessionQWPCH class >> seekerDebugMouseButtonEve
 	"We know the method. It is sentTo:. Just a sanity check"
 	(MouseButtonEvent methodDict at: #sentTo: ifAbsent: abort)
 		unproxifiedMethod == aMethod ifFalse: abort.
-	eventDispatcher := args first copy.
+	eventDispatcher := args first "copy".
 	"Might put this condition in a global"
 	mouseButtonCondition := self debugSessionCondition: receiver.
 	mouseButtonCondition
