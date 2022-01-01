@@ -109,6 +109,19 @@ SeekerWorldLiteCommands class >> menuEstebanTestCase: aBuilder [
 			(MetacelloVersionNumberTestCase >> #testApproxVersion02) browse ]
 ]
 
+{ #category : #'as yet unclassified' }
+SeekerWorldLiteCommands class >> menuOpenConfig: aBuilder [
+
+	<worldMenu>
+	(aBuilder item: #skOpenConfig)
+		parent: #SeekerDev;
+		order: 1;
+		label: 'Open SeekerDebugger Config';
+		icon: (self iconNamed: 'smallDebug');
+		help: 'Open';
+		action: [ SeekerConfigPresenter open ]
+]
+
 { #category : #menu }
 SeekerWorldLiteCommands class >> menuSeekerWarmup: aBuilder [
 

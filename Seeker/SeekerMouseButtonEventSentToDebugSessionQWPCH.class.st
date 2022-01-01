@@ -5,12 +5,27 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
+SeekerMouseButtonEventSentToDebugSessionQWPCH class >> actAccordingToMorphType: targetMorph [
+
+	targetMorph class switch
+		case: MenuMorph do: [ targetMorph stayUp: true ];
+		case: SpToggleMenuItemMorph
+			do: [ targetMorph selector: #toggleStayUp: ];
+		defaultCase: [ self inform: targetMorph class name ]
+]
+
+{ #category : #'as yet unclassified' }
 SeekerMouseButtonEventSentToDebugSessionQWPCH class >> debugSessionCondition: aMouseButtonEvent [
 
 	"returns true if the debug session should be created or not, according the the MouseButtonEvent state or global state"
 
-	^ aMouseButtonEvent type == #mouseUp and: [ 
-		  SeekerGlobals instance debugCommandKeysPressed ]
+	SeekerConfig default enableMouseButtonEventDebug ifFalse: [ ^ false ].
+	SeekerGlobals instance debugCommandKeysPressed ifFalse: [ ^ false ].
+	^ aMouseButtonEvent type switch
+		  case: #mouseUp do: [ SeekerConfig default handleMouseUpEvent ];
+		  case: #mouseDown
+		  do: [ SeekerConfig default handleMouseDownEvent ];
+		  defaultCase: false
 ]
 
 { #category : #'as yet unclassified' }
@@ -43,7 +58,7 @@ SeekerMouseButtonEventSentToDebugSessionQWPCH class >> seekerDebugMouseButtonEve
 
 	"Used for the pragma"
 
-	| val abort mouseButtonCondition |
+	| val abort mouseButtonCondition eventDispatcher |
 	abort := [ 
 	         self inform:
 		         'seekerDebugMouseButtonEventSentToWrapper aborted'.
@@ -54,17 +69,14 @@ SeekerMouseButtonEventSentToDebugSessionQWPCH class >> seekerDebugMouseButtonEve
 	"We know the method. It is sentTo:. Just a sanity check"
 	(MouseButtonEvent methodDict at: #sentTo: ifAbsent: abort)
 		unproxifiedMethod == aMethod ifFalse: abort.
+	eventDispatcher := args first copy.
 	"Might put this condition in a global"
 	mouseButtonCondition := self debugSessionCondition: receiver.
 	mouseButtonCondition
 		ifTrue: [ 
 			| targetObject |
-			targetObject := args first morph.
-			targetObject class switch
-				case: MenuMorph do: [ targetObject stayUp: true ];
-				case: SpToggleMenuItemMorph
-				do: [ targetObject selector: #toggleStayUp: ];
-				defaultCase: [ self inform: targetObject class name ].
+			targetObject := eventDispatcher morph.
+			self actAccordingToMorphType: targetObject.
 			SeekerSessionHelpers
 				innerSeekerPragmaDebugSessionFor: [ 
 				val := receiver withArgs: args executeMethod: aMethod ]

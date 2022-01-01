@@ -122,6 +122,14 @@ SeekerSessionHelpers class >> openDebugger [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerSessionHelpers class >> releasePinnedMenus [
+
+	<script>
+	(MenuMorph allInstances select: [ :m | m stayUp ]) do: [ :m | 
+		m stayUp: false ]
+]
+
+{ #category : #'as yet unclassified' }
 SeekerSessionHelpers class >> seekerKeyConditionSessionWrapper: receiver method: aMethod arguments: args [
 
 	| val |

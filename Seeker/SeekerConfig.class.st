@@ -67,3 +67,9 @@ SeekerConfig >> initialize [
 	handleMouseUpEvent := false.
 	handleMouseDownEvent := false
 ]
+
+{ #category : #'as yet unclassified' }
+SeekerConfig >> releasePinnedMenus [
+
+	SeekerSessionHelpers releasePinnedMenus
+]

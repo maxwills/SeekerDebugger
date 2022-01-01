@@ -4,7 +4,8 @@ Extension { #name : #ObjectTest }
 ObjectTest >> testSwitch [
 
 	"Usage instructions:
-1. You should use defaultCase (Not mandatory, but switch might return an unwanted block.
+1. You should use defaultCase if the return is important. (Not mandatory, but switch might return an unwanted block.
+2. The switch receiver can be a block. If it is a block, it will be evaluated when testing each case. If you want to avoid that, use the value itself as a receiver.
 "
 
 	"nominal case"

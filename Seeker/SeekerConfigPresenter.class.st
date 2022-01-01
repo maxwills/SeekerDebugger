@@ -4,7 +4,8 @@ Class {
 	#instVars : [
 		'chkEnableMouseButtonEvent',
 		'chkHandleMouseUp',
-		'chkHandleMouseDown'
+		'chkHandleMouseDown',
+		'btnReleaseMenus'
 	],
 	#category : #'Seeker-UI'
 }
@@ -20,39 +21,9 @@ SeekerConfigPresenter class >> open [
 ]
 
 { #category : #accessing }
-SeekerConfigPresenter >> chkEnableMouseButtonEvent [
+SeekerConfigPresenter >> config [
 
-	^ chkEnableMouseButtonEvent
-]
-
-{ #category : #accessing }
-SeekerConfigPresenter >> chkEnableMouseButtonEvent: anObject [
-
-	chkEnableMouseButtonEvent := anObject
-]
-
-{ #category : #accessing }
-SeekerConfigPresenter >> chkHandleMouseDown [
-
-	^ chkHandleMouseDown
-]
-
-{ #category : #accessing }
-SeekerConfigPresenter >> chkHandleMouseDown: anObject [
-
-	chkHandleMouseDown := anObject
-]
-
-{ #category : #accessing }
-SeekerConfigPresenter >> chkHandleMouseUp [
-
-	^ chkHandleMouseUp
-]
-
-{ #category : #accessing }
-SeekerConfigPresenter >> chkHandleMouseUp: anObject [
-
-	chkHandleMouseUp := anObject
+	^ SeekerConfig default
 ]
 
 { #category : #'as yet unclassified' }
@@ -62,13 +33,20 @@ SeekerConfigPresenter >> createChecksLayout [
 		  add: chkEnableMouseButtonEvent;
 		  add: chkHandleMouseUp;
 		  add: chkHandleMouseDown;
+		  add: btnReleaseMenus;
 		  yourself
+]
+
+{ #category : #'as yet unclassified' }
+SeekerConfigPresenter >> handleReleasePinnedMenus [
+
+	self config releasePinnedMenus
 ]
 
 { #category : #api }
 SeekerConfigPresenter >> initialExtent [
 
-	^ 350 @ 100
+	^ 350 @ 140
 ]
 
 { #category : #initialization }
@@ -84,6 +62,10 @@ SeekerConfigPresenter >> initializePresenters [
 	chkHandleMouseDown := self newCheckBox
 		                      label: 'Handle MouseDown events';
 		                      yourself.
+	btnReleaseMenus := self newButton
+		                   label: 'Release Pinned Menus';
+		                   action: [ self handleReleasePinnedMenus ];
+		                   yourself.
 	"self window title: 'Seeker Debugger Configuration'."
 	self updateFromConfig.
 	chkEnableMouseButtonEvent whenChangedDo: [ self updateToConfig ].
@@ -98,14 +80,16 @@ SeekerConfigPresenter >> initializePresenters [
 SeekerConfigPresenter >> updateFromConfig [
 
 	chkEnableMouseButtonEvent state:
-		SeekerConfig default enableMouseButtonEventDebug.
-	chkHandleMouseUp state: SeekerConfig default handleMouseUpEvent.
-	chkHandleMouseDown state: SeekerConfig default handleMouseDownEvent
+			self config enableMouseButtonEventDebug.
+	chkHandleMouseUp state: 	self config handleMouseUpEvent.
+	chkHandleMouseDown state: 	self config handleMouseDownEvent
 ]
 
 { #category : #'as yet unclassified' }
 SeekerConfigPresenter >> updateToConfig [
 
-	SeekerConfig default enableMouseButtonEventDebug:
-		chkEnableMouseButtonEvent state
+	self config enableMouseButtonEventDebug:
+		chkEnableMouseButtonEvent state.
+	self config handleMouseUpEvent: chkHandleMouseUp state.
+	self config handleMouseDownEvent: chkHandleMouseDown state
 ]
