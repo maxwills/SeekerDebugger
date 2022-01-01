@@ -27,7 +27,9 @@ SeekerSessionHelpers class >> debugSessionIfKeysPressed: aBlock [
 { #category : #'as yet unclassified' }
 SeekerSessionHelpers class >> innerSeekerPragmaDebugSessionFor: aBlock withFlag: aFlagBlock [
 
-	aFlagBlock value ifTrue: [ Exception new signal ].
+	aFlagBlock value ifTrue: [ 
+		UIManager default spawnNewProcessIfThisIsUI: Processor activeProcess.
+		Exception new signal ].
 	aBlock ensure: [ self seekerSessionEndMarker ]
 ]
 

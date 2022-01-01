@@ -73,6 +73,22 @@ Object class >> atSeekerAuxStorage2 [
 ]
 
 { #category : #'*Seeker' }
+Object >> case: caseBlock do: doBlock [
+
+	"used for switch case do"
+
+	^ self
+]
+
+{ #category : #'*Seeker' }
+Object >> defaultCase: aValuable [
+
+	"used for switch case do"
+
+	^ self
+]
+
+{ #category : #'*Seeker' }
 Object >> defaultSeekerCacheObjectClass [
 
 	^ SeekerCacheObject
@@ -198,4 +214,25 @@ Object >> seekMyOid [
 Object >> seekerCache [
 
 	^ SeekerCache seekerCacheObjectOf: self
+]
+
+{ #category : #'*Seeker' }
+Object >> switch [
+
+	| switchBlock selfVal found foundVal |
+	found := false.
+	foundVal := nil.
+	selfVal := self value.
+	^ switchBlock := [ :caseBlock :doBlock | 
+	                 found
+		                 ifTrue: [ foundVal ]
+		                 ifFalse: [ 
+			                 | caseVal |
+			                 caseVal := caseBlock value.
+			                 (#performDefaultCase == caseVal or: [ 
+				                  selfVal = caseVal ])
+				                 ifTrue: [ 
+					                 found := true.
+					                 foundVal := doBlock value ]
+				                 ifFalse: [ switchBlock ] ] ]
 ]

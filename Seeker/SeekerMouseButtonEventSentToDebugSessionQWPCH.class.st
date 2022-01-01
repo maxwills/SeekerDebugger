@@ -44,14 +44,27 @@ SeekerMouseButtonEventSentToDebugSessionQWPCH class >> seekerDebugMouseButtonEve
 	"Used for the pragma"
 
 	| val abort mouseButtonCondition |
-	abort := [self inform: 'seekerDebugMouseButtonEventSentToWrapper aborted'. ^ receiver withArgs: args executeMethod: aMethod ].
+	abort := [ 
+	         self inform:
+		         'seekerDebugMouseButtonEventSentToWrapper aborted'.
+	         Transcript
+		         show: 'executed A';
+		         cr.
+	         ^ receiver withArgs: args executeMethod: aMethod ].
 	"We know the method. It is sentTo:. Just a sanity check"
-	(MouseButtonEvent methodDict at: #sentTo: ifAbsent: abort) unproxifiedMethod == aMethod ifFalse: abort.
+	(MouseButtonEvent methodDict at: #sentTo: ifAbsent: abort)
+		unproxifiedMethod == aMethod ifFalse: abort.
 	"Might put this condition in a global"
-	mouseButtonCondition := self 
-		                        debugSessionCondition: receiver.
+	mouseButtonCondition := self debugSessionCondition: receiver.
 	mouseButtonCondition
 		ifTrue: [ 
+			| targetObject |
+			targetObject := args first morph.
+			targetObject class switch
+				case: MenuMorph do: [ targetObject stayUp: true ];
+				case: SpToggleMenuItemMorph
+				do: [ targetObject selector: #toggleStayUp: ];
+				defaultCase: [ self inform: targetObject class name ].
 			SeekerSessionHelpers
 				innerSeekerPragmaDebugSessionFor: [ 
 				val := receiver withArgs: args executeMethod: aMethod ]
