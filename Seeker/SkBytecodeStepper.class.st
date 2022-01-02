@@ -63,6 +63,19 @@ Class {
 	#category : #'Seeker-Trace'
 }
 
+{ #category : #'as yet unclassified' }
+SkBytecodeStepper class >> getAllMethodsOfPackageNamed: aString [
+
+	| pkg methods |
+	methods := OrderedCollection new.
+	pkg := RPackageOrganizer default packageNamed: aString.
+	"pkg definedClasses do: [ :cls | 
+		methods addAll: cls methodDictionary values ].
+	methods addAll: pkg extensionMethods."
+	methods addAll: pkg methods.
+	^ methods
+]
+
 { #category : #mapping }
 SkBytecodeStepper >> bytecodeIndex [
 
@@ -256,7 +269,20 @@ SkBytecodeStepper >> initializeSkippableMethods [
 	self flag: 'Not dangerous, but simply for speed'.
 	skippableMethods add: String >> #numArgs.
 	skippableMethods add: Form >> #unhibernate.
-	Rectangle methodDictionary valuesDo: [ :v | skippableMethods add: v ]
+	Rectangle methodDictionary valuesDo: [ :v | skippableMethods add: v ].
+
+	skippableMethods addAll:
+		(self class getAllMethodsOfPackageNamed: #Rubric).
+	skippableMethods addAll:
+		(self class getAllMethodsOfPackageNamed: 'AST-Core').
+	skippableMethods addAll:
+		(self class getAllMethodsOfPackageNamed: 'FreeType').
+	skippableMethods addAll:
+		(self class getAllMethodsOfPackageNamed: 'FreeType-Graphics').
+	skippableMethods addAll:
+		(self class getAllMethodsOfPackageNamed: 'FreeType-Morphic').
+	skippableMethods addAll:
+		(self class getAllMethodsOfPackageNamed: 'UnifiedFFI')
 ]
 
 { #category : #accessing }

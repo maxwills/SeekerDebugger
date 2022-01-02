@@ -72,10 +72,10 @@ QuerySolver class >> initialize [
 	IncludeSystemClasses := false.
 	PotentiallyExcludedSeekerClasses := IdentitySet new.
 	PotentiallyExcludedSeekerClasses addAll:
-		(RPackageOrganizer default packageNamed: #Seeker) classes.
+		(RPackageOrganizer default packageNamed: #Seeker) definedClasses.
 	PotentiallyExcludedSeekerClasses addAll:
-		(RPackageOrganizer default packageNamed: #QuickWrap) classes.
-
+		(RPackageOrganizer default packageNamed: #QuickWrap) definedClasses.
+"UnifiedFFI"
 
 	PotentiallyExcludedSystemClasses := IdentitySet new.
 	PotentiallyExcludedSystemClasses addAll: { 
@@ -85,6 +85,8 @@ QuerySolver class >> initialize [
 			SmallFloat64.
 			Float.
 			Array.
+			SortedCollection.
+			WriteStream.
 			Collection.
 			OrderedCollection.
 			Set.
@@ -92,7 +94,10 @@ QuerySolver class >> initialize [
 			CompiledMethod.
 			Rectangle.
 			Number.
-			Integer.
+			String.
+			Stream.
+
+			ByteString.
 			SmallInteger.
 			Boolean }
 ]
