@@ -258,13 +258,19 @@ SkBytecodeStepper >> initializeSkippableMethods [
 	skippableMethods add: HashedCollection >> #grow.
 	skippableMethods add: WeakKeyDictionary >> #noCheckAdd:.
 	skippableMethods add: HashedCollection >> #fullCheck.
-
+	"There is an exclussion here that modified the pragmadebug starting point. Need to chech which one"
 
 	WorldMorph methodDictionary valuesDo: [ :v | skippableMethods add: v ].
+	WorldMorph class methodDictionary valuesDo: [ :v | 
+		skippableMethods add: v ].
 	skippableMethods add: Cursor >> #show.
 	skippableMethods add: Morph >> #world.
 	skippableMethods add: Morph >> #delete.
 	skippableMethods add: WorldMorph >> #displayWorldSafely.
+	SpMorphStyle methodDictionary valuesDo: [ :v | 
+		skippableMethods add: v ].
+	SpMorphStyle class methodDictionary valuesDo: [ :v | 
+		skippableMethods add: v ].
 
 	self flag: 'Not dangerous, but simply for speed'.
 	skippableMethods add: String >> #numArgs.
