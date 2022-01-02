@@ -5,6 +5,7 @@ Class {
 		'chkEnableMouseButtonEvent',
 		'chkHandleMouseUp',
 		'chkHandleMouseDown',
+		'chkKeepMenusOpen',
 		'btnReleaseMenus'
 	],
 	#category : #'Seeker-UI'
@@ -33,6 +34,7 @@ SeekerConfigPresenter >> createChecksLayout [
 		  add: chkEnableMouseButtonEvent;
 		  add: chkHandleMouseUp;
 		  add: chkHandleMouseDown;
+		  add: chkKeepMenusOpen;
 		  add: btnReleaseMenus;
 		  yourself
 ]
@@ -54,7 +56,7 @@ SeekerConfigPresenter >> initializePresenters [
 
 	super initializePresenters.
 	chkEnableMouseButtonEvent := self newCheckBox
-		                             label: 'Enable MouseButtonEvent Debug';
+		                             label: 'Enable MouseButtonEvent debug';
 		                             yourself.
 	chkHandleMouseUp := self newCheckBox
 		                    label: 'Handle MouseUp events';
@@ -62,8 +64,11 @@ SeekerConfigPresenter >> initializePresenters [
 	chkHandleMouseDown := self newCheckBox
 		                      label: 'Handle MouseDown events';
 		                      yourself.
+	chkKeepMenusOpen := self newCheckBox
+		                    label: 'Keep menus open';
+		                    yourself.
 	btnReleaseMenus := self newButton
-		                   label: 'Release Pinned Menus';
+		                   label: 'Release pinned menus';
 		                   action: [ self handleReleasePinnedMenus ];
 		                   yourself.
 	"self window title: 'Seeker Debugger Configuration'."
@@ -71,6 +76,7 @@ SeekerConfigPresenter >> initializePresenters [
 	chkEnableMouseButtonEvent whenChangedDo: [ self updateToConfig ].
 	chkHandleMouseUp whenChangedDo: [ self updateToConfig ].
 	chkHandleMouseDown whenChangedDo: [ self updateToConfig ].
+	chkKeepMenusOpen whenChangedDo: [ self updateToConfig ].
 	self layout: (SpBoxLayout newLeftToRight
 			 add: self createChecksLayout;
 			 "		add: #checkboxExample;"yourself)
@@ -80,9 +86,10 @@ SeekerConfigPresenter >> initializePresenters [
 SeekerConfigPresenter >> updateFromConfig [
 
 	chkEnableMouseButtonEvent state:
-			self config enableMouseButtonEventDebug.
-	chkHandleMouseUp state: 	self config handleMouseUpEvent.
-	chkHandleMouseDown state: 	self config handleMouseDownEvent
+		self config enableMouseButtonEventDebug.
+	chkHandleMouseUp state: self config handleMouseUpEvent.
+	chkHandleMouseDown state: self config handleMouseDownEvent.
+	chkKeepMenusOpen state: self config keepMenusOpen
 ]
 
 { #category : #'as yet unclassified' }
@@ -91,5 +98,6 @@ SeekerConfigPresenter >> updateToConfig [
 	self config enableMouseButtonEventDebug:
 		chkEnableMouseButtonEvent state.
 	self config handleMouseUpEvent: chkHandleMouseUp state.
-	self config handleMouseDownEvent: chkHandleMouseDown state
+	self config handleMouseDownEvent: chkHandleMouseDown state.
+	self config keepMenusOpen: chkKeepMenusOpen state
 ]

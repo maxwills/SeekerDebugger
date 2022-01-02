@@ -236,10 +236,27 @@ SkBytecodeStepper >> initialize [
 { #category : #initialization }
 SkBytecodeStepper >> initializeSkippableMethods [
 
+	"The list might have methods in common with the ones excluded form the queries"
+
+	self flag:
+		'first the method that interfere with the traversal of the execution'.
+
 	skippableMethods := #identityHash senders asSet.
 	skippableMethods add: HashedCollection >> #grow.
 	skippableMethods add: WeakKeyDictionary >> #noCheckAdd:.
-	skippableMethods add: HashedCollection >> #fullCheck
+	skippableMethods add: HashedCollection >> #fullCheck.
+
+
+	WorldMorph methodDictionary valuesDo: [ :v | skippableMethods add: v ].
+	skippableMethods add: Cursor >> #show.
+	skippableMethods add: Morph >> #world.
+	skippableMethods add: Morph >> #delete.
+	skippableMethods add: WorldMorph >> #displayWorldSafely.
+
+	self flag: 'Not dangerous, but simply for speed'.
+	skippableMethods add: String >> #numArgs.
+	skippableMethods add: Form >> #unhibernate.
+	Rectangle methodDictionary valuesDo: [ :v | skippableMethods add: v ]
 ]
 
 { #category : #accessing }

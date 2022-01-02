@@ -5,16 +5,6 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
-SeekerMouseButtonEventSentToDebugSessionQWPCH class >> actAccordingToMorphType: targetMorph [
-
-	targetMorph class switch
-		case: MenuMorph do: [ targetMorph stayUp: true ];
-		case: SpToggleMenuItemMorph
-			do: [ targetMorph selector: #toggleStayUp: ];
-		defaultCase: [ self inform: targetMorph class name ]
-]
-
-{ #category : #'as yet unclassified' }
 SeekerMouseButtonEventSentToDebugSessionQWPCH class >> debugSessionCondition: aMouseButtonEvent [
 
 	"returns true if the debug session should be created or not, according the the MouseButtonEvent state or global state"
@@ -52,13 +42,35 @@ SeekerMouseButtonEventSentToDebugSessionQWPCH class >> handledPragma [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerMouseButtonEventSentToDebugSessionQWPCH class >> openDebugSessionForReceiver: receiver onMethod: aMethod eventReceiver: anEventReceiver withMorph: aMorph [
+
+	| tmp newArgs res eventCopy |
+	eventCopy := receiver shallowCopy. "maybe this copy is unnecessary"
+	eventCopy source: receiver source shallowCopy.
+	anEventReceiver isMorph
+		ifTrue: [ 
+			tmp := anEventReceiver.
+			newArgs := { tmp } ]
+		ifFalse: [ 
+			tmp := anEventReceiver shallowCopy.
+			tmp morph: aMorph.
+			newArgs := { tmp } ].
+
+	SeekerSessionHelpers
+		innerSeekerPragmaDebugSessionFor: [ 
+		res := eventCopy withArgs: newArgs executeMethod: aMethod ]
+		withFlag: SeekerSessionHelpers makeOnceFlag.
+	^ res
+]
+
+{ #category : #'as yet unclassified' }
 SeekerMouseButtonEventSentToDebugSessionQWPCH class >> seekerDebugMouseButtonEventSentToWrapper: receiver method: aMethod arguments: args [
 
 	"Creates a Seeker debug session on particular event condition"
 
 	"Used for the pragma"
 
-	| val abort mouseButtonCondition eventDispatcher |
+	| val abort mouseButtonCondition eventReceiver |
 	abort := [ 
 	         self inform:
 		         'seekerDebugMouseButtonEventSentToWrapper aborted'.
@@ -69,21 +81,32 @@ SeekerMouseButtonEventSentToDebugSessionQWPCH class >> seekerDebugMouseButtonEve
 	"We know the method. It is sentTo:. Just a sanity check"
 	(MouseButtonEvent methodDict at: #sentTo: ifAbsent: abort)
 		unproxifiedMethod == aMethod ifFalse: abort.
-	eventDispatcher := args first. "copy"
+	eventReceiver := args first. "copy"
 	"Might put this condition in a global"
 	mouseButtonCondition := self debugSessionCondition: receiver.
 	mouseButtonCondition
 		ifTrue: [ 
-			| targetObject tmp newArgs |
-			targetObject := eventDispatcher morph.
-			self actAccordingToMorphType: targetObject.
-			tmp := eventDispatcher shallowCopy.
-			tmp morph: targetObject.
-			newArgs := { tmp }.
-			SeekerSessionHelpers
-				innerSeekerPragmaDebugSessionFor: [ 
-				val := receiver withArgs: newArgs executeMethod: aMethod ]
-				withFlag: SeekerSessionHelpers makeOnceFlag ]
+			| debuggedMorph |
+			debuggedMorph := eventReceiver isMorph
+				                 ifTrue: [ eventReceiver ]
+				                 ifFalse: [ eventReceiver morph ].
+			self tryKeepingMenuOpenIfCorresponds: debuggedMorph.
+			val := self
+				       openDebugSessionForReceiver: receiver
+				       onMethod: aMethod
+				       eventReceiver: eventReceiver
+				       withMorph: debuggedMorph ]
 		ifFalse: [ val := receiver withArgs: args executeMethod: aMethod ].
 	^ val
+]
+
+{ #category : #'as yet unclassified' }
+SeekerMouseButtonEventSentToDebugSessionQWPCH class >> tryKeepingMenuOpenIfCorresponds: targetMorph [
+
+	SeekerConfig default keepMenusOpen ifFalse: [ ^ self ].
+	targetMorph class switch
+		case: MenuMorph do: [ targetMorph stayUp: true ];
+		case: SpToggleMenuItemMorph
+		do: [ targetMorph selector: #toggleStayUp: ];
+		defaultCase: [ self inform: targetMorph class name ]
 ]

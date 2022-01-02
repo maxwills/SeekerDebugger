@@ -4,7 +4,8 @@ Class {
 	#instVars : [
 		'enableMouseButtonEventDebug',
 		'handleMouseUpEvent',
-		'handleMouseDownEvent'
+		'handleMouseDownEvent',
+		'keepMenusOpen'
 	],
 	#classVars : [
 		'defaultInstance'
@@ -65,7 +66,20 @@ SeekerConfig >> initialize [
 
 	enableMouseButtonEventDebug := false.
 	handleMouseUpEvent := false.
-	handleMouseDownEvent := false
+	handleMouseDownEvent := false.
+	keepMenusOpen := false
+]
+
+{ #category : #accessing }
+SeekerConfig >> keepMenusOpen [
+
+	^ keepMenusOpen
+]
+
+{ #category : #accessing }
+SeekerConfig >> keepMenusOpen: anObject [
+
+	keepMenusOpen := anObject
 ]
 
 { #category : #'as yet unclassified' }
