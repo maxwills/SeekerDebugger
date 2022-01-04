@@ -5,9 +5,15 @@ Class {
 }
 
 { #category : #actions }
-SeekerInstallHelpers class >> enableDebuggerExtension [
+SeekerInstallHelpers class >> debuggerExtensionEnabled [
 
-	SeekerDebuggerPresenter showInDebugger: true
+	^ SeekerDebuggerPresenter showInDebugger
+]
+
+{ #category : #actions }
+SeekerInstallHelpers class >> debuggerExtensionEnabled: aBoolean [
+
+	SeekerDebuggerPresenter showInDebugger: aBoolean
 ]
 
 { #category : #actions }
@@ -18,9 +24,9 @@ SeekerInstallHelpers class >> install [
 	authorName := Author uniqueInstance fullNamePerSe.
 	Author uniqueInstance fullName: 'SeekerInstaller'.
 	self overrideStDebuggerActionModel.
-	self enableDebuggerExtension.
-	self overrideHandMorph.
-	self overrideMouseButtonEventSendTo.
+	self debuggerExtensionEnabled: true.
+	self instrumentHandMorph.
+	self instrumentMouseButtonEventSendTo.
 	self installQuickWrapSystem.
 	self refreshAllWrappers.
 	self installMoosePatch.
@@ -62,40 +68,24 @@ SeekerInstallHelpers class >> installQuickWrapSystem [
 ]
 
 { #category : #actions }
-SeekerInstallHelpers class >> overrideHandMorph [
+SeekerInstallHelpers class >> instrumentHandMorph [
 
 	"Used to capture shift and command keys"
 
-	| methodSource |
-	self flag: 'Hacky. Should be changed in the future'.
-
-	methodSource := (HandMorph  >> #handleEvent:) sourceCode.
-	methodSource := methodSource
-		                copyReplaceAll: 'evt := anEvent.'
-		                with:
-		                'evt := anEvent "this comment prevent a second installation". 
-		SeekerGlobals instance updateModifierKeys: anEvent.'.
-	HandMorph compile: methodSource
-
-	"(StDebugger >> #debuggerActionModel) browse"
+	| method |
+	method := HandMorph >> #handleEvent:.
+	(method hasPragmaNamed: #qwpWrappedBy:selector:) ifFalse: [ 
+		method addPragmaExpression:
+			'<qwpWrappedBy: #SeekerWrapperMethods selector: #handMorphHandleEventWrapper:method:arguments:>' ]
 ]
 
 { #category : #actions }
-SeekerInstallHelpers class >> overrideMouseButtonEventSendTo [
+SeekerInstallHelpers class >> instrumentMouseButtonEventSendTo [
 
-	| methodSource |
-	self flag: 'Hacky. Should be changed in the future'.
-
-	methodSource := (MouseButtonEvent >> #sentTo:) sourceCode.
-	(methodSource includesSubstring: '<skpDebugMouseButtonEventSentTo>') 
-		ifTrue: [ ^ self ].
-	methodSource := methodSource
-		                copyReplaceAll: 'type == #mouseDown'
-		                with: '<skpDebugMouseButtonEventSentTo>
-	type == #mouseDown'.
-	MouseButtonEvent compile: methodSource
-
-	"(StDebugger >> #debuggerActionModel) browse"
+	| method |
+	method := MouseButtonEvent >> #sentTo:.
+	(method hasPragmaNamed: #skpDebugMouseButtonEventSentTo) ifFalse: [ 
+		method addPragmaExpression: '<skpDebugMouseButtonEventSentTo>' ]
 ]
 
 { #category : #actions }
@@ -104,14 +94,15 @@ SeekerInstallHelpers class >> overrideStDebuggerActionModel [
 	| methodSource |
 	self flag: 'Hacky. Should be changed in the future'.
 
-	methodSource := (StDebugger >> #debuggerActionModel) sourceCode.
-	methodSource := methodSource
-		                copyReplaceAll: StDebuggerActionModel name asString
-		                with:
-		                SeekerStDebuggerDebuggerActionModel name asString.
-	StDebugger compile: methodSource
+	methodSource := 'debuggerActionModel
 
-	"(StDebugger >> #debuggerActionModel) browse"
+	^ debuggerActionModel ifNil: [ 
+		  debuggerActionModel := (self respondsTo: #instantiateDebuggerActionModel)
+			                         ifTrue: [ 
+			                         self instantiateDebuggerActionModel ]
+			                         ifFalse: [ 
+			                         StDebuggerActionModel on: self session ] ]'.
+	StDebugger compile: methodSource
 ]
 
 { #category : #'as yet unclassified' }
@@ -138,4 +129,21 @@ SeekerInstallHelpers class >> refreshSubChachedMethods [
 	"Requires QuickWrap to be installed (not just loaded)"
 
 	SubCache refreshAllMethodsCaches
+]
+
+{ #category : #actions }
+SeekerInstallHelpers class >> uninstall [
+
+	<script>
+	| authorName |
+	authorName := Author uniqueInstance fullNamePerSe.
+	Author uniqueInstance fullName: 'SeekerInstaller'.
+	"The code changes remain, although they will become inactive"
+	"self overrideStDebuggerActionModel."
+	self debuggerExtensionEnabled: false.
+	"self instrumentHandMorph.
+	self instrumentMouseButtonEventSendTo."
+	QuickWrap uninstallQuickWrapSystem.
+	"	self installMoosePatch."
+	Author uniqueInstance fullName: authorName
 ]

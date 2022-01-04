@@ -41,6 +41,22 @@ commands := (Pragma allNamed: #seekerDebuggerCodeExtensionCommand:) collect: [
 ]
 
 { #category : #'*Seeker' }
+StDebugger >> instantiateDebuggerActionModel [
+
+	| returnDefault seekerInstallHelperClass seekerActionModelClass |
+	returnDefault := [ ^ StDebuggerActionModel on: self session ].
+
+	seekerInstallHelperClass := self class environment
+		                            at: #SeekerInstallHelpers
+		                            ifAbsent: returnDefault.
+	seekerInstallHelperClass debuggerExtensionEnabled ifFalse: returnDefault.
+	seekerActionModelClass := self class environment
+		                          at: #SeekerStDebuggerDebuggerActionModel
+		                          ifAbsent: returnDefault.
+	^ seekerActionModelClass on: self session
+]
+
+{ #category : #'*Seeker' }
 StDebugger >> nodeUnderCursor [
 
 	| selectedContext methodNode caretPosition |
