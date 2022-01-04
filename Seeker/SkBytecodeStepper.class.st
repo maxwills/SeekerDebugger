@@ -261,8 +261,8 @@ SkBytecodeStepper >> initializeSkippableMethods [
 	"There is an exclussion here that modified the pragmadebug starting point. Need to chech which one"
 
 	WorldMorph methodDictionary valuesDo: [ :v | skippableMethods add: v ].
-	WorldMorph class methodDictionary valuesDo: [ :v | 
-		skippableMethods add: v ].
+	"	WorldMorph class methodDictionary valuesDo: [ :v | 
+		skippableMethods add: v ]."
 	skippableMethods add: Cursor >> #show.
 	skippableMethods add: Morph >> #world.
 	skippableMethods add: Morph >> #delete.
@@ -272,11 +272,19 @@ SkBytecodeStepper >> initializeSkippableMethods [
 	SpMorphStyle class methodDictionary valuesDo: [ :v | 
 		skippableMethods add: v ].
 
+	RPackage methodDictionary valuesDo: [ :v | skippableMethods add: v ].
+	RPackage class methodDictionary valuesDo: [ :v | 
+		skippableMethods add: v ].
 	self flag: 'Not dangerous, but simply for speed'.
 	skippableMethods add: String >> #numArgs.
 	skippableMethods add: Form >> #unhibernate.
 	Rectangle methodDictionary valuesDo: [ :v | skippableMethods add: v ].
-
+	ClyFullBrowserMorph class methodDictionary valuesDo: [ :v | 
+		skippableMethods add: v ].
+	SmalltalkImage methodDictionary valuesDo: [ :v | 
+		skippableMethods add: v ].
+	SmalltalkImage class methodDictionary valuesDo: [ :v | 
+		skippableMethods add: v ].
 	skippableMethods addAll:
 		(self class getAllMethodsOfPackageNamed: #Rubric).
 	skippableMethods addAll:
