@@ -114,6 +114,22 @@ SkBytecodeStepper >> currentContext [
 		  currentContext := session interruptedProcess suspendedContext ]
 ]
 
+{ #category : #'as yet unclassified' }
+SkBytecodeStepper >> currentStack [
+
+	"inspect this to debug in case of Seeker failure"
+
+	^ self currentStateInterface context stack
+]
+
+{ #category : #'as yet unclassified' }
+SkBytecodeStepper >> currentStackMethods [
+
+	"inspect this to debug in case of Seeker failure"
+
+	^ self currentStack collect: [ :c | c method ]
+]
+
 { #category : #accessing }
 SkBytecodeStepper >> currentStateInterface [
 
@@ -266,10 +282,25 @@ SkBytecodeStepper >> initializeSkippableMethods [
 	skippableMethods add: Cursor >> #show.
 	skippableMethods add: Morph >> #world.
 	skippableMethods add: Morph >> #delete.
+	skippableMethods add: Morph >> #invalidRect:.
+	skippableMethods add: Morph >> #fillStyle:.
 	skippableMethods add: WorldMorph >> #displayWorldSafely.
 	SpMorphStyle methodDictionary valuesDo: [ :v | 
 		skippableMethods add: v ].
 	SpMorphStyle class methodDictionary valuesDo: [ :v | 
+		skippableMethods add: v ].
+
+	Announcer methodDictionary valuesDo: [ :v | skippableMethods add: v ].
+	Announcer class methodDictionary valuesDo: [ :v | 
+		skippableMethods add: v ].
+
+	MorphicRenderLoop methodDictionary valuesDo: [ :v | 
+		skippableMethods add: v ].
+	MorphicRenderLoop class methodDictionary valuesDo: [ :v | 
+		skippableMethods add: v ].
+	ClyQueryViewMorph methodDictionary valuesDo: [ :v | 
+		skippableMethods add: v ].
+	ClyQueryViewMorph class methodDictionary valuesDo: [ :v | 
 		skippableMethods add: v ].
 
 	RPackage methodDictionary valuesDo: [ :v | skippableMethods add: v ].

@@ -74,9 +74,6 @@ SeekerMouseButtonEventSentToDebugSessionQWPCH class >> seekerDebugMouseButtonEve
 	abort := [ 
 	         self inform:
 		         'seekerDebugMouseButtonEventSentToWrapper aborted'.
-	         Transcript
-		         show: 'executed A';
-		         cr.
 	         ^ receiver withArgs: args executeMethod: aMethod ].
 	"We know the method. It is sentTo:. Just a sanity check"
 	(MouseButtonEvent methodDict at: #sentTo: ifAbsent: abort)
