@@ -621,6 +621,20 @@ SkBytecodeStepper >> stepBytecode [
 	^ true
 ]
 
+{ #category : #'debug - stepping' }
+SkBytecodeStepper >> stepBytecodeAccountingInstrumentation [
+
+	| canContinue |
+	canContinue := self stepBytecode.
+	SeekerConfig default autoInstrumentationStepping ifFalse: [ 
+		^ canContinue ].
+	canContinue ifFalse: [ ^ false ].
+	(self stepBytecodeUntilConditionIsTrue: [ 
+		 (instrumentedMethods includes: currentState method) not ]) 
+		ifFalse: [ ^ false ].
+	^ true
+]
+
 { #category : #'as yet unclassified' }
 SkBytecodeStepper >> stepBytecodeToExecutionEnd [
 
@@ -646,6 +660,25 @@ TODO: Add error management. There are two kind, one from the executed code, and 
 	iteratingFlag := true.
 	[ 
 	aBlock whileFalse: [ self stepBytecode ifFalse: [ ^ false ] ].
+	^ true ] ensure: [ iteratingFlag := false ]
+]
+
+{ #category : #'as yet unclassified' }
+SkBytecodeStepper >> stepBytecodeUntilConditionIsTrueAccountingInstrumentation: aBlock [
+
+	"Steps the AST. No skipping. No recording. No Updates
+TODO: Add error management. There are two kind, one from the executed code, and the other is from the debugger code"
+
+	"aBlock
+		whileFalseAlt: [ self stepBytecode ifFalse: [ ^ false ] ]
+		lvl: 8."
+
+	iteratingFlag := true.
+	[ 
+	[ 
+	aBlock value and: [ 
+		(instrumentedMethods includes: currentState method) not ] ] whileFalse: [ 
+		self stepBytecode ifFalse: [ ^ false ] ].
 	^ true ] ensure: [ iteratingFlag := false ]
 ]
 

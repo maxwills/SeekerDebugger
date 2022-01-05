@@ -50,7 +50,7 @@ SkMapAlgoPragmaDebugSession >> mapExecution [
 	mapper isMapped: true.
 	"Now, time traveling is enabled"
 	tracer timeTravelToUserStart.
-
+	"tracer stDebugger proceedDebugSession."
 	^ true
 ]
 

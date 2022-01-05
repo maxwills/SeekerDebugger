@@ -9,6 +9,7 @@ SeekerMouseButtonEventSentToDebugSessionQWPCH class >> debugSessionCondition: aM
 
 	"returns true if the debug session should be created or not, according the the MouseButtonEvent state or global state"
 
+	<seekerInstrumentation: #stepToSender>
 	SeekerConfig default enableMouseButtonEventDebug ifFalse: [ ^ false ].
 	SeekerGlobals instance debugCommandKeysPressed ifFalse: [ ^ false ].
 	^ aMouseButtonEvent type switch
@@ -44,6 +45,7 @@ SeekerMouseButtonEventSentToDebugSessionQWPCH class >> handledPragma [
 { #category : #'as yet unclassified' }
 SeekerMouseButtonEventSentToDebugSessionQWPCH class >> openDebugSessionForReceiver: receiver onMethod: aMethod eventReceiver: anEventReceiver withMorph: aMorph [
 
+	<seekerInstrumentation: #stepToOtherContext>
 	| tmp newArgs res eventCopy |
 	eventCopy := receiver shallowCopy. "maybe this copy is unnecessary"
 	eventCopy source: receiver source shallowCopy.
@@ -70,7 +72,13 @@ SeekerMouseButtonEventSentToDebugSessionQWPCH class >> seekerDebugMouseButtonEve
 
 	"Used for the pragma"
 
-	| val abort mouseButtonCondition eventReceiver |
+	<seekerInstrumentation: #stepToOtherContext>
+	| abort nonInstrumentedDoAndReturn sk val mouseButtonCondition eventReceiver |
+	nonInstrumentedDoAndReturn := [ 
+	                              ^ receiver
+		                                withArgs: args
+		                                executeMethod: aMethod ].
+
 	abort := [ 
 	         self inform:
 		         'seekerDebugMouseButtonEventSentToWrapper aborted'.
@@ -83,23 +91,34 @@ SeekerMouseButtonEventSentToDebugSessionQWPCH class >> seekerDebugMouseButtonEve
 	mouseButtonCondition := self debugSessionCondition: receiver.
 	mouseButtonCondition
 		ifTrue: [ 
-			| debuggedMorph |
-			debuggedMorph := eventReceiver isMorph
-				                 ifTrue: [ eventReceiver ]
-				                 ifFalse: [ eventReceiver morph ].
-			self tryKeepingMenuOpenIfCorresponds: debuggedMorph.
-			val := self
-				       openDebugSessionForReceiver: receiver
-				       onMethod: aMethod
-				       eventReceiver: eventReceiver
-				       withMorph: debuggedMorph ]
-		ifFalse: [ val := receiver withArgs: args executeMethod: aMethod ].
-	^ val
+			| doBlock |
+			doBlock := [ 
+			           | debuggedMorph |
+			           debuggedMorph := eventReceiver isMorph
+				                            ifTrue: [ eventReceiver ]
+				                            ifFalse: [ eventReceiver morph ].
+			           "debuggedMorph := debuggedMorph shallowCopy."
+
+			           self tryKeepingMenuOpenIfCorresponds: debuggedMorph.
+			           "debuggedMorph := debuggedMorph shallowCopy."
+			           val := self
+				                  openDebugSessionForReceiver: receiver
+				                  onMethod: aMethod
+				                  eventReceiver: eventReceiver
+				                  withMorph: debuggedMorph.
+			           ^ val ].
+			sk := Processor activeProcess findSeeker.
+			sk ifNil: doBlock ifNotNil: [ 
+				sk tracer inMouseButtonEventInstrumentationFlag ifTrue:
+					nonInstrumentedDoAndReturn.
+				sk tracer doMouseButtonEventInstrumentedBlockOnce: doBlock ] ]
+		ifFalse: nonInstrumentedDoAndReturn
 ]
 
 { #category : #'as yet unclassified' }
 SeekerMouseButtonEventSentToDebugSessionQWPCH class >> tryKeepingMenuOpenIfCorresponds: targetMorph [
 
+	<seekerInstrumentation: #stepToSender>
 	SeekerConfig default keepMenusOpen ifFalse: [ ^ self ].
 	targetMorph class switch
 		case: MenuMorph do: [ targetMorph stayUp: true ];

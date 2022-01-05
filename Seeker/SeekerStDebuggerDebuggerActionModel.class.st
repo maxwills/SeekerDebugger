@@ -34,7 +34,7 @@ SeekerStDebuggerDebuggerActionModel >> doStepToFirstInterestingBytecode [
 	"returns false if the end of the execution is reached"
 
 	tracer stepBytecode ifFalse: [ ^ false ].
-	^ tracer stepBytecodeUntilConditionIsTrue: [ 
+	^ tracer stepBytecodeUntilConditionIsTrueAccountingInstrumentation: [ 
 		  currentState aboutToSwitchContext ]
 ]
 

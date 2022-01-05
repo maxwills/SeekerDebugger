@@ -452,7 +452,7 @@ SeekerDebuggerPresenter >> stepIntoHandler [
 	"Called when pressing the icon in the toolbar"
 
 	self doAndUpdateSessionAfter: [ "self seekerDebugger tracer pushNavigationHistory." 
-		self seekerDebugger tracer stepBytecode ]
+		self seekerDebugger tracer stepBytecodeAccountingInstrumentation ]
 ]
 
 { #category : #'event handling' }

@@ -11,7 +11,9 @@ Class {
 	#instVars : [
 		'seeker',
 		'session',
-		'isSessionActive'
+		'isSessionActive',
+		'inMouseButtonEventInstrumentationFlag',
+		'instrumentedMethods'
 	],
 	#category : #'Seeker-Tracing'
 }
@@ -25,10 +27,48 @@ DebuggerStepperBase >> andThen [
 	^ self
 ]
 
+{ #category : #'as yet unclassified' }
+DebuggerStepperBase >> doMouseButtonEventInstrumentedBlockOnce: aBlock [
+
+	| oldVal |
+	oldVal := inMouseButtonEventInstrumentationFlag.
+	inMouseButtonEventInstrumentationFlag := true.
+
+	aBlock ensure: [ inMouseButtonEventInstrumentationFlag := oldVal ]
+]
+
+{ #category : #accessing }
+DebuggerStepperBase >> inMouseButtonEventInstrumentationFlag [
+
+	^ inMouseButtonEventInstrumentationFlag
+]
+
+{ #category : #accessing }
+DebuggerStepperBase >> inMouseButtonEventInstrumentationFlag: anObject [
+
+	^ inMouseButtonEventInstrumentationFlag := anObject
+]
+
 { #category : #initialization }
 DebuggerStepperBase >> initialize [
 
-	isSessionActive := true
+	isSessionActive := true.
+	inMouseButtonEventInstrumentationFlag := false.
+	self initializeInstrumentedMethods
+]
+
+{ #category : #initialization }
+DebuggerStepperBase >> initializeInstrumentedMethods [
+
+	instrumentedMethods := Set new.
+
+	instrumentedMethods addAll:
+		((Pragma fullListOfAllNamed: #seekerInstrumentation:) collect: [ :p | 
+			 p method ]).
+	instrumentedMethods addAll:
+		QuickWrapMethodProxy allSubclasses methodDictionary values.
+	instrumentedMethods addAll:
+		QuickWrapMethodProxy methodDictionary values
 ]
 
 { #category : #'as yet unclassified' }

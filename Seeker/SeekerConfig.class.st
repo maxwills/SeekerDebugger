@@ -7,7 +7,8 @@ Class {
 		'handleMouseDownEvent',
 		'keepMenusOpen',
 		'restorationEnabled',
-		'recordingEnabled'
+		'recordingEnabled',
+		'autoInstrumentationStepping'
 	],
 	#classVars : [
 		'defaultInstance'
@@ -25,6 +26,18 @@ SeekerConfig class >> default [
 SeekerConfig class >> initialize [
 
 	defaultInstance := self new
+]
+
+{ #category : #accessing }
+SeekerConfig >> autoInstrumentationStepping [
+
+	^ autoInstrumentationStepping
+]
+
+{ #category : #accessing }
+SeekerConfig >> autoInstrumentationStepping: anObject [
+
+	autoInstrumentationStepping := anObject
 ]
 
 { #category : #accessing }
@@ -71,7 +84,8 @@ SeekerConfig >> initialize [
 	handleMouseDownEvent := false.
 	keepMenusOpen := false.
 	restorationEnabled := false.
-	recordingEnabled := false
+	recordingEnabled := false.
+	autoInstrumentationStepping := true
 ]
 
 { #category : #accessing }
