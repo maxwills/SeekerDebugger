@@ -66,7 +66,8 @@ DebuggerStepperBase >> initializeInstrumentedMethods [
 		((Pragma fullListOfAllNamed: #seekerInstrumentation:) collect: [ :p | 
 			 p method ]).
 	instrumentedMethods addAll:
-		QuickWrapMethodProxy allSubclasses methodDictionary values.
+		(QuickWrapMethodProxy allSubclasses do: [ :s | 
+			 s methodDictionary values ]).
 	instrumentedMethods addAll:
 		QuickWrapMethodProxy methodDictionary values
 ]
