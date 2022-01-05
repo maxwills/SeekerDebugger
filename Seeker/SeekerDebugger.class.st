@@ -85,6 +85,21 @@ SeekerDebugger >> currentContext [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerDebugger >> doUnsafeCode: aBlock [
+
+	"Catch exceptions and log them. Should be used in methods that are called when initializing the debugger to
+prevent being unable to debug anything in case of failure
+"
+
+	aBlock onErrorDo: [ :e | 
+		Transcript
+			show: 'SeekerDebugger>>doUnsafeCode: ';
+			cr;
+			show: e asString;
+			cr ]
+]
+
+{ #category : #'as yet unclassified' }
 SeekerDebugger >> evaluateExpression: aStream inContext: aContext [
    "Evaluates the expression coming from a stream. Uses the current context of the StDebugger"
    ^ aContext receiver class compiler
@@ -111,13 +126,14 @@ SeekerDebugger >> evaluateExpression: aString inContext: aContext throws: anErro
 { #category : #initialization }
 SeekerDebugger >> initialize [
 
-	instanceNumberTotal ifNil: [ instanceNumberTotal := 0 ].
-	instanceNumberTotal := instanceNumberTotal + 1.
-	instanceNumber := instanceNumberTotal.
-	plugins := OrderedCollection new.
-	SeekerCache reset.
-	super initialize.
-	self initializePlugins
+	self doUnsafeCode: [ 
+		instanceNumberTotal ifNil: [ instanceNumberTotal := 0 ].
+		instanceNumberTotal := instanceNumberTotal + 1.
+		instanceNumber := instanceNumberTotal.
+		plugins := OrderedCollection new.
+		SeekerCache reset.
+		super initialize.
+		self initializePlugins ]
 ]
 
 { #category : #initialization }
