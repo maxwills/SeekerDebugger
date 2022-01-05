@@ -1,7 +1,7 @@
 Class {
 	#name : #SkEndImmediately,
 	#superclass : #SkEndCondition,
-	#category : #'Seeker-Trace'
+	#category : #'Seeker-Tracing'
 }
 
 { #category : #testing }

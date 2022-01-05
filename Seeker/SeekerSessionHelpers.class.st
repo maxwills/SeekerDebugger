@@ -28,7 +28,7 @@ SeekerSessionHelpers class >> debugSessionIfKeysPressed: aBlock [
 SeekerSessionHelpers class >> innerSeekerPragmaDebugSessionFor: aBlock withFlag: aFlagBlock [
 
 	aFlagBlock value ifTrue: [ 
-		UIManager default spawnNewProcessIfThisIsUI: Processor activeProcess.
+		"UIManager default spawnNewProcessIfThisIsUI: Processor activeProcess."
 		Exception new signal ].
 	aBlock ensure: [ self seekerSessionEndMarker ]
 ]

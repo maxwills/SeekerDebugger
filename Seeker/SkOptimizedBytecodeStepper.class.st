@@ -9,7 +9,7 @@ Class {
 		'cachedCurrentContext',
 		'cachedTimeKey'
 	],
-	#category : #'Seeker-Trace'
+	#category : #'Seeker-Tracing'
 }
 
 { #category : #'as yet unclassified' }
@@ -66,7 +66,7 @@ This will fail if the code relies on more encoders (Need to test in Pharo 9.0)"
 					currentContext := skipFlag
 						                  ifTrue: [ 
 							                  skipFlag := false.
-							                  interruptedProcess completeStep:
+							                  debuggedProcess completeStep:
 								                  currentContext ]
 						                  ifFalse: [ 
 						                  instrStream 
@@ -185,7 +185,7 @@ This will fail if the code relies on more encoders (Need to test in Pharo 9.0)"
 					currentContext := skipFlag
 						                  ifTrue: [ 
 							                  skipFlag := false.
-							                  interruptedProcess completeStep:
+							                  debuggedProcess completeStep:
 								                  currentContext ]
 						                  ifFalse: [ 
 						                  instrStream 

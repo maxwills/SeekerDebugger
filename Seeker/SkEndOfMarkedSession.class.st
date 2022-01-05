@@ -1,7 +1,7 @@
 Class {
 	#name : #SkEndOfMarkedSession,
 	#superclass : #SkEndCondition,
-	#category : #'Seeker-Trace'
+	#category : #'Seeker-Tracing'
 }
 
 { #category : #'as yet unclassified' }

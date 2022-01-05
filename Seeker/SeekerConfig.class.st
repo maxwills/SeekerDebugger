@@ -5,7 +5,9 @@ Class {
 		'enableMouseButtonEventDebug',
 		'handleMouseUpEvent',
 		'handleMouseDownEvent',
-		'keepMenusOpen'
+		'keepMenusOpen',
+		'restorationEnabled',
+		'recordingEnabled'
 	],
 	#classVars : [
 		'defaultInstance'
@@ -67,7 +69,9 @@ SeekerConfig >> initialize [
 	enableMouseButtonEventDebug := false.
 	handleMouseUpEvent := false.
 	handleMouseDownEvent := false.
-	keepMenusOpen := false
+	keepMenusOpen := false.
+	restorationEnabled := false.
+	recordingEnabled := false
 ]
 
 { #category : #accessing }
@@ -82,8 +86,32 @@ SeekerConfig >> keepMenusOpen: anObject [
 	keepMenusOpen := anObject
 ]
 
+{ #category : #accessing }
+SeekerConfig >> recordingEnabled [
+
+	^ recordingEnabled
+]
+
+{ #category : #accessing }
+SeekerConfig >> recordingEnabled: anObject [
+
+	recordingEnabled := anObject
+]
+
 { #category : #'as yet unclassified' }
 SeekerConfig >> releasePinnedMenus [
 
 	SeekerSessionHelpers releasePinnedMenus
+]
+
+{ #category : #accessing }
+SeekerConfig >> restorationEnabled [
+
+	^ restorationEnabled
+]
+
+{ #category : #accessing }
+SeekerConfig >> restorationEnabled: anObject [
+
+	restorationEnabled := anObject
 ]

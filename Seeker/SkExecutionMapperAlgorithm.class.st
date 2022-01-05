@@ -6,7 +6,7 @@ Class {
 		'currentState',
 		'mapper'
 	],
-	#category : #'Seeker-Trace'
+	#category : #'Seeker-Tracing'
 }
 
 { #category : #testing }

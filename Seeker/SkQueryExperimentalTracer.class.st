@@ -14,7 +14,7 @@ Class {
 		'previousReverseOidsDictionary',
 		'firstRunFlag'
 	],
-	#category : #'Seeker-Trace'
+	#category : #'Seeker-Tracing'
 }
 
 { #category : #adding }
@@ -87,6 +87,7 @@ SkQueryExperimentalTracer >> doAstStepPreProcess [
 SkQueryExperimentalTracer >> doAstStepPreProcessForAssignments [
 
 	| variable |
+	self isRecordingEnabled ifFalse: [ ^ self ].
 	"the current node is an assignment node"
 	variable := currentState node variable variable.
 	"putting the tracing for restoration (of assignments)logic here"
@@ -256,6 +257,7 @@ SkQueryExperimentalTracer >> recordChangeForReceiver: anObject ofVar: aVariable 
 	"Note that this method stores only the first change of a variable."
 
 	| variablesChangesOfReceiver |
+	self isRecordingEnabled ifFalse: [ ^ self ].
 	variablesChangesOfReceiver := storedNonLocalChangesDictionary
 		                              at: anObject
 		                              ifAbsentPut: [ Dictionary new ].
@@ -263,7 +265,8 @@ SkQueryExperimentalTracer >> recordChangeForReceiver: anObject ofVar: aVariable 
 		| varValue varName |
 		varName := aVariable name.
 		varValue := aVariable readInContext: aContext.
-		(executionMappper isMappedForDoIt and: [ aVariable isWorkspaceVariable ])
+		(executionMappper isMappedForDoIt and: [ 
+			 aVariable isWorkspaceVariable ])
 			ifTrue: [ 
 				[ 
 				aVariable write: varValue inContext: executionMappper doItContext "I used the stored doItContext, because I don't know how to make the assignment without that context reference" ] ]
@@ -277,6 +280,7 @@ SkQueryExperimentalTracer >> recordSnapshotOfObject: anObject [
 	"Note that this method stores only the first change of a variable."
 
 	| variablesChangesOfReceiver |
+	self isRecordingEnabled ifFalse: [ ^ self ].
 	variablesChangesOfReceiver := storedNonLocalChangesDictionary
 		                              at: anObject
 		                              ifAbsentPut: [ Dictionary new ].
@@ -345,6 +349,7 @@ SkQueryExperimentalTracer >> restoreNonLocalChanges [
 
 	"in this implementation we only store the first changes to a variable of an object. In theory, the order they are restored is not important"
 
+	self isRestorationEnabled ifFalse: [ ^ self ].
 	storedNonLocalChangesDictionary valuesDo: [ :variablesAndUndoBlocks | 
 		variablesAndUndoBlocks valuesDo: [ :undoB | undoB value ] ]
 ]

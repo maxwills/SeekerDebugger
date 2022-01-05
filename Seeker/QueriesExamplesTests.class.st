@@ -1,6 +1,9 @@
 Class {
 	#name : #QueriesExamplesTests,
 	#superclass : #TestCase,
+	#instVars : [
+		'prop1'
+	],
 	#category : #'Seeker-BugCollection-Tests'
 }
 

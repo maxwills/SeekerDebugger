@@ -1,7 +1,7 @@
 Class {
 	#name : #SkMapAlgoMarkedSession,
 	#superclass : #SkExecutionMapperAlgorithm,
-	#category : #'Seeker-Trace'
+	#category : #'Seeker-Tracing'
 }
 
 { #category : #testing }

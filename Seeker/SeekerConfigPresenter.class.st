@@ -6,7 +6,9 @@ Class {
 		'chkHandleMouseUp',
 		'chkHandleMouseDown',
 		'chkKeepMenusOpen',
-		'btnReleaseMenus'
+		'btnReleaseMenus',
+		'chkRecordingEnabled',
+		'chkRestorationEnabled'
 	],
 	#category : #'Seeker-UI'
 }
@@ -28,6 +30,14 @@ SeekerConfigPresenter >> config [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerConfigPresenter >> createCheckbox: label [
+
+	^ self newCheckBox
+		  label: label;
+		  yourself
+]
+
+{ #category : #'as yet unclassified' }
 SeekerConfigPresenter >> createChecksLayout [
 
 	^ SpBoxLayout newTopToBottom
@@ -35,6 +45,8 @@ SeekerConfigPresenter >> createChecksLayout [
 		  add: chkHandleMouseUp;
 		  add: chkHandleMouseDown;
 		  add: chkKeepMenusOpen;
+		  add: chkRecordingEnabled;
+		  add: chkRestorationEnabled;
 		  add: btnReleaseMenus;
 		  yourself
 ]
@@ -48,35 +60,38 @@ SeekerConfigPresenter >> handleReleasePinnedMenus [
 { #category : #api }
 SeekerConfigPresenter >> initialExtent [
 
-	^ 350 @ 140
+	^ 350 @ 200
 ]
 
 { #category : #initialization }
 SeekerConfigPresenter >> initializePresenters [
 
+	| checkboxes |
+	checkboxes := OrderedCollection new.
 	super initializePresenters.
-	chkEnableMouseButtonEvent := self newCheckBox
-		                             label: 'Enable MouseButtonEvent debug';
-		                             yourself.
-	chkHandleMouseUp := self newCheckBox
-		                    label: 'Handle MouseUp events';
-		                    yourself.
-	chkHandleMouseDown := self newCheckBox
-		                      label: 'Handle MouseDown events';
-		                      yourself.
-	chkKeepMenusOpen := self newCheckBox
-		                    label: 'Keep menus open';
-		                    yourself.
+	chkEnableMouseButtonEvent := self createCheckbox:
+		                             'Enable MouseButtonEvent debug'.
+
+	chkHandleMouseUp := checkboxes add:
+		                    (self createCheckbox: 'Handle MouseUp events').
+	chkHandleMouseDown := checkboxes add:
+		                      (self createCheckbox:
+			                       'Handle MouseDown events').
+	chkKeepMenusOpen := checkboxes add:
+		                    (self createCheckbox: 'Keep menus open').
+	chkRecordingEnabled := checkboxes add:
+		                       (checkboxes add:
+			                        (self createCheckbox: 'Recording enabled')).
+	chkRestorationEnabled := checkboxes add:
+		                         (self createCheckbox: 'Restoration enabled').
 	btnReleaseMenus := self newButton
 		                   label: 'Release pinned menus';
 		                   action: [ self handleReleasePinnedMenus ];
 		                   yourself.
+
 	"self window title: 'Seeker Debugger Configuration'."
 	self updateFromConfig.
-	chkEnableMouseButtonEvent whenChangedDo: [ self updateToConfig ].
-	chkHandleMouseUp whenChangedDo: [ self updateToConfig ].
-	chkHandleMouseDown whenChangedDo: [ self updateToConfig ].
-	chkKeepMenusOpen whenChangedDo: [ self updateToConfig ].
+	checkboxes do: [ :each | each whenChangedDo: [ self updateToConfig ] ].
 	self layout: (SpBoxLayout newLeftToRight
 			 add: self createChecksLayout;
 			 "		add: #checkboxExample;"yourself)
@@ -89,7 +104,9 @@ SeekerConfigPresenter >> updateFromConfig [
 		self config enableMouseButtonEventDebug.
 	chkHandleMouseUp state: self config handleMouseUpEvent.
 	chkHandleMouseDown state: self config handleMouseDownEvent.
-	chkKeepMenusOpen state: self config keepMenusOpen
+	chkKeepMenusOpen state: self config keepMenusOpen.
+	chkRecordingEnabled state: self config recordingEnabled.
+	chkRestorationEnabled state: self config restorationEnabled
 ]
 
 { #category : #'as yet unclassified' }
@@ -99,5 +116,7 @@ SeekerConfigPresenter >> updateToConfig [
 		chkEnableMouseButtonEvent state.
 	self config handleMouseUpEvent: chkHandleMouseUp state.
 	self config handleMouseDownEvent: chkHandleMouseDown state.
-	self config keepMenusOpen: chkKeepMenusOpen state
+	self config keepMenusOpen: chkKeepMenusOpen state.
+	self config restorationEnabled: chkKeepMenusOpen state.
+	self config recordingEnabled: chkKeepMenusOpen state
 ]

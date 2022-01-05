@@ -12,7 +12,7 @@ Class {
 		'userStartTraceTime',
 		'mappingAlgorithm'
 	],
-	#category : #'Seeker-Trace'
+	#category : #'Seeker-Tracing'
 }
 
 { #category : #'instance creation' }

@@ -4,7 +4,7 @@ Class {
 	#instVars : [
 		'endTraceTime'
 	],
-	#category : #'Seeker-Trace'
+	#category : #'Seeker-Tracing'
 }
 
 { #category : #accessing }

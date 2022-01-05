@@ -41,12 +41,10 @@ Class {
 	#superclass : #DebuggerStepperBase,
 	#instVars : [
 		'stDebugger',
-		'trace',
 		'currentStepIndex',
 		'astStepCounter',
 		'maxExecutedBytecode',
 		'stepBC',
-		'interruptedProcess',
 		'currentContext',
 		'currentTraceTimeReference',
 		'contextJumpCount',
@@ -58,9 +56,10 @@ Class {
 		'currentState',
 		'executionMappper',
 		'skippableMethods',
-		'skipFlag'
+		'skipFlag',
+		'debuggedProcess'
 	],
-	#category : #'Seeker-Trace'
+	#category : #'Seeker-Tracing'
 }
 
 { #category : #'as yet unclassified' }
@@ -140,6 +139,12 @@ SkBytecodeStepper >> currentStateInterface [
 SkBytecodeStepper >> currentStatementNode [
 
 	^ currentState node statementNode
+]
+
+{ #category : #accessing }
+SkBytecodeStepper >> debuggedProcess [
+
+	^ debuggedProcess
 ]
 
 { #category : #'as yet unclassified' }
@@ -331,15 +336,15 @@ SkBytecodeStepper >> initializeSkippableMethods [
 ]
 
 { #category : #accessing }
-SkBytecodeStepper >> interruptedProcess [ 
-	^interruptedProcess 
+SkBytecodeStepper >> interruptedProcess [
 
+	^ debuggedProcess
 ]
 
 { #category : #accessing }
 SkBytecodeStepper >> interruptedProcess: anObject [
 
-	interruptedProcess := anObject
+	debuggedProcess := anObject
 ]
 
 { #category : #testing }
@@ -349,7 +354,7 @@ SkBytecodeStepper >> isExecutionFinished [
 
 	^ executionMappper isEndReached or: [ 
 		  currentState context sender isNil or: [ 
-			  currentState isDead or: [ interruptedProcess isTerminating ] ] ]
+			  currentState isDead or: [ debuggedProcess isTerminating ] ] ]
 ]
 
 { #category : #testing }
@@ -362,6 +367,22 @@ SkBytecodeStepper >> isMapped [
 SkBytecodeStepper >> isQuickMapAvailable [
 
 	^ executionMappper isQuickMapAvailable
+]
+
+{ #category : #accessing }
+SkBytecodeStepper >> isRecordingEnabled [
+
+	"Not stored value"
+
+	^ SeekerConfig default recordingEnabled
+]
+
+{ #category : #accessing }
+SkBytecodeStepper >> isRestorationEnabled [
+
+	"Not stored value"
+
+	^ SeekerConfig default restorationEnabled
 ]
 
 { #category : #testing }
@@ -586,7 +607,7 @@ SkBytecodeStepper >> stepBytecode [
 	currentContext := skipFlag
 		                  ifTrue: [ 
 			                  skipFlag := false.
-			                  interruptedProcess completeStep: currentContext ]
+			                  debuggedProcess completeStep: currentContext ]
 		                  ifFalse: [ session interruptedProcess step ].
 
 	executedBytecode := executedBytecode + 1.
