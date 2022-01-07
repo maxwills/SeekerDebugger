@@ -1,6 +1,8 @@
 Class {
 	#name : #FaultyCalculator,
 	#superclass : #Object,
+	#traits : '#juaning asAutoProperty + #asd asAutoProperty',
+	#classTraits : '#juaning asAutoProperty classTrait + #asd asAutoProperty classTrait',
 	#category : #'Seeker-BugCollection-Tests'
 }
 
