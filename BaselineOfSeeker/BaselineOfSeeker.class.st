@@ -13,6 +13,9 @@ BaselineOfSeeker >> baseline: spec [
 			baseline: 'AutoType'
 			with: [ spec repository: 'github://maxwills/auto-type:main' ].
 		spec
+			baseline: 'LanguageExtensions'
+			with: [ spec repository: 'github://maxwills/language-extensions:main' ].
+		spec
 			baseline: 'MockFlex'
 			with: [ spec repository: 'github://maxwills/mock-flex:main' ].
 		spec
@@ -23,7 +26,7 @@ BaselineOfSeeker >> baseline: spec [
 		spec
 			package: 'EvaluatorDebugger-Base';
 			package: 'Seeker'
-			with: [ spec requires: #( 'EvaluatorDebugger-Base' 'AutoType' 'MockFlex' 'QuickWrap') ];
+			with: [ spec requires: #( 'EvaluatorDebugger-Base' 'AutoType' 'LanguageExtensions' 'MockFlex' 'QuickWrap') ];
 			package: 'Seeker-Tests' with: [ ";
 			package: 'SeekerDebuggerSpy'
 			with: [ spec requires: #( 'Seeker' ) ]" 
