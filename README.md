@@ -42,13 +42,9 @@ The Quick Reference pdf document is included in the repository, and can be acces
 ### Time-Traveling Queries Notes:
 
 - The Query object instantiation doesn't trigger the production of results.
-- The method asSeekerResultsCollection triggers the query evaluation, and additionally produces a Seeker UI-friendly object containing the resulting collection.
 - The field bytecodeIndex is mandatory. Include it like in the example.
 - AutoType automatically creates a class (and instances. The class is not registered in the system) that serves the collection function. To make time traveling queries, it is mandatory to include the bytecodeIndex field.
 
-### Notes
-	Remember:
-	HandMorph handleEvent: SeekerGlobals instance updateModifierKeys: anEvent.
 	
 ### 2021/11 functionalities
 
