@@ -24,7 +24,7 @@ SeekerProjectionFunction >> initialize [
 { #category : #accessing }
 SeekerProjectionFunction >> itemClass [
 
-	self value: AutoDummyObject new "Forces a materialization of the autoType, by executing the value: method once".
+	self value: AutoTypeDummyObject new "Forces a materialization of the autoType, by executing the value: method once".
 	^ autoType type
 ]
 

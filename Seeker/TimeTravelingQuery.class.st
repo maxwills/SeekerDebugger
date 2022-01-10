@@ -55,7 +55,7 @@ TimeTravelingQuery class >> projectionFunction [
 { #category : #'as yet unclassified' }
 TimeTravelingQuery class >> projectionSample [
 
-	^ self projectionFunction new value: AutoDummyObject new
+	^ self projectionFunction new value: AutoTypeDummyObject new
 ]
 
 { #category : #'instance creation' }
@@ -92,6 +92,8 @@ TimeTravelingQuery class >> selectionFunction [
 
 { #category : #'as yet unclassified' }
 TimeTravelingQuery class >> showProjectionExample [
+
+	"Select a subclass, check Class Side checkbox in the method categories to see all class side methods, and click this script"
 
 	<script>
 	self projectionSample inspect

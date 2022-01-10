@@ -45,6 +45,9 @@ Class {
 		'projectionFunction',
 		'selectionFunction'
 	],
+	#classVars : [
+		'safeQuerying'
+	],
 	#classInstVars : [
 		'identityProjection',
 		'alwaysMatch',
@@ -104,6 +107,13 @@ Query class >> identityProjection [
 	^ identityProjection
 ]
 
+{ #category : #initialization }
+Query class >> initialize [
+
+	<script>
+	safeQuerying := true
+]
+
 { #category : #adding }
 Query class >> lastExecutedQuery [
 
@@ -117,6 +127,18 @@ Query class >> queryExecutionHistory [
 
 	queryHistory ifNil: [ queryHistory := OrderedCollection new].
 	^ queryHistory
+]
+
+{ #category : #'as yet unclassified' }
+Query class >> safeQuerying [
+""
+	^ safeQuerying 
+]
+
+{ #category : #'as yet unclassified' }
+Query class >> safeQuerying: anObject [
+
+	safeQuerying := anObject
 ]
 
 { #category : #'as yet unclassified' }
@@ -334,8 +356,19 @@ Query >> dataSourceIsTracedExecution [
 { #category : #enumerating }
 Query >> do: aBlock [
 
-	fromDataSource do: [ :row | 
-		(selectionFunction value: row) ifTrue: [ aBlock value: self currentRow ] ]
+	self class safeQuerying
+		ifTrue: [ "Surroungs the query action block in a try catch, producing an error result item.
+			This allows the debugger to complete queries with faulty result items (if an object does not respect the standard objects api, for example) without completely crashing the query.
+			"
+			fromDataSource do: [ :row | 
+				[ 
+				(selectionFunction value: row) ifTrue: [ 
+					aBlock value: self currentRow ] ] onErrorDo: [ :e | 
+					AutoTypeErrorObject newWithMessage: e asString ] ] ]
+		ifFalse: [ 
+			fromDataSource do: [ :row | 
+				(selectionFunction value: row) ifTrue: [ 
+					aBlock value: self currentRow ] ] ]
 ]
 
 { #category : #enumerating }

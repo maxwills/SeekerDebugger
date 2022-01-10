@@ -7,7 +7,7 @@ Class {
 { #category : #accessing }
 SkProjectionMessageSends >> value: state [
 
-	| msgRcvrNode msgRcvrClass msgRcvr receiverOid|
+	| msgRcvrNode msgRcvrClass msgRcvr receiverOid |
 	msgRcvrNode := state node receiver.
 	msgRcvr := state messageReceiver.
 	receiverOid := state aliasOfObject: msgRcvr.
@@ -21,14 +21,11 @@ SkProjectionMessageSends >> value: state [
 		  messageReceiverOid: receiverOid;
 		  formattedMessageReceiver: (msgRcvrNode isVariable
 				   ifTrue: [ 
-					   msgRcvrNode variable name , ' ('
-					   ,
-						   msgRcvrClass
-							   asString , ')' ]
+					   msgRcvrNode variable name , ' (' , msgRcvrClass asString , ')' ]
 				   ifFalse: [ 
 					   [ msgRcvr asString , ' (' , msgRcvrNode sourceCode , ')' ] 
 						   onErrorDo: [ "msgRcvr" msgRcvrNode sourceCode ] ]);
 		  messageReceiverClass: msgRcvrClass value;
-		  messageSelector: state node selector;
+		  messageSelector: state messageSelector;
 		  endWith
 ]

@@ -1,3 +1,7 @@
+"
+An automatic displayModel
+It creates the columns as they are auto defined in the projection function of the UserTTQ
+"
 Class {
 	#name : #QdmAuto,
 	#superclass : #QueryDisplayModel,
@@ -33,7 +37,7 @@ QdmAuto >> query: aQuery [
 	| fields |
 	query := aQuery.
 	columns removeAll.
-	fields := (aQuery projectionFunction value: AutoDummyObject new)
+	fields := (aQuery projectionFunction value: AutoTypeDummyObject new)
 		          class fields.
 	fields do: [ :f | 
 		| col |

@@ -20,8 +20,7 @@ SkOptimizedBytecodeStepper >> AstepBytecodeUntilConditionIsTrue: aBlock [
 	"(*)In Pharo 10, current date 2021/12 there is only one class encoder. So, we interpret instructions for it.
 This will fail if the code relies on more encoders (Need to test in Pharo 9.0)"
 
-	| debuggedProcess instrStream currentCtx |
-	debuggedProcess := session interruptedProcess.
+	| instrStream currentCtx |
 	iteratingFlag := true.
 	[ 
 	currentCtx := self currentContext.
@@ -47,8 +46,7 @@ SkOptimizedBytecodeStepper >> BstepBytecodeUntilConditionIsTrue: aBlock [
 	"(*)In Pharo 10, current date 2021/12 there is only one class encoder. So, we interpret instructions for it.
 This will fail if the code relies on more encoders (Need to test in Pharo 9.0)"
 
-	| debuggedProcess instrStream |
-	debuggedProcess := session interruptedProcess.
+	| instrStream |
 	iteratingFlag := true.
 	[ "currentCtx := self currentContext."
 	instrStream := InstructionStream
@@ -66,8 +64,7 @@ This will fail if the code relies on more encoders (Need to test in Pharo 9.0)"
 					currentContext := skipFlag
 						                  ifTrue: [ 
 							                  skipFlag := false.
-							                  debuggedProcess completeStep:
-								                  currentContext ]
+							                  debuggedProcess completeStep: currentContext ]
 						                  ifFalse: [ 
 						                  instrStream 
 							                  interpretNextSistaV1InstructionFor:

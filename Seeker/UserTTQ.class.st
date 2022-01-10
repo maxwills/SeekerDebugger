@@ -38,7 +38,7 @@ UserTTQ class >> projectionFunction [
 { #category : #'as yet unclassified' }
 UserTTQ class >> projectionSample [
 
-	^ self projectionFunction value: AutoDummyObject new
+	^ self projectionFunction value: AutoTypeDummyObject new
 ]
 
 { #category : #'instance creation' }

@@ -496,6 +496,7 @@ SeekerCurrentStateInterface >> messageSelector [
 "
 
 	<qwpSubCached>
+	self node selector = #ifTrue: ifTrue: [ ^ 1 / 0 ].
 	^ self node selector
 ]
 

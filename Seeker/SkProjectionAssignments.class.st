@@ -7,7 +7,8 @@ Class {
 { #category : #accessing }
 SkProjectionAssignments >> value: state [
 
-	^ autoType newWith
+	^ [ 
+	  autoType newWith
 		  methodSelector: state methodSelector;
 		  receiverClass: state receiverClass;
 		  receiverClassAndPackage:
@@ -23,5 +24,5 @@ SkProjectionAssignments >> value: state [
 		  valueChangedTo: state assignmentNextValue;
 		  receiverPackage: state receiverPackage;
 		  variableClass: state node variable variable class;
-		  endWith
+		  endWith ] onErrorDo: [ :e | AutoTypeErrorObject new: e ]
 ]
