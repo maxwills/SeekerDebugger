@@ -4,6 +4,9 @@ Class {
 	#classVars : [
 		'lastQueryResults'
 	],
+	#classInstVars : [
+		'emergencyPreventLoading'
+	],
 	#category : #'Seeker-Helpers'
 }
 
@@ -22,6 +25,37 @@ SeekerSessionHelpers class >> debugSessionIfKeysPressed: aBlock [
 		ifTrue: [ 
 		self innerSeekerSessionFor: aBlock withFlag: self makeOnceFlag ]
 		ifFalse: [ aBlock value ]
+]
+
+{ #category : #initialization }
+SeekerSessionHelpers class >> doCriticalInitialization: block [
+
+	emergencyPreventLoading ifTrue: [ 
+		^ self inform:
+			  'Seeker loading disabled due to a previous failure. set emergencyPreventLoading to false.' ].
+	block onErrorDo: [ :e | 
+		emergencyPreventLoading := true.
+		self inform:
+			'Error during Seeker initialization. emergencyPreventLoading set to true.'.
+		e debug ]
+]
+
+{ #category : #accessing }
+SeekerSessionHelpers class >> emergencyPreventLoading [
+
+	^ emergencyPreventLoading
+]
+
+{ #category : #accessing }
+SeekerSessionHelpers class >> emergencyPreventLoading: anObject [
+
+	emergencyPreventLoading := anObject
+]
+
+{ #category : #initialization }
+SeekerSessionHelpers class >> initialize [
+
+	emergencyPreventLoading := false
 ]
 
 { #category : #'as yet unclassified' }

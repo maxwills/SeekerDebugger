@@ -42,7 +42,6 @@ SkMapAlgoTestCase >> mapExecution [
 	The reason for this is that initially the debugged process could be suspended at a node that the debugger would never step into.
 	So, when testing for is present on that instruction, it will be skipped. This way, the is pressent will return true at any instruction
 	in that context"
-
 	endTracedInstructionPC := endingContext tracedInstructionPC.
 	endTracedInstructionPC pc: endingContext endPC. "The last step is the endPC?"
 	endTraceTime := endTracedInstructionPC asTraceTimeReference.

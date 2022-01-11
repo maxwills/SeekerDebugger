@@ -386,17 +386,18 @@ SeekerDebuggerPresenter >> setModelBeforeInitialization: aStDebugger [
 	debuggerUpdateCoordinator := seekerDebugger debuggerUpdateCoordinator.
 	stDebugger debuggerActionModel tracer: seekerDebugger tracer.
 	seekerDebugger stDebugger: aStDebugger.
-	stDebugger updateStep. " updateStep prevents the need to use the deferred method commented below. 
+	SeekerSessionHelpers doCriticalInitialization: [ 
+		stDebugger updateStep. " updateStep prevents the need to use the deferred method commented below. 
 	The reason for that is that the current debugged process of the stDebugger immediately after initialization is the one of the Exception that opened it.
 	After that, it does some magic to go to the actual debugged process/context htat signaled the exception.
 	Without the forced update Seeker starts stepping from the exception, which is currently unsupported and ends badly (or doesn't end at all).
    In previous versions, the deferred quickSetup worked because it was actually called after the StDebugger was shown (and everything was in the proper state). 
    That method still works, but the user sees that the debugger opens and do stuff, changing quickly, which is quite confusing."
-	seekerDebugger quickSetup.
-	seekerDebugger notifyDebuggerInitialized
-	"	UIManager default defer: [ 
 		seekerDebugger quickSetup.
-		seekerDebugger notifyDebuggerInitialized ]"
+		seekerDebugger notifyDebuggerInitialized
+		"	UIManager default defer: [ 
+		seekerDebugger quickSetup.
+		seekerDebugger notifyDebuggerInitialized ]" ]
 ]
 
 { #category : #'event handling' }

@@ -52,7 +52,7 @@ DebuggerStepperBase >> inMouseButtonEventInstrumentationFlag: anObject [
 { #category : #initialization }
 DebuggerStepperBase >> initialize [
 
-	self safelyDoUnsafeCode: [ 
+	SeekerSessionHelpers doCriticalInitialization: [ 
 		isSessionActive := true.
 		inMouseButtonEventInstrumentationFlag := false.
 		self initializeInstrumentedMethods ]
@@ -96,21 +96,6 @@ DebuggerStepperBase >> restart [
 DebuggerStepperBase >> restartRecordFromContext: aContext [
    self subclassResponsibility
 	
-]
-
-{ #category : #'as yet unclassified' }
-DebuggerStepperBase >> safelyDoUnsafeCode: aBlock [
-
-	"Catch exceptions and log them. Should be used in methods that are called when initializing the debugger to
-prevent being unable to debug anything in case of failure
-"
-
-	aBlock onErrorDo: [ :e | 
-		Transcript
-			show: 'DebuggerStepper>>safelyDoUnsafeCode: ';
-			cr;
-			show: e asString;
-			cr ]
 ]
 
 { #category : #accessing }
