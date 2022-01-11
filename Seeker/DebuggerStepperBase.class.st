@@ -13,7 +13,9 @@ Class {
 		'session',
 		'isSessionActive',
 		'inMouseButtonEventInstrumentationFlag',
-		'instrumentedMethods'
+		'instrumentedMethods',
+		'stepper',
+		'components'
 	],
 	#category : #'Seeker-Tracing'
 }
@@ -25,6 +27,12 @@ DebuggerStepperBase >> andThen [
 	Don't use with message with arguments. Actually, don't use it at all"
 
 	^ self
+]
+
+{ #category : #'as yet unclassified' }
+DebuggerStepperBase >> bindComponents [
+
+	components ifNotNil: [ components do: [ :c | c bindComponents ] ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -53,9 +61,12 @@ DebuggerStepperBase >> inMouseButtonEventInstrumentationFlag: anObject [
 DebuggerStepperBase >> initialize [
 
 	SeekerSessionHelpers doCriticalInitialization: [ 
+		self initializeInstrumentedMethods.
+		components := OrderedCollection new.
+		components add: (stepper := SkStepper newFor: self).
+		self bindComponents.
 		isSessionActive := true.
-		inMouseButtonEventInstrumentationFlag := false.
-		self initializeInstrumentedMethods ]
+		inMouseButtonEventInstrumentationFlag := false ]
 ]
 
 { #category : #initialization }
@@ -184,6 +195,12 @@ DebuggerStepperBase >> timeTravelToUserStart [
 DebuggerStepperBase >> trace [
 	"Returns the collection of steps signatures"
 	self subclassResponsibility
+]
+
+{ #category : #accessing }
+DebuggerStepperBase >> tracer [
+
+	^ self
 ]
 
 { #category : #'as yet unclassified' }
