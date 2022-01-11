@@ -1,6 +1,6 @@
 Class {
 	#name : #SkExecutionMapper,
-	#superclass : #Object,
+	#superclass : #SkComponent,
 	#instVars : [
 		'tracer',
 		'currentState',
@@ -43,6 +43,13 @@ SkExecutionMapper >> automapForCustomScenario: aContext withEndingCondition: aBl
 	self recountBytecodes.
 	isMapped := true.
 	^ true
+]
+
+{ #category : #'as yet unclassified' }
+SkExecutionMapper >> bindComponents [
+
+	tracer := componentsHolder tracer.
+	currentState := tracer currentState
 ]
 
 { #category : #accessing }
