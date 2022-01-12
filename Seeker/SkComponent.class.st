@@ -2,7 +2,8 @@ Class {
 	#name : #SkComponent,
 	#superclass : #Object,
 	#instVars : [
-		'componentsHolder'
+		'componentsHolder',
+		'enabled'
 	],
 	#category : #'Seeker-Tracing'
 }
@@ -36,4 +37,16 @@ SkComponent >> componentsHolder [
 SkComponent >> componentsHolder: anObject [
 
 	componentsHolder := anObject
+]
+
+{ #category : #accessing }
+SkComponent >> enabled [
+
+	^ enabled
+]
+
+{ #category : #accessing }
+SkComponent >> enabled: anObject [
+
+	enabled := anObject
 ]

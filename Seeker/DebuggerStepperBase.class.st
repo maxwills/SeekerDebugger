@@ -15,6 +15,7 @@ Class {
 		'inMouseButtonEventInstrumentationFlag',
 		'instrumentedMethods',
 		'stepper',
+		'restorer',
 		'components'
 	],
 	#category : #'Seeker-Tracing'
@@ -74,11 +75,18 @@ DebuggerStepperBase >> initialize [
 
 	SeekerSessionHelpers doCriticalInitialization: [ 
 		self initializeInstrumentedMethods.
-		components := OrderedCollection new.
-		components add: (stepper := SkStepper newFor: self).
-		self bindComponents.
+		self initializeComponents.
 		isSessionActive := true.
 		inMouseButtonEventInstrumentationFlag := false ]
+]
+
+{ #category : #initialization }
+DebuggerStepperBase >> initializeComponents [
+
+	components := OrderedCollection new.
+	components add: (stepper := SkStepper newFor: self).
+	components add: (restorer := SkExecutionRestorer newFor: self).
+	self bindComponents
 ]
 
 { #category : #initialization }
@@ -119,6 +127,18 @@ DebuggerStepperBase >> restart [
 DebuggerStepperBase >> restartRecordFromContext: aContext [
    self subclassResponsibility
 	
+]
+
+{ #category : #accessing }
+DebuggerStepperBase >> restorer [
+
+	^ restorer
+]
+
+{ #category : #accessing }
+DebuggerStepperBase >> restorer: anObject [
+
+	restorer := anObject
 ]
 
 { #category : #accessing }

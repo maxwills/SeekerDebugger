@@ -47,8 +47,6 @@ Class {
 		'stepBC',
 		'currentContext',
 		'currentTraceTimeReference',
-		'contextJumpCount',
-		'tracedContextCount',
 		'preventNextTimeRestoration',
 		'executedBytecode',
 		'currentState',
@@ -69,24 +67,13 @@ SkBytecodeStepper >> bytecodeIndex [
 { #category : #accessing }
 SkBytecodeStepper >> checkPreventNextTimeRestoration [
 
-	"Used to prevent restorting the live session when a query is manually stopped (Why? because it is useful to know where the execution is at the moment of the emergency stop"
-
-	| val |
-	val := preventNextTimeRestoration.
-	preventNextTimeRestoration := false.
-	^ val
+	^ restorer checkPreventNextTimeRestoration
 ]
 
 { #category : #'as yet unclassified' }
 SkBytecodeStepper >> clearSeekerCache [
 
 	SeekerCache reset
-]
-
-{ #category : #'as yet unclassified' }
-SkBytecodeStepper >> contextJumpCount [
-
-	^ contextJumpCount
 ]
 
 { #category : #'as yet unclassified' }
@@ -241,11 +228,8 @@ SkBytecodeStepper >> initialize [
 
 		super initialize.
 		self bindComponents.
-		preventNextTimeRestoration := false.
 		currentTraceTimeReference := SkCurrentTraceTimeReference new 
 			                             tracer: self.
-		contextJumpCount := 0.
-		tracedContextCount := 0.
 
 		maxExecutedBytecode := 1.
 		astStepCounter := 0.
@@ -329,11 +313,9 @@ SkBytecodeStepper >> oldStepUntilConditionIsTrue: aBlock [
 { #category : #'as yet unclassified' }
 SkBytecodeStepper >> onTracedContextChanged [
 
-	contextJumpCount := contextJumpCount + 1.
-	currentContext pc = currentContext startpc ifTrue: [ "
-	previousContextStackDepth := currentContextStackDepth.
-	currentContextStackDepth := currentContext stackDepth" 
-		tracedContextCount := tracedContextCount + 1 ]
+
+	currentContext pc = currentContext startpc ifTrue: [ 
+		"tracedContextCount := tracedContextCount + 1" ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -367,11 +349,10 @@ SkBytecodeStepper >> restartAtBytecodeOne [
 	executedBytecode := 1.
 	astStepCounter := 0.
 	astStepCounter := 1.
-	contextJumpCount := 0.
-	currentStepIndex := 0.
-	preventNextTimeRestoration := false.
 
-	tracedContextCount := 0.
+	currentStepIndex := 0.
+	restorer preventNextTimeRestoration: false.
+
 	stDebugger session restart:
 		executionMappper contextOfExecutedBytecodeOne.
 	currentStepIndex := currentStepIndex + 1.
