@@ -35,6 +35,18 @@ DebuggerStepperBase >> bindComponents [
 	components ifNotNil: [ components do: [ :c | c bindComponents ] ]
 ]
 
+{ #category : #accessing }
+DebuggerStepperBase >> components [
+
+	^ components
+]
+
+{ #category : #accessing }
+DebuggerStepperBase >> components: anObject [
+
+	components := anObject
+]
+
 { #category : #'as yet unclassified' }
 DebuggerStepperBase >> doMouseButtonEventInstrumentedBlockOnce: aBlock [
 
@@ -184,6 +196,18 @@ DebuggerStepperBase >> stepOver [
 	"scope: class-variables  &  instance-variables"
 
 	self subclassResponsibility
+]
+
+{ #category : #accessing }
+DebuggerStepperBase >> stepper [
+
+	^ stepper
+]
+
+{ #category : #accessing }
+DebuggerStepperBase >> stepper: anObject [
+
+	^ stepper := anObject
 ]
 
 { #category : #starting }

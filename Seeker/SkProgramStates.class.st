@@ -28,6 +28,7 @@ SkProgramStates >> advanceToNextRow [
 
 	"advances to the next row. returns false if the end of the table (there are no more rows) was reached before trying to advance."
 
+	1 IbeliebeThisIsNotUsedAnymore.
 	justRestarted ifTrue: [ 
 		justRestarted := false.
 		^ true ].
@@ -172,5 +173,5 @@ SkProgramStates >> tracer [
 SkProgramStates >> tracer: anObject [
 
 	tracer := anObject.
-	csi := tracer currentStateInterface.
+	csi := tracer currentState.
 ]

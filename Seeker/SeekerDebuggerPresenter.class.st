@@ -485,7 +485,7 @@ SeekerDebuggerPresenter >> syncWithDebugSession [
 		tracer blockingDoAndUpdateSessionAfter: [ 
 			| context |
 			context := stDebugger interruptedContext.
-			tracer currentStateInterface node
+			tracer currentState node
 			~= (context compiledCode sourceNodeForPC: context pc) ifTrue: [ 
 				tracer recountExecutedBytecodes ] ] ]
 ]
@@ -545,23 +545,26 @@ SeekerDebuggerPresenter >> updatePresenter [
 	"Called automatically when the debugger updates its state after stepping""Your widgets should be updated here."
 
 	[ self syncWithDebugSession ] ensure: [ 
-		code interactionModel context: stDebugger currentContext.
-		code interactionModel bindings
-			at: #seeker
-			put:
-			(WorkspaceVariable key: #seeker value: self seekerDebugger tracer).
-		code interactionModel bindings at: #currentState put: (WorkspaceVariable
-				 key: #currentState
-				 value: self seekerDebugger tracer currentStateInterface).
-		code interactionModel bindings
-			at: #programStates
-			put: (WorkspaceVariable
-					 key: #programStates
-					 value: self seekerDebugger tracer programStates).
+		SeekerSessionHelpers doCriticalInitialization: [ 
+			code interactionModel context: stDebugger currentContext.
+			code interactionModel bindings
+				at: #seeker
+				put:
+				(WorkspaceVariable key: #seeker value: self seekerDebugger tracer).
+			code interactionModel bindings
+				at: #currentState
+				put: (WorkspaceVariable
+						 key: #currentState
+						 value: self seekerDebugger tracer currentState).
+			code interactionModel bindings
+				at: #programStates
+				put: (WorkspaceVariable
+						 key: #programStates
+						 value: self seekerDebugger tracer programStates).
 
-		self updateLabelOnly.
-		"	self updateEvaluatorCode."
-		"		self updateExpressionValueDisplayed."
+			self updateLabelOnly.
+			"	self updateEvaluatorCode."
+			"		self updateExpressionValueDisplayed."
 
-		super updatePresenter ]
+			super updatePresenter ] ]
 ]

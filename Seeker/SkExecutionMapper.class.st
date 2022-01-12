@@ -20,7 +20,7 @@ SkExecutionMapper class >> newForTracer: tracer [
 
 	^ self new
 		  tracer: tracer;
-		  currentState: tracer currentStateInterface;
+		  currentState: tracer currentState;
 		  yourself
 ]
 
@@ -159,7 +159,7 @@ SkExecutionMapper >> quickMap [
 		(s matchesExecutionScenario: tracer) ifTrue: [ 
 			mappingAlgorithm := s new
 				                    tracer: tracer;
-				                    currentState: tracer currentStateInterface;
+				                    currentState: tracer currentState;
 				                    mapper: self;
 				                    yourself ] ].
 
@@ -213,6 +213,7 @@ SkExecutionMapper >> recountExecutedBytecodes [
 	| currentTraceTime |
 	contextOfExecutedBytecodeOne ifNil: [ "if there is no initial context, the restart will fail" 
 		self error: 'Initial context not set. (Is the execution mapped?)' ].
+	self assert: currentState node isNotNil.
 	currentTraceTime := currentState context tracedInstructionPC
 		                    asTraceTimeReference.
 	tracer safeTimeTravelToTraceTime: currentTraceTime

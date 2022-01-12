@@ -86,12 +86,6 @@ This will fail if the code relies on more encoders (Need to test in Pharo 9.0)"
 	emergencyStopFlag ifTrue: [ self handleEmergencyStopFlag ]
 ]
 
-{ #category : #testing }
-SkOptimizedBytecodeStepper >> cantStep [
-
-	^ self isExecutionFinished or: [ self isRiskyStep ]
-]
-
 { #category : #'as yet unclassified' }
 SkOptimizedBytecodeStepper >> currentContext [
 
@@ -158,50 +152,7 @@ SkOptimizedBytecodeStepper >> slowCurrentStatementNode [
 { #category : #'as yet unclassified' }
 SkOptimizedBytecodeStepper >> stepBytecodeUntilConditionIsTrue: aBlock doingAfterEachStep: afterStepBlock [
 
-	"an optimized stepping mechanisms. Skips a lot of potentially unnecessary* code"
-
-	"(*)In Pharo 10, current date 2021/12 there is only one class encoder. So, we interpret instructions for it.
-This will fail if the code relies on more encoders (Need to test in Pharo 9.0)"
-
-	| debuggedProcess instrStream |
-	debuggedProcess := session interruptedProcess.
-	iteratingFlag := true.
-	[ "currentCtx := self currentContext."
-	instrStream := InstructionStream
-		               on: currentContext compiledCode
-		               pc: currentContext pc.
-	Processor activeProcess
-		evaluate: [ 
-			[ (emergencyStopFlag or: aBlock) or: [ self cantStep ] ] 
-				whileFalse: [ 
-					| previousContext startingNode |
-					previousContext := currentContext.
-					startingNode := nil. "currentState node"
-					self doAstStepPreProcess.
-					"currentContext stepIntoQuickMethod: true."
-					currentContext := skipFlag
-						                  ifTrue: [ 
-							                  skipFlag := false.
-							                  debuggedProcess completeStep:
-								                  currentContext ]
-						                  ifFalse: [ 
-						                  instrStream 
-							                  interpretNextSistaV1InstructionFor:
-							                  currentContext ].
-					instrStream
-						method: currentContext compiledCode
-						pc: currentContext pc.
-					debuggedProcess suspendedContext: currentContext.
-
-					executedBytecode := executedBytecode + 1.
-					currentState updateCacheTimeKey.
-					maxExecutedBytecode := maxExecutedBytecode max: executedBytecode.
-					"previousContext stepIntoQuickMethod: false."
-					self
-						doAstStepPostProcessWithPrevNode: startingNode
-						andPrevContext: previousContext.
-					afterStepBlock value ] ]
-		onBehalfOf: debuggedProcess.
-	true ] ensure: [ iteratingFlag := false ].
-	emergencyStopFlag ifTrue: [ self handleEmergencyStopFlag ]
+	stepper
+		stepBytecodeUntilConditionIsTrue: aBlock
+		doingAfterEachStep: afterStepBlock
 ]

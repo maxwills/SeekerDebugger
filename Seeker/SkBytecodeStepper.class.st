@@ -49,31 +49,14 @@ Class {
 		'currentTraceTimeReference',
 		'contextJumpCount',
 		'tracedContextCount',
-		'iteratingFlag',
-		'emergencyStopFlag',
 		'preventNextTimeRestoration',
 		'executedBytecode',
 		'currentState',
 		'executionMappper',
-		'skippableMethods',
-		'skipFlag',
 		'debuggedProcess'
 	],
 	#category : #'Seeker-Tracing'
 }
-
-{ #category : #'as yet unclassified' }
-SkBytecodeStepper class >> getAllMethodsOfPackageNamed: aString [
-
-	| pkg methods |
-	methods := OrderedCollection new.
-	pkg := RPackageOrganizer default packageNamed: aString.
-	"pkg definedClasses do: [ :cls | 
-		methods addAll: cls methodDictionary values ].
-	methods addAll: pkg extensionMethods."
-	methods addAll: pkg methods.
-	^ methods
-]
 
 { #category : #mapping }
 SkBytecodeStepper >> bytecodeIndex [
@@ -113,12 +96,18 @@ SkBytecodeStepper >> currentContext [
 		  currentContext := session interruptedProcess suspendedContext ]
 ]
 
+{ #category : #accessing }
+SkBytecodeStepper >> currentContext: anObject [
+
+	currentContext := anObject
+]
+
 { #category : #'as yet unclassified' }
 SkBytecodeStepper >> currentStack [
 
 	"inspect this to debug in case of Seeker failure"
 
-	^ self currentStateInterface context stack
+	^ self currentState context stack
 ]
 
 { #category : #'as yet unclassified' }
@@ -130,7 +119,7 @@ SkBytecodeStepper >> currentStackMethods [
 ]
 
 { #category : #accessing }
-SkBytecodeStepper >> currentStateInterface [
+SkBytecodeStepper >> currentState [
 
 	^ currentState
 ]
@@ -223,15 +212,6 @@ SkBytecodeStepper >> forceSessionUpdate [
 	self debuggerUpdateCoordinator forceUpdate
 ]
 
-{ #category : #'as yet unclassified' }
-SkBytecodeStepper >> handleEmergencyStopFlag [
-
-	emergencyStopFlag := false.
-	self inform: 'Seeker Emergency Stop'.
-	self updateUI.
-	^ false
-]
-
 { #category : #testing }
 SkBytecodeStepper >> hasSignalledUnhandledException [
 	"Returns true if the debugged execution has signalled an exception that has not been handled by any on:do: (i.e. the #defaultAction of the exception is about to be executed. This default action typically leads to opening a debugger on the process that signalled the exception)"
@@ -240,99 +220,38 @@ SkBytecodeStepper >> hasSignalledUnhandledException [
 	^ (context selector = #defaultAction ) and: [context receiver isKindOf: Exception ]
 ]
 
-{ #category : #initialization }
-SkBytecodeStepper >> initialize [
+{ #category : #'as yet unclassified' }
+SkBytecodeStepper >> increaseExecutedBytecode [
 
-	self initializeSkippableMethods.
-	executedBytecode := 0.
-	currentState := SeekerCurrentStateInterface new
-		                tracer: self;
-		                yourself.
-	currentState updateCacheTimeKey. "The key is needed for other initialization steps"
-	executionMappper := SkExecutionMapper newForTracer: self.
-	skipFlag := false.
-	super initialize.
-	iteratingFlag := false.
-	emergencyStopFlag := false.
-	preventNextTimeRestoration := false.
-	currentTraceTimeReference := SkCurrentTraceTimeReference new tracer:
-		                             self.
-	contextJumpCount := 0.
-	tracedContextCount := 0.
-
-	maxExecutedBytecode := 1.
-	astStepCounter := 0.
-	currentStepIndex := 1.
-	executedBytecode := 1.
-	stepBC := 1
+	executedBytecode := executedBytecode + 1.
+	maxExecutedBytecode := maxExecutedBytecode max: executedBytecode.
+	currentState updateCacheTimeKey
 ]
 
 { #category : #initialization }
-SkBytecodeStepper >> initializeSkippableMethods [
+SkBytecodeStepper >> initialize [
 
-	"The list might have methods in common with the ones excluded form the queries"
+	SeekerSessionHelpers doCriticalInitialization: [ 
+		executedBytecode := 0.
+		currentState := SeekerCurrentStateInterface new
+			                tracer: self;
+			                yourself.
+		currentState updateCacheTimeKey. "The key is needed for other initialization steps"
+		executionMappper := SkExecutionMapper newForTracer: self.
 
-	self flag:
-		'first the method that interfere with the traversal of the execution'.
+		super initialize.
+		self bindComponents.
+		preventNextTimeRestoration := false.
+		currentTraceTimeReference := SkCurrentTraceTimeReference new 
+			                             tracer: self.
+		contextJumpCount := 0.
+		tracedContextCount := 0.
 
-	skippableMethods := #identityHash senders asSet.
-	skippableMethods add: HashedCollection >> #grow.
-	skippableMethods add: WeakKeyDictionary >> #noCheckAdd:.
-	skippableMethods add: HashedCollection >> #fullCheck.
-	"There is an exclussion here that modified the pragmadebug starting point. Need to chech which one"
-
-	WorldMorph methodDictionary valuesDo: [ :v | skippableMethods add: v ].
-	"	WorldMorph class methodDictionary valuesDo: [ :v | 
-		skippableMethods add: v ]."
-	skippableMethods add: Cursor >> #show.
-	skippableMethods add: Morph >> #world.
-	skippableMethods add: Morph >> #delete.
-	skippableMethods add: Morph >> #invalidRect:.
-	skippableMethods add: Morph >> #fillStyle:.
-	skippableMethods add: WorldMorph >> #displayWorldSafely.
-	SpMorphStyle methodDictionary valuesDo: [ :v | 
-		skippableMethods add: v ].
-	SpMorphStyle class methodDictionary valuesDo: [ :v | 
-		skippableMethods add: v ].
-
-	Announcer methodDictionary valuesDo: [ :v | skippableMethods add: v ].
-	Announcer class methodDictionary valuesDo: [ :v | 
-		skippableMethods add: v ].
-
-	MorphicRenderLoop methodDictionary valuesDo: [ :v | 
-		skippableMethods add: v ].
-	MorphicRenderLoop class methodDictionary valuesDo: [ :v | 
-		skippableMethods add: v ].
-	ClyQueryViewMorph methodDictionary valuesDo: [ :v | 
-		skippableMethods add: v ].
-	ClyQueryViewMorph class methodDictionary valuesDo: [ :v | 
-		skippableMethods add: v ].
-
-	RPackage methodDictionary valuesDo: [ :v | skippableMethods add: v ].
-	RPackage class methodDictionary valuesDo: [ :v | 
-		skippableMethods add: v ].
-	self flag: 'Not dangerous, but simply for speed'.
-	skippableMethods add: String >> #numArgs.
-	skippableMethods add: Form >> #unhibernate.
-	Rectangle methodDictionary valuesDo: [ :v | skippableMethods add: v ].
-	ClyFullBrowserMorph class methodDictionary valuesDo: [ :v | 
-		skippableMethods add: v ].
-	SmalltalkImage methodDictionary valuesDo: [ :v | 
-		skippableMethods add: v ].
-	SmalltalkImage class methodDictionary valuesDo: [ :v | 
-		skippableMethods add: v ].
-	skippableMethods addAll:
-		(self class getAllMethodsOfPackageNamed: #Rubric).
-	skippableMethods addAll:
-		(self class getAllMethodsOfPackageNamed: 'AST-Core').
-	skippableMethods addAll:
-		(self class getAllMethodsOfPackageNamed: 'FreeType').
-	skippableMethods addAll:
-		(self class getAllMethodsOfPackageNamed: 'FreeType-Graphics').
-	skippableMethods addAll:
-		(self class getAllMethodsOfPackageNamed: 'FreeType-Morphic').
-	skippableMethods addAll:
-		(self class getAllMethodsOfPackageNamed: 'UnifiedFFI')
+		maxExecutedBytecode := 1.
+		astStepCounter := 0.
+		currentStepIndex := 1.
+		executedBytecode := 1.
+		stepBC := 1 ]
 ]
 
 { #category : #accessing }
@@ -345,16 +264,6 @@ SkBytecodeStepper >> interruptedProcess [
 SkBytecodeStepper >> interruptedProcess: anObject [
 
 	debuggedProcess := anObject
-]
-
-{ #category : #testing }
-SkBytecodeStepper >> isExecutionFinished [
-
-	"Returns whether the debugged execution is finished"
-
-	^ executionMappper isEndReached or: [ 
-		  currentState context sender isNil or: [ 
-			  currentState isDead or: [ debuggedProcess isTerminating ] ] ]
 ]
 
 { #category : #testing }
@@ -386,25 +295,16 @@ SkBytecodeStepper >> isRestorationEnabled [
 ]
 
 { #category : #testing }
-SkBytecodeStepper >> isRiskyStep [
-
-	| context receiver |
-	context := currentState context.
-	receiver := context receiver.
-	^ currentState methodSelector = #primitiveFailed or: [ 
-		  receiver isClass
-			  ifTrue: [ 
-			  receiver == TestResult and: [ context methodSelector = #failure ] ]
-			  ifFalse: [ 
-				  currentState methodSelector = #defaultAction and: [ 
-					  receiver class inheritsFrom: Exception ] ] ]
-]
-
-{ #category : #testing }
 SkBytecodeStepper >> isSeekerAnyMarkedSessionScenario [
 
 	^ executionMappper isSeekerMarkedSessionScenario or: [ 
 		  executionMappper isSeekerPragmaDebugSessionScenario ]
+]
+
+{ #category : #accessing }
+SkBytecodeStepper >> mapper [
+
+	^ executionMappper
 ]
 
 { #category : #'as yet unclassified' }
@@ -470,7 +370,6 @@ SkBytecodeStepper >> restartAtBytecodeOne [
 	contextJumpCount := 0.
 	currentStepIndex := 0.
 	preventNextTimeRestoration := false.
-	skipFlag := false.
 
 	tracedContextCount := 0.
 	stDebugger session restart:
@@ -500,14 +399,6 @@ SkBytecodeStepper >> safeTimeTravelToTraceTime: aTraceTime [
 	self doAndUpdateSessionAfter: [ 
 		self restartAtBytecodeOne andThen stepBytecodeUntilConditionIsTrue: [ 
 			aTraceTime referencesTheLocalPastOrPresent: self ] ]
-]
-
-{ #category : #'as yet unclassified' }
-SkBytecodeStepper >> setEmergencyStopFlag [
-
-	iteratingFlag ifTrue: [ 
-		emergencyStopFlag := true.
-		preventNextTimeRestoration := true ]
 ]
 
 { #category : #signalling }
@@ -592,94 +483,33 @@ SkBytecodeStepper >> stepBackOver [
 { #category : #'debug - stepping' }
 SkBytecodeStepper >> stepBytecode [
 
-	"Steps the debugger. No skipping. No recording. No updates (remember to force update after)"
-
-	| previousContext startingNode |
-	emergencyStopFlag ifTrue: [ 
-		self handleEmergencyStopFlag.
-		^ false ].
-	(self isExecutionFinished or: [ self isRiskyStep ]) ifTrue: [ "self inform: 'Reached execution safe end point'" 
-		^ false ].
-	previousContext := currentContext.
-	startingNode := nil. "currentState node"
-	self doAstStepPreProcess.
-	"currentContext stepIntoQuickMethod: true."
-	currentContext := skipFlag
-		                  ifTrue: [ 
-			                  skipFlag := false.
-			                  debuggedProcess completeStep: currentContext ]
-		                  ifFalse: [ session interruptedProcess step ].
-
-	executedBytecode := executedBytecode + 1.
-	currentState updateCacheTimeKey.
-	maxExecutedBytecode := maxExecutedBytecode max: executedBytecode.
-	"previousContext stepIntoQuickMethod: false."
-	self
-		doAstStepPostProcessWithPrevNode: startingNode
-		andPrevContext: previousContext.
-	"byteCountCounter % 10000 = 0 ifTrue: [ self softUIUpdate ]."
-	^ true
+	stepper stepBytecode
 ]
 
 { #category : #'debug - stepping' }
 SkBytecodeStepper >> stepBytecodeAccountingInstrumentation [
-
-	| canContinue |
-	canContinue := self stepBytecode.
-	SeekerConfig default autoInstrumentationStepping ifFalse: [ 
-		^ canContinue ].
-	canContinue ifFalse: [ ^ false ].
-	(self stepBytecodeUntilConditionIsTrue: [ 
-		 (instrumentedMethods includes: currentState method) not ]) 
-		ifFalse: [ ^ false ].
-	^ true
+"Need to reimplement this according to new pipeline"
+	self stepBytecode
 ]
 
 { #category : #'as yet unclassified' }
 SkBytecodeStepper >> stepBytecodeToExecutionEnd [
 
-	"Steps the AST. No skipping. No recording. No Updates
-TODO: Add error management. There are two kind, one from the executed code, and the other is from the debugger code"
-
-	iteratingFlag := true.
-	[ 
-	[ false ] whileFalse: [ self stepBytecode ifFalse: [ ^ false ] ].
-	^ true ] ensure: [ iteratingFlag := false ]
+	stepper stepBytecodeUntilConditionIsTrue: [ false ]
 ]
 
 { #category : #'as yet unclassified' }
 SkBytecodeStepper >> stepBytecodeUntilConditionIsTrue: aBlock [
 
-	"Steps the AST. No skipping. No recording. No Updates
-TODO: Add error management. There are two kind, one from the executed code, and the other is from the debugger code"
-
-	"aBlock
-		whileFalseAlt: [ self stepBytecode ifFalse: [ ^ false ] ]
-		lvl: 8."
-
-	iteratingFlag := true.
-	[ 
-	aBlock whileFalse: [ self stepBytecode ifFalse: [ ^ false ] ].
-	^ true ] ensure: [ iteratingFlag := false ]
+	stepper stepBytecodeUntilConditionIsTrue: aBlock
 ]
 
 { #category : #'as yet unclassified' }
 SkBytecodeStepper >> stepBytecodeUntilConditionIsTrueAccountingInstrumentation: aBlock [
 
-	"Steps the AST. No skipping. No recording. No Updates
-TODO: Add error management. There are two kind, one from the executed code, and the other is from the debugger code"
+	"to be reworked with new pipeline"
 
-	"aBlock
-		whileFalseAlt: [ self stepBytecode ifFalse: [ ^ false ] ]
-		lvl: 8."
-
-	iteratingFlag := true.
-	[ 
-	[ 
-	aBlock value and: [ 
-		(instrumentedMethods includes: currentState method) not ] ] whileFalse: [ 
-		self stepBytecode ifFalse: [ ^ false ] ].
-	^ true ] ensure: [ iteratingFlag := false ]
+	self stepBytecodeUntilConditionIsTrue: aBlock
 ]
 
 { #category : #'as yet unclassified' }

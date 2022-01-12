@@ -16,7 +16,7 @@ SkAllMessageSendsToSelfLC >> description [
 SkAllMessageSendsToSelfLC >> executeCommand [
 
 	| oid |
-	oid := self tracer currentStateInterface receiverOid.
+	oid := self tracer currentState receiverOid.
 
 	self showResultFor: (TTQAllMessagesSentToObject
 			 queryFrom: self tracer programStates

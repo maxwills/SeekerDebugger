@@ -13,7 +13,7 @@ SkEndCondition class >> newForTracer: tracer [
 
 	^ self new
 		  tracer: tracer;
-		  currentState: tracer currentStateInterface;
+		  currentState: tracer currentState;
 		  yourself
 ]
 

@@ -10,9 +10,12 @@ Class {
 { #category : #'instance creation' }
 SkComponent class >> newFor: anObject [
 
-	^ self new
-		  componentsHolder: anObject;
-		  yourself
+	| component |
+	component := self new
+		             componentsHolder: anObject;
+		             yourself.
+	component bindComponents.
+	^ component
 ]
 
 { #category : #'as yet unclassified' }

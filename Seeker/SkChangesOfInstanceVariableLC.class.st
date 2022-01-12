@@ -16,7 +16,7 @@ SkChangesOfInstanceVariableLC >> description [
 SkChangesOfInstanceVariableLC >> executeCommand [
 
 	| objectOid variableName |
-	objectOid := self tracer currentStateInterface receiverOid.
+	objectOid := self tracer currentState receiverOid.
 	variableName := self tracer selectedCode asSymbol.
 
 	self showResultFor: (TTQAllAssignmentsOfAnInstanceVariableOfObject

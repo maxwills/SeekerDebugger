@@ -61,6 +61,7 @@ SkQueryExperimentalTracer >> doAstStepPostProcessWithPrevNode: preProcessAstNode
 			withOid: executedBytecode - 1.
 		instantiationCounter := instantiationCounter + 1.
 		instantiationIDDictionary at: instancedObj put: instantiationCounter ].
+
 	currentState isMessageSend ifTrue: [ 
 		self
 			registerObjectInstance: currentState messageReceiver
@@ -123,7 +124,7 @@ SkQueryExperimentalTracer >> doAstStepPreProcessForMessageSends [
 		registerObjectInstance: currentState messageReceiver
 		withOid: executedBytecode.
 	method := currentState methodAboutToExecute.
-	skipFlag := skippableMethods includes: method.
+	stepper skipFlag: ( stepper skippableMethods includes: method).
 	primitive := method ifNil: [ 0 ] ifNotNil: [ method primitive ].
 	shouldAlwaysRunToEnd ifFalse: [ 
 		shouldAlwaysRunToEnd := SeekerCurrentStateInterface 
@@ -181,7 +182,8 @@ SkQueryExperimentalTracer >> initialize [
 	nonLocalObjects := WeakIdentitySet new.
 	shouldAlwaysRunToEnd := false.
 	storedNonLocalChangesDictionary := WeakIdentityKeyDictionary new. "Keys are the object owning the variable, and the value is a dictionary of keys variable name (symbol) with values the Undo block"
-	^ super initialize
+	super initialize.
+	self bindComponents.
 ]
 
 { #category : #testing }

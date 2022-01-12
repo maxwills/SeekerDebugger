@@ -30,7 +30,7 @@ SkExecutionVirtualTable >> advanceToNextRow [
 	justRestarted ifTrue: [ 
 		justRestarted := false.
 		^ true ].
-	^ tracer stepBytecode "This is not good, I should use the bytecode step instead!"
+	^ tracer THISSHOUDLNOTBEUSED "This is not good, I should use the bytecode step instead!"
 ]
 
 { #category : #converting }
