@@ -267,7 +267,7 @@ SkBytecodeStepper >> isRecordingEnabled [
 
 	"Not stored value"
 
-	^ SeekerConfig default recordingEnabled
+	^ restorer enabled and:[ SeekerConfig default recordingEnabled]
 ]
 
 { #category : #accessing }

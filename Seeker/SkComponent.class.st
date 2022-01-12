@@ -50,3 +50,9 @@ SkComponent >> enabled: anObject [
 
 	enabled := anObject
 ]
+
+{ #category : #initialization }
+SkComponent >> initialize [
+
+	enabled := true
+]

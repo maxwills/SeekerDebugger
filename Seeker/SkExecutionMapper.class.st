@@ -103,6 +103,7 @@ SkExecutionMapper >> endCondition: anObject [
 { #category : #initialization }
 SkExecutionMapper >> initialize [
 
+	super initialize.
 	endCondition := SkEndImmediately.
 	isMapped := false.
 	isMappedForDoIt := false.

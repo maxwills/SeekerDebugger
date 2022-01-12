@@ -117,6 +117,6 @@ SeekerConfigPresenter >> updateToConfig [
 	self config handleMouseUpEvent: chkHandleMouseUp state.
 	self config handleMouseDownEvent: chkHandleMouseDown state.
 	self config keepMenusOpen: chkKeepMenusOpen state.
-	self config restorationEnabled: chkKeepMenusOpen state.
-	self config recordingEnabled: chkKeepMenusOpen state
+	self config restorationEnabled: chkRestorationEnabled state.
+	self config recordingEnabled: chkRecordingEnabled state
 ]

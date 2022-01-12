@@ -78,6 +78,7 @@ SkStepper >> handleEmergencyStopFlag [
 { #category : #initialization }
 SkStepper >> initialize [
 
+	super initialize.
 	iteratingFlag := false.
 	skipFlag := false.
 	emergencyStopFlag := false.
