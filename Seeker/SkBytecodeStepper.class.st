@@ -47,7 +47,6 @@ Class {
 		'stepBC',
 		'currentContext',
 		'currentTraceTimeReference',
-		'preventNextTimeRestoration',
 		'executedBytecode',
 		'currentState',
 		'executionMappper',

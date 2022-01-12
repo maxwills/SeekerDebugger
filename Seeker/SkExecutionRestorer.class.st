@@ -33,7 +33,7 @@ SkExecutionRestorer >> checkPreventNextTimeRestoration [
 	^ val
 ]
 
-{ #category : #accessing }
+{ #category : #'add/remove' }
 SkExecutionRestorer >> clear [
 
 	storedNonLocalChangesDictionary removeAll
@@ -68,7 +68,7 @@ SkExecutionRestorer >> doAstStepPreProcessForAssignments [
 					inContext: currentState context ] ]
 ]
 
-{ #category : #accessing }
+{ #category : #initialization }
 SkExecutionRestorer >> initialize [
 
 	super initialize.

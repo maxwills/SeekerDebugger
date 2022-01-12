@@ -13,7 +13,7 @@ Class {
 	#category : #'Seeker-Tracing'
 }
 
-{ #category : #'as yet unclassified' }
+{ #category : #initialization }
 SkStepper >> bindComponents [
 
 	"For safety, only use calls direcly over componentsHolder. Dont call methods on the components (they might be null)"
@@ -23,7 +23,7 @@ SkStepper >> bindComponents [
 	mapper := componentsHolder mapper
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #testing }
 SkStepper >> cantStep [
 
 	^ self isExecutionFinished or: [ self isRiskyStep ]
@@ -53,7 +53,7 @@ SkStepper >> emergencyStopFlag: anObject [
 	emergencyStopFlag := anObject
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #private }
 SkStepper >> getAllMethodsOfPackageNamed: aString [
 
 	| pkg methods |
@@ -66,7 +66,7 @@ SkStepper >> getAllMethodsOfPackageNamed: aString [
 	^ methods
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'actions api' }
 SkStepper >> handleEmergencyStopFlag [
 
 	emergencyStopFlag := false.
@@ -162,7 +162,7 @@ SkStepper >> isExecutionFinished [
 			  currentState isDead or: [ tracer debuggedProcess isTerminating ] ] ]
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #testing }
 SkStepper >> isRiskyStep [
 
 	| context receiver |
@@ -201,57 +201,6 @@ SkStepper >> mapper: anObject [
 	mapper := anObject
 ]
 
-{ #category : #'as yet unclassified' }
-SkStepper >> oldStepBytecodeUntilConditionIsTrue: aBlock doingAfterEachStep: afterStepBlock [
-
-	"an optimized stepping mechanisms. Skips a lot of potentially unnecessary* code"
-
-	"(*)In Pharo 10, current date 2021/12 there is only one class encoder. So, we interpret instructions for it.
-This will fail if the code relies on more encoders (Need to test in Pharo 9.0)"
-
-	| instrStream currentContext debuggedProcess |
-	debuggedProcess := tracer debuggedProcess.
-	currentContext := currentState context.
-	iteratingFlag := true.
-	[ "currentCtx := self currentContext."
-	instrStream := InstructionStream
-		               on: currentContext compiledCode
-		               pc: currentContext pc.
-	Processor activeProcess
-		evaluate: [ 
-			[ (emergencyStopFlag or: aBlock) or: [ self cantStep ] ] 
-				whileFalse: [ 
-					| previousContext startingNode |
-					previousContext := currentContext.
-					startingNode := currentState node.
-					tracer doAstStepPreProcess.
-					"currentContext stepIntoQuickMethod: true."
-					currentContext := skipFlag
-						                  ifTrue: [ 
-							                  skipFlag := false.
-							                  debuggedProcess completeStep: currentContext ]
-						                  ifFalse: [ 
-						                  instrStream 
-							                  interpretNextSistaV1InstructionFor:
-							                  currentContext ].
-					instrStream
-						method: currentContext compiledCode
-						pc: currentContext pc.
-					debuggedProcess suspendedContext: currentContext.
-
-					tracer increaseExecutedBytecode.
-
-
-					"previousContext stepIntoQuickMethod: false."
-					tracer
-						doAstStepPostProcessWithPrevNode: startingNode
-						andPrevContext: previousContext.
-					afterStepBlock ifNotNil: afterStepBlock ] ]
-		onBehalfOf: debuggedProcess.
-	true ] ensure: [ iteratingFlag := false ].
-	emergencyStopFlag ifTrue: [ self handleEmergencyStopFlag ]
-]
-
 { #category : #accessing }
 SkStepper >> skipFlag [
 
@@ -276,7 +225,7 @@ SkStepper >> skippableMethods: anObject [
 	skippableMethods := anObject
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'actions api' }
 SkStepper >> stepBytecode [
 
 	^ self
@@ -284,7 +233,7 @@ SkStepper >> stepBytecode [
 		  doingAfterEachStep: nil
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'actions api' }
 SkStepper >> stepBytecodeDoingAfterStep: aBlock [
 
 	| previousContext startingNode currentContext debuggedProcess |
@@ -315,7 +264,7 @@ SkStepper >> stepBytecodeDoingAfterStep: aBlock [
 	^ true
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'actions api' }
 SkStepper >> stepBytecodeUntilConditionIsTrue: aBlock [
 
 	^ self
@@ -323,7 +272,7 @@ SkStepper >> stepBytecodeUntilConditionIsTrue: aBlock [
 		  doingAfterEachStep: nil
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'actions api' }
 SkStepper >> stepBytecodeUntilConditionIsTrue: aBlock doingAfterEachStep: afterStepBlock [
 
 	"an optimized stepping mechanisms. Skips a lot of potentially unnecessary* code"
