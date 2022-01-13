@@ -16,6 +16,7 @@ Class {
 		'instrumentedMethods',
 		'stepper',
 		'restorer',
+		'oidsKeeper',
 		'components'
 	],
 	#category : #'Seeker-Tracing'
@@ -86,6 +87,7 @@ DebuggerStepperBase >> initializeComponents [
 	components := OrderedCollection new.
 	components add: (stepper := SkStepper newFor: self).
 	components add: (restorer := SkExecutionRestorer newFor: self).
+	components add: (oidsKeeper := SkOidKeeper newFor: self).
 	self bindComponents
 ]
 
@@ -115,6 +117,18 @@ DebuggerStepperBase >> notifySessionEnd [
 
 	isSessionActive := false.
 	self seeker notifySessionEnd
+]
+
+{ #category : #accessing }
+DebuggerStepperBase >> oidsKeeper [
+
+	^ oidsKeeper
+]
+
+{ #category : #accessing }
+DebuggerStepperBase >> oidsKeeper: anObject [
+
+	oidsKeeper := anObject
 ]
 
 { #category : #starting }

@@ -4,13 +4,7 @@ Class {
 	#instVars : [
 		'instantiationFlag',
 		'instantiationCounter',
-		'instantiationIDDictionary',
-		'nonLocalObjects',
-		'storedNonLocalChangesDictionary',
-		'shouldAlwaysRunToEnd',
-		'oidsDictionary',
-		'reverseOidsDictionary',
-		'previousReverseOidsDictionary'
+		'shouldAlwaysRunToEnd'
 	],
 	#category : #'Seeker-Tracing'
 }
@@ -42,21 +36,23 @@ SkQueryExperimentalTracer >> doAstStepPostProcessWithPrevNode: preProcessAstNode
 		| instancedObj previousIdentity |
 		instancedObj := currentState contextTop.
 		instantiationFlag := false.
-		previousIdentity := reverseOidsDictionary
+		previousIdentity := oidsKeeper reverseOidsDictionary
 			                    at: executedBytecode
 			                    ifAbsent: [ nil ].
 		previousIdentity ifNotNil: [ "There are exceptional cases where objects oid differ by -1 (the previous identity is executedBytecode). Not sure yet why. The next if patches that."
 			previousIdentity class = instancedObj class ifTrue: [ 
 				previousIdentity copyFrom: instancedObj.
 				previousIdentity becomeForward: instancedObj copyHash: true ] ].
-		self
+		oidsKeeper
 			registerObjectInstance: currentState contextTop
 			withOid: executedBytecode - 1.
 		instantiationCounter := instantiationCounter + 1.
-		instantiationIDDictionary at: instancedObj put: instantiationCounter ].
+		oidsKeeper instantiationIDDictionary
+			at: instancedObj
+			put: instantiationCounter ].
 
 	currentState isMessageSend ifTrue: [ 
-		self
+		oidsKeeper
 			registerObjectInstance: currentState messageReceiver
 			withOid: executedBytecode ].
 
@@ -86,7 +82,7 @@ SkQueryExperimentalTracer >> doAstStepPreProcessForMessageSends [
 
 	| method primitive |
 	"register the receiver"
-	self
+	oidsKeeper
 		registerObjectInstance: currentState messageReceiver
 		withOid: executedBytecode.
 	method := currentState methodAboutToExecute.
@@ -102,7 +98,7 @@ SkQueryExperimentalTracer >> doAstStepPreProcessForMessageSends [
 				 self isRecordingEnabled ]) ifTrue: [ 
 				| messageReceiver |
 				messageReceiver := currentState messageReceiver.
-				(self objectIsLocal: messageReceiver) ifFalse: [ "We store a copy of the object if this is writing primitive" 
+				(oidsKeeper objectIsLocal: messageReceiver) ifFalse: [ "We store a copy of the object if this is writing primitive" 
 					restorer recordSnapshotOfObject: messageReceiver ] ] ]
 ]
 
@@ -122,32 +118,21 @@ SkQueryExperimentalTracer >> findContextInStack [
 ]
 
 { #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> getObjectByOid: aNumber [
-
-	oidsDictionary associationsDo: [ :assoc | 
-		assoc value == aNumber ifTrue: [ ^ assoc key ] ].
-	^ nil
-]
-
-{ #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> getOidOf: anObject [
 
-	^ oidsDictionary at: anObject ifAbsent: [ nil ]
+	^ oidsKeeper getOidOf: anObject
 ]
 
 { #category : #initialization }
 SkQueryExperimentalTracer >> initialize [
 
-	oidsDictionary := IdentityDictionary new. "WeakIdentityKeyDictionary"
-	reverseOidsDictionary := Dictionary new.
-	previousReverseOidsDictionary := Dictionary new.
 	instantiationCounter := 0.
-	instantiationIDDictionary := WeakIdentityKeyDictionary new.
+
 	instantiationFlag := false.
-	nonLocalObjects := WeakIdentitySet new.
+
 	shouldAlwaysRunToEnd := false.
 	super initialize.
-	self bindComponents.
+	self bindComponents
 ]
 
 { #category : #testing }
@@ -159,22 +144,13 @@ SkQueryExperimentalTracer >> isTopContext: aContext [
 { #category : #accessing }
 SkQueryExperimentalTracer >> objectIsLocal: anObject [
 
-	"Returns true if the object that corresponds to the given Tid is instantiated during the execution"
-
-	"Beware that the execution corresponds only to the already executed part."
-
-	anObject class = Metaclass ifTrue: [ ^ true ].
-	^ instantiationIDDictionary includesKey: anObject
+	^ oidsKeeper objectIsLocal: anObject
 ]
 
 { #category : #accessing }
 SkQueryExperimentalTracer >> objectOidIsLocal: aNumber [
 
-	"Returns true if the object that corresponds to the given Tid is instantiated during the execution"
-
-	"Beware that the execution corresponds only to the already executed part."
-
-	^ (nonLocalObjects includes: aNumber) not
+	^ oidsKeeper objectOidIsLocal: aNumber
 ]
 
 { #category : #'as yet unclassified' }
@@ -182,7 +158,7 @@ SkQueryExperimentalTracer >> onTracedContextChanged [
 
 	"self createContextCacheFor: self currentContext."
 
-	self
+	oidsKeeper
 		registerObjectInstance: self currentContext receiver
 		withOid: executedBytecode - 1.
 	super onTracedContextChanged
@@ -203,22 +179,6 @@ SkQueryExperimentalTracer >> programStates [
 	^ SkProgramStates newForTracer: self
 ]
 
-{ #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> registerObjectInstance: anObject withOid: aNumber [
-
-	"anObject class = Metaclass ifTrue: [ ^ self ]."
-
-	reverseOidsDictionary at: aNumber ifAbsentPut: [ anObject ].
-	oidsDictionary at: anObject ifAbsentPut: [ aNumber ].
-
-
-	(instantiationIDDictionary includesKey: anObject) ifFalse: [ "anObject seekMyAlias = 1841 ifTrue: [ 
-			Transcript
-				show: 'markA' , byteCountCounter asString;
-				cr ]." 
-		nonLocalObjects add: anObject "Set will only add it if it is not present yet" ]
-]
-
 { #category : #starting }
 SkQueryExperimentalTracer >> restartAtBytecodeOne [
 
@@ -227,17 +187,17 @@ SkQueryExperimentalTracer >> restartAtBytecodeOne [
 	shouldAlwaysRunToEnd ifTrue: [ self stepToEnd ].
 	shouldAlwaysRunToEnd := false.
 	self restoreNonLocalChanges.
-	oidsDictionary removeAll.
+	oidsKeeper clear.
 	"previousReverseOidsDictionary := reverseOidsDictionary.
 	reverseOidsDictionary := Dictionary new."
 	"
 	aliasesDictionary := WeakIdentityKeyDictionary new."
 	instantiationCounter := 0.
-	instantiationIDDictionary removeAll. "
+	"
 	instantiationIDDictionary := WeakIdentityKeyDictionary new."
 	instantiationFlag := false.
 	currentState resetCacheTimeKey.
-	nonLocalObjects := WeakIdentitySet new.
+	
 	restorer clear. "
 	storedNonLocalChangesDictionary := WeakIdentityKeyDictionary new." "Keys are the object owning the variable, and the value is a dictionary of keys variable name (symbol) with values the Undo block"
 	super restartAtBytecodeOne
