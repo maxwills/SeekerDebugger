@@ -378,13 +378,13 @@ Query >> do: aBlock withTimedCallback: timedCallbackBlock every: anIntMillisecon
 	First, the row is processed, and then the timecallback is executed in the corresponding case"
 
 	errors removeAll.
-	(fromDataSource class includesSelector: #do:withTimedCallback:every:)
-		ifTrue: [ 
+	(fromDataSource respondsTo: #do:withTimedCallback:every:)
+		ifTrue: [ "If the data source knows how to handle do with timed callback, use its method."
 			fromDataSource
 				do: (self makeSourceDoBlock: aBlock)
 				withTimedCallback: timedCallbackBlock
 				every: anIntMilliseconds ]
-		ifFalse: [ "Handle the timed callback externally"
+		ifFalse: [ "If not, handle the timed callback externally from here"
 			| startingTime sourceDo |
 			startingTime := Time millisecondClockValue.
 			sourceDo := self makeSourceDoBlock: aBlock.

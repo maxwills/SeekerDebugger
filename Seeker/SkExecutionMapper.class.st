@@ -1,3 +1,11 @@
+"
+Creates a ""Map"" of an execution.
+
+This component uses one of SkExecutionMapperAlgorithm subclasses to set limits for the execution. (Does not enforce determinism or anything else).
+
+Once an execution is mapped, then Time-Travel is available to any point from a starting Context, to an end condition, both of which are defined by the SkExecutionMapperAlgorithm applied to the debugged scenario. (See SkExecutionMapperAlgorithm comments)
+
+"
 Class {
 	#name : #SkExecutionMapper,
 	#superclass : #SkComponent,

@@ -120,6 +120,12 @@ SkBytecodeStepper >> debuggedProcess [
 	^ debuggedProcess
 ]
 
+{ #category : #accessing }
+SkBytecodeStepper >> debuggedProcess: anObject [
+
+	debuggedProcess := anObject
+]
+
 { #category : #'as yet unclassified' }
 SkBytecodeStepper >> doAstStepPostProcessWithPrevNode: preProcessAstNode andPrevContext: preContext [
 
@@ -152,13 +158,11 @@ intent of using seeker. So the process is not placed in the watchlist.
 "
 
 	executionMappper isTestCaseOrDoIT
-		ifFalse: [ executionMappper quickMap "always map these"]
+		ifFalse: [ executionMappper quickMap "always map these" ]
 		ifTrue: [ "map only in it is a watchedProcess"
-			| proc |
-			proc := stDebugger interruptedProcess.
-			(SeekerGlobals instance isWatchedProcess: proc) ifTrue: [ 
+			(SeekerGlobals instance isWatchedProcess: debuggedProcess) ifTrue: [ 
 				[ executionMappper quickMap ] ensure: [ 
-					SeekerGlobals instance stopWatchingProcess: proc ] ] ]
+					SeekerGlobals instance stopWatchingProcess: debuggedProcess ] ] ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -227,18 +231,6 @@ SkBytecodeStepper >> initialize [
 		executedBytecode := 1 ]
 ]
 
-{ #category : #accessing }
-SkBytecodeStepper >> interruptedProcess [
-
-	^ debuggedProcess
-]
-
-{ #category : #accessing }
-SkBytecodeStepper >> interruptedProcess: anObject [
-
-	debuggedProcess := anObject
-]
-
 { #category : #testing }
 SkBytecodeStepper >> isMapped [
 
@@ -265,13 +257,6 @@ SkBytecodeStepper >> isRestorationEnabled [
 	"Not stored value"
 
 	^ SeekerConfig default restorationEnabled
-]
-
-{ #category : #testing }
-SkBytecodeStepper >> isSeekerAnyMarkedSessionScenario [
-
-	^ executionMappper isSeekerMarkedSessionScenario or: [ 
-		  executionMappper isSeekerPragmaDebugSessionScenario ]
 ]
 
 { #category : #accessing }
@@ -343,7 +328,7 @@ SkBytecodeStepper >> restartAtBytecodeOne [
 	stDebugger session restart:
 		executionMappper contextOfExecutedBytecodeOne.
 	currentStepIndex := currentStepIndex + 1.
-	currentContext := session interruptedProcess suspendedContext.
+	currentContext := self slowCurrentContext"session interruptedProcess suspendedContext".
 	currentState updateCacheTimeKey.
 	self onTracedContextChanged.
 	self onTracedStatementChanged
