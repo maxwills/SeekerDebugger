@@ -229,12 +229,6 @@ SeekerCurrentStateInterface >> bytecodeIndex [
 	^ tracer bytecodeIndex
 ]
 
-{ #category : #accessing }
-SeekerCurrentStateInterface >> bytecodeStepInTracedStatement [
-
-	^ tracer executedBytecodesInTracedStatement + 1
-]
-
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> classNameOfObjectAboutToBeInstantiated [
 
@@ -324,12 +318,6 @@ SeekerCurrentStateInterface >> isExceptionSignaledMethod [
 SeekerCurrentStateInterface >> isFirstBytecodeOfMethod [
 <superCached>
 	^self contextPC = self initialPC
-]
-
-{ #category : #'as yet unclassified' }
-SeekerCurrentStateInterface >> isFirstBytecodeOfStatement [
-<superCached>
-	^ tracer executedBytecodesInTracedStatement = 1
 ]
 
 { #category : #testing }
@@ -496,7 +484,7 @@ SeekerCurrentStateInterface >> messageSelector [
 "
 
 	<qwpSubCached>
-	self node selector = #ifTrue: ifTrue: [ ^ 1 / 0 ].
+"	self node selector = #ifTrue: ifTrue: [ ^ 1 / 0 ]."
 	^ self node selector
 ]
 

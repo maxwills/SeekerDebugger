@@ -283,11 +283,6 @@ SeekerDebugger >> stepOver [
 	self printTrace"
 ]
 
-{ #category : #'as yet unclassified' }
-SeekerDebugger >> stepUntilConditionIsTrue: aBlock [
-	tracer stepUntilConditionIsTrue: aBlock
-]
-
 { #category : #accessing }
 SeekerDebugger >> tracer [
 

@@ -42,9 +42,7 @@ Class {
 	#instVars : [
 		'stDebugger',
 		'currentStepIndex',
-		'astStepCounter',
 		'maxExecutedBytecode',
-		'stepBC',
 		'currentContext',
 		'currentTraceTimeReference',
 		'executedBytecode',
@@ -178,12 +176,6 @@ SkBytecodeStepper >> doesAnyContextsInTheStackStatisfies: aPredicateBlock [
 	^ true
 ]
 
-{ #category : #'as yet unclassified' }
-SkBytecodeStepper >> executedBytecodesInTracedStatement [
-
-	^ astStepCounter
-]
-
 { #category : #mapping }
 SkBytecodeStepper >> executionProgress [
 
@@ -231,10 +223,8 @@ SkBytecodeStepper >> initialize [
 			                             tracer: self.
 
 		maxExecutedBytecode := 1.
-		astStepCounter := 0.
 		currentStepIndex := 1.
-		executedBytecode := 1.
-		stepBC := 1 ]
+		executedBytecode := 1 ]
 ]
 
 { #category : #accessing }
@@ -346,8 +336,6 @@ SkBytecodeStepper >> restartAtBytecodeOne [
 	self clearSeekerCache.
 	currentState resetCacheTimeKey.
 	executedBytecode := 1.
-	astStepCounter := 0.
-	astStepCounter := 1.
 
 	currentStepIndex := 0.
 	restorer preventNextTimeRestoration: false.
@@ -423,20 +411,6 @@ SkBytecodeStepper >> stDebugger: anObject [
 	stDebugger := anObject
 ]
 
-{ #category : #'debug - stepping' }
-SkBytecodeStepper >> stepBackInto [
-
-	self doAndUpdateSessionAfter: [ 
-		| targetStepIndex "targetStep" currentStep |
-		currentStep := self currentStepDescriptor.
-		targetStepIndex := currentStep executionIndex - 1.
-		targetStepIndex <= 0 ifTrue: [ ^ self ].
-		"targetStep := trace at: targetStepIndex."
-		self restart. "Ideally, we would restart from the closes context. TODO that"
-		self stepUntilConditionIsTrue: [ 
-			self currentStepDescriptor executionIndex >= targetStepIndex ] ]
-]
-
 { #category : #'as yet unclassified' }
 SkBytecodeStepper >> stepBackOneBytecode [
 
@@ -444,20 +418,6 @@ SkBytecodeStepper >> stepBackOneBytecode [
 		| targetTime |
 		targetTime := 1 max: self bytecodeIndex - 1.
 		self timeTravelToTraceTime: targetTime asExecutedBytecodeTraceTime ]
-]
-
-{ #category : #'debug - stepping' }
-SkBytecodeStepper >> stepBackOver [
-
-	| startingStepDescriptor previousStepOverStepIndex |
-	startingStepDescriptor := self currentStepDescriptor.
-	previousStepOverStepIndex := self previousBackOverStepIndex: startingStepDescriptor.
-	(previousStepOverStepIndex =0) ifTrue: [ self  error:'There are no more "StepBackOver" step candidates'  ].
-	self doAndUpdateSessionAfter: [ 
-		self restart. "Ideally, we would restart from the closes context. TODO that"
-		self stepUntilConditionIsTrue: [ 
-			currentStepIndex = previousStepOverStepIndex ] ]
-	
 ]
 
 { #category : #'debug - stepping' }
@@ -485,23 +445,19 @@ SkBytecodeStepper >> stepBytecodeUntilConditionIsTrue: aBlock [
 ]
 
 { #category : #'as yet unclassified' }
+SkBytecodeStepper >> stepBytecodeUntilConditionIsTrue: aBlock doingAfterEachStep: afterStepBlock [
+
+	stepper
+		stepBytecodeUntilConditionIsTrue: aBlock
+		doingAfterEachStep: afterStepBlock
+]
+
+{ #category : #'as yet unclassified' }
 SkBytecodeStepper >> stepBytecodeUntilConditionIsTrueAccountingInstrumentation: aBlock [
 
 	"to be reworked with new pipeline"
 
 	self stepBytecodeUntilConditionIsTrue: aBlock
-]
-
-{ #category : #'as yet unclassified' }
-SkBytecodeStepper >> stepBytecodeUntilStatementJump [
-
-	"No recording, no updates"
-
-	| currentStatementNode previousContext |
-	currentStatementNode := self currentStatementNode.
-	previousContext := self currentContext.
-	^self stepBytecodeUntilConditionIsTrue: [ 
-		self currentStatementNode ~= currentStatementNode or: [ previousContext ~= self currentContext ] ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -516,57 +472,10 @@ SkBytecodeStepper >> stepBytecodes: aNumber [
 ]
 
 { #category : #'debug - stepping' }
-SkBytecodeStepper >> stepInto [
-
-	"This is the basic stepping at statement abstraction."
-
-	"returns false if reached the end of the execution (or any type of end)"
-
-	"Safety checking is done at ast stepping level"
-
-	| res |
-	self doAndUpdateSessionAfter: [ res := self stepIntoNoUpdateGuard ].
-	^ res
-]
-
-{ #category : #'debug - stepping' }
-SkBytecodeStepper >> stepIntoNoUpdateGuard [
-
-	"This is the basic stepping at statement abstraction."
-
-	"returns false if reached the end of the execution (or any type of end)"
-
-	"Safety checking is done at ast stepping level"
-
-	^ self stepBytecodeUntilStatementJump
-]
-
-{ #category : #'debug - stepping' }
 SkBytecodeStepper >> stepToEnd [
 
 	self doAndUpdateSessionAfter: [ 
 		self stepBytecodeUntilConditionIsTrue: [ false ] ]
-]
-
-{ #category : #'as yet unclassified' }
-SkBytecodeStepper >> stepUntilConditionIsTrue: aBlock [
-
-	"Steps into statements until condition is true"
-
-	"I can't refactor the next code and I don't know why (whenver I do it, the debugger acts weird (and I can't automap)"
-
-	| conditionReached |
-	self error: 'this should not be used'.
-	conditionReached := false.
-	self doAndUpdateSessionAfter: [ 
-		| shouldStop |
-		shouldStop := false.
-		[ shouldStop ] whileFalse: [ 
-			shouldStop := aBlock value.
-			shouldStop
-				ifFalse: [ shouldStop := self stepIntoNoUpdateGuard not ]
-				ifTrue: [ conditionReached := true ] ] ].
-	^ conditionReached
 ]
 
 { #category : #'as yet unclassified' }
@@ -579,7 +488,7 @@ SkBytecodeStepper >> timeTravelToBytecodeIndex: aNumber [
 				| targetTraceTime |
 				targetTraceTime := aNumber asExecutedBytecodeTraceTime.
 				self stepBytecodeUntilConditionIsTrue: [ 
-					self traceTime @= targetTraceTime ] ]
+					self traceTime @>= targetTraceTime ] ]
 			ifFalse: [ 
 			self timeTravelToTraceTime: aNumber asExecutedBytecodeTraceTime ] ]
 ]
@@ -590,8 +499,9 @@ SkBytecodeStepper >> timeTravelToTraceTime: aTraceTime [
 	""
 
 	self doAndUpdateSessionAfter: [ 
-		self restartAtBytecodeOne andThen stepBytecodeUntilConditionIsTrue: [ 
-			self traceTime @= aTraceTime ] ]
+		self restartAtBytecodeOne.
+		self stepBytecodeUntilConditionIsTrue: [ 
+			self traceTime @>= aTraceTime ] ]
 ]
 
 { #category : #starting }

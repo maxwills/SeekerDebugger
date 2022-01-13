@@ -28,11 +28,12 @@ SkProgramStates >> advanceToNextRow [
 
 	"advances to the next row. returns false if the end of the table (there are no more rows) was reached before trying to advance."
 
-	1 IbeliebeThisIsNotUsedAnymore.
+	self flag:
+		'This method is never used. Considering refactoring all related to iterables in Seeker Package'.
 	justRestarted ifTrue: [ 
 		justRestarted := false.
 		^ true ].
-	^ tracer stepBytecode "This is not good, I should use the bytecode step instead!"
+	^ tracer stepBytecode
 ]
 
 { #category : #'as yet unclassified' }

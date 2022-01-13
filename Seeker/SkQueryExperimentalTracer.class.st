@@ -2,7 +2,6 @@ Class {
 	#name : #SkQueryExperimentalTracer,
 	#superclass : #SkOptimizedBytecodeStepper,
 	#instVars : [
-		'astPreStepHooks',
 		'instantiationFlag',
 		'instantiationCounter',
 		'instantiationIDDictionary',
@@ -11,16 +10,10 @@ Class {
 		'shouldAlwaysRunToEnd',
 		'oidsDictionary',
 		'reverseOidsDictionary',
-		'previousReverseOidsDictionary',
-		'firstRunFlag'
+		'previousReverseOidsDictionary'
 	],
 	#category : #'Seeker-Tracing'
 }
-
-{ #category : #adding }
-SkQueryExperimentalTracer >> addAstPreStepHook: aBlock [
-	astPreStepHooks add: aBlock
-]
 
 { #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> checkIfShouldRunToEnd [
@@ -145,7 +138,6 @@ SkQueryExperimentalTracer >> getOidOf: anObject [
 { #category : #initialization }
 SkQueryExperimentalTracer >> initialize [
 
-	astPreStepHooks := OrderedCollection new.
 	oidsDictionary := IdentityDictionary new. "WeakIdentityKeyDictionary"
 	reverseOidsDictionary := Dictionary new.
 	previousReverseOidsDictionary := Dictionary new.
@@ -183,20 +175,6 @@ SkQueryExperimentalTracer >> objectOidIsLocal: aNumber [
 	"Beware that the execution corresponds only to the already executed part."
 
 	^ (nonLocalObjects includes: aNumber) not
-]
-
-{ #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> oldStepUntilQueryMatch: aQuery [
-
-	| match bcstephook |
-	"Use the condition with the hook technique. Because The predicate block of stepUntilCondition as step granularity statement."
-	match := false.
-	aQuery optimizeRowAcquisitionForFields: aQuery getRelevantFields.
-	bcstephook := [ aQuery isCurrentRowAMatch ifTrue: [ match := true ].match  ].
-	self addAstPreStepHook: bcstephook.
-	"Note the double bcstephook check. This is because, the ast level checkin happens after initiating the step into, it will always stop one step later. By repeating the condition in the statemement stepping, the problem is solved. this will change when reworking the debugger granularity"
-	[ self stepUntilConditionIsTrue: bcstephook] ensure: [ 
-		self removeAstPreStepHook: bcstephook ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -239,12 +217,6 @@ SkQueryExperimentalTracer >> registerObjectInstance: anObject withOid: aNumber [
 				show: 'markA' , byteCountCounter asString;
 				cr ]." 
 		nonLocalObjects add: anObject "Set will only add it if it is not present yet" ]
-]
-
-{ #category : #adding }
-SkQueryExperimentalTracer >> removeAstPreStepHook: aBlock [
-
-	astPreStepHooks remove: aBlock
 ]
 
 { #category : #starting }
