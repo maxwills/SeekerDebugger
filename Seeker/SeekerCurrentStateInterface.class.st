@@ -483,8 +483,8 @@ SeekerCurrentStateInterface >> messageSelector [
 	"Returns the message selector of the current message node. Assumes the current node is a message node
 "
 
-	<qwpSubCached>
-"	self node selector = #ifTrue: ifTrue: [ ^ 1 / 0 ]."
+	<qwpSubCached>"
+	self node selector = #ifTrue: ifTrue: [ ^ 1 / 0 ]."
 	^ self node selector
 ]
 

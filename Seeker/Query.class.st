@@ -43,10 +43,12 @@ Class {
 		'title',
 		'customPreparationBlock',
 		'projectionFunction',
-		'selectionFunction'
+		'selectionFunction',
+		'errors'
 	],
 	#classVars : [
-		'safeQuerying'
+		'LastQuery',
+		'SafeQueryingEnabled'
 	],
 	#classInstVars : [
 		'identityProjection',
@@ -111,13 +113,19 @@ Query class >> identityProjection [
 Query class >> initialize [
 
 	<script>
-	safeQuerying := true
+	SafeQueryingEnabled := true
 ]
 
 { #category : #adding }
 Query class >> lastExecutedQuery [
 
 	^ self queryExecutionHistory last
+]
+
+{ #category : #accessing }
+Query class >> lastQuery [
+
+	^ LastQuery
 ]
 
 { #category : #'as yet unclassified' }
@@ -132,13 +140,13 @@ Query class >> queryExecutionHistory [
 { #category : #'as yet unclassified' }
 Query class >> safeQuerying [
 ""
-	^ safeQuerying 
+	^ SafeQueryingEnabled 
 ]
 
 { #category : #'as yet unclassified' }
 Query class >> safeQuerying: anObject [
 
-	safeQuerying := anObject
+	SafeQueryingEnabled := anObject
 ]
 
 { #category : #'as yet unclassified' }
@@ -356,47 +364,38 @@ Query >> dataSourceIsTracedExecution [
 { #category : #enumerating }
 Query >> do: aBlock [
 
-	self class safeQuerying
-		ifTrue: [ "Surroungs the query action block in a try catch, producing an error result item.
-			This allows the debugger to complete queries with faulty result items (if an object does not respect the standard objects api, for example) without completely crashing the query.
-			"
-			fromDataSource do: [ :row | 
-				[ 
-				(selectionFunction value: row) ifTrue: [ 
-					aBlock value: self currentRow ] ] onErrorDo: [ :e | 
-					AutoTypeErrorObject newWithMessage: e asString ] ] ]
-		ifFalse: [ 
-			fromDataSource do: [ :row | 
-				(selectionFunction value: row) ifTrue: [ 
-					aBlock value: self currentRow ] ] ]
+	errors removeAll.
+	fromDataSource do: (self makeSourceDoBlock: aBlock).
+	LastQuery := self "Executed at the end, to handle query nesting"
 ]
 
 { #category : #enumerating }
 Query >> do: aBlock withTimedCallback: timedCallbackBlock every: anIntMilliseconds [
 
-"anIntMilliseconds an int or a block that returns an int"
+	"anIntMilliseconds an int or a block that returns an int"
+
 	"timedCallbackBlock is a block without arguments. It is called each anIntMilliseconds ms during the iteration process.
 	First, the row is processed, and then the timecallback is executed in the corresponding case"
 
+	errors removeAll.
 	(fromDataSource class includesSelector: #do:withTimedCallback:every:)
 		ifTrue: [ 
 			fromDataSource
-				do: [ :row | 
-					(selectionFunction value: row) ifTrue: [ 
-						aBlock value: self currentRow ] ]
+				do: (self makeSourceDoBlock: aBlock)
 				withTimedCallback: timedCallbackBlock
 				every: anIntMilliseconds ]
-		ifFalse: [ 
-			| startingTime |
+		ifFalse: [ "Handle the timed callback externally"
+			| startingTime sourceDo |
 			startingTime := Time millisecondClockValue.
+			sourceDo := self makeSourceDoBlock: aBlock.
 			fromDataSource do: [ :row | 
 				| time |
-				(selectionFunction value: row) ifTrue: [ 
-					aBlock value: self currentRow ].
+				sourceDo value: row.
 				time := Time millisecondClockValue.
 				time - startingTime >= anIntMilliseconds value ifTrue: [ 
 					timedCallbackBlock value.
-					startingTime := time ] ] ]
+					startingTime := time ] ] ].
+	LastQuery := self
 ]
 
 { #category : #'as yet unclassified' }
@@ -417,6 +416,14 @@ Query >> ensureReceiverAliases [
 			protectedColumns addAll: t protectedColumns.
 			protectedColumns add: #receiverAlias.
 			t protectedColumns: protectedColumns ] ]
+]
+
+{ #category : #accessing }
+Query >> errors [
+
+	"Contains the list of errors collected during a query execution"
+
+	^ errors
 ]
 
 { #category : #accessing }
@@ -496,6 +503,7 @@ Query >> initialize [
 	title := 'No title'.
 	selectionFunction := self class alwaysMatch.
 	projectionFunction := self class identityProjection.
+	errors := OrderedCollection new.
 	super initialize
 ]
 
@@ -513,6 +521,38 @@ Query >> isRowAMatch: aRow [
 	"returns true if the given row matches the query predicate without triggering the onQueryRowMatch handler"
 
 	^ selectionFunction value: aRow
+]
+
+{ #category : #'as yet unclassified' }
+Query >> makeSourceDoBlock: aBlock [
+
+	^ SafeQueryingEnabled
+		  ifTrue: [ self makeSourceDoBlockWithErrorHandling: aBlock ]
+		  ifFalse: [ self makeSourceDoBlockWithoutErrorHandling: aBlock ]
+]
+
+{ #category : #'as yet unclassified' }
+Query >> makeSourceDoBlockWithErrorHandling: aBlock [
+
+	"Surroungs the query action block in a try catch, producing an error result item.
+			This allows the debugger to complete queries with faulty result items (if an object does not respect the standard objects api, for example) without completely crashing the query.
+			"
+
+	^ [ :row | 
+	  [ 
+	  (selectionFunction value: row) ifTrue: [ 
+		  aBlock value: self currentRow ] ] onErrorDo: [ :e | 
+		  aBlock value: (errors add: (AutoTypeErrorObject
+					    newFor: e
+					    withExtraMessage: 'Please inspect (Query lastQuery errors)')) ] ]
+]
+
+{ #category : #'as yet unclassified' }
+Query >> makeSourceDoBlockWithoutErrorHandling: aBlock [
+
+	^ [ :row | 
+	  (selectionFunction value: row) ifTrue: [ 
+		  aBlock value: self currentRow ] ]
 ]
 
 { #category : #navigating }
