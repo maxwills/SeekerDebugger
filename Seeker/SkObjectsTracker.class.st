@@ -6,18 +6,103 @@ Class {
 		'nonLocalObjects',
 		'reverseOidsDictionary',
 		'instantiationIDDictionary',
-		'previousReverseOidsDictionary'
+		'previousReverseOidsDictionary',
+		'currentState',
+		'restorer',
+		'tracer',
+		'instantiationFlag',
+		'instantiationCounter'
 	],
 	#category : #'Seeker-Components'
 }
+
+{ #category : #initialization }
+SkObjectsTracker >> bindComponents [
+
+	tracer := componentsHolder tracer.
+	currentState := componentsHolder currentState.
+	restorer := componentsHolder restorer
+]
 
 { #category : #accessing }
 SkObjectsTracker >> clear [
 
 	oidsDictionary removeAll.
 	nonLocalObjects := WeakIdentitySet new.
-	instantiationIDDictionary removeAll
+	instantiationIDDictionary removeAll.
+	instantiationCounter := 0.
+	instantiationFlag := false.
 	"Why the other instance variables dont need to be updated"
+]
+
+{ #category : #accessing }
+SkObjectsTracker >> doAstStepPostProcessWithPrevNode: preProcessAstNode andPrevContext: preContext [
+
+	instantiationFlag ifTrue: [ 
+		| instancedObj previousIdentity |
+		instancedObj := currentState contextTop.
+		instantiationFlag := false.
+		previousIdentity := self reverseOidsDictionary
+			                    at: tracer bytecodeIndex  
+			                    ifAbsent: [ nil ].
+		previousIdentity ifNotNil: [ "There are exceptional cases where objects oid differ by -1 (the previous identity is executedBytecode). Not sure yet why. The next if patches that."
+			(previousIdentity class = instancedObj class and: [ 
+				 previousIdentity isReadOnlyObject not]) ifTrue: [ 
+				previousIdentity copyFrom: instancedObj.
+				previousIdentity becomeForward: instancedObj copyHash: true ] ].
+		self
+			registerObjectInstance: currentState contextTop
+			withOid: tracer bytecodeIndex  - 1.
+		instantiationCounter := instantiationCounter + 1.
+		instantiationIDDictionary
+			at: instancedObj
+			put: instantiationCounter ].
+
+	currentState isMessageSend ifTrue: [ 
+		self
+			registerObjectInstance: currentState messageReceiver
+			withOid: tracer bytecodeIndex ].
+]
+
+{ #category : #'as yet unclassified' }
+SkObjectsTracker >> doAstStepPreProcess [
+
+	currentState isMessageSend
+		ifTrue: [ "handling message sends cases" 
+			self doAstStepPreProcessForMessageSends ]
+		ifFalse: [ 
+			tracer isRecordingEnabled ifTrue: [ 
+				| node |
+				node := currentState node.
+				node isAssignment ifTrue: [ 
+					restorer doAstStepPreProcessForAssignments ] ] ]
+]
+
+{ #category : #'as yet unclassified' }
+SkObjectsTracker >> doAstStepPreProcessForMessageSends [
+
+	"handling message sends cases"
+
+	| method primitive |
+	"register the receiver"
+	self
+		registerObjectInstance: currentState messageReceiver
+		withOid: tracer bytecodeIndex.
+	method := currentState methodAboutToExecute.
+	"	stepper skipFlag: (stepper skippableMethods includes: method)."
+	primitive := method ifNil: [ 0 ] ifNotNil: [ method primitive ].
+	"shouldAlwaysRunToEnd ifFalse: [ 
+		shouldAlwaysRunToEnd := SeekerCurrentStateInterface 
+			                        isWaitPrimitive: primitive ]."
+	(SeekerCurrentStateInterface isInstantiationPrimitive: primitive)
+		ifTrue: [ instantiationFlag := true ]
+		ifFalse: [ 
+			((SeekerCurrentStateInterface isWritingPrimitive: primitive) and: [ 
+				 tracer isRecordingEnabled ]) ifTrue: [ 
+				| messageReceiver |
+				messageReceiver := currentState messageReceiver.
+				(self objectIsLocal: messageReceiver) ifFalse: [ "We store a copy of the object if this is writing primitive" 
+					restorer recordSnapshotOfObject: messageReceiver ] ] ]
 ]
 
 { #category : #initialization }
@@ -42,6 +127,8 @@ SkObjectsTracker >> initialize [
 	nonLocalObjects := WeakIdentitySet new.
 	reverseOidsDictionary := Dictionary new.
 	previousReverseOidsDictionary := Dictionary new.
+	instantiationFlag := false.
+	instantiationCounter := 0
 ]
 
 { #category : #accessing }

@@ -236,32 +236,9 @@ SkStepper >> stepBytecode [
 { #category : #'actions api' }
 SkStepper >> stepBytecodeDoingAfterStep: aBlock [
 
-	| previousContext startingNode currentContext debuggedProcess |
-	emergencyStopFlag ifTrue: [ 
-		self handleEmergencyStopFlag.
-		^ false ].
-	(self isExecutionFinished or: [ self isRiskyStep ]) ifTrue: [ "self inform: 'Reached execution safe end point'" 
-		^ false ].
-	currentContext := tracer currentContext.
-	previousContext := currentContext.
-	debuggedProcess := tracer debuggedProcess.
-	startingNode := nil. "currentState node"
-	tracer doAstStepPreProcess.
-	"currentContext stepIntoQuickMethod: true."
-	currentContext := skipFlag
-		                  ifTrue: [ 
-			                  skipFlag := false.
-			                  debuggedProcess completeStep: currentContext ]
-		                  ifFalse: [ debuggedProcess step ].
-	tracer currentContext: currentContext.
-	tracer increaseExecutedBytecode.
-	"previousContext stepIntoQuickMethod: false."
-	tracer
-		doAstStepPostProcessWithPrevNode: startingNode
-		andPrevContext: previousContext.
-	aBlock ifNotNil: aBlock.
-	"byteCountCounter % 10000 = 0 ifTrue: [ self softUIUpdate ]."
-	^ true
+	self
+		stepBytecodeUntilConditionIsTrue: (SeekerCounter countTo: 2)
+		doingAfterEachStep: aBlock
 ]
 
 { #category : #'actions api' }

@@ -16,8 +16,8 @@ Class {
 		'instrumentedMethods',
 		'stepper',
 		'restorer',
-		'oidsKeeper',
-		'components'
+		'components',
+		'objectsTracker'
 	],
 	#category : #'Seeker-Components'
 }
@@ -87,7 +87,7 @@ SkTracerBase >> initializeComponents [
 	components := OrderedCollection new.
 	components add: (stepper := SkStepper newFor: self).
 	components add: (restorer := SkExecutionRestorer newFor: self).
-	components add: (oidsKeeper := SkObjectsTracker newFor: self).
+	components add: (objectsTracker := SkObjectsTracker newFor: self).
 	self bindComponents
 ]
 
@@ -120,15 +120,15 @@ SkTracerBase >> notifySessionEnd [
 ]
 
 { #category : #accessing }
-SkTracerBase >> oidsKeeper [
+SkTracerBase >> objectsTracker [
 
-	^ oidsKeeper
+	^ objectsTracker
 ]
 
 { #category : #accessing }
-SkTracerBase >> oidsKeeper: anObject [
+SkTracerBase >> objectsTracker: anObject [
 
-	oidsKeeper := anObject
+	objectsTracker := anObject
 ]
 
 { #category : #starting }

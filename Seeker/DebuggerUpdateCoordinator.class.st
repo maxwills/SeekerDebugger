@@ -48,7 +48,7 @@ DebuggerUpdateCoordinator >> coordinateUpdatesFor: aBlock [
 						inspectorsAndOids do: [ :each | 
 							each inspector
 								model:
-									(StInspectorModel on: (tracer oidsKeeper getObjectByOid: each objectOid));
+									(StInspectorModel on: (tracer objectsTracker getObjectByOid: each objectOid));
 								updateList.
 							each inspector window title: each inspector windowTitle "Manually updating the title. The only way I could make it work" ] ].
 

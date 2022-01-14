@@ -2,8 +2,6 @@ Class {
 	#name : #SkQueryExperimentalTracer,
 	#superclass : #SkOptimizedTracer,
 	#instVars : [
-		'instantiationFlag',
-		'instantiationCounter',
 		'shouldAlwaysRunToEnd'
 	],
 	#category : #'Seeker-Components'
@@ -29,80 +27,6 @@ SkQueryExperimentalTracer >> createContextCacheFor: aContext [
 	^ aContext stackPtr = (contextVars + 1)
 ]
 
-{ #category : #accessing }
-SkQueryExperimentalTracer >> doAstStepPostProcessWithPrevNode: preProcessAstNode andPrevContext: preContext [
-
-	instantiationFlag ifTrue: [ 
-		| instancedObj previousIdentity |
-		instancedObj := currentState contextTop.
-		instantiationFlag := false.
-		previousIdentity := oidsKeeper reverseOidsDictionary
-			                    at: executedBytecode
-			                    ifAbsent: [ nil ].
-		previousIdentity ifNotNil: [ "There are exceptional cases where objects oid differ by -1 (the previous identity is executedBytecode). Not sure yet why. The next if patches that."
-			(previousIdentity class = instancedObj class and: [ 
-				 previousIdentity isReadOnlyObject not]) ifTrue: [ 
-				previousIdentity copyFrom: instancedObj.
-				previousIdentity becomeForward: instancedObj copyHash: true ] ].
-		oidsKeeper
-			registerObjectInstance: currentState contextTop
-			withOid: executedBytecode - 1.
-		instantiationCounter := instantiationCounter + 1.
-		oidsKeeper instantiationIDDictionary
-			at: instancedObj
-			put: instantiationCounter ].
-
-	currentState isMessageSend ifTrue: [ 
-		oidsKeeper
-			registerObjectInstance: currentState messageReceiver
-			withOid: executedBytecode ].
-
-	super
-		doAstStepPostProcessWithPrevNode: preProcessAstNode
-		andPrevContext: preContext
-]
-
-{ #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> doAstStepPreProcess [
-
-	currentState isMessageSend
-		ifTrue: [ "handling message sends cases" 
-			self doAstStepPreProcessForMessageSends ]
-		ifFalse: [ 
-			self isRecordingEnabled ifTrue: [ 
-				| node |
-				node := currentState node.
-				node isAssignment ifTrue: [ 
-					restorer doAstStepPreProcessForAssignments ] ] ]
-]
-
-{ #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> doAstStepPreProcessForMessageSends [
-
-	"handling message sends cases"
-
-	| method primitive |
-	"register the receiver"
-	oidsKeeper
-		registerObjectInstance: currentState messageReceiver
-		withOid: executedBytecode.
-	method := currentState methodAboutToExecute.
-	stepper skipFlag: (stepper skippableMethods includes: method).
-	primitive := method ifNil: [ 0 ] ifNotNil: [ method primitive ].
-	shouldAlwaysRunToEnd ifFalse: [ 
-		shouldAlwaysRunToEnd := SeekerCurrentStateInterface 
-			                        isWaitPrimitive: primitive ].
-	(SeekerCurrentStateInterface isInstantiationPrimitive: primitive)
-		ifTrue: [ instantiationFlag := true ]
-		ifFalse: [ 
-			((SeekerCurrentStateInterface isWritingPrimitive: primitive) and: [ 
-				 self isRecordingEnabled ]) ifTrue: [ 
-				| messageReceiver |
-				messageReceiver := currentState messageReceiver.
-				(oidsKeeper objectIsLocal: messageReceiver) ifFalse: [ "We store a copy of the object if this is writing primitive" 
-					restorer recordSnapshotOfObject: messageReceiver ] ] ]
-]
-
 { #category : #'UI specific' }
 SkQueryExperimentalTracer >> executeAndShow: aQuery [
 
@@ -121,15 +45,11 @@ SkQueryExperimentalTracer >> findContextInStack [
 { #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> getOidOf: anObject [
 
-	^ oidsKeeper getOidOf: anObject
+	^ objectsTracker getOidOf: anObject
 ]
 
 { #category : #initialization }
 SkQueryExperimentalTracer >> initialize [
-
-	instantiationCounter := 0.
-
-	instantiationFlag := false.
 
 	shouldAlwaysRunToEnd := false.
 	super initialize.
@@ -151,13 +71,13 @@ SkQueryExperimentalTracer >> newProgramStates [
 { #category : #accessing }
 SkQueryExperimentalTracer >> objectIsLocal: anObject [
 
-	^ oidsKeeper objectIsLocal: anObject
+	^ objectsTracker objectIsLocal: anObject
 ]
 
 { #category : #accessing }
 SkQueryExperimentalTracer >> objectOidIsLocal: aNumber [
 
-	^ oidsKeeper objectOidIsLocal: aNumber
+	^ objectsTracker objectOidIsLocal: aNumber
 ]
 
 { #category : #'as yet unclassified' }
@@ -165,7 +85,7 @@ SkQueryExperimentalTracer >> onTracedContextChanged [
 
 	"self createContextCacheFor: self currentContext."
 
-	oidsKeeper
+	objectsTracker
 		registerObjectInstance: self currentContext receiver
 		withOid: executedBytecode - 1.
 	super onTracedContextChanged
@@ -188,9 +108,8 @@ SkQueryExperimentalTracer >> restartAtBytecodeOne [
 	shouldAlwaysRunToEnd ifTrue: [ self stepToEnd ].
 	shouldAlwaysRunToEnd := false.
 	restorer restoreNonLocalChanges.
-	oidsKeeper clear.
-	instantiationCounter := 0.
-	instantiationFlag := false.
+	objectsTracker clear.
+	
 	currentState resetCacheTimeKey.
 
 	restorer clear.

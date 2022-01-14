@@ -23,18 +23,27 @@ SkOptimizedTracer >> doAstStepPostProcessWithPrevNode: preProcessAstNode andPrev
 
 	| currentNode "currentStatementNode" contextChanged "statementChanged" |
 	"Dont do a super call here!"
-	currentNode := currentState node "currentContext method sourceNodeForPC:
-		               currentContext pc".
+	objectsTracker
+		doAstStepPostProcessWithPrevNode: preProcessAstNode
+		andPrevContext: preContext.
+	currentNode := currentState node. "currentContext method sourceNodeForPC:
+		               currentContext pc"
 	"currentStatementNode := currentNode statementNode."
 	contextChanged := currentContext ~~ preContext.
 	"statementChanged := contextChanged or: [ 
 		                    cachedCurrentStatementNode
 		                    ~~ currentStatementNode ]."
 	"Note that during the OnXChanged, the cachedValues are the ones before the change"
-	contextChanged ifTrue: [ self onTracedContextChanged ]."
+	contextChanged ifTrue: [ self onTracedContextChanged ]. "
 	statementChanged ifTrue: [ self onTracedStatementChanged ]."
-	cachedCurrentContext := currentContext.
+	cachedCurrentContext := currentContext
 	"cachedCurrentStatementNode := currentStatementNode"
+]
+
+{ #category : #'as yet unclassified' }
+SkOptimizedTracer >> doAstStepPreProcess [
+
+	objectsTracker doAstStepPreProcess
 ]
 
 { #category : #initialization }
