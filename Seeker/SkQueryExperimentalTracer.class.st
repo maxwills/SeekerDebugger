@@ -107,12 +107,12 @@ SkQueryExperimentalTracer >> restartAtBytecodeOne [
 
 	shouldAlwaysRunToEnd ifTrue: [ self stepToEnd ].
 	shouldAlwaysRunToEnd := false.
-	restorer restoreNonLocalChanges.
+	restorer enabled ifTrue: [ restorer restoreNonLocalChanges ].
 	objectsTracker reset.
-	
+
 	currentState resetCacheTimeKey.
 
-	restorer reset.
+	restorer enabled ifTrue: [ restorer reset ].
 	super restartAtBytecodeOne
 ]
 

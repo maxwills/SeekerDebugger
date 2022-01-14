@@ -233,22 +233,6 @@ SkSteppableTracer >> isQuickMapAvailable [
 ]
 
 { #category : #accessing }
-SkSteppableTracer >> isRecordingEnabled [
-
-	"Not stored value"
-
-	^ restorer enabled and:[ SeekerConfig default recordingEnabled]
-]
-
-{ #category : #accessing }
-SkSteppableTracer >> isRestorationEnabled [
-
-	"Not stored value"
-
-	^ SeekerConfig default restorationEnabled
-]
-
-{ #category : #accessing }
 SkSteppableTracer >> mapper [
 
 	^ executionMappper

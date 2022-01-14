@@ -1,5 +1,41 @@
 Class {
 	#name : #SkIdentityEnforcer,
 	#superclass : #SkComponent,
+	#instVars : [
+		'objectsTracker',
+		'currentState',
+		'tracer'
+	],
 	#category : #'Seeker-Components'
 }
+
+{ #category : #initialization }
+SkIdentityEnforcer >> bindComponents [
+
+	tracer := componentsHolder tracer.
+	currentState := componentsHolder currentState.
+	objectsTracker := componentsHolder objectsTracker
+]
+
+{ #category : #accessing }
+SkIdentityEnforcer >> doPostStepProcess [
+
+	"Immediately after interpreting a bytecode, if it corresponds to an instantiation message primitive,
+we check if we have the 'same' element from a previous replay. If so, we make the new object to have the old one.
+
+(Side note, Instantiations are always local to the execution)
+"
+
+	| instancedObj previousIdentity |
+	objectsTracker instantiationFlag ifFalse: [ ^ self ].
+
+	instancedObj := currentState contextTop.
+	instancedObj isReadOnlyObject ifTrue: [ ^ false ].
+	previousIdentity := objectsTracker getObjectByOid:
+		                    tracer bytecodeIndex.
+	previousIdentity ifNotNil: [ "There are exceptional cases where objects oid differ by -1 (the previous identity is executedBytecode). Not sure yet why. The next if patches that."
+		(previousIdentity class = instancedObj class and: [ 
+			 previousIdentity isReadOnlyObject not ]) ifTrue: [ "previousIdentity copyFrom: instancedObj.
+" 
+			previousIdentity becomeForward: instancedObj copyHash: true "pointers to previousIdentity point now to instancedObj,  and instancedObj has previousIdentity identityHash" ] ]
+]

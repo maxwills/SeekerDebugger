@@ -9,7 +9,8 @@ Class {
 		'tracer',
 		'storedNonLocalChangesDictionary',
 		'mapper',
-		'stepper'
+		'stepper',
+		'objectsTracker'
 	],
 	#category : #'Seeker-Components'
 }
@@ -21,6 +22,7 @@ SkExecutionRestorer >> bindComponents [
 	currentState := componentsHolder currentState.
 	mapper := componentsHolder mapper.
 	stepper := componentsHolder stepper.
+	objectsTracker := componentsHolder objectsTracker
 ]
 
 { #category : #accessing }
@@ -50,6 +52,24 @@ SkExecutionRestorer >> doPreStepProcessForAssignments [
 					recordChangeForReceiver: currentState receiver
 					ofVar: variable
 					inContext: currentState context ] ]
+]
+
+{ #category : #'as yet unclassified' }
+SkExecutionRestorer >> doPreStepProcessForMessageSends [
+
+	"handling message sends cases"
+
+	| method |
+	method := currentState methodAboutToExecute.
+	"	stepper skipFlag: (stepper skippableMethods includes: method)."
+	method ifNil: [ ^ self ].
+
+	objectsTracker instantiationFlag ifFalse: [ 
+		currentState isWritingPrimitiveMessage ifTrue: [ 
+			| messageReceiver |
+			messageReceiver := currentState messageReceiver.
+			(objectsTracker objectIsLocal: messageReceiver) ifFalse: [ "We store a copy of the object if this is writing primitive" 
+				self recordSnapshotOfObject: messageReceiver ] ] ]
 ]
 
 { #category : #initialization }
@@ -89,12 +109,12 @@ SkExecutionRestorer >> recordSnapshotOfObject: anObject [
 	variablesChangesOfReceiver := storedNonLocalChangesDictionary
 		                              at: anObject
 		                              ifAbsentPut: [ Dictionary new ].
-
 	variablesChangesOfReceiver
 		at: #__full_object_snaphot__
 		ifAbsentPut: [ 
 			| valuesCopy |
-			valuesCopy := anObject shallowCopy.
+			self flag: 'shallowCopy is actually the first part of a "shallow copy". copy does the job, and of course it is slightly slowe. Do not use deepCopy or any other similar technique. We just need to copy the "first lower layer" so to speak. Also, I need to check if copySameFrom is equicalent to the copy method, or I need to call postCopy.'.
+			valuesCopy := anObject copy.
 			[ anObject copySameFrom: valuesCopy ] ]
 ]
 
@@ -115,6 +135,7 @@ SkExecutionRestorer >> restoreNonLocalChanges [
 	"in this implementation we only store the first changes to a variable of an object. In theory, the order they are restored is not important"
 
 	"self halt."
+
 	storedNonLocalChangesDictionary valuesDo: [ :variablesAndUndoBlocks | 
 		variablesAndUndoBlocks valuesDo: [ :undoB | undoB value ] ]
 ]

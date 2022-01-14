@@ -12,16 +12,15 @@ Class {
 	#name : #SkObjectsTracker,
 	#superclass : #SkComponent,
 	#instVars : [
+		'identityEnforcer',
 		'oidsDictionary',
 		'nonLocalObjects',
-		'reverseOidsDictionary',
-		'instantiationIDDictionary',
-		'previousReverseOidsDictionary',
 		'currentState',
 		'restorer',
 		'tracer',
 		'instantiationFlag',
-		'instantiationCounter'
+		'persistentReverseOidsDictionary',
+		'instantiatedLocalObjects'
 	],
 	#category : #'Seeker-Components'
 }
@@ -31,41 +30,28 @@ SkObjectsTracker >> bindComponents [
 
 	tracer := componentsHolder tracer.
 	currentState := componentsHolder currentState.
-	restorer := componentsHolder restorer
+	restorer := componentsHolder restorer.
+	identityEnforcer := componentsHolder identityEnforcer
 ]
 
 { #category : #accessing }
 SkObjectsTracker >> doPostStepProcess [
 
+	identityEnforcer enabled ifTrue: [ 
+		identityEnforcer doPostStepProcess ].
+	
 	instantiationFlag ifTrue: [ 
-		"If there was an instantiation:
-		- there is no need ot restore the object state. Instantiations are naturally internal to the execution.
-		- Its identity must be enforced to the one of the previous play. Not doing this can break determinismn related to identityHashes.
-		
-		"
-		| instancedObj previousIdentity |
+		| instancedObj |
 		instancedObj := currentState contextTop.
-		previousIdentity := self reverseOidsDictionary
-			                    at: tracer bytecodeIndex  
-			                    ifAbsent: [ nil ].
-		previousIdentity ifNotNil: [ "There are exceptional cases where objects oid differ by -1 (the previous identity is executedBytecode). Not sure yet why. The next if patches that."
-			(previousIdentity class = instancedObj class and: [ 
-				 previousIdentity isReadOnlyObject not]) ifTrue: [ 
-				previousIdentity copyFrom: instancedObj.
-				previousIdentity becomeForward: instancedObj copyHash: true ] ].
-		"Next I am immediately registering the object so it can be queried right after the step"
 		self
-			registerObjectInstance: currentState contextTop
-			withOid: tracer bytecodeIndex  - 1.
-		instantiationCounter := instantiationCounter + 1.
-		instantiationIDDictionary
-			at: instancedObj
-			put: instantiationCounter ].
-"This is a fix to add track objectes when they are receivers. This will be changed for a mor general tracking solution"
+			registerObjectInstance: instancedObj
+			withOid: tracer bytecodeIndex - 1.
+		instantiatedLocalObjects add: instancedObj ].
+	"This is a fix to add track objectes when they are receivers. This will be changed for a mor general tracking solution"
 	currentState isMessageSend ifTrue: [ 
 		self
 			registerObjectInstance: currentState messageReceiver
-			withOid: tracer bytecodeIndex ].
+			withOid: tracer bytecodeIndex ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -73,52 +59,31 @@ SkObjectsTracker >> doPreStepProcess [
 
 	instantiationFlag := false.
 	currentState isMessageSend
-		ifTrue: [ "handling message sends cases" 
-		self doPreStepProcessForMessageSends ]
+		ifTrue: [ "handling message sends cases"
+			self doPreStepProcessForMessageSends.
+			restorer enabled ifTrue: [ 
+				restorer doPreStepProcessForMessageSends ] ]
 		ifFalse: [ 
-			tracer isRecordingEnabled ifTrue: [ 
-				| node |
-				node := currentState node.
-				node isAssignment ifTrue: [ 
+			| node |
+			node := currentState node.
+			node isAssignment ifTrue: [ 
+				restorer enabled ifTrue: [ 
 					restorer doPreStepProcessForAssignments ] ] ]
 ]
 
 { #category : #'as yet unclassified' }
 SkObjectsTracker >> doPreStepProcessForMessageSends [
 
-	"handling message sends cases"
-
-	| method primitive |
-	"register the receiver oid"
 	self
 		registerObjectInstance: currentState messageReceiver
 		withOid: tracer bytecodeIndex.
-		
-	method := currentState methodAboutToExecute.
-	"	stepper skipFlag: (stepper skippableMethods includes: method)."
-	primitive := method ifNil: [ 0 ] ifNotNil: [ method primitive ].
-	"shouldAlwaysRunToEnd ifFalse: [ 
-		shouldAlwaysRunToEnd := SeekerCurrentStateInterface 
-			                        isWaitPrimitive: primitive ]."
-		
-	"Handle restoration part"
-	(SeekerCurrentStateInterface isInstantiationPrimitive: primitive)
-		ifTrue: [ instantiationFlag := true ]
-		ifFalse: [ 
-			((SeekerCurrentStateInterface isWritingPrimitive: primitive) and: [ 
-				 tracer isRecordingEnabled ]) ifTrue: [ 
-				| messageReceiver |
-				messageReceiver := currentState messageReceiver.
-				(self objectIsLocal: messageReceiver) ifFalse: [ "We store a copy of the object if this is writing primitive" 
-					restorer recordSnapshotOfObject: messageReceiver ] ] ]
+	instantiationFlag := currentState isInstantiationMessage
 ]
 
 { #category : #initialization }
 SkObjectsTracker >> getObjectByOid: aNumber [
 
-	oidsDictionary associationsDo: [ :assoc | 
-		assoc value == aNumber ifTrue: [ ^ assoc key ] ].
-	^ nil
+	^ persistentReverseOidsDictionary at: aNumber ifAbsent: [ nil ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -130,13 +95,11 @@ SkObjectsTracker >> getOidOf: anObject [
 { #category : #initialization }
 SkObjectsTracker >> initialize [
 
-	oidsDictionary := IdentityDictionary new. "WeakIdentityKeyDictionary"
-	instantiationIDDictionary := WeakIdentityKeyDictionary new.
+	oidsDictionary := WeakIdentityKeyDictionary new.
+	instantiatedLocalObjects := WeakIdentitySet new.
 	nonLocalObjects := WeakIdentitySet new.
-	reverseOidsDictionary := Dictionary new.
-	previousReverseOidsDictionary := Dictionary new.
-	instantiationFlag := false.
-	instantiationCounter := 0
+	persistentReverseOidsDictionary := Dictionary new.
+	instantiationFlag := false
 ]
 
 { #category : #'as yet unclassified' }
@@ -147,28 +110,16 @@ SkObjectsTracker >> instantiationFlag [
 	^ instantiationFlag
 ]
 
-{ #category : #accessing }
-SkObjectsTracker >> instantiationIDDictionary [
+{ #category : #testing }
+SkObjectsTracker >> isPersistent [
 
-	^ instantiationIDDictionary
-]
-
-{ #category : #accessing }
-SkObjectsTracker >> instantiationIDDictionary: anObject [
-
-	instantiationIDDictionary := anObject
+	^ false
 ]
 
 { #category : #accessing }
 SkObjectsTracker >> nonLocalObjects [
 
 	^ nonLocalObjects
-]
-
-{ #category : #accessing }
-SkObjectsTracker >> nonLocalObjects: anObject [
-
-	nonLocalObjects := anObject
 ]
 
 { #category : #accessing }
@@ -179,7 +130,7 @@ SkObjectsTracker >> objectIsLocal: anObject [
 	"Beware that the execution corresponds only to the already executed part."
 
 	anObject class = Metaclass ifTrue: [ ^ true ].
-	^ instantiationIDDictionary includesKey: anObject
+	^ instantiatedLocalObjects includes: anObject
 ]
 
 { #category : #accessing }
@@ -198,47 +149,34 @@ SkObjectsTracker >> oidsDictionary [
 	^ oidsDictionary
 ]
 
-{ #category : #accessing }
-SkObjectsTracker >> oidsDictionary: anObject [
-
-	oidsDictionary := anObject
-]
-
 { #category : #'as yet unclassified' }
 SkObjectsTracker >> registerObjectInstance: anObject withOid: aNumber [
 
 	"anObject class = Metaclass ifTrue: [ ^ self ]."
 
-	reverseOidsDictionary at: aNumber ifAbsentPut: [ anObject ].
+	persistentReverseOidsDictionary at: aNumber ifAbsentPut: [ anObject ].
 	oidsDictionary at: anObject ifAbsentPut: [ aNumber ].
 
 
-	(instantiationIDDictionary includesKey: anObject) ifFalse: [ "anObject seekMyAlias = 1841 ifTrue: [ 
+	(instantiatedLocalObjects includes: anObject) ifFalse: [ "anObject seekMyAlias = 1841 ifTrue: [ 
 			Transcript
 				show: 'markA' , byteCountCounter asString;
 				cr ]." 
 		nonLocalObjects add: anObject "Set will only add it if it is not present yet" ]
 ]
 
-{ #category : #accessing }
+{ #category : #initialization }
 SkObjectsTracker >> reset [
 
-	oidsDictionary removeAll.
-	nonLocalObjects := WeakIdentitySet new.
-	instantiationIDDictionary removeAll.
-	instantiationCounter := 0.
-	instantiationFlag := false.
+	self isPersistent ifFalse: [ 
+		"note to self: if isPersistent is true, then ensure that identities are enforced before registering objects
+		or the objects sets will grow with every replay
+		"
+		oidsDictionary removeAll.
+		nonLocalObjects := WeakIdentitySet new.
+		"persistentReverseOids should always be persistent, since it is needed as such for enforcing indentyHash"
+		instantiatedLocalObjects removeAll ].
+
+	instantiationFlag := false
 	"Why the other instance variables dont need to be updated"
-]
-
-{ #category : #accessing }
-SkObjectsTracker >> reverseOidsDictionary [
-
-	^ reverseOidsDictionary
-]
-
-{ #category : #accessing }
-SkObjectsTracker >> reverseOidsDictionary: anObject [
-
-	reverseOidsDictionary := anObject
 ]

@@ -16,6 +16,7 @@ Class {
 		'instrumentedMethods',
 		'stepper',
 		'restorer',
+		'identityEnforcer',
 		'components',
 		'objectsTracker'
 	],
@@ -60,6 +61,18 @@ SkTracerBase >> doMouseButtonEventInstrumentedBlockOnce: aBlock [
 ]
 
 { #category : #accessing }
+SkTracerBase >> identityEnforcer [
+
+	^ identityEnforcer
+]
+
+{ #category : #accessing }
+SkTracerBase >> identityEnforcer: anObject [
+
+	^ identityEnforcer := anObject
+]
+
+{ #category : #accessing }
 SkTracerBase >> inMouseButtonEventInstrumentationFlag [
 
 	^ inMouseButtonEventInstrumentationFlag
@@ -88,6 +101,7 @@ SkTracerBase >> initializeComponents [
 	components add: (stepper := SkStepper newFor: self).
 	components add: (restorer := SkExecutionRestorer newFor: self).
 	components add: (objectsTracker := SkObjectsTracker newFor: self).
+	components add: (identityEnforcer := SkIdentityEnforcer newFor: self).
 	self bindComponents
 ]
 
