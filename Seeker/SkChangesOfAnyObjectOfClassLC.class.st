@@ -19,7 +19,7 @@ SkChangesOfAnyObjectOfClassLC >> executeCommand [
 	objecClassName := self tracer selectedCode asSymbol.
 	self showResultFor:
 		(TTQAllAssignmentsOfInstanceVariablesOfClassWithName
-			 queryFrom: self tracer programStates
+			 queryFrom: self tracer newProgramStates
 			 withClassName: objecClassName)
 ]
 

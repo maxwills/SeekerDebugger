@@ -18,7 +18,7 @@ SkChangesOfVariableByNameLC >> executeCommand [
 	| variableName |
 	variableName := self tracer selectedCode asSymbol.
 	self showResultFor: (TTQAllAssignmentsOfVariablesWithName
-			 queryFrom: self tracer programStates
+			 queryFrom: self tracer newProgramStates
 			 withVariableName: variableName)
 ]
 

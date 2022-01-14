@@ -18,7 +18,7 @@ SkAllInstanceCreationsOfClassLC >> executeCommand [
 	| className |
 	className := self tracer selectedCode asSymbol.
 	self showResultFor: (TTQAllInstanceCreationsOfClassWithName
-			 queryFrom: self tracer programStates
+			 queryFrom: self tracer newProgramStates
 			 withClassName: className)
 ]
 

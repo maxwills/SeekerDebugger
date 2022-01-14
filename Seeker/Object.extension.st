@@ -120,7 +120,7 @@ Object >> seekAllMessagesSentToMe [
 		| oid res |
 		oid := self seekMyOid.
 		res := (TTQAllMessagesSentToObject
-			        queryFrom: seeker programStates
+			        queryFrom: seeker newProgramStates
 			        withObjectOid: oid) asCollection.
 		^ res ].
 	^ nil
@@ -135,7 +135,7 @@ Object >> seekAllMyChanges [
 		| oid res |
 		oid := self seekMyOid.
 		res := (TTQAllAssignmentsOfInstanceVariablesOfObject
-			        queryFrom: seeker programStates
+			        queryFrom: seeker newProgramStates
 			        withObjectOid: oid) asCollection.
 		^ res ].
 
@@ -155,7 +155,7 @@ Object >> seekAndDisplayAllMessagesSentToMe [
 		oid := self seekMyOid.
 		oid ifNil: [ ^ self error: 'Seeker: obtained Oid was nil.' ].
 		seeker ui showInResult: (TTQAllMessagesSentToObject
-				 queryFrom: seeker programStates
+				 queryFrom: seeker newProgramStates
 				 withObjectOid: oid) displayModel.
 		error := false ] ] ensure: [ 
 		error
@@ -177,7 +177,7 @@ Object >> seekAndDisplayAllMyChanges [
 		oid ifNil: [ ^ self error: 'Seeker: obtained Oid was nil.' ].
 		seeker ui showInResult:
 			(TTQAllAssignmentsOfInstanceVariablesOfObject
-				 queryFrom: seeker programStates
+				 queryFrom: seeker newProgramStates
 				 withObjectOid: oid) displayModel.
 		error := false ] ] ensure: [ 
 		error

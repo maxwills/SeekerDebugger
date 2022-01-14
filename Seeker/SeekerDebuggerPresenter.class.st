@@ -557,10 +557,10 @@ SeekerDebuggerPresenter >> updatePresenter [
 						 key: #currentState
 						 value: self seekerDebugger tracer currentState).
 			code interactionModel bindings
-				at: #programStates
+				at: #newProgramStates
 				put: (WorkspaceVariable
-						 key: #programStates
-						 value: self seekerDebugger tracer programStates).
+						 key: #newProgramStates
+						 value: self seekerDebugger tracer newProgramStates).
 
 			self updateLabelOnly.
 			"	self updateEvaluatorCode."

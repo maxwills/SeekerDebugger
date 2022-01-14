@@ -19,7 +19,7 @@ SkAllMessageSendsToSelfLC >> executeCommand [
 	oid := self tracer currentState receiverOid.
 
 	self showResultFor: (TTQAllMessagesSentToObject
-			 queryFrom: self tracer programStates
+			 queryFrom: self tracer newProgramStates
 			 withObjectOid: oid)
 ]
 

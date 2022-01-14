@@ -31,7 +31,7 @@ TimeTravelingQuery class >> displayModel [
 TimeTravelingQuery class >> performWith: tracer [
 
 	tracer ui showInResult:
-		(self queryFrom: tracer programStates) displayModel
+		(self queryFrom: tracer newProgramStates) displayModel
 ]
 
 { #category : #'as yet unclassified' }

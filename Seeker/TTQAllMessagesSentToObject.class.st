@@ -8,7 +8,7 @@ Class {
 TTQAllMessagesSentToObject class >> performWith: tracer withArg: arg [
 
 	tracer ui showInResult:
-		(self queryFrom: tracer programStates withObjectOid: arg) displayModel 
+		(self queryFrom: tracer newProgramStates withObjectOid: arg) displayModel 
 ]
 
 { #category : #'as yet unclassified' }

@@ -42,7 +42,7 @@ GeneralSeekerTests class >> myQueryExample: seeker [
 	"Lists the variable name for all the assignments of an execution."
 	"This can be executed from the scripting tab doing GeneralSeekerTests myQueryExample: seeker"
 	query := Query
-		         from: seeker programStates
+		         from: seeker newProgramStates
 		         select: [ :state | state node isAssignment ]
 		         collect: [ :state | 
 			         New with: { 

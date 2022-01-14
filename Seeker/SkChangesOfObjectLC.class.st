@@ -19,7 +19,7 @@ SkChangesOfObjectLC >> executeCommand [
 	objectOid := self getSelectedObjectOid.
 
 	self showResultFor: (TTQAllAssignmentsOfInstanceVariablesOfObject
-			 queryFrom: self tracer programStates
+			 queryFrom: self tracer newProgramStates
 			 withObjectOid: objectOid)
 ]
 

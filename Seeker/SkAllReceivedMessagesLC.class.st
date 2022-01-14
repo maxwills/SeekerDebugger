@@ -16,7 +16,7 @@ SkAllReceivedMessagesLC >> description [
 SkAllReceivedMessagesLC >> executeCommand [
 
 	self showResultFor:
-		(TTQAllReceivedMessages queryFrom: self tracer programStates)
+		(TTQAllReceivedMessages queryFrom: self tracer newProgramStates)
 ]
 
 { #category : #accessing }

@@ -141,6 +141,12 @@ SkQueryExperimentalTracer >> isTopContext: aContext [
 	^ stDebugger interruptedContext = aContext
 ]
 
+{ #category : #'as yet unclassified' }
+SkQueryExperimentalTracer >> newProgramStates [
+
+	^ SkProgramStates newForTracer: self
+]
+
 { #category : #accessing }
 SkQueryExperimentalTracer >> objectIsLocal: anObject [
 
@@ -173,12 +179,6 @@ SkQueryExperimentalTracer >> perform [
 	^ interface
 ]
 
-{ #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> programStates [
-
-	^ SkProgramStates newForTracer: self
-]
-
 { #category : #starting }
 SkQueryExperimentalTracer >> restartAtBytecodeOne [
 
@@ -186,35 +186,14 @@ SkQueryExperimentalTracer >> restartAtBytecodeOne [
 
 	shouldAlwaysRunToEnd ifTrue: [ self stepToEnd ].
 	shouldAlwaysRunToEnd := false.
-	self restoreNonLocalChanges.
+	restorer restoreNonLocalChanges.
 	oidsKeeper clear.
-	"previousReverseOidsDictionary := reverseOidsDictionary.
-	reverseOidsDictionary := Dictionary new."
-	"
-	aliasesDictionary := WeakIdentityKeyDictionary new."
 	instantiationCounter := 0.
-	"
-	instantiationIDDictionary := WeakIdentityKeyDictionary new."
 	instantiationFlag := false.
 	currentState resetCacheTimeKey.
-	
-	restorer clear. "
-	storedNonLocalChangesDictionary := WeakIdentityKeyDictionary new." "Keys are the object owning the variable, and the value is a dictionary of keys variable name (symbol) with values the Undo block"
+
+	restorer clear.
 	super restartAtBytecodeOne
-]
-
-{ #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> restoreNonLocalChanges [
-
-	"	storedNonLocalChanges reverseDo: [ :each | 
-		| undoBlock |
-		undoBlock := each at: 4.
-		undoBlock value ]"
-
-	"in this implementation we only store the first changes to a variable of an object. In theory, the order they are restored is not important"
-
-	self isRestorationEnabled ifFalse: [ ^ self ].
-	restorer restoreNonLocalChanges
 ]
 
 { #category : #accessing }

@@ -18,7 +18,7 @@ SkAllMessageSendsWithSelectorLC >> executeCommand [
 	| selector |
 	selector := self tracer selectedSelector.
 	self showResultFor: (TTQAllMessagesSentWithSelector
-			 queryFrom: self tracer programStates
+			 queryFrom: self tracer newProgramStates
 			 withSelector: selector)
 ]
 
