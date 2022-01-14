@@ -19,13 +19,12 @@ SkOptimizedTracer >> currentContext [
 ]
 
 { #category : #accessing }
-SkOptimizedTracer >> doAstStepPostProcessWithPrevNode: preProcessAstNode andPrevContext: preContext [
+SkOptimizedTracer >> doPostStepProcessWithPrevNode: preProcessAstNode andPrevContext: preContext [
 
 	| currentNode "currentStatementNode" contextChanged "statementChanged" |
-	"Dont do a super call here!"
-	objectsTracker
-		doAstStepPostProcessWithPrevNode: preProcessAstNode
-		andPrevContext: preContext.
+	self increaseExecutedBytecode.
+
+	objectsTracker doPostStepProcess.
 	currentNode := currentState node. "currentContext method sourceNodeForPC:
 		               currentContext pc"
 	"currentStatementNode := currentNode statementNode."
@@ -41,9 +40,9 @@ SkOptimizedTracer >> doAstStepPostProcessWithPrevNode: preProcessAstNode andPrev
 ]
 
 { #category : #'as yet unclassified' }
-SkOptimizedTracer >> doAstStepPreProcess [
+SkOptimizedTracer >> doPreStepProcess [
 
-	objectsTracker doAstStepPreProcess
+	objectsTracker doPreStepProcess 
 ]
 
 { #category : #initialization }

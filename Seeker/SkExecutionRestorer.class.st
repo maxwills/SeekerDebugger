@@ -33,12 +33,6 @@ SkExecutionRestorer >> checkPreventNextTimeRestoration [
 	^ val
 ]
 
-{ #category : #'add/remove' }
-SkExecutionRestorer >> clear [
-
-	storedNonLocalChangesDictionary removeAll
-]
-
 { #category : #accessing }
 SkExecutionRestorer >> doAstStepPreProcessForAssignments [
 
@@ -125,6 +119,12 @@ SkExecutionRestorer >> recordSnapshotOfObject: anObject [
 			| valuesCopy |
 			valuesCopy := anObject shallowCopy.
 			[ anObject copySameFrom: valuesCopy ] ]
+]
+
+{ #category : #'add/remove' }
+SkExecutionRestorer >> reset [
+
+	storedNonLocalChangesDictionary removeAll
 ]
 
 { #category : #accessing }

@@ -272,7 +272,7 @@ This will fail if the code relies on more encoders (Need to test in Pharo 9.0)"
 					| previousContext startingNode |
 					previousContext := currentContext.
 					startingNode := currentState node.
-					tracer doAstStepPreProcess.
+					tracer doPreStepProcess.
 					"currentContext stepIntoQuickMethod: true."
 					currentContext := skipFlag
 						                  ifTrue: [ 
@@ -287,13 +287,8 @@ This will fail if the code relies on more encoders (Need to test in Pharo 9.0)"
 						method: currentContext compiledCode
 						pc: currentContext pc.
 					debuggedProcess suspendedContext: currentContext.
-
-					tracer increaseExecutedBytecode.
-
-
-					"previousContext stepIntoQuickMethod: false."
 					tracer
-						doAstStepPostProcessWithPrevNode: startingNode
+						doPostStepProcessWithPrevNode: startingNode
 						andPrevContext: previousContext.
 					afterStepBlock ifNotNil: afterStepBlock ] ]
 		onBehalfOf: debuggedProcess.

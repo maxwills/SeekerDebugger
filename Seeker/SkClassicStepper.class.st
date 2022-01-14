@@ -28,7 +28,7 @@ SkClassicStepper >> stepBytecodeDoingAfterStep: aBlock [
 	previousContext := currentContext.
 	debuggedProcess := tracer debuggedProcess.
 	startingNode := nil. "currentState node"
-	tracer doAstStepPreProcess.
+	tracer doPreStepProcess.
 	"currentContext stepIntoQuickMethod: true."
 	currentContext := skipFlag
 		                  ifTrue: [ 
@@ -36,10 +36,9 @@ SkClassicStepper >> stepBytecodeDoingAfterStep: aBlock [
 			                  debuggedProcess completeStep: currentContext ]
 		                  ifFalse: [ debuggedProcess step ].
 	tracer currentContext: currentContext.
-	tracer increaseExecutedBytecode.
 	"previousContext stepIntoQuickMethod: false."
 	tracer
-		doAstStepPostProcessWithPrevNode: startingNode
+		doPostStepProcessWithPrevNode: startingNode
 		andPrevContext: previousContext.
 	aBlock ifNotNil: aBlock.
 	"byteCountCounter % 10000 = 0 ifTrue: [ self softUIUpdate ]."

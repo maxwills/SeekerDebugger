@@ -25,18 +25,7 @@ SkObjectsTracker >> bindComponents [
 ]
 
 { #category : #accessing }
-SkObjectsTracker >> clear [
-
-	oidsDictionary removeAll.
-	nonLocalObjects := WeakIdentitySet new.
-	instantiationIDDictionary removeAll.
-	instantiationCounter := 0.
-	instantiationFlag := false.
-	"Why the other instance variables dont need to be updated"
-]
-
-{ #category : #accessing }
-SkObjectsTracker >> doAstStepPostProcessWithPrevNode: preProcessAstNode andPrevContext: preContext [
+SkObjectsTracker >> doPostStepProcess [
 
 	instantiationFlag ifTrue: [ 
 		| instancedObj previousIdentity |
@@ -65,11 +54,11 @@ SkObjectsTracker >> doAstStepPostProcessWithPrevNode: preProcessAstNode andPrevC
 ]
 
 { #category : #'as yet unclassified' }
-SkObjectsTracker >> doAstStepPreProcess [
+SkObjectsTracker >> doPreStepProcess [
 
 	currentState isMessageSend
 		ifTrue: [ "handling message sends cases" 
-			self doAstStepPreProcessForMessageSends ]
+		self doPreStepProcessForMessageSends ]
 		ifFalse: [ 
 			tracer isRecordingEnabled ifTrue: [ 
 				| node |
@@ -79,7 +68,7 @@ SkObjectsTracker >> doAstStepPreProcess [
 ]
 
 { #category : #'as yet unclassified' }
-SkObjectsTracker >> doAstStepPreProcessForMessageSends [
+SkObjectsTracker >> doPreStepProcessForMessageSends [
 
 	"handling message sends cases"
 
@@ -202,6 +191,17 @@ SkObjectsTracker >> registerObjectInstance: anObject withOid: aNumber [
 				show: 'markA' , byteCountCounter asString;
 				cr ]." 
 		nonLocalObjects add: anObject "Set will only add it if it is not present yet" ]
+]
+
+{ #category : #accessing }
+SkObjectsTracker >> reset [
+
+	oidsDictionary removeAll.
+	nonLocalObjects := WeakIdentitySet new.
+	instantiationIDDictionary removeAll.
+	instantiationCounter := 0.
+	instantiationFlag := false.
+	"Why the other instance variables dont need to be updated"
 ]
 
 { #category : #accessing }

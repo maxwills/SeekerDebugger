@@ -127,22 +127,6 @@ SkSteppableTracer >> debuggedProcess: anObject [
 ]
 
 { #category : #'as yet unclassified' }
-SkSteppableTracer >> doAstStepPostProcessWithPrevNode: preProcessAstNode andPrevContext: preContext [
-
-	"self currentStepDescriptor  astSteps: astStepCounter."
-	"Note that this method is completely overriden by the optimized stepper (dont do a super call there!)"
-	
-]
-
-{ #category : #'as yet unclassified' }
-SkSteppableTracer >> doAstStepPreProcess [
-
-	"subclasses should reimplement this"
-
-	
-]
-
-{ #category : #'as yet unclassified' }
 SkSteppableTracer >> doMappingIfCorresponds [
 
 	"Short decription: Was the StDebugger opened with the intention of using seeker? if true, map the execution"
