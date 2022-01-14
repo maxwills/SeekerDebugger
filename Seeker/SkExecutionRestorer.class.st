@@ -1,5 +1,7 @@
 "
 Works with the rest of seeker components, and its role is to provide functions to restore an execution to its original state by tracking changes in objects, and registering ""undo"" blocks that are able to revert execution changes. Note that during replay, new object instantiations will be generated with a new identity. This class does not handles identities. That is the role of IndetyEnforcer component.
+
+The restorer participates activelly in every step performed (It is part of the stepping pipeline)
 "
 Class {
 	#name : #SkExecutionRestorer,

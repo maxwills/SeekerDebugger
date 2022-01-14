@@ -2,6 +2,8 @@
 This stepper uses the original stepping Mechanics of Seeker where the interpretation of the bytecode follows the complete call-chain (of double dispatch to select the appropriate way of interpreting the instruction).
 
 It is slower but have been tested and it works. The faster stepping (superclass) prevents double dispatch calls by directly using the single class enconder to interpret instructions (but it has not been tested too much).
+
+If Pharo 9.0 is used, it might be a good idea to use this stepper instead.
 "
 Class {
 	#name : #SkClassicStepper,

@@ -6,7 +6,7 @@ The component knows the OID of an object, and also the object of an OID of an ex
 An OID is an integer that identifies the object on a deterministic replay. The assigned OID is the executedBytecode (integer) at the moment the object was detected by the Object tracker. Therefore, it is important to remember to detect no more than one object per instruction. (In the contrary case, the detection algorithm needs to be changed, or the OID should correspond to something else, like a counter).
 OIDs are based on executedBytecode because it is a meaningful number. For example, we know that an object is instantiated at the step OID, and before it doesn't exists.
 
-OIDs are necessary for enforcing objects identities. Therefore, the ObjectTracker component needs to be enabled for the feature provided by IndentityEnforcer.
+OIDs are necessary for enforcing objects identities. Therefore, the ObjectTracker component needs to be enabled for the feature provided by IndentityEnforcer (which is only used by the ObjectTracker).
 "
 Class {
 	#name : #SkObjectsTracker,

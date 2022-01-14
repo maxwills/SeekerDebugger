@@ -1,3 +1,7 @@
+"
+The IdentityEnforcer is used to define the implementation of the ""idenity recovery to maintain determinism on replay"" feature.
+It is only used by the ObjectTracker, and it is part of the stepping pipeline.
+"
 Class {
 	#name : #SkIdentityEnforcer,
 	#superclass : #SkComponent,

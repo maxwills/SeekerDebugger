@@ -1,3 +1,18 @@
+"
+Defines the stepping implementation, and follows the ""Stepping Pipeline"" design.
+The pipeline essentially means that the stepping is divided into stages:
+- Pre-Step
+- Step
+- Post-Step.
+
+The main participation of this components is in the methods #stepBytecode (and variations).
+
+In every stage, different components (SkComponent) participate to perform the expected behavior of the debugger.
+Components can be disabled individually or replaced by a similar implementation to achieve different debugger configurations.
+
+For example, the ExecutionRestorer component can be disabled, and then Seeker will perform replays without recovering the initial state.
+This also means that it is easier to find errors in Seeker implementation by individually disable components.
+"
 Class {
 	#name : #SkStepper,
 	#superclass : #SkComponent,
