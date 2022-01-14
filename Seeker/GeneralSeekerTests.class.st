@@ -208,6 +208,31 @@ GeneralSeekerTests >> testNonLocalObjectVariable [
 ]
 
 { #category : #tests }
+GeneralSeekerTests >> testNonderministicIdentities [
+
+	"this is a manual test. "
+
+	| nObjects objectsDictionary |
+	objectsDictionary := IdentitySet new.
+	nObjects := 100.
+	1 to: nObjects do: [ :i | 
+		objectsDictionary add: (SkExampleObjWithText new
+				 text: 'Object ' , i asString;
+				 yourself) ].
+	"
+	1. Execute until here.
+	Do this (SeekerGlobals instance auxiliaryTempStorage1: objectsDictionary deepCopy asOrderedCollection)
+2. Then restart the context and step to this same spot.
+3. Then inspect this:
+(objectsDictionary asOrderedCollection = SeekerGlobals instance auxiliaryTempStorage1 )
+When executed without seeker, this should be false (most of the time).
+When executed with Seeker, it should be true.
+"
+	self halt.
+
+]
+
+{ #category : #tests }
 GeneralSeekerTests >> testPlusEqual [
 
 	"the the tested code is in another project now.. search for operators in my github"
@@ -218,30 +243,6 @@ GeneralSeekerTests >> testPlusEqual [
 	a += 1.
 	self assert: a equals: 1.
 	self assert: false
-]
-
-{ #category : #tests }
-GeneralSeekerTests >> testUnderministicIdentities [
-
-	| nObjects objectsDictionary objectsCollection sameOrder counter |
-	sameOrder := true.
-	counter := 0.
-	objectsDictionary := IdentitySet new.
-	objectsCollection := OrderedCollection new.
-	nObjects := 100.
-	1 to: nObjects do: [ :i | 
-		| obj |
-		obj := SkExampleObjWithText new
-			       text: 'Object ' , i asString;
-			       yourself.
-		objectsDictionary add: obj.
-		objectsCollection add: obj ].
-self halt.
-	objectsDictionary do: [ :o | 
-		counter := counter + 1.
-		(o == (objectsCollection at: counter)) ifFalse: [ sameOrder := false ] ].
-
-	self assert: sameOrder equals: true
 ]
 
 { #category : #tests }

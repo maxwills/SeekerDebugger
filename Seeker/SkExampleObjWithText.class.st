@@ -7,6 +7,12 @@ Class {
 	#category : #'Seeker-BugCollection-Tests'
 }
 
+{ #category : #comparing }
+SkExampleObjWithText >> = another [
+
+	^ text = another text
+]
+
 { #category : #initialization }
 SkExampleObjWithText >> initialize [
 
