@@ -8,7 +8,8 @@ Class {
 		'currentState',
 		'tracer',
 		'storedNonLocalChangesDictionary',
-		'mapper'
+		'mapper',
+		'stepper'
 	],
 	#category : #'Seeker-Components'
 }
@@ -18,7 +19,8 @@ SkExecutionRestorer >> bindComponents [
 
 	tracer := componentsHolder tracer.
 	currentState := componentsHolder currentState.
-	mapper := componentsHolder mapper
+	mapper := componentsHolder mapper.
+	stepper := componentsHolder stepper.
 ]
 
 { #category : #accessing }

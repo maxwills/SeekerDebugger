@@ -42,7 +42,7 @@ SkOptimizedTracer >> doPostStepProcessWithPrevNode: preProcessAstNode andPrevCon
 { #category : #'as yet unclassified' }
 SkOptimizedTracer >> doPreStepProcess [
 
-	objectsTracker doPreStepProcess 
+	objectsTracker doPreStepProcess.
 ]
 
 { #category : #initialization }

@@ -1,3 +1,13 @@
+"
+Object tracker detects objects in the execution, and assigns them an OID. It also keeps track of objects that are local to the execution (instantiated during the execution) and non local (objects that were alive before the execution).
+
+The component knows the OID of an object, and also the object of an OID of an execution (both up to the LiveState. If identities are enforced (See SkIdentityEnforcer), then the OIDs include also the Future States).
+
+An OID is an integer that identifies the object on a deterministic replay. The assigned OID is the executedBytecode (integer) at the moment the object was detected by the Object tracker. Therefore, it is important to remember to detect no more than one object per instruction. (In the contrary case, the detection algorithm needs to be changed, or the OID should correspond to something else, like a counter).
+OIDs are based on executedBytecode because it is a meaningful number. For example, we know that an object is instantiated at the step OID, and before it doesn't exists.
+
+OIDs are necessary for enforcing objects identities. Therefore, the ObjectTracker component needs to be enabled for the feature provided by IndentityEnforcer.
+"
 Class {
 	#name : #SkObjectsTracker,
 	#superclass : #SkComponent,
@@ -28,9 +38,13 @@ SkObjectsTracker >> bindComponents [
 SkObjectsTracker >> doPostStepProcess [
 
 	instantiationFlag ifTrue: [ 
+		"If there was an instantiation:
+		- there is no need ot restore the object state. Instantiations are naturally internal to the execution.
+		- Its identity must be enforced to the one of the previous play. Not doing this can break determinismn related to identityHashes.
+		
+		"
 		| instancedObj previousIdentity |
 		instancedObj := currentState contextTop.
-		instantiationFlag := false.
 		previousIdentity := self reverseOidsDictionary
 			                    at: tracer bytecodeIndex  
 			                    ifAbsent: [ nil ].
@@ -39,6 +53,7 @@ SkObjectsTracker >> doPostStepProcess [
 				 previousIdentity isReadOnlyObject not]) ifTrue: [ 
 				previousIdentity copyFrom: instancedObj.
 				previousIdentity becomeForward: instancedObj copyHash: true ] ].
+		"Next I am immediately registering the object so it can be queried right after the step"
 		self
 			registerObjectInstance: currentState contextTop
 			withOid: tracer bytecodeIndex  - 1.
@@ -46,7 +61,7 @@ SkObjectsTracker >> doPostStepProcess [
 		instantiationIDDictionary
 			at: instancedObj
 			put: instantiationCounter ].
-
+"This is a fix to add track objectes when they are receivers. This will be changed for a mor general tracking solution"
 	currentState isMessageSend ifTrue: [ 
 		self
 			registerObjectInstance: currentState messageReceiver
@@ -56,6 +71,7 @@ SkObjectsTracker >> doPostStepProcess [
 { #category : #'as yet unclassified' }
 SkObjectsTracker >> doPreStepProcess [
 
+	instantiationFlag := false.
 	currentState isMessageSend
 		ifTrue: [ "handling message sends cases" 
 		self doPreStepProcessForMessageSends ]
@@ -73,16 +89,19 @@ SkObjectsTracker >> doPreStepProcessForMessageSends [
 	"handling message sends cases"
 
 	| method primitive |
-	"register the receiver"
+	"register the receiver oid"
 	self
 		registerObjectInstance: currentState messageReceiver
 		withOid: tracer bytecodeIndex.
+		
 	method := currentState methodAboutToExecute.
 	"	stepper skipFlag: (stepper skippableMethods includes: method)."
 	primitive := method ifNil: [ 0 ] ifNotNil: [ method primitive ].
 	"shouldAlwaysRunToEnd ifFalse: [ 
 		shouldAlwaysRunToEnd := SeekerCurrentStateInterface 
 			                        isWaitPrimitive: primitive ]."
+		
+	"Handle restoration part"
 	(SeekerCurrentStateInterface isInstantiationPrimitive: primitive)
 		ifTrue: [ instantiationFlag := true ]
 		ifFalse: [ 
@@ -118,6 +137,14 @@ SkObjectsTracker >> initialize [
 	previousReverseOidsDictionary := Dictionary new.
 	instantiationFlag := false.
 	instantiationCounter := 0
+]
+
+{ #category : #'as yet unclassified' }
+SkObjectsTracker >> instantiationFlag [
+
+	"Its value is true right after a preStepProcess of an instantiation message, and remains true until the the next call of preStepProcess"
+
+	^ instantiationFlag
 ]
 
 { #category : #accessing }
