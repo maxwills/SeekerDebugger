@@ -221,6 +221,30 @@ GeneralSeekerTests >> testPlusEqual [
 ]
 
 { #category : #tests }
+GeneralSeekerTests >> testUnderministicIdentities [
+
+	| nObjects objectsDictionary objectsCollection sameOrder counter |
+	sameOrder := true.
+	counter := 0.
+	objectsDictionary := IdentitySet new.
+	objectsCollection := OrderedCollection new.
+	nObjects := 100.
+	1 to: nObjects do: [ :i | 
+		| obj |
+		obj := SkExampleObjWithText new
+			       text: 'Object ' , i asString;
+			       yourself.
+		objectsDictionary add: obj.
+		objectsCollection add: obj ].
+self halt.
+	objectsDictionary do: [ :o | 
+		counter := counter + 1.
+		(o == (objectsCollection at: counter)) ifFalse: [ sameOrder := false ] ].
+
+	self assert: sameOrder equals: true
+]
+
+{ #category : #tests }
 GeneralSeekerTests >> testVariableChange [
 
 	"Do this once the window opens:

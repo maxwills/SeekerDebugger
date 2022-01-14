@@ -40,7 +40,8 @@ SkQueryExperimentalTracer >> doAstStepPostProcessWithPrevNode: preProcessAstNode
 			                    at: executedBytecode
 			                    ifAbsent: [ nil ].
 		previousIdentity ifNotNil: [ "There are exceptional cases where objects oid differ by -1 (the previous identity is executedBytecode). Not sure yet why. The next if patches that."
-			previousIdentity class = instancedObj class ifTrue: [ 
+			(previousIdentity class = instancedObj class and: [ 
+				 previousIdentity isReadOnlyObject not]) ifTrue: [ 
 				previousIdentity copyFrom: instancedObj.
 				previousIdentity becomeForward: instancedObj copyHash: true ] ].
 		oidsKeeper
