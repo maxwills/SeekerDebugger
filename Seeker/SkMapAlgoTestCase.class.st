@@ -1,7 +1,7 @@
 Class {
 	#name : #SkMapAlgoTestCase,
 	#superclass : #SkExecutionMapperAlgorithm,
-	#category : #'Seeker-Tracing'
+	#category : #'Seeker-Components'
 }
 
 { #category : #testing }

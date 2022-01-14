@@ -1,5 +1,5 @@
 Class {
-	#name : #SkOidKeeper,
+	#name : #SkObjectsTracker,
 	#superclass : #SkComponent,
 	#instVars : [
 		'oidsDictionary',
@@ -8,11 +8,11 @@ Class {
 		'instantiationIDDictionary',
 		'previousReverseOidsDictionary'
 	],
-	#category : #'Seeker-Tracing'
+	#category : #'Seeker-Components'
 }
 
 { #category : #accessing }
-SkOidKeeper >> clear [
+SkObjectsTracker >> clear [
 
 	oidsDictionary removeAll.
 	nonLocalObjects := WeakIdentitySet new.
@@ -21,7 +21,7 @@ SkOidKeeper >> clear [
 ]
 
 { #category : #initialization }
-SkOidKeeper >> getObjectByOid: aNumber [
+SkObjectsTracker >> getObjectByOid: aNumber [
 
 	oidsDictionary associationsDo: [ :assoc | 
 		assoc value == aNumber ifTrue: [ ^ assoc key ] ].
@@ -29,13 +29,13 @@ SkOidKeeper >> getObjectByOid: aNumber [
 ]
 
 { #category : #'as yet unclassified' }
-SkOidKeeper >> getOidOf: anObject [
+SkObjectsTracker >> getOidOf: anObject [
 
 	^ oidsDictionary at: anObject ifAbsent: [ nil ]
 ]
 
 { #category : #initialization }
-SkOidKeeper >> initialize [
+SkObjectsTracker >> initialize [
 
 	oidsDictionary := IdentityDictionary new. "WeakIdentityKeyDictionary"
 	instantiationIDDictionary := WeakIdentityKeyDictionary new.
@@ -45,31 +45,31 @@ SkOidKeeper >> initialize [
 ]
 
 { #category : #accessing }
-SkOidKeeper >> instantiationIDDictionary [
+SkObjectsTracker >> instantiationIDDictionary [
 
 	^ instantiationIDDictionary
 ]
 
 { #category : #accessing }
-SkOidKeeper >> instantiationIDDictionary: anObject [
+SkObjectsTracker >> instantiationIDDictionary: anObject [
 
 	instantiationIDDictionary := anObject
 ]
 
 { #category : #accessing }
-SkOidKeeper >> nonLocalObjects [
+SkObjectsTracker >> nonLocalObjects [
 
 	^ nonLocalObjects
 ]
 
 { #category : #accessing }
-SkOidKeeper >> nonLocalObjects: anObject [
+SkObjectsTracker >> nonLocalObjects: anObject [
 
 	nonLocalObjects := anObject
 ]
 
 { #category : #accessing }
-SkOidKeeper >> objectIsLocal: anObject [
+SkObjectsTracker >> objectIsLocal: anObject [
 
 	"Returns true if the object that corresponds to the given Tid is instantiated during the execution"
 
@@ -80,7 +80,7 @@ SkOidKeeper >> objectIsLocal: anObject [
 ]
 
 { #category : #accessing }
-SkOidKeeper >> objectOidIsLocal: aNumber [
+SkObjectsTracker >> objectOidIsLocal: aNumber [
 
 	"Returns true if the object that corresponds to the given Tid is instantiated during the execution"
 
@@ -90,19 +90,19 @@ SkOidKeeper >> objectOidIsLocal: aNumber [
 ]
 
 { #category : #accessing }
-SkOidKeeper >> oidsDictionary [
+SkObjectsTracker >> oidsDictionary [
 
 	^ oidsDictionary
 ]
 
 { #category : #accessing }
-SkOidKeeper >> oidsDictionary: anObject [
+SkObjectsTracker >> oidsDictionary: anObject [
 
 	oidsDictionary := anObject
 ]
 
 { #category : #'as yet unclassified' }
-SkOidKeeper >> registerObjectInstance: anObject withOid: aNumber [
+SkObjectsTracker >> registerObjectInstance: anObject withOid: aNumber [
 
 	"anObject class = Metaclass ifTrue: [ ^ self ]."
 
@@ -118,13 +118,13 @@ SkOidKeeper >> registerObjectInstance: anObject withOid: aNumber [
 ]
 
 { #category : #accessing }
-SkOidKeeper >> reverseOidsDictionary [
+SkObjectsTracker >> reverseOidsDictionary [
 
 	^ reverseOidsDictionary
 ]
 
 { #category : #accessing }
-SkOidKeeper >> reverseOidsDictionary: anObject [
+SkObjectsTracker >> reverseOidsDictionary: anObject [
 
 	reverseOidsDictionary := anObject
 ]

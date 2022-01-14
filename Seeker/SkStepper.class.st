@@ -10,7 +10,7 @@ Class {
 		'skipFlag',
 		'emergencyStopFlag'
 	],
-	#category : #'Seeker-Tracing'
+	#category : #'Seeker-Components'
 }
 
 { #category : #initialization }

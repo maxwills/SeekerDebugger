@@ -1,12 +1,12 @@
 Class {
 	#name : #SkQueryExperimentalTracer,
-	#superclass : #SkOptimizedBytecodeStepper,
+	#superclass : #SkOptimizedTracer,
 	#instVars : [
 		'instantiationFlag',
 		'instantiationCounter',
 		'shouldAlwaysRunToEnd'
 	],
-	#category : #'Seeker-Tracing'
+	#category : #'Seeker-Components'
 }
 
 { #category : #'as yet unclassified' }

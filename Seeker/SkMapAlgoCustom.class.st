@@ -5,7 +5,7 @@ Class {
 		'recordContext',
 		'endConditionBlock'
 	],
-	#category : #'Seeker-Tracing'
+	#category : #'Seeker-Components'
 }
 
 { #category : #testing }

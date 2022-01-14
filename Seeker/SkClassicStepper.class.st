@@ -6,7 +6,7 @@ It is slower but have been tested and it works. The faster stepping (superclass)
 Class {
 	#name : #SkClassicStepper,
 	#superclass : #SkStepper,
-	#category : #'Seeker-Tracing'
+	#category : #'Seeker-Components'
 }
 
 { #category : #'as yet unclassified' }

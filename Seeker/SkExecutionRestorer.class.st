@@ -11,7 +11,7 @@ Class {
 		'storedNonLocalChangesDictionary',
 		'mapper'
 	],
-	#category : #'Seeker-Tracing'
+	#category : #'Seeker-Components'
 }
 
 { #category : #'as yet unclassified' }

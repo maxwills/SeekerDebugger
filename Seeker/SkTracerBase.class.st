@@ -4,7 +4,7 @@ When it is about to be executed, it is noted as open, and it is logged as return
 
 "
 Class {
-	#name : #DebuggerStepperBase,
+	#name : #SkTracerBase,
 	#superclass : #Object,
 	#traits : 'TDebuggerUpdateCoordinatorClient',
 	#classTraits : 'TDebuggerUpdateCoordinatorClient classTrait',
@@ -19,11 +19,11 @@ Class {
 		'oidsKeeper',
 		'components'
 	],
-	#category : #'Seeker-Tracing'
+	#category : #'Seeker-Components'
 }
 
 { #category : #starting }
-DebuggerStepperBase >> andThen [
+SkTracerBase >> andThen [
 
 	"A human friendly message conjunction. Basically higher level/less efficient/prettier cascade.
 	Don't use with message with arguments. Actually, don't use it at all"
@@ -32,25 +32,25 @@ DebuggerStepperBase >> andThen [
 ]
 
 { #category : #'as yet unclassified' }
-DebuggerStepperBase >> bindComponents [
+SkTracerBase >> bindComponents [
 
 	components ifNotNil: [ components do: [ :c | c bindComponents ] ]
 ]
 
 { #category : #accessing }
-DebuggerStepperBase >> components [
+SkTracerBase >> components [
 
 	^ components
 ]
 
 { #category : #accessing }
-DebuggerStepperBase >> components: anObject [
+SkTracerBase >> components: anObject [
 
 	components := anObject
 ]
 
 { #category : #'as yet unclassified' }
-DebuggerStepperBase >> doMouseButtonEventInstrumentedBlockOnce: aBlock [
+SkTracerBase >> doMouseButtonEventInstrumentedBlockOnce: aBlock [
 
 	| oldVal |
 	oldVal := inMouseButtonEventInstrumentationFlag.
@@ -60,19 +60,19 @@ DebuggerStepperBase >> doMouseButtonEventInstrumentedBlockOnce: aBlock [
 ]
 
 { #category : #accessing }
-DebuggerStepperBase >> inMouseButtonEventInstrumentationFlag [
+SkTracerBase >> inMouseButtonEventInstrumentationFlag [
 
 	^ inMouseButtonEventInstrumentationFlag
 ]
 
 { #category : #accessing }
-DebuggerStepperBase >> inMouseButtonEventInstrumentationFlag: anObject [
+SkTracerBase >> inMouseButtonEventInstrumentationFlag: anObject [
 
 	^ inMouseButtonEventInstrumentationFlag := anObject
 ]
 
 { #category : #initialization }
-DebuggerStepperBase >> initialize [
+SkTracerBase >> initialize [
 
 	SeekerSessionHelpers doCriticalInitialization: [ 
 		self initializeInstrumentedMethods.
@@ -82,17 +82,17 @@ DebuggerStepperBase >> initialize [
 ]
 
 { #category : #initialization }
-DebuggerStepperBase >> initializeComponents [
+SkTracerBase >> initializeComponents [
 
 	components := OrderedCollection new.
 	components add: (stepper := SkStepper newFor: self).
 	components add: (restorer := SkExecutionRestorer newFor: self).
-	components add: (oidsKeeper := SkOidKeeper newFor: self).
+	components add: (oidsKeeper := SkObjectsTracker newFor: self).
 	self bindComponents
 ]
 
 { #category : #initialization }
-DebuggerStepperBase >> initializeInstrumentedMethods [
+SkTracerBase >> initializeInstrumentedMethods [
 
 	instrumentedMethods := Set new.
 
@@ -107,68 +107,68 @@ DebuggerStepperBase >> initializeInstrumentedMethods [
 ]
 
 { #category : #'as yet unclassified' }
-DebuggerStepperBase >> isSessionActive [
+SkTracerBase >> isSessionActive [
 
 	^ isSessionActive
 ]
 
 { #category : #'as yet unclassified' }
-DebuggerStepperBase >> notifySessionEnd [
+SkTracerBase >> notifySessionEnd [
 
 	isSessionActive := false.
 	self seeker notifySessionEnd
 ]
 
 { #category : #accessing }
-DebuggerStepperBase >> oidsKeeper [
+SkTracerBase >> oidsKeeper [
 
 	^ oidsKeeper
 ]
 
 { #category : #accessing }
-DebuggerStepperBase >> oidsKeeper: anObject [
+SkTracerBase >> oidsKeeper: anObject [
 
 	oidsKeeper := anObject
 ]
 
 { #category : #starting }
-DebuggerStepperBase >> restart [
+SkTracerBase >> restart [
 
 	self error: 'obsolete method. Use retartFromBytecodeOne instead'
 ]
 
 { #category : #'as yet unclassified' }
-DebuggerStepperBase >> restartRecordFromContext: aContext [
+SkTracerBase >> restartRecordFromContext: aContext [
    self subclassResponsibility
 	
 ]
 
 { #category : #accessing }
-DebuggerStepperBase >> restorer [
+SkTracerBase >> restorer [
 
 	^ restorer
 ]
 
 { #category : #accessing }
-DebuggerStepperBase >> restorer: anObject [
+SkTracerBase >> restorer: anObject [
 
 	restorer := anObject
 ]
 
 { #category : #accessing }
-DebuggerStepperBase >> seeker [
+SkTracerBase >> seeker [
 
 	^ seeker
 ]
 
 { #category : #accessing }
-DebuggerStepperBase >> seeker: anObject [
+SkTracerBase >> seeker: anObject [
 
 	seeker := anObject
 ]
 
 { #category : #'as yet unclassified' }
-DebuggerStepperBase >> seekerResultsPresenter [
+SkTracerBase >> seekerResultsPresenter [
 
 	"Returns the result presenter. Or Nil"
 
@@ -176,24 +176,24 @@ DebuggerStepperBase >> seekerResultsPresenter [
 ]
 
 { #category : #accessing }
-DebuggerStepperBase >> session [
+SkTracerBase >> session [
 
 	^ session
 ]
 
 { #category : #accessing }
-DebuggerStepperBase >> session: anObject [
+SkTracerBase >> session: anObject [
 
 	session := anObject
 ]
 
 { #category : #initialization }
-DebuggerStepperBase >> setSelectedContextAsStartingPoint: aContext [
+SkTracerBase >> setSelectedContextAsStartingPoint: aContext [
 	^self subclassResponsibility 
 ]
 
 { #category : #'debug - stepping' }
-DebuggerStepperBase >> stepBackInto [
+SkTracerBase >> stepBackInto [
 
 	"comment stating purpose of instance-side method"
 
@@ -203,7 +203,7 @@ DebuggerStepperBase >> stepBackInto [
 ]
 
 { #category : #'debug - stepping' }
-DebuggerStepperBase >> stepBackOver [
+SkTracerBase >> stepBackOver [
 
 	"comment stating purpose of instance-side method"
 
@@ -213,7 +213,7 @@ DebuggerStepperBase >> stepBackOver [
 ]
 
 { #category : #'debug - stepping' }
-DebuggerStepperBase >> stepInto [
+SkTracerBase >> stepInto [
 
 	"comment stating purpose of instance-side method"
 
@@ -223,7 +223,7 @@ DebuggerStepperBase >> stepInto [
 ]
 
 { #category : #'debug - stepping' }
-DebuggerStepperBase >> stepOver [
+SkTracerBase >> stepOver [
 
 	"comment stating purpose of instance-side method"
 
@@ -233,36 +233,36 @@ DebuggerStepperBase >> stepOver [
 ]
 
 { #category : #accessing }
-DebuggerStepperBase >> stepper [
+SkTracerBase >> stepper [
 
 	^ stepper
 ]
 
 { #category : #accessing }
-DebuggerStepperBase >> stepper: anObject [
+SkTracerBase >> stepper: anObject [
 
 	^ stepper := anObject
 ]
 
 { #category : #starting }
-DebuggerStepperBase >> timeTravelToUserStart [
+SkTracerBase >> timeTravelToUserStart [
 	self subclassResponsibility 
 ]
 
 { #category : #accessing }
-DebuggerStepperBase >> trace [
+SkTracerBase >> trace [
 	"Returns the collection of steps signatures"
 	self subclassResponsibility
 ]
 
 { #category : #accessing }
-DebuggerStepperBase >> tracer [
+SkTracerBase >> tracer [
 
 	^ self
 ]
 
 { #category : #'as yet unclassified' }
-DebuggerStepperBase >> ui [
+SkTracerBase >> ui [
 
 	"Returns the result presenter. Or Nil"
 

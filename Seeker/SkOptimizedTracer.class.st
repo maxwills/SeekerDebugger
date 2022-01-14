@@ -1,15 +1,15 @@
 Class {
-	#name : #SkOptimizedBytecodeStepper,
-	#superclass : #SkBytecodeStepper,
+	#name : #SkOptimizedTracer,
+	#superclass : #SkSteppableTracer,
 	#instVars : [
 		'cachedCurrentContextTimeKey',
 		'cachedCurrentContext'
 	],
-	#category : #'Seeker-Tracing'
+	#category : #'Seeker-Components'
 }
 
 { #category : #'as yet unclassified' }
-SkOptimizedBytecodeStepper >> currentContext [
+SkOptimizedTracer >> currentContext [
 
 	^ executedBytecode == cachedCurrentContextTimeKey
 		  ifTrue: [ cachedCurrentContext ]
@@ -19,7 +19,7 @@ SkOptimizedBytecodeStepper >> currentContext [
 ]
 
 { #category : #accessing }
-SkOptimizedBytecodeStepper >> doAstStepPostProcessWithPrevNode: preProcessAstNode andPrevContext: preContext [
+SkOptimizedTracer >> doAstStepPostProcessWithPrevNode: preProcessAstNode andPrevContext: preContext [
 
 	| currentNode "currentStatementNode" contextChanged "statementChanged" |
 	"Dont do a super call here!"
@@ -38,12 +38,12 @@ SkOptimizedBytecodeStepper >> doAstStepPostProcessWithPrevNode: preProcessAstNod
 ]
 
 { #category : #initialization }
-SkOptimizedBytecodeStepper >> initialize [
+SkOptimizedTracer >> initialize [
 	super initialize
 ]
 
 { #category : #starting }
-SkOptimizedBytecodeStepper >> restartAtBytecodeOne [
+SkOptimizedTracer >> restartAtBytecodeOne [
 
 	cachedCurrentContextTimeKey := nil.
 	cachedCurrentContext := nil.
@@ -51,7 +51,7 @@ SkOptimizedBytecodeStepper >> restartAtBytecodeOne [
 ]
 
 { #category : #'accessing context' }
-SkOptimizedBytecodeStepper >> slowCurrentContext [
+SkOptimizedTracer >> slowCurrentContext [
 
 	"Use this method to avoid possible caching issues in border scenarios (initialization, reseting executions, etc)"
 

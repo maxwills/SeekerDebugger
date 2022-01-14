@@ -1,5 +1,5 @@
 Class {
 	#name : #SkIdentityEnforcer,
 	#superclass : #SkComponent,
-	#category : #'Seeker-Tracing'
+	#category : #'Seeker-Components'
 }

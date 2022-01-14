@@ -5,7 +5,7 @@ Class {
 		'doItContext',
 		'endTraceTime'
 	],
-	#category : #'Seeker-Tracing'
+	#category : #'Seeker-Components'
 }
 
 { #category : #accessing }
