@@ -64,7 +64,7 @@ SkObjectsTracker >> doPreStepProcess [
 				| node |
 				node := currentState node.
 				node isAssignment ifTrue: [ 
-					restorer doAstStepPreProcessForAssignments ] ] ]
+					restorer doPreStepProcessForAssignments ] ] ]
 ]
 
 { #category : #'as yet unclassified' }

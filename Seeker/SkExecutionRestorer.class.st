@@ -7,7 +7,6 @@ Class {
 	#instVars : [
 		'currentState',
 		'tracer',
-		'preventNextTimeRestoration',
 		'storedNonLocalChangesDictionary',
 		'mapper'
 	],
@@ -23,18 +22,7 @@ SkExecutionRestorer >> bindComponents [
 ]
 
 { #category : #accessing }
-SkExecutionRestorer >> checkPreventNextTimeRestoration [
-
-	"Used to prevent restorting the live session when a query is manually stopped (Why? because it is useful to know where the execution is at the moment of the emergency stop"
-
-	| val |
-	val := preventNextTimeRestoration.
-	preventNextTimeRestoration := false.
-	^ val
-]
-
-{ #category : #accessing }
-SkExecutionRestorer >> doAstStepPreProcessForAssignments [
+SkExecutionRestorer >> doPreStepProcessForAssignments [
 
 	| variable |
 	"check enabled before calling this"
@@ -67,19 +55,6 @@ SkExecutionRestorer >> initialize [
 
 	super initialize.
 	storedNonLocalChangesDictionary := WeakIdentityKeyDictionary new. "Keys are the object owning the variable, and the value is a dictionary of keys variable name (symbol) with values the Undo block"
-	preventNextTimeRestoration := false
-]
-
-{ #category : #accessing }
-SkExecutionRestorer >> preventNextTimeRestoration [
-
-	^ preventNextTimeRestoration
-]
-
-{ #category : #accessing }
-SkExecutionRestorer >> preventNextTimeRestoration: anObject [
-
-	preventNextTimeRestoration := anObject
 ]
 
 { #category : #accessing }

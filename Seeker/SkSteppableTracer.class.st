@@ -41,14 +41,14 @@ Class {
 	#superclass : #SkTracerBase,
 	#instVars : [
 		'stDebugger',
-		'currentStepIndex',
 		'maxExecutedBytecode',
 		'currentContext',
 		'currentTraceTimeReference',
 		'executedBytecode',
 		'currentState',
 		'executionMappper',
-		'debuggedProcess'
+		'debuggedProcess',
+		'preventNextTimeLiveStateRestoration'
 	],
 	#category : #'Seeker-Components'
 }
@@ -62,9 +62,14 @@ SkSteppableTracer >> bytecodeIndex [
 ]
 
 { #category : #accessing }
-SkSteppableTracer >> checkPreventNextTimeRestoration [
+SkSteppableTracer >> checkPreventNextLiveStateRestoration [
 
-	^ restorer checkPreventNextTimeRestoration
+	"Used to prevent restorting the live session when a query is manually stopped (Why? because it is useful to know where the execution is at the moment of the emergency stop"
+
+	| val |
+	val := preventNextTimeLiveStateRestoration.
+	preventNextTimeLiveStateRestoration := false.
+	^ val
 ]
 
 { #category : #'as yet unclassified' }
@@ -199,6 +204,7 @@ SkSteppableTracer >> initialize [
 
 	SeekerSessionHelpers doCriticalInitialization: [ 
 		executedBytecode := 0.
+		preventNextTimeLiveStateRestoration := false.
 		currentState := SeekerCurrentStateInterface new
 			                tracer: self;
 			                yourself.
@@ -211,7 +217,6 @@ SkSteppableTracer >> initialize [
 			                             tracer: self.
 
 		maxExecutedBytecode := 1.
-		currentStepIndex := 1.
 		executedBytecode := 1 ]
 ]
 
@@ -281,6 +286,18 @@ SkSteppableTracer >> onTracedStatementChanged [
 
 ]
 
+{ #category : #accessing }
+SkSteppableTracer >> preventNextTimeRestoration [
+
+	^ preventNextTimeLiveStateRestoration
+]
+
+{ #category : #accessing }
+SkSteppableTracer >> preventNextTimeRestorationOfLiveState: anObject [
+
+	preventNextTimeLiveStateRestoration := anObject
+]
+
 { #category : #'as yet unclassified' }
 SkSteppableTracer >> quickMap [
 
@@ -306,13 +323,12 @@ SkSteppableTracer >> restartAtBytecodeOne [
 	currentState resetCacheTimeKey.
 	executedBytecode := 1.
 
-	currentStepIndex := 0.
-	restorer preventNextTimeRestoration: false.
+	preventNextTimeLiveStateRestoration := false.
 
 	stDebugger session restart:
 		executionMappper contextOfExecutedBytecodeOne.
-	currentStepIndex := currentStepIndex + 1.
-	currentContext := self slowCurrentContext"session interruptedProcess suspendedContext".
+
+	currentContext := self slowCurrentContext. "session interruptedProcess suspendedContext"
 	currentState updateCacheTimeKey.
 	self onTracedContextChanged.
 	self onTracedStatementChanged
@@ -483,12 +499,6 @@ SkSteppableTracer >> timeTravelToUserStart [
 SkSteppableTracer >> traceTime [
 
 	^ currentTraceTimeReference
-]
-
-{ #category : #'as yet unclassified' }
-SkSteppableTracer >> tracedStatementIndex [
-
-	^ currentStepIndex
 ]
 
 { #category : #updating }

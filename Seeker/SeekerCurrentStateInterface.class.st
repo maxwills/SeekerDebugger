@@ -716,12 +716,6 @@ SeekerCurrentStateInterface >> tracedStatementPath [
 	^nil
 ]
 
-{ #category : #accessing }
-SeekerCurrentStateInterface >> tracedStatementStepIndex [
-
-	^ tracer tracedStatementIndex
-]
-
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> updateCacheTimeKey [
 

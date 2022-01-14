@@ -188,6 +188,12 @@ SkTracerBase >> session: anObject [
 ]
 
 { #category : #initialization }
+SkTracerBase >> setEmergencyStopFlag [
+
+	stepper setEmergencyStopFlag
+]
+
+{ #category : #initialization }
 SkTracerBase >> setSelectedContextAsStartingPoint: aContext [
 	^self subclassResponsibility 
 ]

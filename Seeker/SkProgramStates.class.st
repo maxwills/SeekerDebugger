@@ -66,7 +66,7 @@ SkProgramStates >> do: aBlock [
 			ifFalse: [ tracer timeTravelToUserStart ].
 
 		[ self stepAndInEachStateDo: aBlock ] ensure: [ 
-			tracer checkPreventNextTimeRestoration ifFalse: [ 
+			tracer checkPreventNextLiveStateRestoration ifFalse: [ 
 				tracer timeTravelToTraceTime: currentTracetime ] ] ]
 ]
 

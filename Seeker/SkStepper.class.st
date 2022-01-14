@@ -201,6 +201,14 @@ SkStepper >> mapper: anObject [
 	mapper := anObject
 ]
 
+{ #category : #initialization }
+SkStepper >> setEmergencyStopFlag [
+
+	iteratingFlag ifFalse: [ ^ self ].
+	emergencyStopFlag := true.
+	tracer preventNextTimeRestorationOfLiveState: true
+]
+
 { #category : #accessing }
 SkStepper >> skipFlag [
 
