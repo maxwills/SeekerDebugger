@@ -107,7 +107,8 @@ SkStepper >> initializeSkippableMethods [
 
 	self flag:
 		'first the method that interfere with the traversal of the execution'.
-
+	skippableMethods := Set new.
+	SeekerMetaDebugHelper doBlock: [ ^ self ].
 	skippableMethods := #identityHash senders asSet.
 	skippableMethods add: HashedCollection >> #grow.
 	skippableMethods add: WeakKeyDictionary >> #noCheckAdd:.

@@ -226,8 +226,8 @@ SkExecutionMapper >> recountExecutedBytecodes [
 	| currentTraceTime |
 	contextOfExecutedBytecodeOne ifNil: [ "if there is no initial context, the restart will fail" 
 		self error: 'Initial context not set. (Is the execution mapped?)' ].
-	self assert: currentState node isNotNil.
-	currentTraceTime := currentState context tracedInstructionPC
+	
+	currentTraceTime := tracer slowCurrentContext tracedInstructionPC
 		                    asTraceTimeReference.
 	tracer safeTimeTravelToTraceTime: currentTraceTime
 ]

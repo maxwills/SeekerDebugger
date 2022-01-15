@@ -7,8 +7,10 @@ Class {
 		'chkHandleMouseDown',
 		'chkKeepMenusOpen',
 		'btnReleaseMenus',
-		'chkRecordingEnabled',
-		'chkRestorationEnabled'
+		'chkRestorationEnabled',
+		'chkUseDeferredSetup',
+		'btnResetEmergencyDeactivation',
+		'chkIdentityEnforcingEnabled'
 	],
 	#category : #'Seeker-UI'
 }
@@ -45,9 +47,11 @@ SeekerConfigPresenter >> createChecksLayout [
 		  add: chkHandleMouseUp;
 		  add: chkHandleMouseDown;
 		  add: chkKeepMenusOpen;
-		  add: chkRecordingEnabled;
 		  add: chkRestorationEnabled;
+		  add: chkIdentityEnforcingEnabled;
+		  add: chkUseDeferredSetup;
 		  add: btnReleaseMenus;
+		  add: btnResetEmergencyDeactivation;
 		  yourself
 ]
 
@@ -57,10 +61,16 @@ SeekerConfigPresenter >> handleReleasePinnedMenus [
 	self config releasePinnedMenus
 ]
 
+{ #category : #'as yet unclassified' }
+SeekerConfigPresenter >> handleResetEmergencyDeactivation [
+
+	SeekerSessionHelpers emergencyPreventLoading: false
+]
+
 { #category : #api }
 SeekerConfigPresenter >> initialExtent [
 
-	^ 350 @ 200
+	^ 300 @ 300
 ]
 
 { #category : #initialization }
@@ -79,15 +89,22 @@ SeekerConfigPresenter >> initializePresenters [
 			                       'Handle MouseDown events').
 	chkKeepMenusOpen := checkboxes add:
 		                    (self createCheckbox: 'Keep menus open').
-	chkRecordingEnabled := checkboxes add:
+	chkIdentityEnforcingEnabled := checkboxes add:
 		                       (checkboxes add:
-			                        (self createCheckbox: 'Recording enabled')).
+			                        (self createCheckbox: 'Identity enforcing enabled')).
 	chkRestorationEnabled := checkboxes add:
 		                         (self createCheckbox: 'Restoration enabled').
+	chkUseDeferredSetup := checkboxes add:
+		                       (self createCheckbox: 'Use deferred setup').
 	btnReleaseMenus := self newButton
 		                   label: 'Release pinned menus';
 		                   action: [ self handleReleasePinnedMenus ];
 		                   yourself.
+	btnResetEmergencyDeactivation := self newButton
+		                                 label: 'Reset emergency deactivation';
+		                                 action: [ 
+			                                 self handleResetEmergencyDeactivation ];
+		                                 yourself.
 
 	"self window title: 'Seeker Debugger Configuration'."
 	self updateFromConfig.
@@ -105,8 +122,9 @@ SeekerConfigPresenter >> updateFromConfig [
 	chkHandleMouseUp state: self config handleMouseUpEvent.
 	chkHandleMouseDown state: self config handleMouseDownEvent.
 	chkKeepMenusOpen state: self config keepMenusOpen.
-	chkRecordingEnabled state: self config recordingEnabled.
-	chkRestorationEnabled state: self config restorationEnabled
+	chkIdentityEnforcingEnabled state: self config identityEnforcingEnabled.
+	chkRestorationEnabled state: self config restorationEnabled.
+	chkUseDeferredSetup state: self config deferredSetup
 ]
 
 { #category : #'as yet unclassified' }
@@ -118,5 +136,6 @@ SeekerConfigPresenter >> updateToConfig [
 	self config handleMouseDownEvent: chkHandleMouseDown state.
 	self config keepMenusOpen: chkKeepMenusOpen state.
 	self config restorationEnabled: chkRestorationEnabled state.
-	self config recordingEnabled: chkRecordingEnabled state
+	self config identityEnforcingEnabled: chkIdentityEnforcingEnabled state.
+	self config deferredSetup: chkUseDeferredSetup state
 ]

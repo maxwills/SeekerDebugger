@@ -7,8 +7,9 @@ Class {
 		'handleMouseDownEvent',
 		'keepMenusOpen',
 		'restorationEnabled',
-		'recordingEnabled',
-		'autoInstrumentationStepping'
+		'autoInstrumentationStepping',
+		'deferredSetup',
+		'indentityEnforcingEnabled'
 	],
 	#classVars : [
 		'defaultInstance'
@@ -38,6 +39,18 @@ SeekerConfig >> autoInstrumentationStepping [
 SeekerConfig >> autoInstrumentationStepping: anObject [
 
 	autoInstrumentationStepping := anObject
+]
+
+{ #category : #accessing }
+SeekerConfig >> deferredSetup [
+
+	^ deferredSetup
+]
+
+{ #category : #accessing }
+SeekerConfig >> deferredSetup: anObject [
+
+	deferredSetup := anObject
 ]
 
 { #category : #accessing }
@@ -76,6 +89,18 @@ SeekerConfig >> handleMouseUpEvent: anObject [
 	handleMouseUpEvent := anObject
 ]
 
+{ #category : #accessing }
+SeekerConfig >> identityEnforcingEnabled [
+
+	^ indentityEnforcingEnabled
+]
+
+{ #category : #accessing }
+SeekerConfig >> identityEnforcingEnabled: anObject [
+
+	indentityEnforcingEnabled := anObject
+]
+
 { #category : #initialization }
 SeekerConfig >> initialize [
 
@@ -84,8 +109,9 @@ SeekerConfig >> initialize [
 	handleMouseDownEvent := false.
 	keepMenusOpen := false.
 	restorationEnabled := false.
-	recordingEnabled := false.
-	autoInstrumentationStepping := true
+	indentityEnforcingEnabled := false.
+	autoInstrumentationStepping := true.
+	deferredSetup := false.
 ]
 
 { #category : #accessing }
@@ -98,18 +124,6 @@ SeekerConfig >> keepMenusOpen [
 SeekerConfig >> keepMenusOpen: anObject [
 
 	keepMenusOpen := anObject
-]
-
-{ #category : #accessing }
-SeekerConfig >> recordingEnabled [
-
-	^ recordingEnabled
-]
-
-{ #category : #accessing }
-SeekerConfig >> recordingEnabled: anObject [
-
-	recordingEnabled := anObject
 ]
 
 { #category : #'as yet unclassified' }

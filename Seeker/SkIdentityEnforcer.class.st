@@ -43,3 +43,9 @@ we check if we have the 'same' element from a previous replay. If so, we make th
 " 
 			previousIdentity becomeForward: instancedObj copyHash: true "pointers to previousIdentity point now to instancedObj,  and instancedObj has previousIdentity identityHash" ] ]
 ]
+
+{ #category : #accessing }
+SkIdentityEnforcer >> enabled [
+
+	^ SeekerConfig default identityEnforcingEnabled
+]

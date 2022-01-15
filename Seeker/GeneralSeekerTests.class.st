@@ -233,6 +233,22 @@ When executed with Seeker, it should be true.
 ]
 
 { #category : #tests }
+GeneralSeekerTests >> testNonderministicIdentitiesNoHalt [
+
+	"this is a manual test. "
+
+	| nObjects objectsDictionary listMyAssignments |
+	objectsDictionary := IdentitySet new.
+	nObjects := 100.
+	1 to: nObjects do: [ :i | 
+		objectsDictionary add: (SkExampleObjWithText new
+				 text: 'Object ' , i asString;
+				 yourself) ].
+
+	objectsDictionary do: [ :o | listMyAssignments := o text ]
+]
+
+{ #category : #tests }
 GeneralSeekerTests >> testPlusEqual [
 
 	"the the tested code is in another project now.. search for operators in my github"

@@ -109,7 +109,9 @@ SkTracerBase >> initializeComponents [
 SkTracerBase >> initializeInstrumentedMethods [
 
 	instrumentedMethods := Set new.
-
+	SeekerMetaDebugHelper doBlock: [ 
+		self flag: 'During refactoring time, this feature is disabled'.
+		^ self ].
 	instrumentedMethods addAll:
 		((Pragma fullListOfAllNamed: #seekerInstrumentation:) collect: [ :p | 
 			 p method ]).

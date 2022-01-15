@@ -74,6 +74,12 @@ SkExecutionRestorer >> doPreStepProcessForMessageSends [
 				self recordSnapshotOfObject: messageReceiver ] ] ]
 ]
 
+{ #category : #accessing }
+SkExecutionRestorer >> enabled [
+
+	^ SeekerConfig default restorationEnabled
+]
+
 { #category : #initialization }
 SkExecutionRestorer >> initialize [
 
