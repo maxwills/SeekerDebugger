@@ -27,8 +27,9 @@ SeekerInstallHelpers class >> install [
 	self debuggerExtensionEnabled: true.
 	self instrumentHandMorph.
 	self instrumentMouseButtonEventSendTo.
-	self installQuickWrapSystem.
-	self refreshAllWrappers.
+	SeekerConfig default quickWrapEnabled ifTrue: [ 
+		self installQuickWrapSystem.
+		self refreshAllWrappers ].
 	self installMoosePatch.
 	Author uniqueInstance fullName: authorName
 ]

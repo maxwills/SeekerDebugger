@@ -10,7 +10,9 @@ Class {
 		'chkRestorationEnabled',
 		'chkUseDeferredSetup',
 		'btnResetEmergencyDeactivation',
-		'chkIdentityEnforcingEnabled'
+		'chkIdentityEnforcingEnabled',
+		'chkSeekerEnabled',
+		'chkQuickWrapEnabled'
 	],
 	#category : #'Seeker-UI'
 }
@@ -50,6 +52,8 @@ SeekerConfigPresenter >> createChecksLayout [
 		  add: chkRestorationEnabled;
 		  add: chkIdentityEnforcingEnabled;
 		  add: chkUseDeferredSetup;
+		  add: chkSeekerEnabled;
+		  add: chkQuickWrapEnabled;
 		  add: btnReleaseMenus;
 		  add: btnResetEmergencyDeactivation;
 		  yourself
@@ -70,7 +74,7 @@ SeekerConfigPresenter >> handleResetEmergencyDeactivation [
 { #category : #api }
 SeekerConfigPresenter >> initialExtent [
 
-	^ 300 @ 300
+	^ 300 @ 340
 ]
 
 { #category : #initialization }
@@ -90,20 +94,27 @@ SeekerConfigPresenter >> initializePresenters [
 	chkKeepMenusOpen := checkboxes add:
 		                    (self createCheckbox: 'Keep menus open').
 	chkIdentityEnforcingEnabled := checkboxes add:
-		                       (checkboxes add:
-			                        (self createCheckbox: 'Identity enforcing enabled')).
+		                               (checkboxes add:
+			                                (self createCheckbox:
+				                                 'Identity enforcing enabled')).
 	chkRestorationEnabled := checkboxes add:
 		                         (self createCheckbox: 'Restoration enabled').
 	chkUseDeferredSetup := checkboxes add:
 		                       (self createCheckbox: 'Use deferred setup').
+	chkSeekerEnabled := checkboxes add:
+		                    (self createCheckbox: 'SeekerDebugger enabled').
+	chkQuickWrapEnabled := checkboxes add:
+		                       (self createCheckbox: 'QuickWrap enabled').
 	btnReleaseMenus := self newButton
 		                   label: 'Release pinned menus';
 		                   action: [ self handleReleasePinnedMenus ];
 		                   yourself.
 	btnResetEmergencyDeactivation := self newButton
-		                                 label: 'Reset emergency deactivation';
+		                                 label:
+			                                 'Reset emergency deactivation';
 		                                 action: [ 
-			                                 self handleResetEmergencyDeactivation ];
+			                                 self
+				                                 handleResetEmergencyDeactivation ];
 		                                 yourself.
 
 	"self window title: 'Seeker Debugger Configuration'."
@@ -122,9 +133,12 @@ SeekerConfigPresenter >> updateFromConfig [
 	chkHandleMouseUp state: self config handleMouseUpEvent.
 	chkHandleMouseDown state: self config handleMouseDownEvent.
 	chkKeepMenusOpen state: self config keepMenusOpen.
-	chkIdentityEnforcingEnabled state: self config identityEnforcingEnabled.
+	chkIdentityEnforcingEnabled state:
+		self config identityEnforcingEnabled.
 	chkRestorationEnabled state: self config restorationEnabled.
-	chkUseDeferredSetup state: self config deferredSetup
+	chkUseDeferredSetup state: self config deferredSetup.
+	chkSeekerEnabled state: self config seekerEnabled.
+	chkQuickWrapEnabled state: self config quickWrapEnabled
 ]
 
 { #category : #'as yet unclassified' }
@@ -136,6 +150,9 @@ SeekerConfigPresenter >> updateToConfig [
 	self config handleMouseDownEvent: chkHandleMouseDown state.
 	self config keepMenusOpen: chkKeepMenusOpen state.
 	self config restorationEnabled: chkRestorationEnabled state.
-	self config identityEnforcingEnabled: chkIdentityEnforcingEnabled state.
-	self config deferredSetup: chkUseDeferredSetup state
+	self config identityEnforcingEnabled:
+		chkIdentityEnforcingEnabled state.
+	self config deferredSetup: chkUseDeferredSetup state.
+	self config seekerEnabled: chkSeekerEnabled state.
+	self config quickWrapEnabled: chkQuickWrapEnabled state
 ]
