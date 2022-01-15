@@ -32,7 +32,6 @@ SkMapAlgoPragmaDebugSession >> mapExecution [
 	testInitialContext ifNil: [ 
 		self error: 'Could not detect the initial context.'.
 		^ false ].
-
 	"19 is the true user start"
 	"85 IS RIGHT AFTER THE OWNER CONDITION"
 	"1041 is the execute"

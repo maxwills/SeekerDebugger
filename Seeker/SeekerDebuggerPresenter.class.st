@@ -378,6 +378,7 @@ seekerDebugger setEndFromCurrentStep
 { #category : #'accessing model' }
 SeekerDebuggerPresenter >> setModelBeforeInitialization: aStDebugger [
 
+	| setupBlock |
 	stDebugger := aStDebugger.
 	seekerDebugger := SeekerDebugger newFor: aStDebugger.
 	seekerDebugger seekerDebuggerPresenter: self.
@@ -393,11 +394,17 @@ SeekerDebuggerPresenter >> setModelBeforeInitialization: aStDebugger [
 	Without the forced update Seeker starts stepping from the exception, which is currently unsupported and ends badly (or doesn't end at all).
    In previous versions, the deferred quickSetup worked because it was actually called after the StDebugger was shown (and everything was in the proper state). 
    That method still works, but the user sees that the debugger opens and do stuff, changing quickly, which is quite confusing."
-		seekerDebugger quickSetup.
-		seekerDebugger notifyDebuggerInitialized
-		"	UIManager default defer: [ 
-		seekerDebugger quickSetup.
-		seekerDebugger notifyDebuggerInitialized ]" ]
+		setupBlock := [ 
+		              seekerDebugger quickSetup.
+		              seekerDebugger notifyDebuggerInitialized ].
+		SeekerConfig default deferredSetup
+			ifTrue: [ 
+				[ 
+				(Delay forSeconds: 1) wait.
+				self flag:
+					'in deferred initialization, if a failure occurs, it will not be caught by the CriticalIntialization error handler. It should just open a new debugger (hopefully)'.
+				UIManager default defer: setupBlock ] fork ]
+			ifFalse: setupBlock ]
 ]
 
 { #category : #'event handling' }
@@ -557,9 +564,9 @@ SeekerDebuggerPresenter >> updatePresenter [
 						 key: #currentState
 						 value: self seekerDebugger tracer currentState).
 			code interactionModel bindings
-				at: #newProgramStates
+				at: #programStates
 				put: (WorkspaceVariable
-						 key: #newProgramStates
+						 key: #programStates
 						 value: self seekerDebugger tracer newProgramStates).
 
 			self updateLabelOnly.

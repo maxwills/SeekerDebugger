@@ -108,10 +108,10 @@ SeekerConfig >> initialize [
 	handleMouseUpEvent := false.
 	handleMouseDownEvent := false.
 	keepMenusOpen := false.
-	restorationEnabled := false.
-	indentityEnforcingEnabled := false.
-	autoInstrumentationStepping := true.
-	deferredSetup := false.
+	restorationEnabled := true.
+	indentityEnforcingEnabled := true.
+	autoInstrumentationStepping := false.
+	deferredSetup := false
 ]
 
 { #category : #accessing }
