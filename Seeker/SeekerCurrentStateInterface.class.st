@@ -344,6 +344,13 @@ SeekerCurrentStateInterface >> initializeWritingPrimitiveMethods [
 ]
 
 { #category : #testing }
+SeekerCurrentStateInterface >> isAssignment [
+
+	<qwpSubCached>
+	^ self node isAssignment
+]
+
+{ #category : #testing }
 SeekerCurrentStateInterface >> isDead [
 
 	<qwpSubCached>

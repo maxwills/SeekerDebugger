@@ -37,47 +37,73 @@ SkObjectsTracker >> bindComponents [
 { #category : #accessing }
 SkObjectsTracker >> doPostStepProcess [
 
+	| instancedObj |
 	identityEnforcer enabled ifTrue: [ 
 		identityEnforcer doPostStepProcess ].
-	
-	instantiationFlag ifTrue: [ 
-		| instancedObj |
-		instancedObj := currentState contextTop.
-		self
-			registerObjectInstance: instancedObj
-			withOid: tracer bytecodeIndex - 1.
-		instantiatedLocalObjects add: instancedObj ].
-	"This is a fix to add track objectes when they are receivers. This will be changed for a mor general tracking solution"
-	currentState isMessageSend ifTrue: [ 
-		self
-			registerObjectInstance: currentState messageReceiver
-			withOid: tracer bytecodeIndex ]
+
+	instantiationFlag ifFalse: [ ^ self ].
+
+	instancedObj := currentState contextTop.
+	instancedObj isNotSeekerTrackable ifTrue: [ ^ self ].
+	self
+		registerObjectInstance: instancedObj
+		withOid: tracer bytecodeIndex - 1.
+	instantiatedLocalObjects add: instancedObj
 ]
 
 { #category : #'as yet unclassified' }
 SkObjectsTracker >> doPreStepProcess [
 
+	"Dont register readOnly objects or strings"
+
+	| objInVariable |
 	instantiationFlag := false.
-	currentState isMessageSend
-		ifTrue: [ "handling message sends cases"
-			self doPreStepProcessForMessageSends.
-			restorer enabled ifTrue: [ 
-				restorer doPreStepProcessForMessageSends ] ]
-		ifFalse: [ 
-			| node |
-			node := currentState node.
-			node isAssignment ifTrue: [ 
-				restorer enabled ifTrue: [ 
-					restorer doPreStepProcessForAssignments ] ] ]
+	currentState isMessageSend ifTrue: [ "handling message sends cases" 
+		^ self doPreStepProcessForMessageSends ].
+	currentState isAssignment ifTrue: [ 
+		^ self doPreStepProcessForAssignments ].
+	currentState node isVariable ifFalse: [ ^ self ].
+
+	objInVariable := [ 
+	                 currentState node variable readInContext:
+		                 currentState context ] onErrorDo: [ 
+		                 self flag:
+			                 'I am not sure why this fails. Doing the warmup, the test teardown throws an error here.'.
+		                 nil ].
+	objInVariable isNotSeekerTrackable ifTrue: [ ^ self ].
+	self
+		registerObjectInstance: objInVariable
+		withOid: tracer bytecodeIndex
+]
+
+{ #category : #'as yet unclassified' }
+SkObjectsTracker >> doPreStepProcessForAssignments [
+
+	"Dont register readOnly objects or strings"
+
+	| assignLeftSide |
+	assignLeftSide := currentState assignmentCurrentValue.
+	assignLeftSide isNotSeekerTrackable ifTrue: [ ^ self ].
+	self
+		registerObjectInstance: assignLeftSide
+		withOid: tracer bytecodeIndex.
+	restorer enabled ifTrue: [ restorer doPreStepProcessForAssignments ]
 ]
 
 { #category : #'as yet unclassified' }
 SkObjectsTracker >> doPreStepProcessForMessageSends [
 
+	"Dont register readOnly objects or strings"
+
+	| msgReceiver |
+	instantiationFlag := currentState isInstantiationMessage.
+	msgReceiver := currentState messageReceiver.
+
+	msgReceiver isNotSeekerTrackable ifTrue: [ ^ self ].
 	self
 		registerObjectInstance: currentState messageReceiver
 		withOid: tracer bytecodeIndex.
-	instantiationFlag := currentState isInstantiationMessage
+	restorer enabled ifTrue: [ restorer doPreStepProcessForMessageSends ]
 ]
 
 { #category : #initialization }
@@ -112,6 +138,8 @@ SkObjectsTracker >> instantiationFlag [
 
 { #category : #testing }
 SkObjectsTracker >> isPersistent [
+
+	"if true, the component will not reset when restarting the execution for a replay"
 
 	^ false
 ]

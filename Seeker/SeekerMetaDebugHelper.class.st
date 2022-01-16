@@ -11,3 +11,9 @@ SeekerMetaDebugHelper class >> doBlock: aBlock [
 
 	aBlock value
 ]
+
+{ #category : #'as yet unclassified' }
+SeekerMetaDebugHelper class >> dontDoBlock: aBlock [
+
+"Just for code annotations"
+]

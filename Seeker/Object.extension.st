@@ -102,6 +102,12 @@ Object >> doCases [
 ]
 
 { #category : #'*Seeker' }
+Object >> isNotSeekerTrackable [
+
+	^ self isReadOnlyObject or: [ self isString ]
+]
+
+{ #category : #'*Seeker' }
 Object >> putInSeekerAuxStorage1 [
 	SeekerGlobals instance auxiliaryTempStorage1: self
 ]

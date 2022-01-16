@@ -85,9 +85,13 @@ SkQueryExperimentalTracer >> onTracedContextChanged [
 
 	"self createContextCacheFor: self currentContext."
 
-	objectsTracker
-		registerObjectInstance: self currentContext receiver
-		withOid: executedBytecode - 1.
+	SeekerMetaDebugHelper dontDoBlock: [ 
+		self flag:
+			'Next code was euristics associated with the ObjectTrackerClassic implementation for registering OIDs. The new implementation Should not needed'.
+		objectsTracker
+			registerObjectInstance: self currentContext receiver
+			withOid: executedBytecode - 1 ].
+
 	super onTracedContextChanged
 ]
 
