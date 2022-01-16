@@ -67,6 +67,7 @@ SkObjectsTracker >> doPreStepProcess [
 	objInVariable := [ 
 	                 currentState node variable readInContext:
 		                 currentState context ] onErrorDo: [ 
+		                 SeekerMetaDebugHelper.
 		                 self flag:
 			                 'I am not sure why this fails. Doing the warmup, the test teardown throws an error here.'.
 		                 nil ].

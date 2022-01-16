@@ -29,10 +29,8 @@ SkMapAlgoCustom >> endConditionBlock: anObject [
 { #category : #'as yet unclassified' }
 SkMapAlgoCustom >> mapExecution [
 
-	| recordingInitialContext currentCompiledMethod |
+	| recordingInitialContext |
 	"Only works if used the option: debug with Seeker""findContext is a SeekerFindContextInStackInterface object"
-	currentCompiledMethod := currentState compiledCode.
-
 	recordingInitialContext := recordContext.
 	recordingInitialContext ifNil: [ 
 		self error: 'Could not detect the initial context for recording.'.

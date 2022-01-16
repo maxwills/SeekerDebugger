@@ -16,6 +16,14 @@ FaultyCalculator class >> aMethod [
 ]
 
 { #category : #'test methods' }
+FaultyCalculator class >> aMethodForExecutionStatesDo [
+
+	<skpExecutionStatesDo: #SkESDCountBytecodes>
+	1 asString.
+	^ self aMethod
+]
+
+{ #category : #'test methods' }
 FaultyCalculator class >> aMethodToDebug [
 
 	<skpDebugWithSeeker>

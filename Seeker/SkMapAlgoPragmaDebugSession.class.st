@@ -15,10 +15,10 @@ SkMapAlgoPragmaDebugSession class >> matchesExecutionScenario: tracer [
 { #category : #'as yet unclassified' }
 SkMapAlgoPragmaDebugSession >> mapExecution [
 
-	| recordingInitialContext testInitialContext endingContext findContext currentCompiledMethod |
+	| recordingInitialContext testInitialContext endingContext findContext |
 	"Only works if used the option: debug with Seeker""findContext is a SeekerFindContextInStackInterface object"
 	UIManager default spawnNewProcessIfThisIsUI: tracer debuggedProcess. "Processor activeProcess"
-	currentCompiledMethod := tracer slowCurrentContext compiledCode.
+
 	findContext := tracer findContextInStack.
 
 	recordingInitialContext := findContext

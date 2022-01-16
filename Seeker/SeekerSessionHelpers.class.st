@@ -59,6 +59,15 @@ SeekerSessionHelpers class >> initialize [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerSessionHelpers class >> innerSeekerExecutionStatesDoSessionFor: aBlock withFlag: aFlagBlock [
+
+	aFlagBlock value ifTrue: [ 
+		"UIManager default spawnNewProcessIfThisIsUI: Processor activeProcess."
+		Exception new signal ].
+	aBlock ensure: [ self seekerSessionEndMarker ]
+]
+
+{ #category : #'as yet unclassified' }
 SeekerSessionHelpers class >> innerSeekerPragmaDebugSessionFor: aBlock withFlag: aFlagBlock [
 
 	aFlagBlock value ifTrue: [ 
@@ -161,6 +170,17 @@ SeekerSessionHelpers class >> releasePinnedMenus [
 	<script>
 	(MenuMorph allInstances select: [ :m | m stayUp ]) do: [ :m | 
 		m stayUp: false ]
+]
+
+{ #category : #'as yet unclassified' }
+SeekerSessionHelpers class >> seekerExecutionStatesDoSessionWrapper: receiver method: aMethod arguments: args [
+
+	| val |
+	self
+		innerSeekerExecutionStatesDoSessionFor: [ 
+		val := receiver withArgs: args executeMethod: aMethod ]
+		withFlag: self makeOnceFlag.
+	^ val
 ]
 
 { #category : #'as yet unclassified' }
