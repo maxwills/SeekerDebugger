@@ -116,7 +116,7 @@ SkExecutionMapper >> endCondition: anObject [
 SkExecutionMapper >> initialize [
 
 	super initialize.
-	endCondition := SkEndImmediately.
+	endCondition := SkEndImmediately newForTracer: nil.
 	isMapped := false.
 	isMappedForDoIt := false.
 	mappingAlgorithm := SkMapAlgoNone new
