@@ -51,6 +51,12 @@ SkIterableDataSource >> findTracer [
 	^ nil
 ]
 
+{ #category : #testing }
+SkIterableDataSource >> isIterableDataSource [
+
+	^ true
+]
+
 { #category : #splitjoin }
 SkIterableDataSource >> join: anIterableDataSet [
 

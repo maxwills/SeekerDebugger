@@ -469,7 +469,10 @@ Query >> fromDataSource [
 { #category : #'as yet unclassified' }
 Query >> fromDataSource: anObject [
 
-	fromDataSource := anObject.
+	fromDataSource := anObject isIterableDataSource
+		                  ifTrue: [ anObject ]
+		                  ifFalse: [ 
+		                  SkCollectionDS newFromCollection: anObject ].
 	self optimizeRowAcquisitionForFields: self getRelevantFields
 ]
 

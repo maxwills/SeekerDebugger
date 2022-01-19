@@ -237,15 +237,17 @@ GeneralSeekerTests >> testNonderministicIdentitiesNoHalt [
 
 	"this is a manual test. "
 
-	| nObjects objectsDictionary listMyAssignments |
-	objectsDictionary := IdentitySet new.
+	| nObjects objectsSet listMyAssignments |
+	objectsSet := IdentitySet new.
 	nObjects := 100.
+	"Creating the set of objects. We know that they are created in order 1 to 100"
 	1 to: nObjects do: [ :i | 
-		objectsDictionary add: (SkExampleObjWithText new
+		objectsSet add: (SkExampleObjWithText new
 				 text: 'Object ' , i asString;
 				 yourself) ].
 
-	objectsDictionary do: [ :o | listMyAssignments := o text ]
+	"Iterating the set of objects. The object are iterated non-deterministically in each execution"
+	objectsSet do: [ :o | listMyAssignments := o text ]
 ]
 
 { #category : #tests }
@@ -259,6 +261,62 @@ GeneralSeekerTests >> testPlusEqual [
 	a += 1.
 	self assert: a equals: 1.
 	self assert: false
+]
+
+{ #category : #tests }
+GeneralSeekerTests >> testProcessSerializationDeserialization [
+
+	"this is a manual test. "
+
+	| counter block proc1 proc2 |
+	counter := 1.
+	block := [ 
+	         | c |
+	         c := counter.
+	         Transcript
+		         show: 'Pre c, counter ' , (', ' join: { 
+							          c asString.
+							          counter asString });
+		         cr.
+	         counter := counter + 1.
+	         Processor activeProcess suspend.
+	         Transcript
+		         show: 'post c, counter ' , (', ' join: { 
+							          c asString.
+							          counter asString });
+		         cr ].
+	proc1 := block fork.
+
+	(Delay forMilliseconds: 1000) wait.
+	proc2 := proc1 copy.
+	proc2 suspendedContext: proc1 suspendedContext copy.
+	proc1 suspendedContext ifNil: [ 
+		Transcript
+			show: 'a. suspended context 1 is nil';
+			cr ].
+	proc2 suspendedContext ifNil: [ 
+		Transcript
+			show: 'a. suspended context 2 is nil';
+			cr ].
+	proc1 resume.
+	proc1 suspendedContext ifNil: [ 
+		Transcript
+			show: 'b. suspended context 1 is nil';
+			cr ].
+	proc2 suspendedContext ifNil: [ 
+		Transcript
+			show: 'b. suspended context 2 is nil';
+			cr ].
+	(Delay forMilliseconds: 1000) wait.
+	proc1 suspendedContext ifNil: [ 
+		Transcript
+			show: 'c. suspended context 1 is nil';
+			cr ].
+	proc2 suspendedContext ifNil: [ 
+		Transcript
+			show: 'c. suspended context 2 is nil';
+			cr ].
+	proc2 resume
 ]
 
 { #category : #tests }

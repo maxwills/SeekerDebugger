@@ -102,6 +102,12 @@ Object >> doCases [
 ]
 
 { #category : #'*Seeker' }
+Object >> isIterableDataSource [
+
+	^ false
+]
+
+{ #category : #'*Seeker' }
 Object >> isNotSeekerTrackable [
 
 	^ self isReadOnlyObject or: [ self isString ]
