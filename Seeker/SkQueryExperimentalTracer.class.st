@@ -87,7 +87,7 @@ SkQueryExperimentalTracer >> onTracedContextChanged [
 
 	SeekerMetaDebugHelper dontDoBlock: [ 
 		self flag:
-			'Next code was euristics associated with the ObjectTrackerClassic implementation for registering OIDs. The new implementation Should not needed'.
+			'Next code was euristics associated with the ObjectTrackerClassic implementation for registering OIDs. The new implementation Should not neede it'.
 		objectsTracker
 			registerObjectInstance: self currentContext receiver
 			withOid: executedBytecode - 1 ].
@@ -116,7 +116,7 @@ SkQueryExperimentalTracer >> restartAtBytecodeOne [
 
 	currentState resetCacheTimeKey.
 
-	restorer enabled ifTrue: [ restorer reset ].
+	restorer reset.
 	super restartAtBytecodeOne
 ]
 

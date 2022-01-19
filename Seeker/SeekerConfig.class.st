@@ -11,7 +11,8 @@ Class {
 		'deferredSetup',
 		'indentityEnforcingEnabled',
 		'seekerEnabled',
-		'quickWrapEnabled'
+		'quickWrapEnabled',
+		'objectTrackingEnabled'
 	],
 	#classVars : [
 		'defaultInstance'
@@ -115,7 +116,8 @@ SeekerConfig >> initialize [
 	autoInstrumentationStepping := false.
 	deferredSetup := false.
 	seekerEnabled := true.
-	quickWrapEnabled := true
+	quickWrapEnabled := true.
+	objectTrackingEnabled := true
 ]
 
 { #category : #accessing }
@@ -128,6 +130,18 @@ SeekerConfig >> keepMenusOpen [
 SeekerConfig >> keepMenusOpen: anObject [
 
 	keepMenusOpen := anObject
+]
+
+{ #category : #accessing }
+SeekerConfig >> objectTrackingEnabled [
+
+	^ objectTrackingEnabled
+]
+
+{ #category : #accessing }
+SeekerConfig >> objectTrackingEnabled: anObject [
+
+	objectTrackingEnabled := anObject
 ]
 
 { #category : #accessing }

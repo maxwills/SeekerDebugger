@@ -12,7 +12,8 @@ Class {
 		'btnResetEmergencyDeactivation',
 		'chkIdentityEnforcingEnabled',
 		'chkSeekerEnabled',
-		'chkQuickWrapEnabled'
+		'chkQuickWrapEnabled',
+		'chkObjectTrackingEnabled'
 	],
 	#category : #'Seeker-UI'
 }
@@ -24,7 +25,7 @@ SeekerConfigPresenter class >> open [
 	| presenter app |
 	presenter := SeekerConfigPresenter new.
 	presenter application: (app := SpApplication new).
-	^ presenter openWithSpec title: 'SeekerDebugger Configuration'
+	^ presenter open title: 'SeekerDebugger Configuration'
 ]
 
 { #category : #accessing }
@@ -49,6 +50,7 @@ SeekerConfigPresenter >> createChecksLayout [
 		  add: chkHandleMouseUp;
 		  add: chkHandleMouseDown;
 		  add: chkKeepMenusOpen;
+		  add: chkObjectTrackingEnabled;
 		  add: chkRestorationEnabled;
 		  add: chkIdentityEnforcingEnabled;
 		  add: chkUseDeferredSetup;
@@ -74,7 +76,7 @@ SeekerConfigPresenter >> handleResetEmergencyDeactivation [
 { #category : #api }
 SeekerConfigPresenter >> initialExtent [
 
-	^ 300 @ 340
+	^ 300 @ 370
 ]
 
 { #category : #initialization }
@@ -93,6 +95,9 @@ SeekerConfigPresenter >> initializePresenters [
 			                       'Handle MouseDown events').
 	chkKeepMenusOpen := checkboxes add:
 		                    (self createCheckbox: 'Keep menus open').
+	chkObjectTrackingEnabled := checkboxes add:
+		                            (self createCheckbox:
+			                             'Object tracking enabled').
 	chkIdentityEnforcingEnabled := checkboxes add:
 		                               (checkboxes add:
 			                                (self createCheckbox:
@@ -135,6 +140,7 @@ SeekerConfigPresenter >> updateFromConfig [
 	chkKeepMenusOpen state: self config keepMenusOpen.
 	chkIdentityEnforcingEnabled state:
 		self config identityEnforcingEnabled.
+	chkObjectTrackingEnabled state: self config objectTrackingEnabled.
 	chkRestorationEnabled state: self config restorationEnabled.
 	chkUseDeferredSetup state: self config deferredSetup.
 	chkSeekerEnabled state: self config seekerEnabled.
@@ -153,6 +159,8 @@ SeekerConfigPresenter >> updateToConfig [
 	self config identityEnforcingEnabled:
 		chkIdentityEnforcingEnabled state.
 	self config deferredSetup: chkUseDeferredSetup state.
+
+	self config objectTrackingEnabled: chkObjectTrackingEnabled state.
 	self config seekerEnabled: chkSeekerEnabled state.
 	self config quickWrapEnabled: chkQuickWrapEnabled state
 ]

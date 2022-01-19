@@ -107,6 +107,12 @@ SkObjectsTracker >> doPreStepProcessForMessageSends [
 	restorer enabled ifTrue: [ restorer doPreStepProcessForMessageSends ]
 ]
 
+{ #category : #accessing }
+SkObjectsTracker >> enabled [
+
+	^ SeekerConfig default objectTrackingEnabled
+]
+
 { #category : #initialization }
 SkObjectsTracker >> getObjectByOid: aNumber [
 

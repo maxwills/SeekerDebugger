@@ -24,7 +24,7 @@ SkOptimizedTracer >> doPostStepProcessWithPrevNode: preProcessAstNode andPrevCon
 	| currentNode "currentStatementNode" contextChanged "statementChanged" |
 	self increaseExecutedBytecode.
 
-	objectsTracker doPostStepProcess.
+	objectsTracker enabled ifTrue: [ objectsTracker doPostStepProcess ].
 	currentNode := currentState node. "currentContext method sourceNodeForPC:
 		               currentContext pc"
 	"currentStatementNode := currentNode statementNode."
@@ -42,7 +42,7 @@ SkOptimizedTracer >> doPostStepProcessWithPrevNode: preProcessAstNode andPrevCon
 { #category : #'as yet unclassified' }
 SkOptimizedTracer >> doPreStepProcess [
 
-	objectsTracker doPreStepProcess.
+	objectsTracker enabled ifTrue: [ objectsTracker doPreStepProcess ]
 ]
 
 { #category : #initialization }
