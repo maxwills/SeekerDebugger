@@ -34,7 +34,7 @@ SeekerMessageDialog class >> showModalDialog: text withTitle: title [
 	(StPharoApplication current newInform
 		 label: text;
 		 title: title;
-		 yourself) openModalWithSpec
+		 yourself) openModal
 ]
 
 { #category : #accessing }

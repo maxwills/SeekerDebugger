@@ -146,6 +146,7 @@ QuerySolver >> queryToSolve [
 	"Filters a query, leaving out instrumented code and other undesirable result items. Might be reworked with the new stepping pipeline"
 
 	| excluded |
+	query isNotExecutionQuery ifTrue: [ ^ query ].
 	(IncludeInstrumentation and: [ IncludeSystemClasses ]) ifTrue: [ 
 		^ query ].
 

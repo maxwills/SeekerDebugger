@@ -518,6 +518,12 @@ Query >> isCurrentRowAMatch [
 	^ selectionFunction value: self currentDataSourceRow
 ]
 
+{ #category : #testing }
+Query >> isNotExecutionQuery [
+
+	^ self findTracer isNil
+]
+
 { #category : #'as yet unclassified' }
 Query >> isRowAMatch: aRow [
 
