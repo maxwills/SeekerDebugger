@@ -4,7 +4,7 @@ When it is about to be executed, it is noted as open, and it is logged as return
 
 "
 Class {
-	#name : #DebuggerStepperBase,
+	#name : #SkTracerBase,
 	#superclass : #Object,
 	#traits : 'TDebuggerUpdateCoordinatorClient',
 	#classTraits : 'TDebuggerUpdateCoordinatorClient classTrait',
@@ -13,13 +13,18 @@ Class {
 		'session',
 		'isSessionActive',
 		'inMouseButtonEventInstrumentationFlag',
-		'instrumentedMethods'
+		'instrumentedMethods',
+		'stepper',
+		'restorer',
+		'identityEnforcer',
+		'components',
+		'objectsTracker'
 	],
-	#category : #'Seeker-Tracing'
+	#category : #'Seeker-Components'
 }
 
 { #category : #starting }
-DebuggerStepperBase >> andThen [
+SkTracerBase >> andThen [
 
 	"A human friendly message conjunction. Basically higher level/less efficient/prettier cascade.
 	Don't use with message with arguments. Actually, don't use it at all"
@@ -28,7 +33,25 @@ DebuggerStepperBase >> andThen [
 ]
 
 { #category : #'as yet unclassified' }
-DebuggerStepperBase >> doMouseButtonEventInstrumentedBlockOnce: aBlock [
+SkTracerBase >> bindComponents [
+
+	components ifNotNil: [ components do: [ :c | c bindComponents ] ]
+]
+
+{ #category : #accessing }
+SkTracerBase >> components [
+
+	^ components
+]
+
+{ #category : #accessing }
+SkTracerBase >> components: anObject [
+
+	components := anObject
+]
+
+{ #category : #'as yet unclassified' }
+SkTracerBase >> doMouseButtonEventInstrumentedBlockOnce: aBlock [
 
 	| oldVal |
 	oldVal := inMouseButtonEventInstrumentationFlag.
@@ -38,31 +61,57 @@ DebuggerStepperBase >> doMouseButtonEventInstrumentedBlockOnce: aBlock [
 ]
 
 { #category : #accessing }
-DebuggerStepperBase >> inMouseButtonEventInstrumentationFlag [
+SkTracerBase >> identityEnforcer [
+
+	^ identityEnforcer
+]
+
+{ #category : #accessing }
+SkTracerBase >> identityEnforcer: anObject [
+
+	^ identityEnforcer := anObject
+]
+
+{ #category : #accessing }
+SkTracerBase >> inMouseButtonEventInstrumentationFlag [
 
 	^ inMouseButtonEventInstrumentationFlag
 ]
 
 { #category : #accessing }
-DebuggerStepperBase >> inMouseButtonEventInstrumentationFlag: anObject [
+SkTracerBase >> inMouseButtonEventInstrumentationFlag: anObject [
 
 	^ inMouseButtonEventInstrumentationFlag := anObject
 ]
 
 { #category : #initialization }
-DebuggerStepperBase >> initialize [
+SkTracerBase >> initialize [
 
-	self safelyDoUnsafeCode: [ 
+	SeekerSessionHelpers doCriticalInitialization: [ 
+		self initializeInstrumentedMethods.
+		self initializeComponents.
 		isSessionActive := true.
-		inMouseButtonEventInstrumentationFlag := false.
-		self initializeInstrumentedMethods ]
+		inMouseButtonEventInstrumentationFlag := false ]
 ]
 
 { #category : #initialization }
-DebuggerStepperBase >> initializeInstrumentedMethods [
+SkTracerBase >> initializeComponents [
+
+	components := OrderedCollection new.
+	components add: (stepper := SkStepper newFor: self).
+	components add: (restorer := SkExecutionRestorer newFor: self).
+	components add: (objectsTracker := SkObjectsTracker newFor: self).
+	components add: (identityEnforcer := SkIdentityEnforcer newFor: self).
+	self bindComponents
+]
+
+{ #category : #initialization }
+SkTracerBase >> initializeInstrumentedMethods [
 
 	instrumentedMethods := Set new.
-
+	SeekerMetaDebugHelper doBlock: [ 
+		self flag: 'During refactoring time, this feature is disabled'.
+		^ self ].
 	instrumentedMethods addAll:
 		((Pragma fullListOfAllNamed: #seekerInstrumentation:) collect: [ :p | 
 			 p method ]).
@@ -74,59 +123,68 @@ DebuggerStepperBase >> initializeInstrumentedMethods [
 ]
 
 { #category : #'as yet unclassified' }
-DebuggerStepperBase >> isSessionActive [
+SkTracerBase >> isSessionActive [
 
 	^ isSessionActive
 ]
 
 { #category : #'as yet unclassified' }
-DebuggerStepperBase >> notifySessionEnd [
+SkTracerBase >> notifySessionEnd [
 
 	isSessionActive := false.
 	self seeker notifySessionEnd
 ]
 
+{ #category : #accessing }
+SkTracerBase >> objectsTracker [
+
+	^ objectsTracker
+]
+
+{ #category : #accessing }
+SkTracerBase >> objectsTracker: anObject [
+
+	objectsTracker := anObject
+]
+
 { #category : #starting }
-DebuggerStepperBase >> restart [
+SkTracerBase >> restart [
 
 	self error: 'obsolete method. Use retartFromBytecodeOne instead'
 ]
 
 { #category : #'as yet unclassified' }
-DebuggerStepperBase >> restartRecordFromContext: aContext [
+SkTracerBase >> restartRecordFromContext: aContext [
    self subclassResponsibility
 	
 ]
 
-{ #category : #'as yet unclassified' }
-DebuggerStepperBase >> safelyDoUnsafeCode: aBlock [
+{ #category : #accessing }
+SkTracerBase >> restorer [
 
-	"Catch exceptions and log them. Should be used in methods that are called when initializing the debugger to
-prevent being unable to debug anything in case of failure
-"
-
-	aBlock onErrorDo: [ :e | 
-		Transcript
-			show: 'DebuggerStepper>>safelyDoUnsafeCode: ';
-			cr;
-			show: e asString;
-			cr ]
+	^ restorer
 ]
 
 { #category : #accessing }
-DebuggerStepperBase >> seeker [
+SkTracerBase >> restorer: anObject [
+
+	restorer := anObject
+]
+
+{ #category : #accessing }
+SkTracerBase >> seeker [
 
 	^ seeker
 ]
 
 { #category : #accessing }
-DebuggerStepperBase >> seeker: anObject [
+SkTracerBase >> seeker: anObject [
 
 	seeker := anObject
 ]
 
 { #category : #'as yet unclassified' }
-DebuggerStepperBase >> seekerResultsPresenter [
+SkTracerBase >> seekerResultsPresenter [
 
 	"Returns the result presenter. Or Nil"
 
@@ -134,24 +192,30 @@ DebuggerStepperBase >> seekerResultsPresenter [
 ]
 
 { #category : #accessing }
-DebuggerStepperBase >> session [
+SkTracerBase >> session [
 
 	^ session
 ]
 
 { #category : #accessing }
-DebuggerStepperBase >> session: anObject [
+SkTracerBase >> session: anObject [
 
 	session := anObject
 ]
 
 { #category : #initialization }
-DebuggerStepperBase >> setSelectedContextAsStartingPoint: aContext [
+SkTracerBase >> setEmergencyStopFlag [
+
+	stepper setEmergencyStopFlag
+]
+
+{ #category : #initialization }
+SkTracerBase >> setSelectedContextAsStartingPoint: aContext [
 	^self subclassResponsibility 
 ]
 
 { #category : #'debug - stepping' }
-DebuggerStepperBase >> stepBackInto [
+SkTracerBase >> stepBackInto [
 
 	"comment stating purpose of instance-side method"
 
@@ -161,7 +225,7 @@ DebuggerStepperBase >> stepBackInto [
 ]
 
 { #category : #'debug - stepping' }
-DebuggerStepperBase >> stepBackOver [
+SkTracerBase >> stepBackOver [
 
 	"comment stating purpose of instance-side method"
 
@@ -171,7 +235,7 @@ DebuggerStepperBase >> stepBackOver [
 ]
 
 { #category : #'debug - stepping' }
-DebuggerStepperBase >> stepInto [
+SkTracerBase >> stepInto [
 
 	"comment stating purpose of instance-side method"
 
@@ -181,28 +245,46 @@ DebuggerStepperBase >> stepInto [
 ]
 
 { #category : #'debug - stepping' }
-DebuggerStepperBase >> stepOver [
+SkTracerBase >> stepOver [
 
 	"comment stating purpose of instance-side method"
 
 	"scope: class-variables  &  instance-variables"
 
 	self subclassResponsibility
+]
+
+{ #category : #accessing }
+SkTracerBase >> stepper [
+
+	^ stepper
+]
+
+{ #category : #accessing }
+SkTracerBase >> stepper: anObject [
+
+	^ stepper := anObject
 ]
 
 { #category : #starting }
-DebuggerStepperBase >> timeTravelToUserStart [
+SkTracerBase >> timeTravelToUserStart [
 	self subclassResponsibility 
 ]
 
 { #category : #accessing }
-DebuggerStepperBase >> trace [
+SkTracerBase >> trace [
 	"Returns the collection of steps signatures"
 	self subclassResponsibility
 ]
 
+{ #category : #accessing }
+SkTracerBase >> tracer [
+
+	^ self
+]
+
 { #category : #'as yet unclassified' }
-DebuggerStepperBase >> ui [
+SkTracerBase >> ui [
 
 	"Returns the result presenter. Or Nil"
 

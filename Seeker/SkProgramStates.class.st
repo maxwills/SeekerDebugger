@@ -8,7 +8,8 @@ Class {
 		'optimizedRowReificationBlock',
 		'excludedFields',
 		'protectedColumns',
-		'csi'
+		'csi',
+		'errors'
 	],
 	#category : #'Seeker-Query'
 }
@@ -27,10 +28,12 @@ SkProgramStates >> advanceToNextRow [
 
 	"advances to the next row. returns false if the end of the table (there are no more rows) was reached before trying to advance."
 
+	self flag:
+		'This method is never used. Considering refactoring all related to iterables in Seeker Package'.
 	justRestarted ifTrue: [ 
 		justRestarted := false.
 		^ true ].
-	^ tracer stepBytecode "This is not good, I should use the bytecode step instead!"
+	^ tracer stepBytecode
 ]
 
 { #category : #'as yet unclassified' }
@@ -54,16 +57,16 @@ SkProgramStates >> do: aBlock [
 	tracer isMapped ifFalse: [ 
 		^ self error:
 			  'Time traveling needs to be enabled to execute Trace Queries' ].
-	
+	errors removeAll.
 	currentTracetime := tracer bytecodeIndex asExecutedBytecodeTraceTime.
-	
+
 	self tracer doAndUpdateSessionAfter: [ "we don't need the update after. This is just to prevent inner updates"
 		SeekerGlobals instance startQueryingFromBytecodeOne
 			ifTrue: [ tracer restartAtBytecodeOne ]
 			ifFalse: [ tracer timeTravelToUserStart ].
 
 		[ self stepAndInEachStateDo: aBlock ] ensure: [ 
-			tracer checkPreventNextTimeRestoration ifFalse: [ 
+			tracer checkPreventNextLiveStateRestoration ifFalse: [ 
 				tracer timeTravelToTraceTime: currentTracetime ] ] ]
 ]
 
@@ -73,6 +76,12 @@ SkProgramStates >> endOfTableReached [
 	"returns true if the table has no more rows (and advanceToNextRow will return false)"
 
 	^ tracer isExecutionFinished or: [ tracer isRiskyStep ]
+]
+
+{ #category : #accessing }
+SkProgramStates >> errors [
+
+	^ errors
 ]
 
 { #category : #accessing }
@@ -103,7 +112,8 @@ SkProgramStates >> getRelevantFields [
 SkProgramStates >> initialize [
 
 	excludedFields := {  }.
-	protectedColumns := {  }
+	protectedColumns := {  }.
+	errors := OrderedCollection new
 ]
 
 { #category : #'as yet unclassified' }
@@ -142,7 +152,16 @@ SkProgramStates >> stepAndInEachStateDo: aBlock [
 	"[ tracer stepBytecode ] whileTrue:"
 	tracer
 		stepBytecodeUntilConditionIsTrue: [ false ]
-		doingAfterEachStep: [ aBlock value: csi ]
+		doingAfterEachStep: [ 
+			[ aBlock value: csi ] onErrorDo: [ :e | 
+				| autoE |
+				autoE := AutoTypeErrorObject newWithMessage:
+					         'ProgramStates>>stepAndInEachStateDo caught error: '
+					         , e asString.
+				errors add: { 
+						e.
+						autoE }.
+				aBlock value: autoE ] ]
 ]
 
 { #category : #accessing }
@@ -155,5 +174,5 @@ SkProgramStates >> tracer [
 SkProgramStates >> tracer: anObject [
 
 	tracer := anObject.
-	csi := tracer currentStateInterface.
+	csi := tracer currentState.
 ]

@@ -5,7 +5,7 @@ Class {
 		'tracer',
 		'currentState'
 	],
-	#category : #'Seeker-Tracing'
+	#category : #'Seeker-Components'
 }
 
 { #category : #'instance creation' }
@@ -13,7 +13,7 @@ SkEndCondition class >> newForTracer: tracer [
 
 	^ self new
 		  tracer: tracer;
-		  currentState: tracer currentStateInterface;
+		  currentState: tracer currentState;
 		  yourself
 ]
 

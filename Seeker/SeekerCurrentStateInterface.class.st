@@ -89,11 +89,14 @@ Class {
 	#name : #SeekerCurrentStateInterface,
 	#superclass : #SeekerInterfaceObject,
 	#instVars : [
-		'exceptionSignalSelectors'
+		'exceptionSignalSelectors',
+		'instantiationPrimitiveMethods',
+		'writingPrimitiveMethods'
 	],
 	#classVars : [
 		'InstanceCreationPrimitives',
 		'InstanceCreationPrimitivesArray',
+		'primitivePragmas',
 		'writingPrimitivesArray'
 	],
 	#category : #'Seeker-Interfaces'
@@ -147,7 +150,7 @@ SeekerCurrentStateInterface class >> isWritingPrimitive: aNumber [
 SeekerCurrentStateInterface class >> new [
 
 	<qwpSubCacheDelegated>
-	^ self basicNew
+	^ self basicNew initialize
 ]
 
 { #category : #'as yet unclassified' }
@@ -229,12 +232,6 @@ SeekerCurrentStateInterface >> bytecodeIndex [
 	^ tracer bytecodeIndex
 ]
 
-{ #category : #accessing }
-SeekerCurrentStateInterface >> bytecodeStepInTracedStatement [
-
-	^ tracer executedBytecodesInTracedStatement + 1
-]
-
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> classNameOfObjectAboutToBeInstantiated [
 
@@ -305,6 +302,54 @@ SeekerCurrentStateInterface >> initialPC [
 	^ self compiledCode initialPC
 ]
 
+{ #category : #initialization }
+SeekerCurrentStateInterface >> initialize [
+
+	self initializePrimitivePragmas.
+	self initializeInstantiationPrimitiveMethods.
+	self initializeWritingPrimitiveMethods
+]
+
+{ #category : #initialization }
+SeekerCurrentStateInterface >> initializeInstantiationPrimitiveMethods [
+
+	| methods |
+	instantiationPrimitiveMethods := IdentitySet new.
+	methods := (primitivePragmas select: [ :p | 
+		            | prim |
+		            prim := p method primitive.
+		            self class isInstantiationPrimitive: prim ]) collect: [ 
+		           :p | p method ].
+	instantiationPrimitiveMethods addAll: methods
+]
+
+{ #category : #initialization }
+SeekerCurrentStateInterface >> initializePrimitivePragmas [
+
+	primitivePragmas := (Pragma all select: [ :p | 
+		                     p selector beginsWith: #primitive: ]) asSet
+]
+
+{ #category : #initialization }
+SeekerCurrentStateInterface >> initializeWritingPrimitiveMethods [
+
+	| methods |
+	methods := (primitivePragmas select: [ :p | 
+		            | prim |
+		            prim := p method primitive.
+		            self class isWritingPrimitive: prim ]) collect: [ :c | 
+		           c method ].
+	writingPrimitiveMethods := WeakIdentitySet new.
+	writingPrimitiveMethods addAll: methods
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> isAssignment [
+
+	<qwpSubCached>
+	^ self node isAssignment
+]
+
 { #category : #testing }
 SeekerCurrentStateInterface >> isDead [
 
@@ -326,12 +371,6 @@ SeekerCurrentStateInterface >> isFirstBytecodeOfMethod [
 	^self contextPC = self initialPC
 ]
 
-{ #category : #'as yet unclassified' }
-SeekerCurrentStateInterface >> isFirstBytecodeOfStatement [
-<superCached>
-	^ tracer executedBytecodesInTracedStatement = 1
-]
-
 { #category : #testing }
 SeekerCurrentStateInterface >> isInstantiationMessage [
 
@@ -344,8 +383,7 @@ and the method called corresponds to an instantiation primitive.
 	self isMessageNode ifFalse: [ ^ false ].
 	methodAboutToExecute := self methodAboutToExecute.
 	^ methodAboutToExecute notNil and: [ 
-		  self class isInstantiationPrimitive:
-			  methodAboutToExecute primitive ]
+		  instantiationPrimitiveMethods includes: methodAboutToExecute ]
 ]
 
 { #category : #testing }
@@ -401,7 +439,7 @@ and the method called corresponds to a writing primitive.
 	self isMessageNode ifFalse: [ ^ false ].
 	methodAboutToExecute := self methodAboutToExecute.
 	^ methodAboutToExecute notNil and: [ 
-		  self class isWritingPrimitive: methodAboutToExecute primitive ]
+		  writingPrimitiveMethods includes: methodAboutToExecute ]
 ]
 
 { #category : #testing }
@@ -495,7 +533,8 @@ SeekerCurrentStateInterface >> messageSelector [
 	"Returns the message selector of the current message node. Assumes the current node is a message node
 "
 
-	<qwpSubCached>
+	<qwpSubCached>"
+	self node selector = #ifTrue: ifTrue: [ ^ 1 / 0 ]."
 	^ self node selector
 ]
 
@@ -725,12 +764,6 @@ SeekerCurrentStateInterface >> statementNotation [
 { #category : #accessing }
 SeekerCurrentStateInterface >> tracedStatementPath [
 	^nil
-]
-
-{ #category : #accessing }
-SeekerCurrentStateInterface >> tracedStatementStepIndex [
-
-	^ tracer tracedStatementIndex
 ]
 
 { #category : #'as yet unclassified' }

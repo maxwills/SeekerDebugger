@@ -1,7 +1,7 @@
 Class {
 	#name : #SkMapAlgoPragmaDebugSession,
 	#superclass : #SkExecutionMapperAlgorithm,
-	#category : #'Seeker-Tracing'
+	#category : #'Seeker-Components'
 }
 
 { #category : #testing }
@@ -15,10 +15,10 @@ SkMapAlgoPragmaDebugSession class >> matchesExecutionScenario: tracer [
 { #category : #'as yet unclassified' }
 SkMapAlgoPragmaDebugSession >> mapExecution [
 
-	| recordingInitialContext testInitialContext endingContext findContext currentCompiledMethod |
+	| recordingInitialContext testInitialContext endingContext findContext |
 	"Only works if used the option: debug with Seeker""findContext is a SeekerFindContextInStackInterface object"
 	UIManager default spawnNewProcessIfThisIsUI: tracer debuggedProcess. "Processor activeProcess"
-	currentCompiledMethod := tracer slowCurrentContext compiledCode.
+
 	findContext := tracer findContextInStack.
 
 	recordingInitialContext := findContext
@@ -32,7 +32,6 @@ SkMapAlgoPragmaDebugSession >> mapExecution [
 	testInitialContext ifNil: [ 
 		self error: 'Could not detect the initial context.'.
 		^ false ].
-
 	"19 is the true user start"
 	"85 IS RIGHT AFTER THE OWNER CONDITION"
 	"1041 is the execute"

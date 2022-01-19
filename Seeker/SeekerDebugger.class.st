@@ -60,7 +60,7 @@ SeekerDebugger class >> newFor: aStDebugger [
 	"Initialize the DebuggerStepperBase subclass to be injected in the seeker debugger"
 	stepper := SkQueryExperimentalTracer new. "SeekerGlobals instance defaultStepperClass new"
 	stepper stDebugger: aStDebugger.
-	stepper interruptedProcess: aStDebugger interruptedProcess. "aStDebugger session interruptedProcess"
+	stepper debuggedProcess: aStDebugger interruptedProcess. "aStDebugger session interruptedProcess"
 	stepper debuggerUpdateCoordinator: updateCoordinator.
 	updateCoordinator tracer: stepper.
 
@@ -281,11 +281,6 @@ SeekerDebugger >> stepOver [
 	tracer stepOver.
 	"Transcript clear.
 	self printTrace"
-]
-
-{ #category : #'as yet unclassified' }
-SeekerDebugger >> stepUntilConditionIsTrue: aBlock [
-	tracer stepUntilConditionIsTrue: aBlock
 ]
 
 { #category : #accessing }

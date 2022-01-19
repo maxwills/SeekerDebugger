@@ -8,7 +8,7 @@ Class {
 TTQAllMessagesSentWithSelector class >> performWith: tracer withArg: arg [
 
 	tracer ui showInResult:
-		(self queryFrom: tracer programStates withSelector: arg) displayModel 
+		(self queryFrom: tracer newProgramStates withSelector: arg) displayModel 
 ]
 
 { #category : #'as yet unclassified' }

@@ -71,7 +71,7 @@ SeekerGlobals >> defaultStepperClass [
 	| fallbackDefault |
 	fallbackDefault := SkQueryExperimentalTracer.
 	defaultStepperClass ifNil: [ defaultStepperClass := fallbackDefault ].
-	(defaultStepperClass class inheritsFrom: SkBytecodeStepper) 
+	(defaultStepperClass class inheritsFrom: SkSteppableTracer) 
 		ifFalse: [ defaultStepperClass := fallbackDefault ].
 	^ defaultStepperClass
 ]

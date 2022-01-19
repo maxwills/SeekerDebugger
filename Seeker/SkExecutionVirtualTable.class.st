@@ -30,7 +30,7 @@ SkExecutionVirtualTable >> advanceToNextRow [
 	justRestarted ifTrue: [ 
 		justRestarted := false.
 		^ true ].
-	^ tracer stepBytecode "This is not good, I should use the bytecode step instead!"
+	^ tracer THISSHOUDLNOTBEUSED "This is not good, I should use the bytecode step instead!"
 ]
 
 { #category : #converting }
@@ -64,6 +64,8 @@ SkExecutionVirtualTable >> do: aBlock [
 	"Note that is used only because, at the moment, I have no bytecode stepping, so the preBytecodeStepHook is executed instead."
 
 	| currentTracetime preBytecodeStepHook |
+	self error:
+		'deprecated. Use ProgramStates+currentStateInterface instead'.
 	currentTracetime := tracer bytecodeIndex asExecutedBytecodeTraceTime.
 	tracer isMapped ifFalse: [ 
 		^ self error:

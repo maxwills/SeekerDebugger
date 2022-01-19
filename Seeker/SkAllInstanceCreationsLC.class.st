@@ -16,7 +16,7 @@ SkAllInstanceCreationsLC >> description [
 SkAllInstanceCreationsLC >> executeCommand [
 
 	self showResultFor:
-		(TTQAllInstanceCreations queryFrom: self tracer programStates)
+		(TTQAllInstanceCreations queryFrom: self tracer newProgramStates)
 ]
 
 { #category : #accessing }

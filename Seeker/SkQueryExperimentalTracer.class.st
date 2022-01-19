@@ -1,26 +1,11 @@
 Class {
 	#name : #SkQueryExperimentalTracer,
-	#superclass : #SkOptimizedBytecodeStepper,
+	#superclass : #SkOptimizedTracer,
 	#instVars : [
-		'astPreStepHooks',
-		'instantiationFlag',
-		'instantiationCounter',
-		'instantiationIDDictionary',
-		'nonLocalObjects',
-		'storedNonLocalChangesDictionary',
-		'shouldAlwaysRunToEnd',
-		'oidsDictionary',
-		'reverseOidsDictionary',
-		'previousReverseOidsDictionary',
-		'firstRunFlag'
+		'shouldAlwaysRunToEnd'
 	],
-	#category : #'Seeker-Tracing'
+	#category : #'Seeker-Components'
 }
-
-{ #category : #adding }
-SkQueryExperimentalTracer >> addAstPreStepHook: aBlock [
-	astPreStepHooks add: aBlock
-]
 
 { #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> checkIfShouldRunToEnd [
@@ -42,103 +27,6 @@ SkQueryExperimentalTracer >> createContextCacheFor: aContext [
 	^ aContext stackPtr = (contextVars + 1)
 ]
 
-{ #category : #accessing }
-SkQueryExperimentalTracer >> doAstStepPostProcessWithPrevNode: preProcessAstNode andPrevContext: preContext [
-
-	instantiationFlag ifTrue: [ 
-		| instancedObj previousIdentity |
-		instancedObj := currentState contextTop.
-		instantiationFlag := false.
-		previousIdentity := reverseOidsDictionary
-			                    at: executedBytecode
-			                    ifAbsent: [ nil ].
-		previousIdentity ifNotNil: [ "There are exceptional cases where objects oid differ by -1 (the previous identity is executedBytecode). Not sure yet why. The next if patches that."
-			previousIdentity class = instancedObj class ifTrue: [ 
-				previousIdentity copyFrom: instancedObj.
-				previousIdentity becomeForward: instancedObj copyHash: true ] ].
-		self
-			registerObjectInstance: currentState contextTop
-			withOid: executedBytecode - 1.
-		instantiationCounter := instantiationCounter + 1.
-		instantiationIDDictionary at: instancedObj put: instantiationCounter ].
-	currentState isMessageSend ifTrue: [ 
-		self
-			registerObjectInstance: currentState messageReceiver
-			withOid: executedBytecode ].
-
-	super
-		doAstStepPostProcessWithPrevNode: preProcessAstNode
-		andPrevContext: preContext
-]
-
-{ #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> doAstStepPreProcess [
-
-	currentState isMessageSend
-		ifTrue: [ "handling message sends cases" 
-			self doAstStepPreProcessForMessageSends ]
-		ifFalse: [ 
-			| node |
-			node := currentState node.
-			node isAssignment ifTrue: [ self doAstStepPreProcessForAssignments ] ]
-]
-
-{ #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> doAstStepPreProcessForAssignments [
-
-	| variable |
-	self isRecordingEnabled ifFalse: [ ^ self ].
-	"the current node is an assignment node"
-	variable := currentState node variable variable.
-	"putting the tracing for restoration (of assignments)logic here"
-	variable isGlobalVariable
-		ifTrue: [ 
-			| variablesChangesOfReceiver globalName |
-			globalName := variable name.
-			variablesChangesOfReceiver := storedNonLocalChangesDictionary
-				                              at: #_GLOBALS_
-				                              ifAbsentPut: [ Dictionary new ].
-			variablesChangesOfReceiver at: globalName ifAbsentPut: [ 
-				| pinnedValue |
-				pinnedValue := Smalltalk globals at: globalName.
-				[ Smalltalk globals at: globalName put: pinnedValue ] ] ]
-		ifFalse: [ 
-			(variable isWorkspaceVariable or: [ 
-				 variable isLocalVariable not and: [ 
-					 currentState receiverIsLocalToExecution not ] ]) ifTrue: [ "if the receiver is an object that was instantiated from outside the execution, or in case of a workspace variable"
-				self
-					recordChangeForReceiver: currentState receiver
-					ofVar: variable
-					inContext: currentState context ] ]
-]
-
-{ #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> doAstStepPreProcessForMessageSends [
-
-	"handling message sends cases"
-
-	| method primitive |
-	"register the receiver"
-	self
-		registerObjectInstance: currentState messageReceiver
-		withOid: executedBytecode.
-	method := currentState methodAboutToExecute.
-	skipFlag := skippableMethods includes: method.
-	primitive := method ifNil: [ 0 ] ifNotNil: [ method primitive ].
-	shouldAlwaysRunToEnd ifFalse: [ 
-		shouldAlwaysRunToEnd := SeekerCurrentStateInterface 
-			                        isWaitPrimitive: primitive ].
-	(SeekerCurrentStateInterface isInstantiationPrimitive: primitive)
-		ifTrue: [ instantiationFlag := true ]
-		ifFalse: [ 
-			(SeekerCurrentStateInterface isWritingPrimitive: primitive) 
-				ifTrue: [ 
-					| messageReceiver |
-					messageReceiver := currentState messageReceiver.
-					(self objectIsLocal: messageReceiver) ifFalse: [ "We store a copy of the object if this is writing primitive" 
-						self recordSnapshotOfObject: messageReceiver ] ] ]
-]
-
 { #category : #'UI specific' }
 SkQueryExperimentalTracer >> executeAndShow: aQuery [
 
@@ -155,33 +43,17 @@ SkQueryExperimentalTracer >> findContextInStack [
 ]
 
 { #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> getObjectByOid: aNumber [
-
-	oidsDictionary associationsDo: [ :assoc | 
-		assoc value == aNumber ifTrue: [ ^ assoc key ] ].
-	^ nil
-]
-
-{ #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> getOidOf: anObject [
 
-	^ oidsDictionary at: anObject ifAbsent: [ nil ]
+	^ objectsTracker getOidOf: anObject
 ]
 
 { #category : #initialization }
 SkQueryExperimentalTracer >> initialize [
 
-	astPreStepHooks := OrderedCollection new.
-	oidsDictionary := IdentityDictionary new. "WeakIdentityKeyDictionary"
-	reverseOidsDictionary := Dictionary new.
-	previousReverseOidsDictionary := Dictionary new.
-	instantiationCounter := 0.
-	instantiationIDDictionary := WeakIdentityKeyDictionary new.
-	instantiationFlag := false.
-	nonLocalObjects := WeakIdentitySet new.
 	shouldAlwaysRunToEnd := false.
-	storedNonLocalChangesDictionary := WeakIdentityKeyDictionary new. "Keys are the object owning the variable, and the value is a dictionary of keys variable name (symbol) with values the Undo block"
-	^ super initialize
+	super initialize.
+	self bindComponents
 ]
 
 { #category : #testing }
@@ -190,39 +62,22 @@ SkQueryExperimentalTracer >> isTopContext: aContext [
 	^ stDebugger interruptedContext = aContext
 ]
 
+{ #category : #'as yet unclassified' }
+SkQueryExperimentalTracer >> newProgramStates [
+
+	^ SkProgramStates newForTracer: self
+]
+
 { #category : #accessing }
 SkQueryExperimentalTracer >> objectIsLocal: anObject [
 
-	"Returns true if the object that corresponds to the given Tid is instantiated during the execution"
-
-	"Beware that the execution corresponds only to the already executed part."
-
-	anObject class = Metaclass ifTrue: [ ^ true ].
-	^ instantiationIDDictionary includesKey: anObject
+	^ objectsTracker objectIsLocal: anObject
 ]
 
 { #category : #accessing }
 SkQueryExperimentalTracer >> objectOidIsLocal: aNumber [
 
-	"Returns true if the object that corresponds to the given Tid is instantiated during the execution"
-
-	"Beware that the execution corresponds only to the already executed part."
-
-	^ (nonLocalObjects includes: aNumber) not
-]
-
-{ #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> oldStepUntilQueryMatch: aQuery [
-
-	| match bcstephook |
-	"Use the condition with the hook technique. Because The predicate block of stepUntilCondition as step granularity statement."
-	match := false.
-	aQuery optimizeRowAcquisitionForFields: aQuery getRelevantFields.
-	bcstephook := [ aQuery isCurrentRowAMatch ifTrue: [ match := true ].match  ].
-	self addAstPreStepHook: bcstephook.
-	"Note the double bcstephook check. This is because, the ast level checkin happens after initiating the step into, it will always stop one step later. By repeating the condition in the statemement stepping, the problem is solved. this will change when reworking the debugger granularity"
-	[ self stepUntilConditionIsTrue: bcstephook] ensure: [ 
-		self removeAstPreStepHook: bcstephook ]
+	^ objectsTracker objectOidIsLocal: aNumber
 ]
 
 { #category : #'as yet unclassified' }
@@ -230,9 +85,13 @@ SkQueryExperimentalTracer >> onTracedContextChanged [
 
 	"self createContextCacheFor: self currentContext."
 
-	self
-		registerObjectInstance: self currentContext receiver
-		withOid: executedBytecode - 1.
+	SeekerMetaDebugHelper dontDoBlock: [ 
+		self flag:
+			'Next code was euristics associated with the ObjectTrackerClassic implementation for registering OIDs. The new implementation Should not needed'.
+		objectsTracker
+			registerObjectInstance: self currentContext receiver
+			withOid: executedBytecode - 1 ].
+
 	super onTracedContextChanged
 ]
 
@@ -245,76 +104,6 @@ SkQueryExperimentalTracer >> perform [
 	^ interface
 ]
 
-{ #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> programStates [
-
-	^ SkProgramStates newForTracer: self
-]
-
-{ #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> recordChangeForReceiver: anObject ofVar: aVariable inContext: aContext [
-
-	"Note that this method stores only the first change of a variable."
-
-	| variablesChangesOfReceiver |
-	self isRecordingEnabled ifFalse: [ ^ self ].
-	variablesChangesOfReceiver := storedNonLocalChangesDictionary
-		                              at: anObject
-		                              ifAbsentPut: [ Dictionary new ].
-	variablesChangesOfReceiver at: aVariable name ifAbsentPut: [ 
-		| varValue varName |
-		varName := aVariable name.
-		varValue := aVariable readInContext: aContext.
-		(executionMappper isMappedForDoIt and: [ 
-			 aVariable isWorkspaceVariable ])
-			ifTrue: [ 
-				[ 
-				aVariable write: varValue inContext: executionMappper doItContext "I used the stored doItContext, because I don't know how to make the assignment without that context reference" ] ]
-			ifFalse: [ "Why not using write:inContext:? because most likely the context will not exists when undoing changes for these variables." 
-				[ anObject writeSlotNamed: varName value: varValue ] ] ]
-]
-
-{ #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> recordSnapshotOfObject: anObject [
-
-	"Note that this method stores only the first change of a variable."
-
-	| variablesChangesOfReceiver |
-	self isRecordingEnabled ifFalse: [ ^ self ].
-	variablesChangesOfReceiver := storedNonLocalChangesDictionary
-		                              at: anObject
-		                              ifAbsentPut: [ Dictionary new ].
-
-	variablesChangesOfReceiver
-		at: #__full_object_snaphot__
-		ifAbsentPut: [ 
-			| valuesCopy |
-			valuesCopy := anObject shallowCopy.
-			[ anObject copySameFrom: valuesCopy ] ]
-]
-
-{ #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> registerObjectInstance: anObject withOid: aNumber [
-
-	"anObject class = Metaclass ifTrue: [ ^ self ]."
-
-	reverseOidsDictionary at: aNumber ifAbsentPut: [ anObject ].
-	oidsDictionary at: anObject ifAbsentPut: [ aNumber ].
-
-
-	(instantiationIDDictionary includesKey: anObject) ifFalse: [ "anObject seekMyAlias = 1841 ifTrue: [ 
-			Transcript
-				show: 'markA' , byteCountCounter asString;
-				cr ]." 
-		nonLocalObjects add: anObject "Set will only add it if it is not present yet" ]
-]
-
-{ #category : #adding }
-SkQueryExperimentalTracer >> removeAstPreStepHook: aBlock [
-
-	astPreStepHooks remove: aBlock
-]
-
 { #category : #starting }
 SkQueryExperimentalTracer >> restartAtBytecodeOne [
 
@@ -322,36 +111,13 @@ SkQueryExperimentalTracer >> restartAtBytecodeOne [
 
 	shouldAlwaysRunToEnd ifTrue: [ self stepToEnd ].
 	shouldAlwaysRunToEnd := false.
-	self restoreNonLocalChanges.
-	oidsDictionary removeAll.
-	"previousReverseOidsDictionary := reverseOidsDictionary.
-	reverseOidsDictionary := Dictionary new."
-	"
-	aliasesDictionary := WeakIdentityKeyDictionary new."
-	instantiationCounter := 0.
-	instantiationIDDictionary removeAll. "
-	instantiationIDDictionary := WeakIdentityKeyDictionary new."
-	instantiationFlag := false.
+	restorer enabled ifTrue: [ restorer restoreNonLocalChanges ].
+	objectsTracker reset.
+
 	currentState resetCacheTimeKey.
-	nonLocalObjects := WeakIdentitySet new.
-	storedNonLocalChangesDictionary removeAll. "
-	storedNonLocalChangesDictionary := WeakIdentityKeyDictionary new." "Keys are the object owning the variable, and the value is a dictionary of keys variable name (symbol) with values the Undo block"
+
+	restorer enabled ifTrue: [ restorer reset ].
 	super restartAtBytecodeOne
-]
-
-{ #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> restoreNonLocalChanges [
-
-	"	storedNonLocalChanges reverseDo: [ :each | 
-		| undoBlock |
-		undoBlock := each at: 4.
-		undoBlock value ]"
-
-	"in this implementation we only store the first changes to a variable of an object. In theory, the order they are restored is not important"
-
-	self isRestorationEnabled ifFalse: [ ^ self ].
-	storedNonLocalChangesDictionary valuesDo: [ :variablesAndUndoBlocks | 
-		variablesAndUndoBlocks valuesDo: [ :undoB | undoB value ] ]
 ]
 
 { #category : #accessing }

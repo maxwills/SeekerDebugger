@@ -16,7 +16,7 @@ SkAllMessageSendsLC >> description [
 SkAllMessageSendsLC >> executeCommand [
 
 	self showResultFor:
-		(TTQAllMessageSends queryFrom: self tracer programStates)
+		(TTQAllMessageSends queryFrom: self tracer newProgramStates)
 ]
 
 { #category : #accessing }

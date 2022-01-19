@@ -7,8 +7,11 @@ Class {
 		'handleMouseDownEvent',
 		'keepMenusOpen',
 		'restorationEnabled',
-		'recordingEnabled',
-		'autoInstrumentationStepping'
+		'autoInstrumentationStepping',
+		'deferredSetup',
+		'indentityEnforcingEnabled',
+		'seekerEnabled',
+		'quickWrapEnabled'
 	],
 	#classVars : [
 		'defaultInstance'
@@ -38,6 +41,18 @@ SeekerConfig >> autoInstrumentationStepping [
 SeekerConfig >> autoInstrumentationStepping: anObject [
 
 	autoInstrumentationStepping := anObject
+]
+
+{ #category : #accessing }
+SeekerConfig >> deferredSetup [
+
+	^ deferredSetup
+]
+
+{ #category : #accessing }
+SeekerConfig >> deferredSetup: anObject [
+
+	deferredSetup := anObject
 ]
 
 { #category : #accessing }
@@ -76,6 +91,18 @@ SeekerConfig >> handleMouseUpEvent: anObject [
 	handleMouseUpEvent := anObject
 ]
 
+{ #category : #accessing }
+SeekerConfig >> identityEnforcingEnabled [
+
+	^ indentityEnforcingEnabled
+]
+
+{ #category : #accessing }
+SeekerConfig >> identityEnforcingEnabled: anObject [
+
+	indentityEnforcingEnabled := anObject
+]
+
 { #category : #initialization }
 SeekerConfig >> initialize [
 
@@ -83,9 +110,12 @@ SeekerConfig >> initialize [
 	handleMouseUpEvent := false.
 	handleMouseDownEvent := false.
 	keepMenusOpen := false.
-	restorationEnabled := false.
-	recordingEnabled := false.
-	autoInstrumentationStepping := true
+	restorationEnabled := true.
+	indentityEnforcingEnabled := true.
+	autoInstrumentationStepping := false.
+	deferredSetup := false.
+	seekerEnabled := true.
+	quickWrapEnabled := true
 ]
 
 { #category : #accessing }
@@ -101,15 +131,22 @@ SeekerConfig >> keepMenusOpen: anObject [
 ]
 
 { #category : #accessing }
-SeekerConfig >> recordingEnabled [
+SeekerConfig >> quickWrapEnabled [
 
-	^ recordingEnabled
+	^ quickWrapEnabled
 ]
 
 { #category : #accessing }
-SeekerConfig >> recordingEnabled: anObject [
+SeekerConfig >> quickWrapEnabled: anObject [
 
-	recordingEnabled := anObject
+	| wasEnabled |
+	wasEnabled := quickWrapEnabled.
+	quickWrapEnabled := anObject.
+	wasEnabled = quickWrapEnabled ifTrue: [ ^ self ].
+	QuickWrap uninstallQuickWrapSystem.
+	quickWrapEnabled ifFalse: [ ^ self ].
+	QuickWrap installQuickWrapSystem.
+	QuickWrap refreshAllWrappers
 ]
 
 { #category : #'as yet unclassified' }
@@ -128,4 +165,21 @@ SeekerConfig >> restorationEnabled [
 SeekerConfig >> restorationEnabled: anObject [
 
 	restorationEnabled := anObject
+]
+
+{ #category : #accessing }
+SeekerConfig >> seekerEnabled [
+
+	^ seekerEnabled
+]
+
+{ #category : #accessing }
+SeekerConfig >> seekerEnabled: anObject [
+
+	| wasEnabled |
+	wasEnabled := seekerEnabled.
+	seekerEnabled := anObject.
+	wasEnabled = seekerEnabled ifTrue: [ ^ self ].
+	SeekerInstallHelpers uninstall.
+	seekerEnabled ifTrue: [ SeekerInstallHelpers install ]
 ]

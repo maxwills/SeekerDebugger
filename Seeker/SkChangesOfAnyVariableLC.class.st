@@ -15,7 +15,7 @@ SkChangesOfAnyVariableLC >> description [
 SkChangesOfAnyVariableLC >> executeCommand [
 
 	self showResultFor:
-		(TTQAllAssignments queryFrom: self tracer programStates)
+		(TTQAllAssignments queryFrom: self tracer newProgramStates)
 ]
 
 { #category : #accessing }

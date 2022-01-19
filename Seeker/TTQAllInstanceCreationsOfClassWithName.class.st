@@ -8,7 +8,7 @@ Class {
 TTQAllInstanceCreationsOfClassWithName class >> performWith: tracer withArg: arg [
 
 	tracer ui showInResult:
-		(self queryFrom: tracer programStates withClassName: arg) displayModel 
+		(self queryFrom: tracer newProgramStates withClassName: arg) displayModel 
 ]
 
 { #category : #'as yet unclassified' }

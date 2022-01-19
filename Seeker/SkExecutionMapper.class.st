@@ -1,6 +1,18 @@
+"
+Creates a ""Map"" of an execution.
+
+This component uses one of SkExecutionMapperAlgorithm subclasses to set limits for the execution. (Does not enforce determinism or anything else).
+
+Once an execution is mapped, then Time-Travel is available to any point from a starting Context, to an end condition, both of which are defined by the SkExecutionMapperAlgorithm applied to the debugged scenario. (See SkExecutionMapperAlgorithm comments)
+.
+
+Its main participation happens when the Seeker Session is loaded, setting the execution limits.
+
+After that, the mapper participates passively (it is only asked, without making changes in the debug session)
+"
 Class {
 	#name : #SkExecutionMapper,
-	#superclass : #Object,
+	#superclass : #SkComponent,
 	#instVars : [
 		'tracer',
 		'currentState',
@@ -12,7 +24,7 @@ Class {
 		'userStartTraceTime',
 		'mappingAlgorithm'
 	],
-	#category : #'Seeker-Tracing'
+	#category : #'Seeker-Components'
 }
 
 { #category : #'instance creation' }
@@ -20,7 +32,7 @@ SkExecutionMapper class >> newForTracer: tracer [
 
 	^ self new
 		  tracer: tracer;
-		  currentState: tracer currentStateInterface;
+		  currentState: tracer currentState;
 		  yourself
 ]
 
@@ -43,6 +55,13 @@ SkExecutionMapper >> automapForCustomScenario: aContext withEndingCondition: aBl
 	self recountBytecodes.
 	isMapped := true.
 	^ true
+]
+
+{ #category : #'as yet unclassified' }
+SkExecutionMapper >> bindComponents [
+
+	tracer := componentsHolder tracer.
+	currentState := tracer currentState
 ]
 
 { #category : #accessing }
@@ -96,7 +115,8 @@ SkExecutionMapper >> endCondition: anObject [
 { #category : #initialization }
 SkExecutionMapper >> initialize [
 
-	endCondition := SkEndImmediately.
+	super initialize.
+	endCondition := SkEndImmediately newForTracer: nil.
 	isMapped := false.
 	isMappedForDoIt := false.
 	mappingAlgorithm := SkMapAlgoNone new
@@ -152,7 +172,7 @@ SkExecutionMapper >> quickMap [
 		(s matchesExecutionScenario: tracer) ifTrue: [ 
 			mappingAlgorithm := s new
 				                    tracer: tracer;
-				                    currentState: tracer currentStateInterface;
+				                    currentState: tracer currentState;
 				                    mapper: self;
 				                    yourself ] ].
 
@@ -206,7 +226,8 @@ SkExecutionMapper >> recountExecutedBytecodes [
 	| currentTraceTime |
 	contextOfExecutedBytecodeOne ifNil: [ "if there is no initial context, the restart will fail" 
 		self error: 'Initial context not set. (Is the execution mapped?)' ].
-	currentTraceTime := currentState context tracedInstructionPC
+	
+	currentTraceTime := tracer slowCurrentContext tracedInstructionPC
 		                    asTraceTimeReference.
 	tracer safeTimeTravelToTraceTime: currentTraceTime
 ]

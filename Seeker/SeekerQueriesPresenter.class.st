@@ -197,7 +197,7 @@ SeekerQueriesPresenter >> inspectNewObjectInstanceAt: bytecodeIndex [
 	tracer timeTravelToTraceTime:
 		firstLivingBytecodeIndex asExecutedBytecodeTraceTime.
 	"At this point the object exists, but there is no Tid (need to fix this later).. (corrected.. the tid should match this firstLivingBytecodeIndex now"
-	self tracer currentStateInterface context top inspect
+	self tracer currentState context top inspect
 ]
 
 { #category : #'as yet unclassified' }

@@ -4,6 +4,9 @@ Class {
 	#classVars : [
 		'lastQueryResults'
 	],
+	#classInstVars : [
+		'emergencyPreventLoading'
+	],
 	#category : #'Seeker-Helpers'
 }
 
@@ -22,6 +25,46 @@ SeekerSessionHelpers class >> debugSessionIfKeysPressed: aBlock [
 		ifTrue: [ 
 		self innerSeekerSessionFor: aBlock withFlag: self makeOnceFlag ]
 		ifFalse: [ aBlock value ]
+]
+
+{ #category : #initialization }
+SeekerSessionHelpers class >> doCriticalInitialization: block [
+
+	emergencyPreventLoading ifTrue: [ 
+		^ self inform:
+			  'Seeker loading disabled due to a previous failure. set emergencyPreventLoading to false.' ].
+	block onErrorDo: [ :e | 
+		emergencyPreventLoading := true.
+		self inform:
+			'Error during Seeker initialization. emergencyPreventLoading set to true.'.
+		e debug ]
+]
+
+{ #category : #accessing }
+SeekerSessionHelpers class >> emergencyPreventLoading [
+
+	^ emergencyPreventLoading
+]
+
+{ #category : #accessing }
+SeekerSessionHelpers class >> emergencyPreventLoading: anObject [
+
+	emergencyPreventLoading := anObject
+]
+
+{ #category : #initialization }
+SeekerSessionHelpers class >> initialize [
+
+	emergencyPreventLoading := false
+]
+
+{ #category : #'as yet unclassified' }
+SeekerSessionHelpers class >> innerSeekerExecutionStatesDoSessionFor: aBlock withFlag: aFlagBlock [
+
+	aFlagBlock value ifTrue: [ 
+		"UIManager default spawnNewProcessIfThisIsUI: Processor activeProcess."
+		Exception new signal ].
+	aBlock ensure: [ self seekerSessionEndMarker ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -127,6 +170,17 @@ SeekerSessionHelpers class >> releasePinnedMenus [
 	<script>
 	(MenuMorph allInstances select: [ :m | m stayUp ]) do: [ :m | 
 		m stayUp: false ]
+]
+
+{ #category : #'as yet unclassified' }
+SeekerSessionHelpers class >> seekerExecutionStatesDoSessionWrapper: receiver method: aMethod arguments: args [
+
+	| val |
+	self
+		innerSeekerExecutionStatesDoSessionFor: [ 
+		val := receiver withArgs: args executeMethod: aMethod ]
+		withFlag: self makeOnceFlag.
+	^ val
 ]
 
 { #category : #'as yet unclassified' }

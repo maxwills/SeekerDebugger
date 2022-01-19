@@ -33,9 +33,12 @@ SeekerStDebuggerDebuggerActionModel >> doStepToFirstInterestingBytecode [
 
 	"returns false if the end of the execution is reached"
 
-	tracer stepBytecode ifFalse: [ ^ false ].
-	^ tracer stepBytecodeUntilConditionIsTrueAccountingInstrumentation: [ 
-		  currentState aboutToSwitchContext ]
+	| startingBytecode |
+	startingBytecode := tracer bytecodeIndex.
+	tracer stepBytecode.
+	tracer stepBytecodeUntilConditionIsTrueAccountingInstrumentation: [ 
+		currentState aboutToSwitchContext ].
+	^ startingBytecode ~= tracer bytecodeIndex
 ]
 
 { #category : #accessing }
@@ -114,7 +117,7 @@ SeekerStDebuggerDebuggerActionModel >> stepOver: aContext [
 				               ifFalse: [ self class shouldFilterStack ].
 
 
-			startingNode := tracer currentStateInterface node.
+			startingNode := tracer currentState node.
 			startingContext := tracer currentContext.
 			startingStackDepth := startingContext stackDepth.
 			startingTraceTime := startingContext tracedInstructionPC
@@ -167,5 +170,5 @@ SeekerStDebuggerDebuggerActionModel >> tracer [
 SeekerStDebuggerDebuggerActionModel >> tracer: anObject [
 
 	tracer := anObject.
-	currentState := tracer currentStateInterface
+	currentState := tracer currentState
 ]

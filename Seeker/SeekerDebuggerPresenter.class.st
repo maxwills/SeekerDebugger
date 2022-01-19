@@ -378,6 +378,7 @@ seekerDebugger setEndFromCurrentStep
 { #category : #'accessing model' }
 SeekerDebuggerPresenter >> setModelBeforeInitialization: aStDebugger [
 
+	| setupBlock |
 	stDebugger := aStDebugger.
 	seekerDebugger := SeekerDebugger newFor: aStDebugger.
 	seekerDebugger seekerDebuggerPresenter: self.
@@ -386,17 +387,24 @@ SeekerDebuggerPresenter >> setModelBeforeInitialization: aStDebugger [
 	debuggerUpdateCoordinator := seekerDebugger debuggerUpdateCoordinator.
 	stDebugger debuggerActionModel tracer: seekerDebugger tracer.
 	seekerDebugger stDebugger: aStDebugger.
-	stDebugger updateStep. " updateStep prevents the need to use the deferred method commented below. 
+	SeekerSessionHelpers doCriticalInitialization: [ 
+		stDebugger updateStep. " updateStep prevents the need to use the deferred method commented below. 
 	The reason for that is that the current debugged process of the stDebugger immediately after initialization is the one of the Exception that opened it.
 	After that, it does some magic to go to the actual debugged process/context htat signaled the exception.
 	Without the forced update Seeker starts stepping from the exception, which is currently unsupported and ends badly (or doesn't end at all).
    In previous versions, the deferred quickSetup worked because it was actually called after the StDebugger was shown (and everything was in the proper state). 
    That method still works, but the user sees that the debugger opens and do stuff, changing quickly, which is quite confusing."
-	seekerDebugger quickSetup.
-	seekerDebugger notifyDebuggerInitialized
-	"	UIManager default defer: [ 
-		seekerDebugger quickSetup.
-		seekerDebugger notifyDebuggerInitialized ]"
+		setupBlock := [ 
+		              seekerDebugger quickSetup.
+		              seekerDebugger notifyDebuggerInitialized ].
+		SeekerConfig default deferredSetup
+			ifTrue: [ 
+				[ 
+				(Delay forSeconds: 1) wait.
+				self flag:
+					'in deferred initialization, if a failure occurs, it will not be caught by the CriticalIntialization error handler. It should just open a new debugger (hopefully)'.
+				UIManager default defer: setupBlock ] fork ]
+			ifFalse: setupBlock ]
 ]
 
 { #category : #'event handling' }
@@ -484,7 +492,7 @@ SeekerDebuggerPresenter >> syncWithDebugSession [
 		tracer blockingDoAndUpdateSessionAfter: [ 
 			| context |
 			context := stDebugger interruptedContext.
-			tracer currentStateInterface node
+			tracer currentState node
 			~= (context compiledCode sourceNodeForPC: context pc) ifTrue: [ 
 				tracer recountExecutedBytecodes ] ] ]
 ]
@@ -544,23 +552,26 @@ SeekerDebuggerPresenter >> updatePresenter [
 	"Called automatically when the debugger updates its state after stepping""Your widgets should be updated here."
 
 	[ self syncWithDebugSession ] ensure: [ 
-		code interactionModel context: stDebugger currentContext.
-		code interactionModel bindings
-			at: #seeker
-			put:
-			(WorkspaceVariable key: #seeker value: self seekerDebugger tracer).
-		code interactionModel bindings at: #currentState put: (WorkspaceVariable
-				 key: #currentState
-				 value: self seekerDebugger tracer currentStateInterface).
-		code interactionModel bindings
-			at: #programStates
-			put: (WorkspaceVariable
-					 key: #programStates
-					 value: self seekerDebugger tracer programStates).
+		SeekerSessionHelpers doCriticalInitialization: [ 
+			code interactionModel context: stDebugger currentContext.
+			code interactionModel bindings
+				at: #seeker
+				put:
+				(WorkspaceVariable key: #seeker value: self seekerDebugger tracer).
+			code interactionModel bindings
+				at: #currentState
+				put: (WorkspaceVariable
+						 key: #currentState
+						 value: self seekerDebugger tracer currentState).
+			code interactionModel bindings
+				at: #programStates
+				put: (WorkspaceVariable
+						 key: #programStates
+						 value: self seekerDebugger tracer newProgramStates).
 
-		self updateLabelOnly.
-		"	self updateEvaluatorCode."
-		"		self updateExpressionValueDisplayed."
+			self updateLabelOnly.
+			"	self updateEvaluatorCode."
+			"		self updateExpressionValueDisplayed."
 
-		super updatePresenter ]
+			super updatePresenter ] ]
 ]

@@ -38,7 +38,9 @@ QSAdaptiveTimeBufferedResult >> resolve [
 
 	"This will call the buffer callback every x milliseconds or when the buffer reaches its full capacity"
 
-	| currentBuffer shouldEmitBuffer iterationCounter minTime maxTime  timeFormulaIterationsMin timeFormulaIterationMax |
+	"The update is mor frequent at first, and with more results it becomes less frequent, to prevent extending long executions"
+
+	| currentBuffer shouldEmitBuffer iterationCounter minTime maxTime timeFormulaIterationsMin timeFormulaIterationMax actualQuery |
 	minTime := 250.
 	maxTime := 1800.
 	timeFormulaIterationsMin := 1000.
@@ -46,7 +48,8 @@ QSAdaptiveTimeBufferedResult >> resolve [
 	shouldEmitBuffer := false.
 	currentBuffer := OrderedCollection new: 1000.
 	iterationCounter := 0.
-	self queryToSolve 
+	actualQuery := self queryToSolve.
+	actualQuery
 		do: [ :each | 
 			iterationCounter := iterationCounter + 1.
 			currentBuffer add: each.
@@ -57,7 +60,11 @@ QSAdaptiveTimeBufferedResult >> resolve [
 		withTimedCallback: [ shouldEmitBuffer := true ]
 		every: [ 
 			| normalized |
-			normalized := SeekerMath clampedInverseLerp: iterationCounter  a: timeFormulaIterationsMin b:timeFormulaIterationMax .
-		SeekerMath clampedLerp: normalized a: minTime b: maxTime  ].
-	currentBuffer ifNotEmpty: [ bufferReadyCallback value: currentBuffer ]
+			normalized := SeekerMath
+				              clampedInverseLerp: iterationCounter
+				              a: timeFormulaIterationsMin
+				              b: timeFormulaIterationMax.
+			SeekerMath clampedLerp: normalized a: minTime b: maxTime ].
+	currentBuffer ifNotEmpty: [ bufferReadyCallback value: currentBuffer ].
+	actualQuery errors ifNotEmpty: [ actualQuery errors inspect ]
 ]

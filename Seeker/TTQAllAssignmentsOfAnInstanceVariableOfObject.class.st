@@ -8,7 +8,7 @@ Class {
 TTQAllAssignmentsOfAnInstanceVariableOfObject class >> performWith: tracer withArg: args [
 
 	tracer ui showInResult: (self
-			 queryFrom: tracer programStates
+			 queryFrom: tracer newProgramStates
 			 withObjectOid: args first
 			 withVariableName: args second) displayModel
 ]

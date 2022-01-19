@@ -10,11 +10,11 @@ SeekerPerformInterface >> advanceToNextStatement [
 	| startingNode startingContext startingStatement startingStatementIndex startingStackDepth inSameDynanimcSequence statementsInSequence |
 	"This method doesnt work. The reason is that the debugger is interrupted sometimes in the method node. Then, the first actual statement is a variant number of bytecodes away.
 Therefore, calculating the next statement in the sequence should be done differently from current implementation, trying to handle the case of such case. An idea would be to use the sequence node and the statement as an identity. However, doing that is sensitive to modifications during debugging of the code. "
-	startingNode := tracer currentStateInterface node.
+	startingNode := tracer currentState node.
 	startingNode isMethod ifTrue: [ 
 		tracer doAndUpdateSessionAfter: [ 
 			tracer stepBytecodeUntilConditionIsTrue: [ 
-				tracer currentStateInterface node isMethod not ] ].
+				tracer currentState node isMethod not ] ].
 		^ self ].
 	startingStatement := startingNode statementNode.
 	startingStatementIndex := SkNodeHelpers 
@@ -32,7 +32,7 @@ Therefore, calculating the next statement in the sequence should be done differe
 			tracer currentContext stackDepth < startingStackDepth or: [ 
 				inSameDynanimcSequence value and: [ 
 					| node statementIndex |
-					node := tracer currentStateInterface node.
+					node := tracer currentState node.
 					node isMethod not and: [ 
 						statementIndex := SkNodeHelpers statementNodeIndexInSequence:
 							                  node statementNode.
@@ -60,7 +60,7 @@ SeekerPerformInterface >> restartFromBytecodeOne [
 SeekerPerformInterface >> reverseToPreviousStatement [
 
 	| startingNode startingContext startingStatement startingStatementIndex startingStackDepth inSameDynanimcSequence csi |
-	csi := tracer currentStateInterface.
+	csi := tracer currentState.
 	startingNode := csi node.
 	startingStatement := startingNode statementNode.
 	startingStatementIndex := SkNodeHelpers 

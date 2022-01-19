@@ -143,6 +143,8 @@ QuerySolver >> query: anObject [
 { #category : #'as yet unclassified' }
 QuerySolver >> queryToSolve [
 
+	"Filters a query, leaving out instrumented code and other undesirable result items. Might be reworked with the new stepping pipeline"
+
 	| excluded |
 	(IncludeInstrumentation and: [ IncludeSystemClasses ]) ifTrue: [ 
 		^ query ].
