@@ -30,6 +30,7 @@ QSAdaptiveTimeBufferedResult >> bufferReadyCallback: anObject [
 { #category : #initialization }
 QSAdaptiveTimeBufferedResult >> initialize [
 
+	super initialize.
 	bufferReadyCallback := [ :o |  ]
 ]
 
@@ -49,9 +50,12 @@ QSAdaptiveTimeBufferedResult >> resolve [
 	currentBuffer := OrderedCollection new: 1000.
 	iterationCounter := 0.
 	actualQuery := self queryToSolve.
+	[ 
 	actualQuery
 		do: [ :each | 
-			iterationCounter := iterationCounter + 1.
+			(iterationCounter := iterationCounter + 1) > resultsLimit ifTrue: [ 
+				self notifyResultsLimitReached.
+				^ self ].
 			currentBuffer add: each.
 			shouldEmitBuffer ifTrue: [ 
 				bufferReadyCallback value: currentBuffer copy. "This copy might be slow. try to profile this later"
@@ -64,7 +68,9 @@ QSAdaptiveTimeBufferedResult >> resolve [
 				              clampedInverseLerp: iterationCounter
 				              a: timeFormulaIterationsMin
 				              b: timeFormulaIterationMax.
-			SeekerMath clampedLerp: normalized a: minTime b: maxTime ].
-	currentBuffer ifNotEmpty: [ bufferReadyCallback value: currentBuffer ].
-	actualQuery errors ifNotEmpty: [ actualQuery errors inspect ]
+			SeekerMath clampedLerp: normalized a: minTime b: maxTime ] ] 
+		ensure: [ 
+			currentBuffer ifNotEmpty: [ 
+				bufferReadyCallback value: currentBuffer ].
+			actualQuery errors ifNotEmpty: [ actualQuery errors inspect ] ]
 ]

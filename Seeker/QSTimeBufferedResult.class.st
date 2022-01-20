@@ -44,6 +44,7 @@ QSTimeBufferedResult >> buffersCapacity: anObject [
 { #category : #initialization }
 QSTimeBufferedResult >> initialize [
 
+	super initialize.
 	buffersCapacity := 10000.
 	timespan := 1000.
 	bufferReadyCallback := [ :o |  ]

@@ -9,9 +9,14 @@ QSCollection >> resolve [
 
 	"Triggers the solution of the query"
 
-	| resultsCollection |
+	| resultsCollection count |
+	count := 0.
 	resultsCollection := OrderedCollection new: 1024.
 
-	self queryToSolve  do: [ :item | resultsCollection add: item].
+	self queryToSolve do: [ :item | 
+		resultsCollection add: item.
+		(count := count + 1) >= resultsLimit ifTrue: [ 
+			self notifyResultsLimitReached.
+			^ resultsCollection ] ].
 	^ resultsCollection
 ]

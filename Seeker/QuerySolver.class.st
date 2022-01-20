@@ -2,7 +2,8 @@ Class {
 	#name : #QuerySolver,
 	#superclass : #Object,
 	#instVars : [
-		'query'
+		'query',
+		'resultsLimit'
 	],
 	#classVars : [
 		'IncludeInstrumentation',
@@ -68,14 +69,14 @@ QuerySolver class >> includeSystemClasses: anObject [
 { #category : #initialization }
 QuerySolver class >> initialize [
 
-	IncludeInstrumentation := false.
-	IncludeSystemClasses := false.
+	IncludeInstrumentation := true.
+	IncludeSystemClasses := true.
 	PotentiallyExcludedSeekerClasses := IdentitySet new.
 	PotentiallyExcludedSeekerClasses addAll:
 		(RPackageOrganizer default packageNamed: #Seeker) definedClasses.
 	PotentiallyExcludedSeekerClasses addAll:
 		(RPackageOrganizer default packageNamed: #QuickWrap) definedClasses.
-"UnifiedFFI"
+	"UnifiedFFI"
 
 	PotentiallyExcludedSystemClasses := IdentitySet new.
 	PotentiallyExcludedSystemClasses addAll: { 
@@ -128,6 +129,21 @@ QuerySolver class >> solve: aQuery [
 	^ (self newForQuery: aQuery) resolve
 ]
 
+{ #category : #initialization }
+QuerySolver >> initialize [
+
+	resultsLimit := self seekerConfig queryResultsLimitEnabled
+		                ifTrue: [ self seekerConfig queryResultsLimit ]
+		                ifFalse: [ 9999999 "a big number" ]
+]
+
+{ #category : #'as yet unclassified' }
+QuerySolver >> notifyResultsLimitReached [
+
+	^ self inform:
+		  'Query results limit reached: ' , resultsLimit asString
+]
+
 { #category : #accessing }
 QuerySolver >> query [
 
@@ -168,4 +184,10 @@ QuerySolver >> queryToSolve [
 QuerySolver >> resolve [
 
 	^ self subclassResponsibility
+]
+
+{ #category : #'as yet unclassified' }
+QuerySolver >> seekerConfig [
+
+	^ SeekerConfig default
 ]

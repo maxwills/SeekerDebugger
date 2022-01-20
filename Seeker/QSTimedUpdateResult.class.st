@@ -31,6 +31,7 @@ QSTimedUpdateResult >> bufferReadyCallback: anObject [
 { #category : #initialization }
 QSTimedUpdateResult >> initialize [
 
+	super initialize.
 	timespan := 1000.
 	bufferReadyCallback := [ :o |  ]
 ]

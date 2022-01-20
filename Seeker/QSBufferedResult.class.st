@@ -43,6 +43,7 @@ QSBufferedResult >> buffersCapacity: anObject [
 { #category : #initialization }
 QSBufferedResult >> initialize [
 
+	super initialize.
 	buffersCapacity := 10000.
 	bufferReadyCallback := [ :o |  ]
 ]

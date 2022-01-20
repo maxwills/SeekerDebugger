@@ -365,8 +365,9 @@ Query >> dataSourceIsTracedExecution [
 Query >> do: aBlock [
 
 	errors removeAll.
-	fromDataSource do: (self makeSourceDoBlock: aBlock).
-	LastQuery := self "Executed at the end, to handle query nesting"
+	"ensure to handle non local returns issued by the QuerySolver (or any closure used)"
+	[ fromDataSource do: (self makeSourceDoBlock: aBlock) ] ensure: [ 
+		LastQuery := self "Executed at the end, to handle query nesting" ]
 ]
 
 { #category : #enumerating }
@@ -543,7 +544,7 @@ Query >> makeSourceDoBlock: aBlock [
 { #category : #'as yet unclassified' }
 Query >> makeSourceDoBlockWithErrorHandling: aBlock [
 
-	"Surroungs the query action block in a try catch, producing an error result item.
+	"Surrounds the query action block in a try catch, producing an error result item.
 			This allows the debugger to complete queries with faulty result items (if an object does not respect the standard objects api, for example) without completely crashing the query.
 			"
 
@@ -654,6 +655,9 @@ Query >> resetTableTraversing [
 { #category : #navigating }
 Query >> resolve [
 
+	"Deprecated"
+
+	self error: 'should not be used. use instead a QuerySolver'.
 	customPreparationBlock value.
 	self optimizeRowAcquisitionForFields: self getRelevantFields.
 	fromDataSource do: [ :row | self doQueryOnRow: row ].

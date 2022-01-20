@@ -13,7 +13,8 @@ Class {
 		'chkIdentityEnforcingEnabled',
 		'chkSeekerEnabled',
 		'chkQuickWrapEnabled',
-		'chkObjectTrackingEnabled'
+		'chkObjectTrackingEnabled',
+		'chkQueryResultsLimitEnabled'
 	],
 	#category : #'Seeker-UI'
 }
@@ -53,6 +54,7 @@ SeekerConfigPresenter >> createChecksLayout [
 		  add: chkObjectTrackingEnabled;
 		  add: chkRestorationEnabled;
 		  add: chkIdentityEnforcingEnabled;
+		  add: chkQueryResultsLimitEnabled;
 		  add: chkUseDeferredSetup;
 		  add: chkSeekerEnabled;
 		  add: chkQuickWrapEnabled;
@@ -76,7 +78,7 @@ SeekerConfigPresenter >> handleResetEmergencyDeactivation [
 { #category : #api }
 SeekerConfigPresenter >> initialExtent [
 
-	^ 300 @ 370
+	^ 300 @ 400
 ]
 
 { #category : #initialization }
@@ -110,6 +112,9 @@ SeekerConfigPresenter >> initializePresenters [
 		                    (self createCheckbox: 'SeekerDebugger enabled').
 	chkQuickWrapEnabled := checkboxes add:
 		                       (self createCheckbox: 'QuickWrap enabled').
+	chkQueryResultsLimitEnabled := checkboxes add:
+		                               (self createCheckbox:
+			                                'Query results limit enabled').
 	btnReleaseMenus := self newButton
 		                   label: 'Release pinned menus';
 		                   action: [ self handleReleasePinnedMenus ];
@@ -144,7 +149,9 @@ SeekerConfigPresenter >> updateFromConfig [
 	chkRestorationEnabled state: self config restorationEnabled.
 	chkUseDeferredSetup state: self config deferredSetup.
 	chkSeekerEnabled state: self config seekerEnabled.
-	chkQuickWrapEnabled state: self config quickWrapEnabled
+	chkQuickWrapEnabled state: self config quickWrapEnabled.
+	chkQueryResultsLimitEnabled state:
+		self config queryResultsLimitEnabled
 ]
 
 { #category : #'as yet unclassified' }
@@ -162,5 +169,7 @@ SeekerConfigPresenter >> updateToConfig [
 
 	self config objectTrackingEnabled: chkObjectTrackingEnabled state.
 	self config seekerEnabled: chkSeekerEnabled state.
-	self config quickWrapEnabled: chkQuickWrapEnabled state
+	self config quickWrapEnabled: chkQuickWrapEnabled state.
+	self config queryResultsLimitEnabled:
+		chkQueryResultsLimitEnabled state
 ]

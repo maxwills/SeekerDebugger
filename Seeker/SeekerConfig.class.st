@@ -12,7 +12,9 @@ Class {
 		'indentityEnforcingEnabled',
 		'seekerEnabled',
 		'quickWrapEnabled',
-		'objectTrackingEnabled'
+		'objectTrackingEnabled',
+		'queryResultsLimitEnabled',
+		'queryResultsLimit'
 	],
 	#classVars : [
 		'defaultInstance'
@@ -117,7 +119,9 @@ SeekerConfig >> initialize [
 	deferredSetup := false.
 	seekerEnabled := true.
 	quickWrapEnabled := true.
-	objectTrackingEnabled := true
+	objectTrackingEnabled := true.
+	queryResultsLimitEnabled := false.
+	queryResultsLimit := 10000.
 ]
 
 { #category : #accessing }
@@ -142,6 +146,30 @@ SeekerConfig >> objectTrackingEnabled [
 SeekerConfig >> objectTrackingEnabled: anObject [
 
 	objectTrackingEnabled := anObject
+]
+
+{ #category : #accessing }
+SeekerConfig >> queryResultsLimit [
+
+	^ queryResultsLimit
+]
+
+{ #category : #accessing }
+SeekerConfig >> queryResultsLimit: anObject [
+
+	queryResultsLimit := anObject
+]
+
+{ #category : #accessing }
+SeekerConfig >> queryResultsLimitEnabled [
+
+	^ queryResultsLimitEnabled
+]
+
+{ #category : #accessing }
+SeekerConfig >> queryResultsLimitEnabled: anObject [
+
+	queryResultsLimitEnabled := anObject
 ]
 
 { #category : #accessing }
