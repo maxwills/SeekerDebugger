@@ -14,10 +14,11 @@ Class {
 		'quickWrapEnabled',
 		'objectTrackingEnabled',
 		'queryResultsLimitEnabled',
-		'queryResultsLimit'
+		'queryResultsLimit',
+		'includeTestsSetup'
 	],
 	#classVars : [
-		'defaultInstance'
+		'DefaultInstance'
 	],
 	#category : #'Seeker-Helpers'
 }
@@ -25,13 +26,13 @@ Class {
 { #category : #accessing }
 SeekerConfig class >> default [
 
-	^ defaultInstance
+	^ DefaultInstance
 ]
 
 { #category : #initialization }
 SeekerConfig class >> initialize [
 
-	defaultInstance := self new
+	DefaultInstance := self new
 ]
 
 { #category : #accessing }
@@ -106,6 +107,18 @@ SeekerConfig >> identityEnforcingEnabled: anObject [
 	indentityEnforcingEnabled := anObject
 ]
 
+{ #category : #accessing }
+SeekerConfig >> includeTestsSetup [
+
+	^ includeTestsSetup
+]
+
+{ #category : #accessing }
+SeekerConfig >> includeTestsSetup: anObject [
+
+	includeTestsSetup := anObject
+]
+
 { #category : #initialization }
 SeekerConfig >> initialize [
 
@@ -122,6 +135,7 @@ SeekerConfig >> initialize [
 	objectTrackingEnabled := true.
 	queryResultsLimitEnabled := false.
 	queryResultsLimit := 10000.
+	includeTestsSetup := false
 ]
 
 { #category : #accessing }

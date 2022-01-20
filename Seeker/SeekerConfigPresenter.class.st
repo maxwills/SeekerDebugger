@@ -13,6 +13,7 @@ Class {
 		'chkIdentityEnforcingEnabled',
 		'chkSeekerEnabled',
 		'chkQuickWrapEnabled',
+		'chkIncludeTestsSetup',
 		'chkObjectTrackingEnabled',
 		'chkQueryResultsLimitEnabled'
 	],
@@ -55,6 +56,7 @@ SeekerConfigPresenter >> createChecksLayout [
 		  add: chkRestorationEnabled;
 		  add: chkIdentityEnforcingEnabled;
 		  add: chkQueryResultsLimitEnabled;
+		  add: chkIncludeTestsSetup;
 		  add: chkUseDeferredSetup;
 		  add: chkSeekerEnabled;
 		  add: chkQuickWrapEnabled;
@@ -112,6 +114,9 @@ SeekerConfigPresenter >> initializePresenters [
 		                    (self createCheckbox: 'SeekerDebugger enabled').
 	chkQuickWrapEnabled := checkboxes add:
 		                       (self createCheckbox: 'QuickWrap enabled').
+
+	chkIncludeTestsSetup := checkboxes add:
+		                        (self createCheckbox: 'Include tests setup').
 	chkQueryResultsLimitEnabled := checkboxes add:
 		                               (self createCheckbox:
 			                                'Query results limit enabled').
@@ -150,6 +155,7 @@ SeekerConfigPresenter >> updateFromConfig [
 	chkUseDeferredSetup state: self config deferredSetup.
 	chkSeekerEnabled state: self config seekerEnabled.
 	chkQuickWrapEnabled state: self config quickWrapEnabled.
+	chkIncludeTestsSetup state: self config includeTestsSetup.
 	chkQueryResultsLimitEnabled state:
 		self config queryResultsLimitEnabled
 ]
@@ -170,6 +176,7 @@ SeekerConfigPresenter >> updateToConfig [
 	self config objectTrackingEnabled: chkObjectTrackingEnabled state.
 	self config seekerEnabled: chkSeekerEnabled state.
 	self config quickWrapEnabled: chkQuickWrapEnabled state.
+	self config includeTestsSetup: chkIncludeTestsSetup state.
 	self config queryResultsLimitEnabled:
 		chkQueryResultsLimitEnabled state
 ]

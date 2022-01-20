@@ -1,14 +1,14 @@
 Class {
-	#name : #SkMapAlgoTestCase,
+	#name : #SkMapAlgoTestCaseNoSetup,
 	#superclass : #SkExecutionMapperAlgorithm,
 	#category : #'Seeker-Components'
 }
 
 { #category : #testing }
-SkMapAlgoTestCase class >> matchesExecutionScenario: tracer [
+SkMapAlgoTestCaseNoSetup class >> matchesExecutionScenario: tracer [
 
 	| safelyMatchLiterals |
-	SeekerConfig default includeTestsSetup ifFalse: [ ^ false ].
+	SeekerConfig default includeTestsSetup ifTrue: [ ^ false ].
 	safelyMatchLiterals := [ :compiledBlock | 
 	                       [ 
 	                       (compiledBlock literals at: 1) = #setUp and: [ 
@@ -21,18 +21,20 @@ SkMapAlgoTestCase class >> matchesExecutionScenario: tracer [
 ]
 
 { #category : #'as yet unclassified' }
-SkMapAlgoTestCase >> mapExecution [
+SkMapAlgoTestCaseNoSetup >> mapExecution [
 
 	| recordingInitialContext testInitialContext endingContext endTracedInstructionPC endTraceTime findContext currentCompiledMethod |
 	"Only works if used the option: debug with Seeker""findContext is a SeekerFindContextInStackInterface object"
 	currentCompiledMethod := currentState compiledCode.
 	findContext := tracer findContextInStack.
 	endingContext := findContext endingContextForTestCase.
-	recordingInitialContext := findContext recordStartContextForTestCase.
+	recordingInitialContext := findContext
+		                           recordStartContextForTestCaseNoSetup.
 	recordingInitialContext ifNil: [ 
 		self error: 'Could not detect the initial context for recording.'.
 		^ false ].
-	mapper contextOfExecutedBytecodeOne: recordingInitialContext.
+	mapper contextOfExecutedBytecodeOne:
+		findContext userStartContextForTestCaseNoSetup.
 
 	testInitialContext := findContext userStartContextForTestCase.
 	testInitialContext ifNil: [ 
@@ -46,8 +48,8 @@ SkMapAlgoTestCase >> mapExecution [
 	endTracedInstructionPC := endingContext tracedInstructionPC.
 	endTracedInstructionPC pc: endingContext endPC. "The last step is the endPC?"
 	endTraceTime := endTracedInstructionPC asTraceTimeReference.
-	mapper endCondition: ((SkEndOfTestCase newForTracer: tracer)
-			 endTraceTime: endTraceTime;
+	mapper endCondition: ((SkEndOfTestCaseNoSetup newForTracer: tracer)
+			 performTestMethod: testInitialContext method;
 			 yourself).
 
 	mapper recountBytecodes.

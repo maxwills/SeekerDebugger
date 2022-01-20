@@ -133,6 +133,28 @@ SeekerFindContextInStackInterface >> recordStartContextForTestCase [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerFindContextInStackInterface >> recordStartContextForTestCaseNoSetup [
+
+	"Returns the context that seeker Debugger restarts to begin a new replay"
+
+	"^ self endingContextForTestCase sender"
+
+	^ SkContextHelpers
+		  findContextInStack: [ :aContext | 
+			  aContext receiver = CurrentExecutionEnvironment and: [ 
+				  aContext methodSelector = #runTestCase: and: [ 
+					  aContext compiledCode isCompiledMethod ] ] ]
+		  startingContext: tracer currentContext "SkContextHelpers
+		  findContextInStack: [ :aContext | 
+			  aContext methodSelector = #runTestCase: and: [ 
+				  aContext compiledCode isCompiledMethod and: [ 
+					  aContext receiver class = DefaultExecutionEnvironment ] ] ]
+		  startingContext: tracer currentContext"
+
+	"^ self endingContextForTestCase sender"
+]
+
+{ #category : #'as yet unclassified' }
 SeekerFindContextInStackInterface >> runCaseContextForTestCase [
 
 	"Returns the context where the test is setup and launched"
@@ -171,5 +193,15 @@ SeekerFindContextInStackInterface >> userStartContextForTestCase [
 			  senderContext isNotNil and: [ 
 				  (senderContext receiver class inheritsFrom: TestCase) and: [ 
 					  senderContext methodSelector = #performTest ] ] ]
+		  startingContext: tracer currentContext
+]
+
+{ #category : #'as yet unclassified' }
+SeekerFindContextInStackInterface >> userStartContextForTestCaseNoSetup [
+
+	^ SkContextHelpers
+		  findContextInStack: [ :aContext | 
+			  (aContext receiver class inheritsFrom: TestCase) and: [ 
+				  aContext methodSelector = #performTest ] ]
 		  startingContext: tracer currentContext
 ]
