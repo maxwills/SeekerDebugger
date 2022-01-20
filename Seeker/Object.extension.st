@@ -73,6 +73,12 @@ Object class >> atSeekerAuxStorage2 [
 ]
 
 { #category : #'*Seeker' }
+Object >> canBecome [
+
+	^ self isReadOnlyObject
+]
+
+{ #category : #'*Seeker' }
 Object >> defaultCase: aValuable [
 
 	"used for switch case do"

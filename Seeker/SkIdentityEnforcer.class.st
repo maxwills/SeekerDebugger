@@ -39,7 +39,7 @@ we check if we have the 'same' element from a previous replay. If so, we make th
 		                    tracer bytecodeIndex.
 	previousIdentity ifNotNil: [ "There are exceptional cases where objects oid differ by -1 (the previous identity is executedBytecode). Not sure yet why. The next if patches that."
 		(previousIdentity class = instancedObj class and: [ 
-			 previousIdentity isReadOnlyObject not ]) ifTrue: [ "previousIdentity copyFrom: instancedObj.
+			 previousIdentity canBecome ]) ifTrue: [ "previousIdentity copyFrom: instancedObj.
 " 
 			previousIdentity becomeForward: instancedObj copyHash: true "pointers to previousIdentity point now to instancedObj,  and instancedObj has previousIdentity identityHash" ] ]
 ]
