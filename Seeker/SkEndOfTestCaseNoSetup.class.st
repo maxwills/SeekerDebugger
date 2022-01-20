@@ -2,8 +2,8 @@ Class {
 	#name : #SkEndOfTestCaseNoSetup,
 	#superclass : #SkEndCondition,
 	#instVars : [
-		'senderSenderMethod',
-		'performTestMethod'
+		'performTestMethod',
+		'senderFallbackMethod'
 	],
 	#category : #'Seeker-Components'
 }
@@ -13,7 +13,8 @@ SkEndOfTestCaseNoSetup >> isEndReached [
 
 	| method |
 	method := currentState method.
-	^ method == performTestMethod and: [ currentState willReturn ]
+	^ currentState willReturn and: [ 
+		  method == performTestMethod or: [ method == senderFallbackMethod ] ]
 ]
 
 { #category : #accessing }
@@ -26,4 +27,16 @@ SkEndOfTestCaseNoSetup >> performTestMethod [
 SkEndOfTestCaseNoSetup >> performTestMethod: anObject [
 
 	performTestMethod := anObject
+]
+
+{ #category : #accessing }
+SkEndOfTestCaseNoSetup >> senderFallbackMethod [
+
+	^ senderFallbackMethod
+]
+
+{ #category : #accessing }
+SkEndOfTestCaseNoSetup >> senderFallbackMethod: anObject [
+
+	senderFallbackMethod := anObject
 ]

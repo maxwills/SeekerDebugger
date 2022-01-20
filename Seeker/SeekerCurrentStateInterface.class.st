@@ -788,13 +788,19 @@ SeekerCurrentStateInterface >> willCreateBlock [
 
 	"next bytecode is a block creation"
 
-	<qwpSubCached>
-	^ (self encoderClass
+	"^ (self encoderClass
 		   isCreateBlockAt: self contextPC
 		   in: self method) or: [ 
 		  self encoderClass
 			  isCreateFullBlockAt: self contextPC
-			  in: self method ]
+			  in: self method ]"
+
+	<qwpSubCached>
+	^ (EncoderForSistaV1 isCreateBlockAt: self contextPC in: self method) 
+		  or: [ 
+			  EncoderForSistaV1
+				  isCreateFullBlockAt: self contextPC
+				  in: self method ]
 ]
 
 { #category : #testing }
@@ -802,8 +808,10 @@ SeekerCurrentStateInterface >> willJumpIfFalse [
 
 	"Answer whether the next bytecode is a jump-if-false."
 
+	"^ self encoderClass isBranchIfFalseAt: self contextPC in: self method"
+
 	<qwpSubCached>
-	^ self encoderClass isBranchIfFalseAt: self contextPC in: self method
+	^ EncoderForSistaV1 isBranchIfFalseAt: self contextPC in: self method
 ]
 
 { #category : #testing }
@@ -812,7 +820,7 @@ SeekerCurrentStateInterface >> willJumpIfTrue [
 	"Answer whether the next bytecode is a jump-if-true."
 
 	<qwpSubCached>
-	^ self encoderClass isBranchIfTrueAt: self contextPC in: self method
+	^ EncoderForSistaV1 isBranchIfTrueAt: self contextPC in: self method
 ]
 
 { #category : #testing }
@@ -820,8 +828,12 @@ SeekerCurrentStateInterface >> willReturn [
 
 	"Answer whether the next bytecode is a return."
 
+	"^ self encoderClass isReturnAt: self contextPC in: self method"
+
+	"Hardcoded encoder"
+
 	<qwpSubCached>
-	^ self encoderClass isReturnAt: self contextPC in: self method
+	^ EncoderForSistaV1 isReturnAt: self contextPC in: self method
 ]
 
 { #category : #testing }
@@ -830,7 +842,7 @@ SeekerCurrentStateInterface >> willSend [
 	"Answer whether the next bytecode is a message-send."
 
 	<qwpSubCached>
-	^ self encoderClass isSendAt: self contextPC in: self method
+	^ EncoderForSistaV1 isSendAt: self contextPC in: self method
 ]
 
 { #category : #testing }
@@ -839,5 +851,5 @@ SeekerCurrentStateInterface >> willStore [
 	"Answer whether the next bytecode is a store or store-pop"
 
 	<qwpSubCached>
-	^ self encoderClass isStoreAt: self contextPC in: self method
+	^ EncoderForSistaV1 isStoreAt: self contextPC in: self method
 ]

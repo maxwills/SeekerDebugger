@@ -50,6 +50,7 @@ SkMapAlgoTestCaseNoSetup >> mapExecution [
 	endTraceTime := endTracedInstructionPC asTraceTimeReference.
 	mapper endCondition: ((SkEndOfTestCaseNoSetup newForTracer: tracer)
 			 performTestMethod: testInitialContext method;
+			 senderFallbackMethod: testInitialContext sender method;
 			 yourself).
 
 	mapper recountBytecodes.
