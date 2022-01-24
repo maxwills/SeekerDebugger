@@ -98,7 +98,12 @@ SkTracerBase >> initialize [
 SkTracerBase >> initializeComponents [
 
 	components := OrderedCollection new.
-	components add: (stepper := SkStepper newFor: self).
+	components add: (stepper := SystemVersion current major = 9
+			            ifTrue: [ SkClassicStepper newFor: self ]
+			            ifFalse: [ 
+				            self flag:
+					            'This is used experimentally for Pharo 10. Possibly faster than the other. Not compatible with Pharo 9. '.
+				            SkStepper newFor: self ]).
 	components add: (restorer := SkExecutionRestorer newFor: self).
 	components add: (objectsTracker := SkObjectsTracker newFor: self).
 	components add: (identityEnforcer := SkIdentityEnforcer newFor: self).

@@ -140,6 +140,14 @@ SeekerConfigPresenter >> initializePresenters [
 			 "		add: #checkboxExample;"yourself)
 ]
 
+{ #category : #'instance creation' }
+SeekerConfigPresenter >> open [
+
+	"This is the method as defined in Pharo 10. Overriden explicitly for compatibility with Pharo 9.0"
+
+	^ self asWindow open
+]
+
 { #category : #'as yet unclassified' }
 SeekerConfigPresenter >> updateFromConfig [
 
