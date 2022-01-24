@@ -31,10 +31,21 @@ SeekerMessageDialog class >> showDialog: text withTitle: title [
 { #category : #'as yet unclassified' }
 SeekerMessageDialog class >> showModalDialog: text withTitle: title [
 
-	(StPharoApplication current newInform
-		 label: text;
-		 title: title;
-		 yourself) openModal
+	| dialog |
+	dialog := StPharoApplication current newInform
+		          label: text;
+		          title: title;
+		          yourself.
+	
+	(dialog respondsTo: #openModal) ifTrue: [ 
+		"Pharo10"
+		dialog openModal.
+		^ self ].
+	(dialog respondsTo: #openModalWithSpec) ifTrue: [ 
+		"Pharo9"
+		dialog openModalWithSpec.
+		^ self ].
+	self inform: 'Seeker installation complete'
 ]
 
 { #category : #accessing }
