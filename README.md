@@ -3,7 +3,7 @@
 ## Baseline
 
 Seeker Prototype Queryable Time-Traveling Debugger.
-Compatible with Pharo 9.0 and Moose Suite 9.0.
+Compatible with Pharo 9.0, Moose Suite 9.0 and Pharo 10 at current date (2022-01-24).
 
 Do this:
 ```Smalltalk
@@ -13,7 +13,7 @@ Metacello new
     load.
 ```
 
-Rest of the readme is not up do date. The debugger is currently under constant changes. The readme will be updated when reaching a stable point.
+The Rest of the readme is not up do date. The debugger is currently under constant changes. The readme will be updated when reaching a stable point.
 
 Requires the following projects (installed automatically with this Seeker Baseline):
 
