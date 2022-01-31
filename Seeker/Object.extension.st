@@ -75,7 +75,7 @@ Object class >> atSeekerAuxStorage2 [
 { #category : #'*Seeker' }
 Object >> canBecome [
 
-	^ self isReadOnlyObject
+	^ self isReadOnlyObject not
 ]
 
 { #category : #'*Seeker' }
