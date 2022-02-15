@@ -320,6 +320,19 @@ GeneralSeekerTests >> testProcessSerializationDeserialization [
 ]
 
 { #category : #tests }
+GeneralSeekerTests >> testRandomSomething [
+
+	| r list number |
+	r := Random new.
+
+	list := OrderedCollection new.
+
+	1 to: 100 do: [ :i | list add: (r nextInteger: 1000)  ].
+
+	list do: [ :i | number := i ]
+]
+
+{ #category : #tests }
 GeneralSeekerTests >> testVariableChange [
 
 	"Do this once the window opens:
