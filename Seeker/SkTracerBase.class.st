@@ -18,19 +18,11 @@ Class {
 		'restorer',
 		'identityEnforcer',
 		'components',
-		'objectsTracker'
+		'objectsTracker',
+		'systemCallsHandler'
 	],
 	#category : #'Seeker-Components'
 }
-
-{ #category : #starting }
-SkTracerBase >> andThen [
-
-	"A human friendly message conjunction. Basically higher level/less efficient/prettier cascade.
-	Don't use with message with arguments. Actually, don't use it at all"
-
-	^ self
-]
 
 { #category : #'as yet unclassified' }
 SkTracerBase >> bindComponents [
@@ -98,8 +90,8 @@ SkTracerBase >> initialize [
 SkTracerBase >> initializeComponents [
 
 	components := OrderedCollection new.
-	components add: (stepper := SystemVersion current major = 9
-			            ifTrue: [ SkClassicStepper newFor: self ]
+	components add:
+		(stepper := SystemVersion current major = 9 ifTrue: [ SkClassicStepper newFor: self ]
 			            ifFalse: [ 
 				            self flag:
 					            'This is used experimentally for Pharo 10. Possibly faster than the other. Not compatible with Pharo 9. '.
@@ -107,6 +99,7 @@ SkTracerBase >> initializeComponents [
 	components add: (restorer := SkExecutionRestorer newFor: self).
 	components add: (objectsTracker := SkObjectsTracker newFor: self).
 	components add: (identityEnforcer := SkIdentityEnforcer newFor: self).
+	components add: (systemCallsHandler := SkSystemCallsHandler newFor: self).
 	self bindComponents
 ]
 
@@ -269,6 +262,18 @@ SkTracerBase >> stepper [
 SkTracerBase >> stepper: anObject [
 
 	^ stepper := anObject
+]
+
+{ #category : #accessing }
+SkTracerBase >> systemCallsHandler [
+
+	^ systemCallsHandler
+]
+
+{ #category : #accessing }
+SkTracerBase >> systemCallsHandler: anObject [
+
+	systemCallsHandler := anObject
 ]
 
 { #category : #starting }

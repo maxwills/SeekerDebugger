@@ -410,6 +410,13 @@ SeekerCurrentStateInterface >> isMethodReturn [
 ]
 
 { #category : #testing }
+SeekerCurrentStateInterface >> isPrimitive [
+
+	<qwpSubCached>
+	^ self isMessageSend and: [ self primitive > 0 ]
+]
+
+{ #category : #testing }
 SeekerCurrentStateInterface >> isVariable [
 
 	<qwpSubCached>
@@ -663,6 +670,13 @@ SeekerCurrentStateInterface >> previousNoi [
 	^ 0
 ]
 
+{ #category : #testing }
+SeekerCurrentStateInterface >> primitive [
+
+	<qwpSubCached>
+	^ self method primitive
+]
+
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> receiver [
 
@@ -783,6 +797,13 @@ SeekerCurrentStateInterface >> valueToBeAssigned [
 	^ context at: context basicSize
 ]
 
+{ #category : #'as yet unclassified' }
+SeekerCurrentStateInterface >> variableValue [
+
+	<qwpSubCached>
+	^ self node variable readInContext: self context
+]
+
 { #category : #testing }
 SeekerCurrentStateInterface >> willCreateBlock [
 
@@ -801,6 +822,14 @@ SeekerCurrentStateInterface >> willCreateBlock [
 			  EncoderForSistaV1
 				  isCreateFullBlockAt: self contextPC
 				  in: self method ]
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> willExecutePrimitive [
+
+	<qwpSubCached>
+	self isMessageSend ifFalse: [ ^ false ].
+	^ self methodAboutToExecute primitive > 0
 ]
 
 { #category : #testing }

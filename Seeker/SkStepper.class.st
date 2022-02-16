@@ -23,7 +23,8 @@ Class {
 		'currentState',
 		'skippableMethods',
 		'skipFlag',
-		'emergencyStopFlag'
+		'emergencyStopFlag',
+		'systemCallsHandler'
 	],
 	#category : #'Seeker-Components'
 }
@@ -35,7 +36,8 @@ SkStepper >> bindComponents [
 
 	tracer := componentsHolder tracer.
 	currentState := componentsHolder currentState.
-	mapper := componentsHolder mapper
+	mapper := componentsHolder mapper.
+	systemCallsHandler := componentsHolder systemCallsHandler.
 ]
 
 { #category : #testing }
@@ -286,35 +288,30 @@ This will fail if the code relies on more encoders (Need to test in Pharo 9.0)"
 	currentContext := tracer currentContext.
 	iteratingFlag := true.
 	[ "currentCtx := self currentContext."
-	instrStream := InstructionStream
-		               on: currentContext compiledCode
-		               pc: currentContext pc.
+	instrStream := InstructionStream on: currentContext compiledCode pc: currentContext pc.
 	Processor activeProcess
 		evaluate: [ 
-			[ (emergencyStopFlag or: aBlock) or: [ self cantStep ] ] 
-				whileFalse: [ 
-					| previousContext startingNode |
-					previousContext := currentContext.
-					startingNode := currentState node.
-					tracer doPreStepProcess.
-					"currentContext stepIntoQuickMethod: true."
-					currentContext := skipFlag
-						                  ifTrue: [ 
-							                  skipFlag := false.
-							                  debuggedProcess completeStep: currentContext ]
-						                  ifFalse: [ 
-						                  instrStream 
-							                  interpretNextSistaV1InstructionFor:
-							                  currentContext ].
-					tracer currentContext: currentContext.
-					instrStream
-						method: currentContext compiledCode
-						pc: currentContext pc.
-					debuggedProcess suspendedContext: currentContext.
-					tracer
-						doPostStepProcessWithPrevNode: startingNode
-						andPrevContext: previousContext.
-					afterStepBlock ifNotNil: afterStepBlock ] ]
+			[ (emergencyStopFlag or: aBlock) or: [ self cantStep ] ] whileFalse: [ 
+				| previousContext startingNode |
+				previousContext := currentContext.
+				startingNode := currentState node.
+				tracer doPreStepProcess.
+				"currentContext stepIntoQuickMethod: true."
+				currentContext := skipFlag
+					                  ifTrue: [ 
+						                  skipFlag := false.
+						                  debuggedProcess completeStep: currentContext ]
+					                  ifFalse: [ 
+						                  (systemCallsHandler enabled and: [ systemCallsHandler isSystemCall ])
+							                  ifTrue: [ 
+								                  systemCallsHandler handleSystemCall: [ 
+									                  instrStream interpretNextSistaV1InstructionFor: currentContext ] ]
+							                  ifFalse: [ instrStream interpretNextSistaV1InstructionFor: currentContext ] ].
+				tracer currentContext: currentContext.
+				instrStream method: currentContext compiledCode pc: currentContext pc.
+				debuggedProcess suspendedContext: currentContext.
+				tracer doPostStepProcessWithPrevNode: startingNode andPrevContext: previousContext.
+				afterStepBlock ifNotNil: afterStepBlock ] ]
 		onBehalfOf: debuggedProcess.
 	true ] ensure: [ iteratingFlag := false ].
 	emergencyStopFlag ifTrue: [ self handleEmergencyStopFlag ]

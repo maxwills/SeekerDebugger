@@ -15,7 +15,8 @@ Class {
 		'objectTrackingEnabled',
 		'queryResultsLimitEnabled',
 		'queryResultsLimit',
-		'includeTestsSetup'
+		'includeTestsSetup',
+		'systemCallsHandlerEnabled'
 	],
 	#classVars : [
 		'DefaultInstance'
@@ -132,6 +133,7 @@ SeekerConfig >> initialize [
 	deferredSetup := false.
 	seekerEnabled := true.
 	quickWrapEnabled := true.
+	systemCallsHandlerEnabled := true.
 	objectTrackingEnabled := true.
 	queryResultsLimitEnabled := false.
 	queryResultsLimit := 10000.
@@ -238,4 +240,16 @@ SeekerConfig >> seekerEnabled: anObject [
 	wasEnabled = seekerEnabled ifTrue: [ ^ self ].
 	SeekerInstallHelpers uninstall.
 	seekerEnabled ifTrue: [ SeekerInstallHelpers install ]
+]
+
+{ #category : #accessing }
+SeekerConfig >> systemCallsHandlerEnabled [
+
+	^ systemCallsHandlerEnabled
+]
+
+{ #category : #accessing }
+SeekerConfig >> systemCallsHandlerEnabled: anObject [
+
+	systemCallsHandlerEnabled := anObject
 ]

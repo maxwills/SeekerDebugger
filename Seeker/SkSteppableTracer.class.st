@@ -334,8 +334,8 @@ SkSteppableTracer >> safeTimeTravelToTraceTime: aTraceTime [
 	"time trave with breaks. Not fully safe though. If the target time is skipped for some reson, the travel can detect it while in the same sequence(local trace time) and step"
 
 	self doAndUpdateSessionAfter: [ 
-		self restartAtBytecodeOne andThen stepBytecodeUntilConditionIsTrue: [ 
-			aTraceTime referencesTheLocalPastOrPresent: self ] ]
+		self restartAtBytecodeOne.
+		self stepBytecodeUntilConditionIsTrue: [ aTraceTime referencesTheLocalPastOrPresent: self ] ]
 ]
 
 { #category : #signalling }

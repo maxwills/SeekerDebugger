@@ -15,7 +15,8 @@ Class {
 		'chkQuickWrapEnabled',
 		'chkIncludeTestsSetup',
 		'chkObjectTrackingEnabled',
-		'chkQueryResultsLimitEnabled'
+		'chkQueryResultsLimitEnabled',
+		'chkSystemCallsHandlerEnabled'
 	],
 	#category : #'Seeker-UI'
 }
@@ -55,6 +56,7 @@ SeekerConfigPresenter >> createChecksLayout [
 		  add: chkObjectTrackingEnabled;
 		  add: chkRestorationEnabled;
 		  add: chkIdentityEnforcingEnabled;
+		  add: chkSystemCallsHandlerEnabled;
 		  add: chkQueryResultsLimitEnabled;
 		  add: chkIncludeTestsSetup;
 		  add: chkUseDeferredSetup;
@@ -80,7 +82,7 @@ SeekerConfigPresenter >> handleResetEmergencyDeactivation [
 { #category : #api }
 SeekerConfigPresenter >> initialExtent [
 
-	^ 300 @ 400
+	^ 300 @ 430
 ]
 
 { #category : #initialization }
@@ -114,7 +116,8 @@ SeekerConfigPresenter >> initializePresenters [
 		                    (self createCheckbox: 'SeekerDebugger enabled').
 	chkQuickWrapEnabled := checkboxes add:
 		                       (self createCheckbox: 'QuickWrap enabled').
-
+   chkSystemCallsHandlerEnabled := checkboxes add:
+		                       (self createCheckbox: 'SystemCallsHandler enabled').
 	chkIncludeTestsSetup := checkboxes add:
 		                        (self createCheckbox: 'Include tests setup').
 	chkQueryResultsLimitEnabled := checkboxes add:
@@ -151,40 +154,36 @@ SeekerConfigPresenter >> open [
 { #category : #'as yet unclassified' }
 SeekerConfigPresenter >> updateFromConfig [
 
-	chkEnableMouseButtonEvent state:
-		self config enableMouseButtonEventDebug.
+	chkEnableMouseButtonEvent state: self config enableMouseButtonEventDebug.
 	chkHandleMouseUp state: self config handleMouseUpEvent.
 	chkHandleMouseDown state: self config handleMouseDownEvent.
 	chkKeepMenusOpen state: self config keepMenusOpen.
-	chkIdentityEnforcingEnabled state:
-		self config identityEnforcingEnabled.
+	chkIdentityEnforcingEnabled state: self config identityEnforcingEnabled.
 	chkObjectTrackingEnabled state: self config objectTrackingEnabled.
 	chkRestorationEnabled state: self config restorationEnabled.
 	chkUseDeferredSetup state: self config deferredSetup.
 	chkSeekerEnabled state: self config seekerEnabled.
 	chkQuickWrapEnabled state: self config quickWrapEnabled.
+	chkSystemCallsHandlerEnabled state: self config systemCallsHandlerEnabled.
 	chkIncludeTestsSetup state: self config includeTestsSetup.
-	chkQueryResultsLimitEnabled state:
-		self config queryResultsLimitEnabled
+	chkQueryResultsLimitEnabled state: self config queryResultsLimitEnabled
 ]
 
 { #category : #'as yet unclassified' }
 SeekerConfigPresenter >> updateToConfig [
 
-	self config enableMouseButtonEventDebug:
-		chkEnableMouseButtonEvent state.
+	self config enableMouseButtonEventDebug: chkEnableMouseButtonEvent state.
 	self config handleMouseUpEvent: chkHandleMouseUp state.
 	self config handleMouseDownEvent: chkHandleMouseDown state.
 	self config keepMenusOpen: chkKeepMenusOpen state.
 	self config restorationEnabled: chkRestorationEnabled state.
-	self config identityEnforcingEnabled:
-		chkIdentityEnforcingEnabled state.
+	self config identityEnforcingEnabled: chkIdentityEnforcingEnabled state.
+	self config systemCallsHandlerEnabled: chkSystemCallsHandlerEnabled state.
 	self config deferredSetup: chkUseDeferredSetup state.
 
 	self config objectTrackingEnabled: chkObjectTrackingEnabled state.
 	self config seekerEnabled: chkSeekerEnabled state.
 	self config quickWrapEnabled: chkQuickWrapEnabled state.
 	self config includeTestsSetup: chkIncludeTestsSetup state.
-	self config queryResultsLimitEnabled:
-		chkQueryResultsLimitEnabled state
+	self config queryResultsLimitEnabled: chkQueryResultsLimitEnabled state
 ]
