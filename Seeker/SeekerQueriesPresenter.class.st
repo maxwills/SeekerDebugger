@@ -21,17 +21,6 @@ Class {
 	#category : #'Seeker-UI'
 }
 
-{ #category : #specs }
-SeekerQueriesPresenter class >> defaultSpec [
-
-	^ SpBoxLayout newVertical
-		  add: #queryTitle expand: false fill: false;
-		  "add: #resultsFilter expand: false fill: true;"
-		  add: #tableContainerPresenter expand: true fill: true;
-		  add: #summaryLabel expand: false fill: false;
-		  "fill: false"yourself
-]
-
 { #category : #'as yet unclassified' }
 SeekerQueriesPresenter >> appendResults: aCollection [
 
@@ -158,7 +147,14 @@ SeekerQueriesPresenter >> initializePresenters [
 	summaryLabel label: 'Showing 0 results.'.
 	queryTitle := self newLabel.
 	queryTitle label: 'No Query executed'.
-	super initializePresenters
+	super initializePresenters.
+	self layout: (SpBoxLayout newVertical
+			 add: #queryTitle expand: false fill: false;
+			 "add: #resultsFilter expand: false fill: true;"add: #tableContainerPresenter
+			 expand: true
+			 fill: true;
+			 add: #summaryLabel expand: false fill: false;
+			 "fill: false"yourself)
 ]
 
 { #category : #initialization }
@@ -352,75 +348,6 @@ SeekerQueriesPresenter >> showInstanceMenuFor: aNumber [
 		selector: #seekAllChangesFor:
 		argument: aNumber.
 	menu invokeModal
-]
-
-{ #category : #'UI specific' }
-SeekerQueriesPresenter >> showResult: anObject [
-
-	| cols trimBlock |
-	anObject quickConsistencyCheck.
-	cols := OrderedCollection new.
-	cols add: (SpIndexTableColumn new width: 40).
-	queryResults := anObject.
-	queryTitle label: queryResults title.
-	trimBlock := [ :row :col | 
-	             col expandable
-		             ifTrue: [ col value: row ]
-		             ifFalse: [ 
-			             (col value: row)
-				             trimForRenderWidth: col width
-				             usingFont: StandardFonts listFont
-				             autoEllipsis: true ] ].
-
-	"for every columunDefinition (SeekerResultsColumn) in my input collection :
-   - Create a SpTableColumn (SpLinkTableColumn or SpStringTableColumn).
-   - set it's properties based in the input column definition (expandable, with, etc)
-   add it to an OrderedCollection
-Set the tables columns from the ordered collection
-"
-
-	anObject columns do: [ :each | 
-		| col |
-		col := each key = #bytecodeIndex
-			       ifTrue: [ "it's a link"
-				       SpLinkTableColumn
-					       title: each label
-					       evaluated: [ :row | each value: row ]
-					       action: [ :row | 
-						       self notifyTimeTravel: row.
-						       tracer timeTravelToTraceTime:
-							       row bytecodeIndex asExecutedBytecodeTraceTime "row timeTravelToThis" ] ]
-			       ifFalse: [ 
-				       each key = #inspectLabel
-					       ifTrue: [ 
-						       SpLinkTableColumn
-							       title: 'Actions'
-							       evaluated: [ :row | 'menu...' ]
-							       action: [ :row | 
-							       self showInstanceMenuFor: row bytecodeIndex + 1 ] ]
-					       ifFalse: [ 
-						       (SpStringTableColumn
-							        title: each label
-							        evaluated: [ :row | trimBlock value: row value: each ])
-							       displayBold: [ :row | 
-								       self valueMatchesSearchFilter: (each value: row) ];
-							       yourself ] ].
-		"col beExpandable."
-		each expandable
-			ifTrue: [ 
-				col beExpandable
-				"self error: 'isExpandable'"
-				"Transcript show: 'It''s expandable' , String cr" ]
-			ifFalse: [ 
-				col beNotExpandable.
-				col width: each width
-				"Transcript show:
-					'not expandable with width: ' , col width asString , String cr " ].
-		cols add: col ].
-	table columns: cols.
-
-	self applyResultFilter.
-	self updateDisplayedResults
 ]
 
 { #category : #accessing }

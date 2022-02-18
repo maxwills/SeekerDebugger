@@ -27,17 +27,6 @@ SeekerDebuggerPresenter class >> defaultDisplayOrder [
 	^ 1
 ]
 
-{ #category : #specs }
-SeekerDebuggerPresenter class >> defaultSpec [
-
-	^ SpBoxLayout newVertical
-		  add: 'Stepping Control' expand: false;
-		  add: #toolbar expand: false;
-		  add: #tabs expand: true;
-		  add: #currentStepLabel expand: false;
-		  yourself
-]
-
 { #category : #'debugger extension' }
 SeekerDebuggerPresenter class >> displayOrder [
 
@@ -208,7 +197,6 @@ SeekerDebuggerPresenter >> initializePresenters [
 
 	"Called automatically by the Spec framework. This method describes how the widgets are initialized"
 
-
 	self initializeToolbar.
 	self initializeCode.
 	self initializeTabs.
@@ -219,7 +207,13 @@ SeekerDebuggerPresenter >> initializePresenters [
 		every: 0.5 seconds."
 	currentStepLabel := self newLabel.
 	currentStepLabel label: 'Current Step: -'.
-	self initializeEvaluatorPresenters
+	self initializeEvaluatorPresenters.
+	self layout: (SpBoxLayout newVertical
+			 add: 'Stepping Control' expand: false;
+			 add: #toolbar expand: false;
+			 add: #tabs expand: true;
+			 add: #currentStepLabel expand: false;
+			 yourself)
 ]
 
 { #category : #'accessing model' }
@@ -244,7 +238,7 @@ SeekerDebuggerPresenter >> initializeToolbar [
 	"Smalltalk ui icons"
 
 	toolbar := self newToolbar
-		           beBoth;
+		           beIcons;
 		           "add: (SpToolbarButtonPresenter new 
 			icon: (self iconNamed: #smallOk);
 			label: 'Simple';

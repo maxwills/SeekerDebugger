@@ -37,13 +37,11 @@ SkSystemCallsHandler >> handleSystemCall: interpretationBlock [
 		ifFalse: [ "first time executing the systemCall. interpret it and store the returned value"
 			nextContext := interpretationBlock value.
 			returnValue := currentState methodReturnValue.
-			SeekerMetaDebugHelper log: 'System call first execution'.
 			returnValuesDictionary at: bytecodeIndex put: returnValue ]
 		ifTrue: [ "The systemCall was already executed before. So use the stored value."
 			self flag:
 				'should check if forceInterpretation is true or false here. For now, we assume it is, so the execution advances normally'.
 			nextContext := interpretationBlock value.
-			SeekerMetaDebugHelper log: 'System call subsequent execution'.
 			"inject the stored value in the return"
 			nextContext at: nextContext stackPtr put: storedReturnValue ].
 	^ nextContext

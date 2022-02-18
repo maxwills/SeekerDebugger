@@ -36,12 +36,13 @@ SkClassicStepper >> stepBytecodeDoingAfterStep: aBlock [
 		                  ifTrue: [ 
 			                  skipFlag := false.
 			                  debuggedProcess completeStep: currentContext ]
-		                  ifFalse: [ debuggedProcess step ].
+		                  ifFalse: [ 
+			                  (systemCallsHandler enabled and: [ systemCallsHandler isSystemCall ]) ifTrue: [ 
+				                  systemCallsHandler handleSystemCall: [ debuggedProcess step ] ]
+				                  ifFalse: [ debuggedProcess step ] ].
 	tracer currentContext: currentContext.
 	"previousContext stepIntoQuickMethod: false."
-	tracer
-		doPostStepProcessWithPrevNode: startingNode
-		andPrevContext: previousContext.
+	tracer doPostStepProcessWithPrevNode: startingNode andPrevContext: previousContext.
 	aBlock ifNotNil: aBlock.
 	"byteCountCounter % 10000 = 0 ifTrue: [ self softUIUpdate ]."
 	^ true
