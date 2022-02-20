@@ -16,6 +16,14 @@ SeekerInstallHelpers class >> debuggerExtensionEnabled: aBoolean [
 	SeekerDebuggerPresenter showInDebugger: aBoolean
 ]
 
+{ #category : #'as yet unclassified' }
+SeekerInstallHelpers class >> executeApplicationBackendPatch [
+
+	"Seeker adds a new table presenter, with its own adapter to its own morph. Without reseting the bindings, Spec would not detect the adapter, throwing an error."
+
+	SpApplication allSubInstancesDo: [ :app | app backend resetAdapterBindings ]
+]
+
 { #category : #actions }
 SeekerInstallHelpers class >> install [
 
@@ -31,6 +39,7 @@ SeekerInstallHelpers class >> install [
 		self installQuickWrapSystem.
 		self refreshAllWrappers ].
 	self installMoosePatch.
+	self executeApplicationBackendPatch.
 	Author uniqueInstance fullName: authorName
 ]
 

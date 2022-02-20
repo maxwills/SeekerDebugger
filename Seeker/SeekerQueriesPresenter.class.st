@@ -66,11 +66,9 @@ SeekerQueriesPresenter >> executeAndShow: aQuery [
 
 	"queryTitle label: queryResults title."
 	trimmingBlock := [ :row :col | 
-	                 col expandable
-		                 ifTrue: [ (col readValueIn: row) asString ]
+	                 col expandable ifTrue: [ (col readValueIn: row) asString ]
 		                 ifFalse: [ 
-			                 (col readValueIn: row) asString
-				                 trimForRenderWidth: col width
+			                 (col readValueIn: row) asString trimForRenderWidth: col width
 				                 usingFont: StandardFonts listFont
 				                 autoEllipsis: true ] ].
 
@@ -85,20 +83,15 @@ Set the tables columns from the ordered collection
 		| spCol |
 		spCol := each key = #bytecodeIndex
 			         ifTrue: [ "it's a link"
-				         SpLinkTableColumn
-					         title: each label
+				         SpLinkTableColumn title: each label
 					         evaluated: [ :row | (each readValueIn: row) asString ]
 					         action: [ :row | 
 						         self notifyTimeTravel: row.
-						         tracer timeTravelToTraceTime:
-							         row bytecodeIndex asExecutedBytecodeTraceTime "row timeTravelToThis" ] ]
+						         tracer timeTravelToTraceTime: row bytecodeIndex asExecutedBytecodeTraceTime "row timeTravelToThis" ] ]
 			         ifFalse: [ 
-				         (SpStringTableColumn
-					          title: each label
-					          evaluated: [ :row | 
-						          trimmingBlock value: row value: each ])
-					         displayBold: [ :row | 
-						         highlighBlock value: (each readValueIn: row) asString ];
+				         (SpStringTableColumn title: each label
+					          evaluated: [ :row | trimmingBlock value: row value: each ])
+					         displayBold: [ :row | highlighBlock value: (each readValueIn: row) asString ];
 					         yourself ].
 		"col beExpandable."
 		each expandable
@@ -112,8 +105,10 @@ Set the tables columns from the ordered collection
 				"Transcript show:
 					'not expandable with width: ' , col width asString , String cr " ].
 		spColumns add: spCol ].
+	spColumns add: ((SpStringTableColumn title: '' evaluated: [ :row | '' ])
+			 width: 200;
+			 yourself).
 	table columns: spColumns.
-
 	"self applyResultFilter."
 	self updateDisplayedResults.
 	[ solver resolve ] fork
@@ -160,7 +155,7 @@ SeekerQueriesPresenter >> initializePresenters [
 { #category : #initialization }
 SeekerQueriesPresenter >> initializeTable [
 
-	table := self newTable
+	table := SeekerSpTablePresenter new
 		         beResizable;
 		         " beCellSelection;""whenActivatedDo: [ :item | self tableItemActivated: item ];
 					activateOnSingleClick;"
@@ -168,8 +163,7 @@ SeekerQueriesPresenter >> initializeTable [
 		         contextMenu: [ 
 			         queryDisplayModel
 				         ifNotNil: [ 
-					         queryDisplayModel
-						         buildContextMenuForResults: table items
+					         queryDisplayModel buildContextMenuForResults: table items
 						         withSelectedItem: table selectedItem
 						         forTracer: tracer ]
 				         ifNil: [ nil ] ];
@@ -180,7 +174,7 @@ SeekerQueriesPresenter >> initializeTable [
 					         queryDisplayModel columns anySatisfy: [ :col | 
 							         (col readValueIn: row) asString includesSubstring: str ] ]
 				         ifNil: [ true ] ];
-		         yourself "Without item, the filter signal an error"
+		         "Without item, the filter signal an error"yourself
 ]
 
 { #category : #accessing }
