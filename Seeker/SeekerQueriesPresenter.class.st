@@ -127,13 +127,13 @@ SeekerQueriesPresenter >> initializePresenters [
 	filterMatchBlockForHighlighting := [ :val | false ].
 	filterText := ''.
 	tableContainerPresenter := self newPresenter.
-	tableContainerLayout := SpScrollableLayout new.
+	tableContainerLayout := self newBoxLayoutTopToBottom.
 	tableContainerPresenter layout: tableContainerLayout.
 
 
 	self initializeTable.
-	tableContainerLayout child: table.
-
+	"tableContainerLayout child: table."
+	tableContainerLayout add: table.
 	"resultsFilter := self newTextInput.
 	
 	resultsFilter placeholder:
@@ -149,7 +149,7 @@ SeekerQueriesPresenter >> initializePresenters [
 			 expand: true
 			 fill: true;
 			 add: #summaryLabel expand: false fill: false;
-			 "fill: false"yourself)
+			 "fill: false"yourself).
 ]
 
 { #category : #initialization }

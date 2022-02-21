@@ -237,17 +237,22 @@ SeekerDebuggerPresenter >> initializeToolbar [
 
 	"Smalltalk ui icons"
 
-	toolbar := self newToolbar
-		           beIcons;
+	toolbar := SeekerSpToolbarPresenter new
+		           beBoth;
 		           "add: (SpToolbarButtonPresenter new 
 			icon: (self iconNamed: #smallOk);
 			label: 'Simple';
 			action: [ UIManager default defer: [ self inform: 'Pressed' ] ];
 			yourself);"
 		           add: (self newToolbarButton
-				            label: 'PrevBytecode';
+				            label: 'Back 1';
 				            icon: (self application iconNamed: #glamorousLeft);
 				            action: [ self stepBackOneByteCodeHandler ];
+				            yourself);
+		           add: (self newToolbarButton
+				            label: 'Play 1';
+				            icon: (self application iconNamed: #glamorousInto);
+				            action: [ self stepIntoHandler ];
 				            yourself);
 		           add: (self newToolbarButton
 				            label: 'Advance Down';
@@ -258,11 +263,6 @@ SeekerDebuggerPresenter >> initializeToolbar [
 				            label: 'Back Up';
 				            icon: (self application iconNamed: #glamorousUp);
 				            action: [ self reverseUpHandler ];
-				            yourself);
-		           add: (self newToolbarButton
-				            label: 'NextBytecode';
-				            icon: (self application iconNamed: #glamorousInto);
-				            action: [ self stepIntoHandler ];
 				            yourself);
 		           add: (self newToolbarButton
 				            label: 'Reset';

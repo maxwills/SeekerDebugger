@@ -21,6 +21,7 @@ SeekerInstallHelpers class >> executeApplicationBackendPatch [
 
 	"Seeker adds a new table presenter, with its own adapter to its own morph. Without reseting the bindings, Spec would not detect the adapter, throwing an error."
 
+	<script>
 	SpApplication allSubInstancesDo: [ :app | app backend resetAdapterBindings ]
 ]
 
