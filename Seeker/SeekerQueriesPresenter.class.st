@@ -191,12 +191,6 @@ SeekerQueriesPresenter >> inspectNewObjectInstanceAt: bytecodeIndex [
 ]
 
 { #category : #'as yet unclassified' }
-SeekerQueriesPresenter >> inspectOid: aNumber [
-
-	(self getInstantiatedObjectAt: aNumber) inspect
-]
-
-{ #category : #'as yet unclassified' }
 SeekerQueriesPresenter >> makeDefaultQuerySolverFor: aQueryDisplayModel [
 
 	"QueryDisplayModel"
@@ -318,30 +312,6 @@ SeekerQueriesPresenter >> seekAllMessagesFor: aNumber [
 
 	(self getInstantiatedObjectAt: aNumber)
 		seekAndDisplayAllMessagesSentToMe
-]
-
-{ #category : #'as yet unclassified' }
-SeekerQueriesPresenter >> showInstanceMenuFor: aNumber [
-
-	| menu |
-	menu := MenuMorph new.
-	menu
-		add: 'Inspect the instance'
-		target: self
-		selector: #inspectOid:
-		argument: aNumber.
-	menu
-		add: 'List all messages sent this object'
-		target: self
-		selector: #seekAllMessagesFor:
-		argument: aNumber.
-	menu
-		add:
-		'List all assignments to the instance variables of this object'
-		target: self
-		selector: #seekAllChangesFor:
-		argument: aNumber.
-	menu invokeModal
 ]
 
 { #category : #accessing }

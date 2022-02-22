@@ -237,30 +237,29 @@ SeekerDebuggerPresenter >> initializeToolbar [
 
 	"Smalltalk ui icons"
 
+	"toolbar := SeekerSpToolbarPresenter new
+		           beIcons;"
+
 	toolbar := SeekerSpToolbarPresenter new
 		           beBoth;
-		           "add: (SpToolbarButtonPresenter new 
-			icon: (self iconNamed: #smallOk);
-			label: 'Simple';
-			action: [ UIManager default defer: [ self inform: 'Pressed' ] ];
-			yourself);"
 		           add: (self newToolbarButton
 				            label: 'Back 1';
 				            icon: (self application iconNamed: #glamorousLeft);
 				            action: [ self stepBackOneByteCodeHandler ];
 				            yourself);
 		           add: (self newToolbarButton
-				            label: 'Play 1';
-				            icon: (self application iconNamed: #glamorousInto);
+				            label: 'Adv. 1';
+				            "icon: (self application iconNamed: #glamorousInto);"icon:
+					            (self application iconNamed: #glamorousRight);
 				            action: [ self stepIntoHandler ];
 				            yourself);
 		           add: (self newToolbarButton
-				            label: 'Advance Down';
+				            label: 'Adv. Statement';
 				            icon: (self application iconNamed: #glamorousDown);
 				            action: [ self advanceDownHandler ];
 				            yourself);
 		           add: (self newToolbarButton
-				            label: 'Back Up';
+				            label: 'Prev. Statement';
 				            icon: (self application iconNamed: #glamorousUp);
 				            action: [ self reverseUpHandler ];
 				            yourself);
@@ -274,11 +273,11 @@ SeekerDebuggerPresenter >> initializeToolbar [
 				            icon: (self application iconNamed: #glamorousSpawn);
 				            action: [ self stepToEndHandler ];
 				            yourself);
-		           add: (self newToolbarButton
+		          " add: (self newToolbarButton
 				            label: 'Next Iteration';
 				            icon: (self application iconNamed: #smallUpdate);
 				            action: [ self nextIterationHandler ];
-				            yourself);
+				            yourself);"
 		           add: (self newToolbarButton
 				            label: 'STOP';
 				            icon: (self application iconNamed: #stop);

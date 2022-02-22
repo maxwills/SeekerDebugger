@@ -33,13 +33,13 @@ SkClassicStepper >> stepBytecodeDoingAfterStep: aBlock [
 	tracer doPreStepProcess.
 	"currentContext stepIntoQuickMethod: true."
 	currentContext := skipFlag
-		                  ifTrue: [ 
-			                  skipFlag := false.
-			                  debuggedProcess completeStep: currentContext ]
-		                  ifFalse: [ 
-			                  (systemCallsHandler enabled and: [ systemCallsHandler isSystemCall ]) ifTrue: [ 
-				                  systemCallsHandler handleSystemCall: [ debuggedProcess step ] ]
-				                  ifFalse: [ debuggedProcess step ] ].
+		ifTrue: [ 
+			skipFlag := false.
+			debuggedProcess completeStep: currentContext ]
+		ifFalse: [ 
+			(systemCallsHandler enabled and: [ systemCallsHandler isSystemCall ]) 
+				ifTrue: [ systemCallsHandler handleSystemCall: [ debuggedProcess step ] ]
+				ifFalse: [ debuggedProcess step ] ].
 	tracer currentContext: currentContext.
 	"previousContext stepIntoQuickMethod: false."
 	tracer doPostStepProcessWithPrevNode: startingNode andPrevContext: previousContext.
