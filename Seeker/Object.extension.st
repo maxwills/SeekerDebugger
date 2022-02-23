@@ -182,6 +182,27 @@ Object >> seekAndDisplayAllMessagesSentToMe [
 ]
 
 { #category : #'*Seeker' }
+Object >> seekAndDisplayAllMessagesSentToMeWithSelector: selector [
+
+	| seeker error |
+	error := true.
+
+	[ 
+	seeker := self seekMe.
+	seeker ifNotNil: [ 
+		| oid |
+		oid := self seekMyOid.
+		oid ifNil: [ ^ self error: 'Seeker: obtained Oid was nil.' ].
+		seeker ui showInResult:
+			(TTQAllMessagesSentToObjectWithSelector queryFrom: seeker newProgramStates
+				 withObjectOid: oid
+				 andMessageSelector: selector) displayModel.
+		error := false ] ] ensure: [ 
+		error ifFalse: [ self inform: 'Results being shown in results table' ]
+			ifTrue: [ self error: 'Could not execute query' ] ]
+]
+
+{ #category : #'*Seeker' }
 Object >> seekAndDisplayAllMyChanges [
 
 	| seeker error |
@@ -200,6 +221,27 @@ Object >> seekAndDisplayAllMyChanges [
 		error := false ] ] ensure: [ 
 		error
 			ifFalse: [ self inform: 'Results being shown in tesults table' ]
+			ifTrue: [ self error: 'Could not execute query' ] ]
+]
+
+{ #category : #'*Seeker' }
+Object >> seekAndDisplayAllMyChangesOfVariableNamed: varName [
+
+	| seeker error |
+	error := true.
+
+	[ 
+	seeker := self seekMe.
+	seeker ifNotNil: [ 
+		| oid |
+		oid := self seekMyOid.
+		oid ifNil: [ ^ self error: 'Seeker: obtained Oid was nil.' ].
+		seeker ui showInResult:
+			(TTQAllAssignmentsOfAnInstanceVariableOfObject queryFrom: seeker newProgramStates
+				 withObjectOid: oid
+				 withVariableName: varName asSymbol) displayModel.
+		error := false ] ] ensure: [ 
+		error ifFalse: [ self inform: 'Results being shown in tesults table' ]
 			ifTrue: [ self error: 'Could not execute query' ] ]
 ]
 

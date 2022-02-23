@@ -30,8 +30,9 @@ TimeTravelingQuery class >> displayModel [
 { #category : #'as yet unclassified' }
 TimeTravelingQuery class >> performWith: tracer [
 
-	tracer ui showInResult:
-		(self queryFrom: tracer newProgramStates) displayModel
+	"PerformWith and performWith:withArg: are scripting functions to keep a uniform interface. It is experimental. And you should not probalbly bother using these methods. Use the specific ones instead *queryFrom, showInSeeker, etc"
+
+	tracer ui showInResult: (self queryFrom: tracer newProgramStates) displayModel
 ]
 
 { #category : #'as yet unclassified' }
