@@ -222,7 +222,7 @@ SkStepper >> mapper: anObject [
 { #category : #initialization }
 SkStepper >> setEmergencyStopFlag [
 
-	iteratingFlag ifFalse: [ ^ self ].
+	"iteratingFlag ifFalse: [ ^ self ]."
 	emergencyStopFlag := true.
 	tracer preventNextTimeRestorationOfLiveState: true
 ]
@@ -262,9 +262,7 @@ SkStepper >> stepBytecode [
 { #category : #'actions api' }
 SkStepper >> stepBytecodeDoingAfterStep: aBlock [
 
-	self
-		stepBytecodeUntilConditionIsTrue: (SeekerCounter countTo: 2)
-		doingAfterEachStep: aBlock
+	^ self stepBytecodeUntilConditionIsTrue: (SeekerCounter countTo: 2) doingAfterEachStep: aBlock
 ]
 
 { #category : #'actions api' }
@@ -312,9 +310,9 @@ This will fail if the code relies on more encoders (Need to test in Pharo 9.0)"
 				debuggedProcess suspendedContext: currentContext.
 				tracer doPostStepProcessWithPrevNode: startingNode andPrevContext: previousContext.
 				afterStepBlock ifNotNil: afterStepBlock ] ]
-		onBehalfOf: debuggedProcess.
-	true ] ensure: [ iteratingFlag := false ].
-	emergencyStopFlag ifTrue: [ self handleEmergencyStopFlag ]
+		onBehalfOf: debuggedProcess] ensure: [ iteratingFlag := false ].
+^	emergencyStopFlag ifTrue: [ self handleEmergencyStopFlag] ifFalse: [ self cantStep not ]
+ 
 ]
 
 { #category : #accessing }

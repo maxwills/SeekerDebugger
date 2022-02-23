@@ -19,7 +19,7 @@ SkClassicObjectsTracker >> doPostStepProcess [
 			registerObjectInstance: instancedObj
 			withOid: tracer bytecodeIndex - 1.
 		instantiatedLocalObjects add: instancedObj ].
-	"This is a fix to add track objectes when they are receivers. This will be changed for a mor general tracking solution"
+	"This is a fix to add tracked objects when they are receivers. This will be changed for a more general tracking solution"
 	currentState isMessageSend ifTrue: [ 
 		self
 			registerObjectInstance: currentState messageReceiver

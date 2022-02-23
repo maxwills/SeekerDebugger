@@ -248,3 +248,24 @@ SeekerMetaDebugHelper class >> searchNDSVariableReadFor: tracer attemps: attempt
 			  ifNil: [ nil ]
 			  ifNotNil: [ (originalResults at: differentIndex) bytecodeIndex ] ]
 ]
+
+{ #category : #'as yet unclassified' }
+SeekerMetaDebugHelper class >> slowlyTraverseStates: delayMS [
+
+	| delay |
+	delay := Delay forMilliseconds: delayMS
+]
+
+{ #category : #'as yet unclassified' }
+SeekerMetaDebugHelper class >> slowlyTraverseStatesFor: seeker withDelay: delayMS [
+
+	| delay continue |
+	delay := Delay forMilliseconds: delayMS.
+
+	continue := true.
+
+	[ 
+	[ continue ] whileTrue: [ 
+		delay wait.
+		seeker doAndUpdateSessionAfter: [ continue := seeker stepBytecode ] ] ] fork
+]

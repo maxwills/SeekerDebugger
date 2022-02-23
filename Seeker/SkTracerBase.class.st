@@ -148,7 +148,7 @@ SkTracerBase >> objectsTracker: anObject [
 { #category : #starting }
 SkTracerBase >> restart [
 
-	self error: 'obsolete method. Use retartFromBytecodeOne instead'
+	self error: 'obsolete method. Use restartFromBytecodeOne instead'
 ]
 
 { #category : #'as yet unclassified' }

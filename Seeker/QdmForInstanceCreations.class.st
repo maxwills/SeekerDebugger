@@ -13,15 +13,14 @@ QdmForInstanceCreations >> buildContextMenuForResults: aQueryResutls withSelecte
 		  addItem: [ :item | 
 			  item
 				  name: 'Inspect the object about to be Instantiated';
-				  action: [ "Action" ] ];
+				  action: [ (self trackObjectWithOid: selection bytecodeIndex withTracer: tracer) inspect ] ];
 		  addItem: [ :item | 
 			  item
 				  name: 'List all messages send to the object';
 				  action: [ "Action" ] ];
 		  addItem: [ :item | 
 			  item
-				  name:
-					  'List all assignments of the instance variables of the obeject';
+				  name: 'List all assignments of the instance variables of the obeject';
 				  action: [ "Action" ] ];
 		  addItem: [ :item | 
 			  item
@@ -52,4 +51,11 @@ QdmForInstanceCreations >> initializeModel [
 		           ((ColumnDefinition newForKey: #methodSelector)
 			            label: 'Sender method';
 			            md) }
+]
+
+{ #category : #'as yet unclassified' }
+QdmForInstanceCreations >> trackObjectWithOid: aNumber withTracer: tracer [
+
+	tracer bytecodeIndex <= aNumber ifTrue: [ tracer timeTravelToBytecodeIndex: aNumber + 1 ].
+	^ tracer objectsTracker getObjectByOid: aNumber
 ]

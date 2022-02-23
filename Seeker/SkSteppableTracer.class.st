@@ -392,7 +392,7 @@ SkSteppableTracer >> stepBackOneBytecode [
 { #category : #'debug - stepping' }
 SkSteppableTracer >> stepBytecode [
 
-	stepper stepBytecode
+	^ stepper stepBytecode
 ]
 
 { #category : #'debug - stepping' }

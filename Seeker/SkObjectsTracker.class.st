@@ -189,8 +189,9 @@ SkObjectsTracker >> registerObjectInstance: anObject withOid: aNumber [
 
 	"anObject class = Metaclass ifTrue: [ ^ self ]."
 
-	persistentReverseOidsDictionary at: aNumber ifAbsentPut: [ anObject ].
-	oidsDictionary at: anObject ifAbsentPut: [ aNumber ].
+	oidsDictionary at: anObject ifAbsentPut: [ 
+		persistentReverseOidsDictionary at: aNumber ifAbsentPut: [ anObject ].
+		aNumber ].
 
 
 	(instantiatedLocalObjects includes: anObject) ifFalse: [ "anObject seekMyAlias = 1841 ifTrue: [ 
