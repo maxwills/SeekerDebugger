@@ -60,5 +60,7 @@ SkSystemCallsHandler >> initialize [
 SkSystemCallsHandler >> isSystemCall [
 
 	currentState isMessageSend ifFalse: [ ^ false ].
+	"^ currentState isPrimitive"
+	
 	^ systemCalls includes: currentState methodAboutToExecute
 ]
