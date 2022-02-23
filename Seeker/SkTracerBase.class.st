@@ -79,6 +79,7 @@ SkTracerBase >> inMouseButtonEventInstrumentationFlag: anObject [
 { #category : #initialization }
 SkTracerBase >> initialize [
 
+	isSessionActive := false.
 	SeekerSessionHelpers doCriticalInitialization: [ 
 		self initializeInstrumentedMethods.
 		self initializeComponents.

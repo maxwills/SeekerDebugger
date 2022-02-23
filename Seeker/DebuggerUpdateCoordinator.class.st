@@ -16,42 +16,27 @@ Class {
 { #category : #accessing }
 DebuggerUpdateCoordinator >> coordinateUpdatesFor: aBlock [
 
-	| oldFlagValue caughtException inspectorsAndOids inspectorOidPairType |
-	inspectorOidPairType := AutoType new.
+	| oldFlagValue caughtException |
 	caughtException := nil.
 	preventUpdate ifFalse: [ 
 		stDebugger removeSessionHolderSubscriptions.
-		inspectorsAndOids := OrderedCollection new. "This ui code should go somewhere else?"
-		StInspector allInstances do: [ :each | 
-			| oid |
-			oid := tracer getOidOf: each model inspectedObject.
-			oid ifNotNil: [ 
-				inspectorsAndOids add: (inspectorOidPairType newWith
-						 inspector: each;
-						 objectOid: oid;
-						 endWith) ] ] ].
+		"Detect inspectors"
+		SeekerInspectorSynchronizer default cleanUpInvalidatedEntries.
+		SeekerInspectorSynchronizer default searchNewInspectorsFor: tracer ].
 	oldFlagValue := preventUpdate.
 	preventUpdate := true.
 	aBlock ensure: [ 
 		oldFlagValue
 			ifFalse: [ 
 				self safeInvoke: [ 
-					stDebugger session updateContextTo:
-						stDebugger interruptedProcess suspendedContext.
+					stDebugger session updateContextTo: stDebugger interruptedProcess suspendedContext.
 					stDebugger debuggerActionModel updateTopContext.
 					stDebugger updateStep.
 					stDebugger setSessionHolderSubscriptions.
 					stDebugger triggerEvent: #stepInto.
 					stDebugger forceSessionUpdate.
 					"Refresh inspectors"
-					inspectorsAndOids ifNotNil: [ 
-						inspectorsAndOids do: [ :each | 
-							each inspector
-								model:
-									(StInspectorModel on: (tracer objectsTracker getObjectByOid: each objectOid));
-								updateList.
-							each inspector window title: each inspector windowTitle "Manually updating the title. The only way I could make it work" ] ].
-
+					SeekerInspectorSynchronizer default updateInspectorsFor: tracer.
 					preventUpdate := oldFlagValue ] ]
 			ifTrue: [ preventUpdate := oldFlagValue ] ]
 ]

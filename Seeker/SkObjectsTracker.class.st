@@ -20,6 +20,7 @@ Class {
 		'tracer',
 		'instantiationFlag',
 		'persistentReverseOidsDictionary',
+		'nonPersistentReverseOidsDictionary',
 		'instantiatedLocalObjects'
 	],
 	#category : #'Seeker-Components'
@@ -116,7 +117,7 @@ SkObjectsTracker >> enabled [
 { #category : #initialization }
 SkObjectsTracker >> getObjectByOid: aNumber [
 
-	^ persistentReverseOidsDictionary at: aNumber ifAbsent: [ nil ]
+	^ nonPersistentReverseOidsDictionary at: aNumber ifAbsent: [ nil ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -126,12 +127,19 @@ SkObjectsTracker >> getOidOf: anObject [
 ]
 
 { #category : #initialization }
+SkObjectsTracker >> getPersistentObjectByOid: aNumber [
+
+	^ persistentReverseOidsDictionary at: aNumber ifAbsent: [ nil ]
+]
+
+{ #category : #initialization }
 SkObjectsTracker >> initialize [
 
 	oidsDictionary := WeakIdentityKeyDictionary new.
 	instantiatedLocalObjects := WeakIdentitySet new.
 	nonLocalObjects := WeakIdentitySet new.
 	persistentReverseOidsDictionary := Dictionary new.
+	nonPersistentReverseOidsDictionary := Dictionary new.
 	instantiationFlag := false
 ]
 
@@ -190,6 +198,7 @@ SkObjectsTracker >> registerObjectInstance: anObject withOid: aNumber [
 	"anObject class = Metaclass ifTrue: [ ^ self ]."
 
 	oidsDictionary at: anObject ifAbsentPut: [ 
+		nonPersistentReverseOidsDictionary at: aNumber ifAbsentPut: [ anObject ].
 		persistentReverseOidsDictionary at: aNumber ifAbsentPut: [ anObject ].
 		aNumber ].
 
@@ -204,15 +213,14 @@ SkObjectsTracker >> registerObjectInstance: anObject withOid: aNumber [
 { #category : #initialization }
 SkObjectsTracker >> reset [
 
-	self isPersistent ifFalse: [ 
-		"note to self: if isPersistent is true, then ensure that identities are enforced before registering objects
+	self isPersistent ifFalse: [ "note to self: if isPersistent is true, then ensure that identities are enforced before registering objects
 		or the objects sets will grow with every replay
 		"
 		oidsDictionary removeAll.
 		nonLocalObjects := WeakIdentitySet new.
 		"persistentReverseOids should always be persistent, since it is needed as such for enforcing indentyHash"
 		instantiatedLocalObjects removeAll ].
-
+	nonPersistentReverseOidsDictionary removeAll.
 	instantiationFlag := false
 	"Why the other instance variables dont need to be updated"
 ]

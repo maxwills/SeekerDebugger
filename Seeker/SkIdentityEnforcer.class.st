@@ -35,7 +35,7 @@ we check if we have the 'same' element from a previous replay. If so, we make th
 
 	instancedObj := currentState contextTop.
 	instancedObj isReadOnlyObject ifTrue: [ ^ false ].
-	previousIdentity := objectsTracker getObjectByOid:
+	previousIdentity := objectsTracker getPersistentObjectByOid:
 		                    tracer bytecodeIndex.
 	previousIdentity ifNotNil: [ "There are exceptional cases where objects oid differ by -1 (the previous identity is executedBytecode). Not sure yet why. The next if patches that."
 		(previousIdentity class = instancedObj class and: [ 

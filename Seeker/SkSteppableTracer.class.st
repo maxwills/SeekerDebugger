@@ -145,9 +145,7 @@ and therefore, we need to map the execution).
 Note that for the other SeekerDebugging scenarios, the StDebugger is always opened with the 
 intent of using seeker. So the process is not placed in the watchlist.
 "
-
-	executionMappper isTestCaseOrDoIT
-		ifFalse: [ executionMappper quickMap "always map these" ]
+	executionMappper isTestCaseOrDoIT ifFalse: [ executionMappper quickMap "always map these" ]
 		ifTrue: [ "map only in it is a watchedProcess"
 			(SeekerGlobals instance isWatchedProcess: debuggedProcess) ifTrue: [ 
 				[ executionMappper quickMap ] ensure: [ 
@@ -164,6 +162,24 @@ SkSteppableTracer >> doesAnyContextsInTheStackStatisfies: aPredicateBlock [
 	| context |
 	context := self currentContext.
 	[ aPredicateBlock value: context ] whileFalse: [ 
+		context := context sender.
+		context ifNil: [ ^ false ] ].
+	^ true
+]
+
+{ #category : #'as yet unclassified' }
+SkSteppableTracer >> doesAnyContextsInTheStackStatisfies: aPredicateBlock maxDepth: maxDepth [
+
+	"the predicate block receives a context as parameter"
+
+	"Searches iteratively"
+
+	| context depth |
+	depth := 0.
+	context := self currentContext.
+	[ aPredicateBlock value: context ] whileFalse: [ 
+		depth := depth + 1.
+		depth > maxDepth ifTrue: [ ^ false ].
 		context := context sender.
 		context ifNil: [ ^ false ] ].
 	^ true
