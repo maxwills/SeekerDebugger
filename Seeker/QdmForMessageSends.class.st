@@ -35,6 +35,12 @@ QdmForMessageSends >> buildContextMenuForResults: aQueryResutls withSelectedItem
 		  "openWithSpecAt: self currentHand position"yourself
 ]
 
+{ #category : #'as yet unclassified' }
+QdmForMessageSends >> defaultQueryTitle [
+
+	^ 'Message Sends Query'
+]
+
 { #category : #initialization }
 QdmForMessageSends >> initializeModel [
 

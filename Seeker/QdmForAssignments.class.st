@@ -34,6 +34,12 @@ QdmForAssignments >> buildContextMenuForResults: aQueryResutls withSelectedItem:
 		  "openWithSpecAt: self currentHand position"yourself
 ]
 
+{ #category : #'as yet unclassified' }
+QdmForAssignments >> defaultQueryTitle [
+
+	^ 'All Assignments Query'
+]
+
 { #category : #initialization }
 QdmForAssignments >> initializeModel [
 

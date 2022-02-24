@@ -410,13 +410,6 @@ SeekerCurrentStateInterface >> isMethodReturn [
 ]
 
 { #category : #testing }
-SeekerCurrentStateInterface >> isPrimitive [
-
-	<qwpSubCached>
-	^ self isMessageSend and: [ self primitive > 0 ]
-]
-
-{ #category : #testing }
 SeekerCurrentStateInterface >> isVariable [
 
 	<qwpSubCached>
@@ -516,6 +509,7 @@ SeekerCurrentStateInterface >> messageReceiver [
 	node := self node.
 	^ node isInlined
 		  ifTrue: [ 
+			"note that there is a problem in this code. in case of a while true for example, the message receiver will not a block (when inlining, blocks are not actually there). So the messageReceiver will be the boolean value instead (true or false) which doesn't implement whileTrue:. Not sure what to do here other than guarding agains these cases (see method about to execute)."
 			  context stackPtr = 0
 				  ifTrue: [ nil "emptyStack" ]
 				  ifFalse: [ context top ] ]
@@ -829,7 +823,7 @@ SeekerCurrentStateInterface >> willExecutePrimitive [
 
 	<qwpSubCached>
 	self isMessageSend ifFalse: [ ^ false ].
-	^ self methodAboutToExecute primitive > 0
+	^ self methodAboutToExecute ifNil: [ false ] ifNotNil: [ self methodAboutToExecute primitive > 0 ]
 ]
 
 { #category : #testing }

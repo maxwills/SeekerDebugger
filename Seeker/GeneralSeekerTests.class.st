@@ -327,9 +327,9 @@ GeneralSeekerTests >> testRandomSomething [
 
 	list := OrderedCollection new.
 
-	1 to: 100 do: [ :i | list add: (r nextInteger: 1000)  ].
+	1 to: 100 do: [ :i | list add: (r nextInteger: 1000) ].
 
-	list do: [ :i | number := i ]
+	list do: [ :i | number := i ].
 ]
 
 { #category : #tests }

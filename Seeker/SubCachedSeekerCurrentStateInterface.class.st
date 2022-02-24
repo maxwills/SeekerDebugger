@@ -30,6 +30,8 @@ Class {
 		'__cached_endPCTimeKey',
 		'__cached_initialPC',
 		'__cached_initialPCTimeKey',
+		'__cached_isAboutToExecutePrimitive',
+		'__cached_isAboutToExecutePrimitiveTimeKey',
 		'__cached_isAssignment',
 		'__cached_isAssignmentTimeKey',
 		'__cached_isDead',

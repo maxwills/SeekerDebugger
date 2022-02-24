@@ -100,7 +100,8 @@ SkTracerBase >> initializeComponents [
 	components add: (restorer := SkExecutionRestorer newFor: self).
 	components add: (objectsTracker := SkObjectsTracker newFor: self).
 	components add: (identityEnforcer := SkIdentityEnforcer newFor: self).
-	components add: (systemCallsHandler := SkSystemCallsHandler newFor: self).
+	components add: (systemCallsHandler := "SkOmniSystemCallsHandler" SkSystemCallsHandler newFor: self).
+	
 	self bindComponents
 ]
 
@@ -119,6 +120,12 @@ SkTracerBase >> initializeInstrumentedMethods [
 			 s methodDictionary values ]).
 	instrumentedMethods addAll:
 		QuickWrapMethodProxy methodDictionary values
+]
+
+{ #category : #testing }
+SkTracerBase >> isIterating [
+
+^ stepper iteratingFlag
 ]
 
 { #category : #'as yet unclassified' }

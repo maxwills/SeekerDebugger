@@ -33,6 +33,12 @@ QdmForReceivedMessages >> buildContextMenuForResults: aQueryResutls withSelected
 		  "openWithSpecAt: self currentHand position"yourself
 ]
 
+{ #category : #'as yet unclassified' }
+QdmForReceivedMessages >> defaultQueryTitle [
+
+	^ 'Received Messages Query'
+]
+
 { #category : #initialization }
 QdmForReceivedMessages >> initializeModel [
 

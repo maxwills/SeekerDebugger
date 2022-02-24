@@ -16,7 +16,9 @@ Class {
 		'trimmingBlock',
 		'spColumns',
 		'menuBuilderSelector',
-		'filterText'
+		'filterText',
+		'reExecuteQueryButton',
+		'lastExecutedQuery'
 	],
 	#category : #'Seeker-UI'
 }
@@ -48,12 +50,25 @@ SeekerQueriesPresenter >> applyResultFilter [
 				                                   val includesSubstring: f ] ] ]
 ]
 
+{ #category : #building }
+SeekerQueriesPresenter >> buildWithLayout: l [
+
+	| ret |
+	ret := super buildWithLayout: l.
+	Transcript show: 'build executed'.
+	reExecuteQueryButton adapter widget minHeight: 10.
+	reExecuteQueryButton adapter widget height: 10.
+	"It doesnt work. I am leaving this as a TODO. I believe that the problem is that the button is placed in a TableLayout (due to the SpBoxLayout) which somehow interacts with the widget size."
+	^ ret
+]
+
 { #category : #'UI specific' }
 SeekerQueriesPresenter >> executeAndShow: aQuery [
 
 	"aQueryDisplayModel: an instance of QueryDisplayModel"
 
 	| solver highlighBlock |
+	lastExecutedQuery := aQuery.
 	trimmingBlock := nil. "it is restarted to nil"
 	queryDisplayModel := aQuery displayModel.
 	solver := self makeDefaultQuerySolverFor: queryDisplayModel.
@@ -64,7 +79,7 @@ SeekerQueriesPresenter >> executeAndShow: aQuery [
 	spColumns := OrderedCollection new.
 	spColumns add: (SpIndexTableColumn new width: 40).
 
-	"queryTitle label: queryResults title."
+	queryTitle label: queryDisplayModel title.
 	trimmingBlock := [ :row :col | 
 	                 col expandable ifTrue: [ (col readValueIn: row) asString ]
 		                 ifFalse: [ 
@@ -124,12 +139,12 @@ SeekerQueriesPresenter >> getRowSerialization: row [
 { #category : #initialization }
 SeekerQueriesPresenter >> initializePresenters [
 
+	| queryLabelPresenter |
 	filterMatchBlockForHighlighting := [ :val | false ].
 	filterText := ''.
 	tableContainerPresenter := self newPresenter.
 	tableContainerLayout := self newBoxLayoutTopToBottom.
 	tableContainerPresenter layout: tableContainerLayout.
-
 
 	self initializeTable.
 	"tableContainerLayout child: table."
@@ -142,14 +157,31 @@ SeekerQueriesPresenter >> initializePresenters [
 	summaryLabel label: 'Showing 0 results.'.
 	queryTitle := self newLabel.
 	queryTitle label: 'No Query executed'.
+	queryLabelPresenter := self newPresenter.
+	queryLabelPresenter layout: queryLabelPresenter newBoxLayoutLeftToRight.
+	queryLabelPresenter layout add: queryTitle.
+	reExecuteQueryButton := queryLabelPresenter newButton
+		                        label: 'Re-execute';
+		                        action: [ self reExecuteQuery ] yourself.
+	queryLabelPresenter layout add: reExecuteQueryButton withConstraints: [ :constraints | 
+		constraints
+			expand: false;
+			fill: false;
+			padding: 0;
+			height: 20 ].
 	super initializePresenters.
 	self layout: (SpBoxLayout newVertical
-			 add: #queryTitle expand: false fill: false;
+			 add: queryLabelPresenter withConstraints: [ :constraints | 
+				 constraints
+					 expand: true;
+					 fill: true;
+					 padding: 0;
+					 height: 20 ];
 			 "add: #resultsFilter expand: false fill: true;"add: #tableContainerPresenter
 			 expand: true
 			 fill: true;
 			 add: #summaryLabel expand: false fill: false;
-			 "fill: false"yourself).
+			 "fill: false"yourself)
 ]
 
 { #category : #initialization }
@@ -298,6 +330,14 @@ SeekerQueriesPresenter >> notifySeekerSearchInputActivated [
 SeekerQueriesPresenter >> notifyTimeTravel: row [
 
 	"tracer seeker notifyTimeTravel: (self getRowSerialization: row)"
+]
+
+{ #category : #'as yet unclassified' }
+SeekerQueriesPresenter >> reExecuteQuery [
+
+	lastExecutedQuery ifNotNil: [ 
+		tracer isIterating ifTrue: [ self inform: 'Can not execute Query. An iteration is in process.' ]
+			ifFalse: [ self executeAndShow: lastExecutedQuery ] ]
 ]
 
 { #category : #'as yet unclassified' }

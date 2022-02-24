@@ -64,7 +64,7 @@ UserTTQ class >> selectionFunction [
 { #category : #accessing }
 UserTTQ >> displayModel [
 
-	^ self class displayModel newForQuery: self
+	^ (self class displayModel newForQuery: self) title: self ttqTitle
 ]
 
 { #category : #initialization }
@@ -73,4 +73,10 @@ UserTTQ >> ttqInitialize [
 	"dont call super here. The super method should not be called"
 
 	
+]
+
+{ #category : #'as yet unclassified' }
+UserTTQ >> ttqTitle [
+
+^ 'Untitled UserTTQ'
 ]

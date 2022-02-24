@@ -33,6 +33,12 @@ QdmForInstanceCreations >> buildContextMenuForResults: aQueryResutls withSelecte
 		  "openWithSpecAt: self currentHand position"yourself
 ]
 
+{ #category : #'as yet unclassified' }
+QdmForInstanceCreations >> defaultQueryTitle [
+
+	^ 'Instances Creation Query'
+]
+
 { #category : #initialization }
 QdmForInstanceCreations >> initializeModel [
 

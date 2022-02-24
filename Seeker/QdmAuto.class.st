@@ -25,6 +25,12 @@ QdmAuto >> buildContextMenuForResults: aQueryResutls withSelectedItem: selection
 		  "openWithSpecAt: self currentHand position"yourself
 ]
 
+{ #category : #'as yet unclassified' }
+QdmAuto >> defaultQueryTitle [
+
+	^ 'Untitled AutoQuery'
+]
+
 { #category : #initialization }
 QdmAuto >> initializeModel [
 

@@ -17,3 +17,9 @@ UTTQFindGlobalsAssignments class >> queryFrom: programStates [
 				  variableName: state node variable variable name;
 				  endWith ]
 ]
+
+{ #category : #'as yet unclassified' }
+UTTQFindGlobalsAssignments >> ttqTitle [
+
+	^ 'Find Global Assignments'
+]

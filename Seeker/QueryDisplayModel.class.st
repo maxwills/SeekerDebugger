@@ -68,10 +68,16 @@ QueryDisplayModel >> columns: anObject [
 	columns := anObject
 ]
 
+{ #category : #'as yet unclassified' }
+QueryDisplayModel >> defaultQueryTitle [
+
+^ 'UntitledQuery'
+]
+
 { #category : #initialization }
 QueryDisplayModel >> initialize [
 
-	title := 'No title'.
+	title := self defaultQueryTitle.
 	timeToRun := 0.
 	columns := OrderedCollection new.
 	self initializeModel
