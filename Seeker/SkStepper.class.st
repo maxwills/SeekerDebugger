@@ -309,7 +309,9 @@ This will fail if the code relies on more encoders (Need to test in Pharo 9.0)"
 						                  (systemCallsHandler enabled and: [ systemCallsHandler isSystemCall ])
 							                  ifTrue: [ 
 								                  systemCallsHandler handleSystemCall: [ 
-									                  instrStream interpretNextSistaV1InstructionFor: currentContext ] ]
+									                  self flag:
+										                  'the execution of the problematic method is considered as 1 bytecode for the moment'.
+									                  debuggedProcess completeStep: currentContext "instrStream interpretNextSistaV1InstructionFor: currentContext " ] ]
 							                  ifFalse: [ instrStream interpretNextSistaV1InstructionFor: currentContext ] ].
 				tracer currentContext: currentContext.
 				instrStream method: currentContext compiledCode pc: currentContext pc.

@@ -53,7 +53,10 @@ SkSystemCallsHandler >> initialize [
 	forceInterpret := true.
 	returnValuesDictionary := Dictionary new.
 	systemCalls := IdentitySet new.
-	systemCalls add: Time class >> #millisecondClockValue
+	systemCalls add: Time class >> #millisecondClockValue.
+	"next methods are listed as a workaround. To be properly handled in the future"
+	systemCalls add: Mutex >> #critical:.
+	systemCalls add: Semaphore >> #critical:
 ]
 
 { #category : #testing }

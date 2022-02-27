@@ -6,4 +6,6 @@ Class {
 
 { #category : #tests }
 PresentationExamples >> test01 [
+
+	1 + 1
 ]
