@@ -75,6 +75,8 @@ TownEvent >> deliverApples [
 { #category : #accessing }
 TownEvent >> doClosureCeremony [
 
+	"Each villager eat their basket of Apples"
+
 	population do: [ :villager | villager eatAllApples ]
 ]
 
@@ -160,6 +162,8 @@ TownEvent >> name: anObject [
 { #category : #accessing }
 TownEvent >> organizeEvent [
 
+	"Activities are created, Apples are created and delivered"
+
 	| nActivities totalApples |
 	totalApples := self class totalApples.
 	nActivities := self class numberOfActivities.
@@ -209,7 +213,7 @@ TownEvent >> random: anObject [
 
 { #category : #accessing }
 TownEvent >> start [
-
+	"Performs every activity sequentially, and at the end, performs the closure ceremony"
 	self logOpeningInformation.
 	activities do: [ :activity | 
 		activity start: random.

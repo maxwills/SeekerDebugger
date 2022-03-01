@@ -55,7 +55,6 @@ SeekerQueriesPresenter >> buildWithLayout: l [
 
 	| ret |
 	ret := super buildWithLayout: l.
-	Transcript show: 'build executed'.
 	reExecuteQueryButton adapter widget minHeight: 10.
 	reExecuteQueryButton adapter widget height: 10.
 	"It doesnt work. I am leaving this as a TODO. I believe that the problem is that the button is placed in a TableLayout (due to the SpBoxLayout) which somehow interacts with the widget size."

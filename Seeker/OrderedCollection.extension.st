@@ -38,5 +38,10 @@ OrderedCollection >> modifiedAdd2add: newObject [
 
 	"(OrderedCollection new add: 42; yourself) size >>> 1"
 
+	newObject class = Apple ifTrue: [ 
+		newObject healthy ifFalse: [ 
+			MyLoggerUtil log:
+				(MyLoggerUtil findArgumentsOfContextWithSelector: #doExchangeBetween:and:withRandom:) ] ].
+
 	^ self addLast: newObject
 ]
