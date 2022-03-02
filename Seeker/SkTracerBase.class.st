@@ -30,6 +30,12 @@ SkTracerBase >> bindComponents [
 	components ifNotNil: [ components do: [ :c | c bindComponents ] ]
 ]
 
+{ #category : #testing }
+SkTracerBase >> canStep [
+
+	^ stepper canStep
+]
+
 { #category : #accessing }
 SkTracerBase >> components [
 

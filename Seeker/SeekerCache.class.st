@@ -15,8 +15,10 @@ SeekerCache class >> allObjects [
 ]
 
 { #category : #initialization }
-SeekerCache class >> reset [ 
-	dictionary := WeakIdentityKeyDictionary new.
+SeekerCache class >> reset [
+
+	<script>
+	dictionary := WeakIdentityKeyDictionary new
 ]
 
 { #category : #'as yet unclassified' }

@@ -139,12 +139,12 @@ SeekerDebugger >> initialize [
 { #category : #initialization }
 SeekerDebugger >> initializePlugins [
 
-	(Pragma allNamed: #seekerDebuggerPlugin:) do: [ :pluginPragma | 
+	"(Pragma allNamed: #seekerDebuggerPlugin:) do: [ :pluginPragma | 
 		| pluginClass plugin |
 		pluginClass := pluginPragma method methodClass.
 		plugin := pluginClass new.
 		plugin initializeModel: self.
-		plugins add: plugin ]
+		plugins add: plugin ]"
 ]
 
 { #category : #'as yet unclassified' }

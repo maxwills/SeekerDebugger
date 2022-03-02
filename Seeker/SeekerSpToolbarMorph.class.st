@@ -21,11 +21,11 @@ Class {
 SeekerSpToolbarMorph >> addItem: aToolbarItem position: aPosition [
 
 	aPosition addItem: aToolbarItem into: self.
-	"self computeFullBounds."
+	self computeFullBounds.
 	aToolbarItem
 		height: buttonSide;
 		bottom: self top + 30.
-	self refresh
+	"self refresh"
 ]
 
 { #category : #accessing }
@@ -35,7 +35,7 @@ SeekerSpToolbarMorph >> addItemLeft: aMorph [
 	lastSubMorphRight := 0.
 	leftPanel submorphs ifNotEmpty: [ lastSubMorphRight := leftPanel submorphs last right].
 	leftPanel addMorphBack: (aMorph
-			 vResizing: #rigid;
+			 "vResizing: #rigid;"
 			 left: lastSubMorphRight;
 			 yourself)
 	"aMorph top: 0.
@@ -45,27 +45,14 @@ SeekerSpToolbarMorph >> addItemLeft: aMorph [
 { #category : #initialization }
 SeekerSpToolbarMorph >> initialize [
 
-	super initialize.
+	"Dont call super"
+
+	submorphs := EmptyArray.
+	bounds := self defaultBounds.
+	color := self defaultColor.
 	buttonSide := 35.
-	"	self clipSubmorphs: true."
-	self flag:
-		'uninitializing default toolbar layout. Why? because having a layout makes the widget to reserve space.'.
-	self minHeight: buttonSide.
-	self layoutPolicy: nil.
-	self
-		listDirection: #rightToLeft;
-		hResizing: #shrinkWrap;
-		vResizing: #rigid;
-		color: self defaultColor;
-		extent: 0 @ 0.
-	"	self leftPanel top: self top - 30.
-	self rightPanel top: self top - 30."
-	self leftPanel height: buttonSide.
-	self rightPanel height: buttonSide.
-	self leftPanel layoutPolicy: nil.
-	self leftPanel vResizing: #rigid.
-	self rightPanel vResizing: #rigid.
-	self rightPanel layoutPolicy: nil.
+	self initializePanels.
+	self minHeight: buttonSide.	
 	self leftPanel top: -5.
-	self layoutChanged
+	self layoutPolicy: nil
 ]

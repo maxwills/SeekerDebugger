@@ -214,6 +214,12 @@ Query >> asCsvInClipboard [
 ]
 
 { #category : #converting }
+Query >> asOrderedCollection [
+
+	^ self asCollection
+]
+
+{ #category : #converting }
 Query >> asQueryWithMemory [
 
 	| q |

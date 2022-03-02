@@ -41,6 +41,12 @@ SkStepper >> bindComponents [
 ]
 
 { #category : #testing }
+SkStepper >> canStep [
+
+	^ self cantStep not
+]
+
+{ #category : #testing }
 SkStepper >> cantStep [
 
 	^ self isExecutionFinished or: [ self isRiskyStep ]

@@ -396,6 +396,14 @@ SkSteppableTracer >> stDebugger: anObject [
 	stDebugger := anObject
 ]
 
+{ #category : #'debug - stepping' }
+SkSteppableTracer >> step [
+
+	"To be used in the scripting presenter"
+
+	self doAndUpdateSessionAfter: [ ^ stepper stepBytecode ]
+]
+
 { #category : #'as yet unclassified' }
 SkSteppableTracer >> stepBackOneBytecode [
 

@@ -73,7 +73,7 @@ SkSpMorphicSeekerTableAdapter >> addModelTo: tableMorph [
 { #category : #factory }
 SkSpMorphicSeekerTableAdapter >> buildWidget [
 
-	widget := SeekerSpFTTableMorph new
+	widget := SpFTTableMorph "SeekerSpFTTableMorph" new
 		          hResizing: #spaceFill;
 		          vResizing: #spaceFill;
 		          intercellSpacing: self class intercellSpacing;
