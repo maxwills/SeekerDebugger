@@ -2,7 +2,7 @@
 
 ## Baseline
 
-Seeker Prototype Queryable Time-Traveling Debugger.
+Seeker: Prototype Scriptable Time-Traveling Queryable Debugger.
 Compatible with Pharo 9.0, Moose Suite 9.0 and Pharo 10 at current date (2022-01-24).
 
 Do this:
@@ -27,20 +27,80 @@ The baseline will:
 
 
 ## Limitations and known issues.
+
 - Supports "Debug it" and TestCases when launched from the corresponding seeker menu entry. No support for non intentional debugging.
 - No complete support for test clean up at the moment.
 - Single thread executions only.
 - No UI executions support.
 - The execution reversal mechanism can only undo changes that originates from within an execution (the debugged execution call tree). Changes made from outside the execution could affect the reversal mechanism.
-- Performance: Executing code with Seeker is slow. The emergency stop (STOP button in the toolbar) might be useful. Consider closing it by force if necessary.
+- Performance: Executing code with Seeker is slow. The emergency stop (STOP button in the toolbar) might be useful if a query is started and takes too long to finish. Consider closing it by force if necessary.
 - No support yet for "Debug Drive development". Modifying the debugged code during a debug session might produce problems with time-indices.
+- Not fully compatible with instrumentation:
+  - Executing Seeker will remove all breakpoints in the system.
+  - If Breakpoints are added later will result in undefined behavior (don't add breakpoints while using the debugger).
+  - Not tested yet with metalinks.
+  - Code instrumented with method proxies should work.
+- The "execution interpretation and reversal mechanisms" are known to have problems with executions that:
+  - Calls and modify globalstate UI related objects (Hand Morphs), which is sadly a big part of Pharo.
+  - Executions that performs class installation, and removal form the system
+  - Executions that compile code (adding methods to objects and classes).
+  - Explicit garbage collection calls (Although not tested).
+- ObservableSlots "extra behavior" is suspected to not be monitored by the debugger, and therefore it might be left out of the Queries and from the execution reversal mechanism. This hasn't been tested yet.
 
-## Quick reference:
+## Time-Traveling Queries Usage / Quick reference:
 The Quick Reference pdf document is included in the repository, and can be accessed [here](./Resources/TTQs-QuickReference.pdf).
 
 ## User Defined Queries
 
-(Obsolete information removed)
+Developers can use the scripting area to write their own program queries.
+
+### The Query Notation
+
+The Query notation is a general purpose notation to write queries over collections. Uses standandar selection and collection semantics, however, the only difference is that selection and collection are lazily evaluated (This is should be of no concern when writing the queries. This is only mentioned here, because it is the factor that makes possible to query the execution like this (ie, an eager evaluation select and collect would not work)).
+
+**Example**
+
+```Smalltalk
+"In the scripting presenter, paste the following code:"
+
+"This query obtains an OrderedCollection containing the list of all the methods of any step that corresponds to a message send to any method with the selector #add:".
+
+(Query from: seeker newProgramStates "or just use the workspace variable: programStates"
+    select: [ :state | state isMessageSend and: [ state node selector = #add: ] ]
+    collect: [ :state | state methodAboutToExecute ]) asOrderedCollection
+```
+
+Then, select all the code, and **inspect it** (right click, and select **Inspect it** from the context menu, or simply press **cmd+i**). 
+You should see an inspector with the collection of the results.
+
+## User Time-Traveling Query.
+
+Time-Traveling Queries are just a specific type of Query. To explain how to write one, we will start from the more generic Query form (as described in the previous point).
+
+To transform a Query into a Time-Traveling Query (with integration in the UI)
+
+1. Use **UserTTQ** instead of the **Query** class.
+2. Use **Autotype** for collected items.
+3. Include the **#bytecodeIndex** key as in this example:
+
+
+```Smalltalk
+"In the scripting presenter, paste the following code:"
+| autoResultType |
+    autoResultType := AutoType new.
+    (UserTTQ from: seeker newProgramStates
+        select: [ :state | state isMessageSend and: [ state node selector = #add: ] ]
+        collect: [ :state | 
+            autoResultType newWith
+            bytecodeIndex: state bytecodeIndex;
+            methodClass: state methodAboutToExecute methodClass name;
+            messageSelector: state methodAboutToExecute selector;
+            newColumnASD: 123; "you can add any column you want like this"
+            endWith ]) showInSeeker
+```
+Then select all the code, and **do it** (right click, and select **Do it** from the context menu, or simply press **cmd+d**). 
+The query should be displayed in the query tab of Seeker (you need to manually change to the tab at the moment).
+
 
 ### Time-Traveling Queries Notes:
 
