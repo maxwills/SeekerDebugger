@@ -42,9 +42,9 @@ The baseline will:
   - If Breakpoints are added later will result in undefined behavior (don't add breakpoints while using the debugger).
   - Not tested yet with metalinks.
   - Code instrumented with method proxies should work.
-- The "execution interpretation and reversal mechanisms" are known to have problems with executions that:
-  - Calls and or modify global state UI related objects (Hand Morphs), which is sadly a big part of Pharo.
-  - Executions that performs class installation, and removal form the system.
+- The "execution interpretation and reversal mechanisms" are known to have problems with:
+  - Executions that perform calls on and/or modify global state UI related objects (HandMorphs, for example), which is sadly a big part of Pharo.
+  - Executions that performs class installations, and removal form the system.
   - Executions that compile code (adding methods to objects and classes).
   - Explicit garbage collection calls (Although not tested).
 - ObservableSlots "extra behavior" is suspected to not be monitored by the debugger, and therefore it might be left out of the Queries and from the execution reversal mechanism. This hasn't been tested yet.
