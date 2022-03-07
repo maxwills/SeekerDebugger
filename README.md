@@ -43,7 +43,7 @@ The baseline will:
   - Not tested yet with metalinks.
   - Code instrumented with method proxies should work.
 - The "execution interpretation and reversal mechanisms" are known to have problems with executions that:
-  - Calls and modify globalstate UI related objects (Hand Morphs), which is sadly a big part of Pharo.
+  - Calls and or modify global state UI related objects (Hand Morphs), which is sadly a big part of Pharo.
   - Executions that performs class installation, and removal form the system.
   - Executions that compile code (adding methods to objects and classes).
   - Explicit garbage collection calls (Although not tested).
