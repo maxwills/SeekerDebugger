@@ -13,7 +13,7 @@ Metacello new
     load.
 ```
 
-The Rest of the readme is not up do date. The debugger is currently under constant changes. The readme will be updated when reaching a stable point.
+The rest of the readme is not up do date. The debugger is currently under constant changes. The readme will be updated when reaching a stable point.
 
 Requires the following projects (installed automatically with this Seeker Baseline):
 
