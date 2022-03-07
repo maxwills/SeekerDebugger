@@ -134,7 +134,7 @@ Queries and TTQs can be composed. Ie, they can be used as a data source for othe
     "Finally, to trigger the query evaluation, do"
     query2 asOrderedCollection
 ```
-In both examples, the selection conditions are applied in order, from the most inner ones (query1 selection predicate first) to the outer ones (query2 selection predicate last). 
+In both examples, the selection conditions are applied in order, from the innermost ones (query1 selection predicate is applied first) to the outermost ones (query2 selection predicate is applied last). 
 The same applies to Time-Traveling Queries (TTQs).
 The methods #select: and #collect: of Queries returns new Queries objects (not the results of the query).
 
