@@ -33,7 +33,7 @@ The baseline will:
 - No complete support for test clean up at the moment.
 - Single thread executions only.
 - No UI executions support.
-- (*) The **WorldMenu >> Library >> SeekerDev >> OpenSeekerDebugger Config** option opens a UI with the configarion of some parameters of the debugger. Not Documented at the moment.
+- (*) The **WorldMenu >> Library >> SeekerDev >> OpenSeekerDebugger Config** option opens a UI with the configuration of some parameters of the debugger. Not Documented at the moment.
 - The execution reversal mechanism can only undo changes that originates from within an execution (the debugged execution call tree). Changes made from outside the execution could affect the reversal mechanism.
 - Performance: Executing code with Seeker is slow. The emergency stop (STOP button in the toolbar) might be useful if a query is started and takes too long to finish. Consider closing it by force if necessary.
 - No support yet for "Debug Drive development". Modifying the debugged code during a debug session might produce problems with time-indices.
