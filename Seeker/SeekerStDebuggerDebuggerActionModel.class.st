@@ -138,7 +138,7 @@ SeekerStDebuggerDebuggerActionModel >> stepOver: aContext [
 					 currentContext ~~ startingContext ]) ifTrue: [ 
 					shouldStop := true ].
 				"If we are back in the same sequence, but forward in time"
-				(startingTraceTime referencesTheLocalPast: tracer) ifTrue: [ 
+				((startingTraceTime referencesTheLocalPast: tracer) or: [ (startingTraceTime referencesTheLocalFuture: tracer) "fix for inlined loops"]) ifTrue: [ 
 					shouldStop := true ] ].
 			currentState aboutToSwitchContext ifFalse: [ 
 				self doStepToFirstInterestingBytecode ].
