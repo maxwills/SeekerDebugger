@@ -50,7 +50,31 @@ StInspectorSeekerQueriesCommand >> execute [
 		selector: #seekAllChanges:
 		argument: object.
 	menu add: 'Specific instance variable...' subMenu: (self privMakeVariablesMenu: object).
+	self privAddFindAllReadingsMenuEntry: menu.
 	menu invokeModal
+]
+
+{ #category : #'as yet unclassified' }
+StInspectorSeekerQueriesCommand >> findAllReadingsOfObjectWithOid: aNumber in: seeker [
+
+	(UTTQAllReadingsOfObject queryFrom: seeker newProgramStates forOid: aNumber) showInSeeker
+]
+
+{ #category : #'as yet unclassified' }
+StInspectorSeekerQueriesCommand >> privAddFindAllReadingsMenuEntry: menu [
+
+	| seekerAndOidPair stInspector "SeekerAndOidPair" |
+	stInspector := self context findOwner: [ :pres | pres class = StInspector ].
+	stInspector ifNil: [ ^ self ].
+	seekerAndOidPair := SeekerInspectorSynchronizer default getSeekerAndOidForInspector: stInspector.
+
+	seekerAndOidPair ifNil: [ ^ self ].
+	menu add: 'Find all readings of self'
+		target: self
+		selector: #findAllReadingsOfObjectWithOid:in:
+		argumentList: { 
+				seekerAndOidPair oid.
+				seekerAndOidPair seeker }
 ]
 
 { #category : #'as yet unclassified' }
@@ -62,7 +86,7 @@ StInspectorSeekerQueriesCommand >> privAddTimeTravelToInstantiationMenuEntry: me
 	seekerAndOidPair := SeekerInspectorSynchronizer default getSeekerAndOidForInspector: stInspector.
 
 	seekerAndOidPair ifNil: [ ^ self ].
-	menu add: 'Time-Travel to instantiation instruction.'
+	menu add: 'Time-Travel to instantiation instruction'
 		target: seekerAndOidPair seeker
 		selector: #timeTravelToBytecodeIndex:
 		argument: seekerAndOidPair oid
