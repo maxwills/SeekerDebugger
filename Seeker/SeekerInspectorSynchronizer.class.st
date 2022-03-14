@@ -119,5 +119,5 @@ SeekerInspectorSynchronizer >> updateInspectorsFor: tracer [
 			atTimeIndex > 0 ifTrue: [ title := title copyFrom: atTimeIndex + 1 to: title size ].
 			title := '(Oid:<' , seekerNOid oid asString , '>@Time: <' , tracer bytecodeIndex asString , '>) '
 			         , title.
-			insp window title: title ] ]
+			insp window ifNotNil: [ insp window title: title ] ] ]
 ]
