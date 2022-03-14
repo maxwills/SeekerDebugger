@@ -41,6 +41,12 @@ SeekerInspectorSynchronizer >> cleanUpInvalidatedEntries [
 ]
 
 { #category : #initialization }
+SeekerInspectorSynchronizer >> getSeekerAndOidForInspector: aStInspector [
+
+	^ inspectorAndSeekerNOidsDictionary at: aStInspector ifAbsent: [ ^ nil ]
+]
+
+{ #category : #initialization }
 SeekerInspectorSynchronizer >> initialize [
 
 	inspectorAndSeekerNOidsDictionary := IdentityDictionary new.
@@ -76,7 +82,7 @@ SeekerInspectorSynchronizer >> searchNewInspectorsFor: tracer [
 			obj := each model inspectedObject.
 			oid := tracer getOidOf: obj.
 			(obj isNotNil and: [ oid isNotNil ]) ifTrue: [ 
-				inspectorAndSeekerNOidsDictionary at: each put: (SeekerNOidPair new
+				inspectorAndSeekerNOidsDictionary at: each put: (SeekerAndOidPair new
 						 seeker: tracer;
 						 oid: oid;
 						 yourself) ] ] ]

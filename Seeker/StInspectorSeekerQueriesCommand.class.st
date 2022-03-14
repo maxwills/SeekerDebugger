@@ -32,9 +32,13 @@ StInspectorSeekerQueriesCommand class >> documentContextRequiredSelectors [
 { #category : #execution }
 StInspectorSeekerQueriesCommand >> execute [
 
+	"Shows a menu with all Seeker Object centric queries and actions related to the inspected object"
+
 	| menu object |
 	object := self model inspectedObject.
 	menu := MenuMorph new.
+
+	self privAddTimeTravelToInstantiationMenuEntry: menu.
 
 	menu add: 'List all messages sent to the inspected object'
 		target: self
@@ -47,6 +51,21 @@ StInspectorSeekerQueriesCommand >> execute [
 		argument: object.
 	menu add: 'Specific instance variable...' subMenu: (self privMakeVariablesMenu: object).
 	menu invokeModal
+]
+
+{ #category : #'as yet unclassified' }
+StInspectorSeekerQueriesCommand >> privAddTimeTravelToInstantiationMenuEntry: menu [
+
+	| seekerAndOidPair stInspector "SeekerAndOidPair" |
+	stInspector := self context findOwner: [ :pres | pres class = StInspector ].
+	stInspector ifNil: [ ^ self ].
+	seekerAndOidPair := SeekerInspectorSynchronizer default getSeekerAndOidForInspector: stInspector.
+
+	seekerAndOidPair ifNil: [ ^ self ].
+	menu add: 'Time-Travel to instantiation instruction.'
+		target: seekerAndOidPair seeker
+		selector: #timeTravelToBytecodeIndex:
+		argument: seekerAndOidPair oid
 ]
 
 { #category : #'as yet unclassified' }
@@ -141,4 +160,15 @@ StInspectorSeekerQueriesCommand >> seekAllMessages: anObject [
 StInspectorSeekerQueriesCommand >> seekAllMessagesOn: anObject ofSelector: selector [
 
 	anObject seekAndDisplayAllMessagesSentToMeWithSelector: selector
+]
+
+{ #category : #'as yet unclassified' }
+StInspectorSeekerQueriesCommand >> timeTravelToInstantiationOf: anObject [
+
+	| oid seeker |
+	seeker := anObject seekMe.
+	seeker ifNil: [ ^ self ].
+	oid := anObject seekMyOid.
+	anObject ifNil: [ ^ self ].
+	seeker timeTravelToBytecodeIndex: oid
 ]

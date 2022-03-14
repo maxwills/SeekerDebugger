@@ -1,5 +1,5 @@
 Class {
-	#name : #SeekerNOidPair,
+	#name : #SeekerAndOidPair,
 	#superclass : #Object,
 	#instVars : [
 		'seeker',
@@ -9,32 +9,32 @@ Class {
 }
 
 { #category : #cleaning }
-SeekerNOidPair >> clean [
+SeekerAndOidPair >> clean [
 
 	seeker := nil.
 	oid := nil
 ]
 
 { #category : #accessing }
-SeekerNOidPair >> oid [
+SeekerAndOidPair >> oid [
 
 	^ oid
 ]
 
 { #category : #accessing }
-SeekerNOidPair >> oid: anObject [
+SeekerAndOidPair >> oid: anObject [
 
 	oid := anObject
 ]
 
 { #category : #accessing }
-SeekerNOidPair >> seeker [
+SeekerAndOidPair >> seeker [
 
 	^ seeker
 ]
 
 { #category : #accessing }
-SeekerNOidPair >> seeker: anObject [
+SeekerAndOidPair >> seeker: anObject [
 
 	seeker := anObject
 ]
