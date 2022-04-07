@@ -18,10 +18,48 @@ SkSelectiveExecutionRestorerAux class >> initialize [
 
 { #category : #initialization }
 SkSelectiveExecutionRestorerAux class >> initializeWritingMethodsUndoDictionary [
-"Manually populating the mapping of writing methods and their undo vers"
+
+	"Manually populating the mapping of writing methods and their undo blocks"
+
+	"The methods are the same that displays the script:
+	self sortedWritingPrimitivesMethods 
+	(Select previous line and Do It)
+	"
+
 	writingMethodsUndoDictionary := IdentityDictionary new.
-	
-writingMethodsUndoDictionary
+
+	"1"
+	writingMethodsUndoDictionary at: Float >> #basicAt:put:
+		put: [ :csi | self undoBlockForBasicAtPut: csi ].
+	"2"
+	writingMethodsUndoDictionary at: Object >> #basicAt:put:
+		put: [ :csi | self undoBlockForBasicAtPut: csi ].
+	"3"
+	writingMethodsUndoDictionary at: Object >> #at:put: put: [ :csi | self undoBlockForAtPut: csi ].
+	"4"
+	writingMethodsUndoDictionary at: Array >> #atWrap:put:
+		put: [ :csi | self undoBlockForAtWrapPut: csi ].
+	"5"
+
+	writingMethodsUndoDictionary at: Context >> #object:basicAt:put:
+		put: [ :csi | self undoBlockForObjectBasicAtPut: csi ].
+
+	writingMethodsUndoDictionary at: ByteString >> #atWrap:put:
+		put: [ :csi | self undoBlockForAtWrapPut: csi ].
+	"7"
+	writingMethodsUndoDictionary at: WideSymbol >> #privateAt:put:
+		put: [ :csi | self undoBlockForPrivateAtPut: csi ].
+
+	writingMethodsUndoDictionary at: LargeInteger >> #byteAt:put:
+		put: [ :csi | self undoBlockForByteAtPut: csi ].
+	writingMethodsUndoDictionary at: WideString >> #privateAt:put:
+		put: [ :csi | self undoBlockForPrivateAtPut: csi ].
+	"10"
+	writingMethodsUndoDictionary at: MirrorPrimitives class >> #'indexableFieldOf:at:put'
+		put: [ :csi | self undoBlockForIndexableFieldOfAtPut: csi ].
+	"11"
+	writingMethodsUndoDictionary at: ByteArray >> #'indexableFieldOf:at:put'
+		put: [ :csi | self undoBlockForIndexableFieldOfAtPut: csi ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -42,12 +80,6 @@ SkSelectiveExecutionRestorerAux class >> undoBlockForAtAllPut: csi [
 ]
 
 { #category : #'as yet unclassified' }
-SkSelectiveExecutionRestorerAux class >> undoBlockForAtAllPutFor: receiver [
-
-	^ self undoBlockNonSelectiveSnapshotOf: receiver
-]
-
-{ #category : #'as yet unclassified' }
 SkSelectiveExecutionRestorerAux class >> undoBlockForAtPut: csi [
 
 	"SeekerCurrentStateInterface"
@@ -55,13 +87,6 @@ SkSelectiveExecutionRestorerAux class >> undoBlockForAtPut: csi [
 	| receiver index originalValue |
 	receiver := csi receiver.
 	index := csi messageArgumentAt: 1.
-	originalValue := receiver basicAt: index.
-	^ [ receiver at: index put: originalValue ]
-]
-
-{ #category : #'as yet unclassified' }
-SkSelectiveExecutionRestorerAux class >> undoBlockForAtPutFor: receiver at: index [
-	| originalValue |
 	originalValue := receiver basicAt: index.
 	^ [ receiver at: index put: originalValue ]
 ]
@@ -79,13 +104,6 @@ SkSelectiveExecutionRestorerAux class >> undoBlockForAtWrapPut: csi [
 ]
 
 { #category : #'as yet unclassified' }
-SkSelectiveExecutionRestorerAux class >> undoBlockForAtWrapPutFor: receiver at: index [
-	| originalValue |
-	originalValue := receiver atWrap: index.
-	^ [ receiver atWrap: index put: originalValue ]
-]
-
-{ #category : #'as yet unclassified' }
 SkSelectiveExecutionRestorerAux class >> undoBlockForBasicAtPut: csi [
 
 	| receiver index originalValue |
@@ -93,28 +111,6 @@ SkSelectiveExecutionRestorerAux class >> undoBlockForBasicAtPut: csi [
 	index := csi messageArgumentAt: 1.
 	originalValue := receiver basicAt: index.
 	^ [ receiver basicAt: index put: originalValue ]
-]
-
-{ #category : #'as yet unclassified' }
-SkSelectiveExecutionRestorerAux class >> undoBlockForBasicAtPutFor: receiver at: index [
-	| originalValue |
-	originalValue := receiver basicAt: index.
-	^ [ receiver basicAt: index put: originalValue ]
-]
-
-{ #category : #'as yet unclassified' }
-SkSelectiveExecutionRestorerAux class >> undoBlockForBasicReplaceFromFor: receiver from: start to: stop withStartingAt: repStart [
-
-	| originalValues arrSize |
-	arrSize := 1 + stop - start.
-	arrSize <= 0 ifTrue: [ ^ [ "Its an error" ] ].
-	originalValues := Array new: arrSize.
-	1 to: arrSize do: [ :i | originalValues at: i put: (receiver basicAt: i + start - 1) ].
-	^ [ 
-	  receiver basicReplaceFrom: start
-		  to: stop
-		  with: originalValues
-		  startingAt: 1 ]
 ]
 
 { #category : #'as yet unclassified' }
