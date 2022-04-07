@@ -103,7 +103,7 @@ SkTracerBase >> initializeComponents [
 				            self flag:
 					            'This is used experimentally for Pharo 10. Possibly faster than the other. Not compatible with Pharo 9. '.
 				            SkStepper newFor: self ]).
-	components add: (restorer := SkExecutionRestorer newFor: self).
+	components add: (restorer := SkExecutionRestorer "SkSelectiveExecutionRestorer"newFor: self).
 	components add: (objectsTracker := SkObjectsTracker newFor: self).
 	components add: (identityEnforcer := SkIdentityEnforcer newFor: self).
 	components add: (systemCallsHandler := "SkOmniSystemCallsHandler" SkSystemCallsHandler newFor: self).
