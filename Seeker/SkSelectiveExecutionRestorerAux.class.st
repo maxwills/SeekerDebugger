@@ -43,19 +43,20 @@ SkSelectiveExecutionRestorerAux class >> initializeWritingMethodsUndoDictionary 
 
 	writingMethodsUndoDictionary at: Context >> #object:basicAt:put:
 		put: [ :csi | self undoBlockForObjectBasicAtPut: csi ].
-
-	writingMethodsUndoDictionary at: ByteString >> #atWrap:put:
-		put: [ :csi | self undoBlockForAtWrapPut: csi ].
+	"6"
+	writingMethodsUndoDictionary at: ByteString >> #byteAt:put:
+		put: [ :csi | self undoBlockForByteAtPut: csi ].
 	"7"
 	writingMethodsUndoDictionary at: WideSymbol >> #privateAt:put:
 		put: [ :csi | self undoBlockForPrivateAtPut: csi ].
-
+	"8"
 	writingMethodsUndoDictionary at: LargeInteger >> #byteAt:put:
 		put: [ :csi | self undoBlockForByteAtPut: csi ].
-	writingMethodsUndoDictionary at: WideString >> #privateAt:put:
-		put: [ :csi | self undoBlockForPrivateAtPut: csi ].
+	"9"
+	writingMethodsUndoDictionary at: WideString >> #wordAt:put:
+		put: [ :csi | self undoBlockForWordAtPut: csi ].
 	"10"
-	writingMethodsUndoDictionary at: MirrorPrimitives class >> #'indexableFieldOf:at:put'
+	writingMethodsUndoDictionary at: MirrorPrimitives class >> #indexableFieldOf:at:put
 		put: [ :csi | self undoBlockForIndexableFieldOfAtPut: csi ].
 	"11"
 	writingMethodsUndoDictionary at: ByteArray >> #byteAt:put:
@@ -176,7 +177,76 @@ SkSelectiveExecutionRestorerAux class >> initializeWritingMethodsUndoDictionary 
 		put: [ :csi | self undoBlockForUint32AtOffsetPut: csi ].
 	"51"
 	writingMethodsUndoDictionary at: ByteArray >> #int32AtOffset:put:
-		put: [ :csi | self undoBlockForInt32AtOffsetPut: csi ]
+		put: [ :csi | self undoBlockForInt32AtOffsetPut: csi ].
+	"52"
+	writingMethodsUndoDictionary at: ByteArray >> #uint64AtOffset:put:
+		put: [ :csi | self undoBlockForUint32AtOffsetPut: csi ].
+	"53"
+	writingMethodsUndoDictionary at: ByteArray >> #int64AtOffset:put:
+		put: [ :csi | self undoBlockForInt32AtOffsetPut: csi ].
+	"54"
+	writingMethodsUndoDictionary at: ByteArray >> #pointerAtOffset:put:
+		put: [ :csi | self undoBlockForPointerAtOffsetPut: csi ].
+	"55"
+	writingMethodsUndoDictionary at: ByteArray >> #char8AtOffset:put:
+		put: [ :csi | self undoBlockForChar8AtOffsetPut: csi ].
+	"56"
+	writingMethodsUndoDictionary at: ByteArray >> #char16AtOffset:put:
+		put: [ :csi | self undoBlockForChar16AtOffsetPut: csi ].
+	"57"
+	writingMethodsUndoDictionary at: ByteArray >> #char32AtOffset:put:
+		put: [ :csi | self undoBlockForChar32AtOffsetPut: csi ].
+	"58"
+	writingMethodsUndoDictionary at: ByteArray >> #float32AtOffset:put:
+		put: [ :csi | self undoBlockForFloat32AtOffsetPut: csi ].
+	"59"
+	writingMethodsUndoDictionary at: ByteArray >> #float64AtOffset:put:
+		put: [ :csi | self undoBlockForFloat64AtOffsetPut: csi ].
+	"60"
+	writingMethodsUndoDictionary at: ExternalAddress >> #boolean8AtOffset:put:
+		put: [ :csi | self undoBlockForBoolean8AtOffsetPut: csi ].
+	"61"
+	writingMethodsUndoDictionary at: ExternalAddress >> #uint8AtOffset:put:
+		put: [ :csi | self undoBlockForUint8AtOffsetPut: csi ].
+	"62"
+	writingMethodsUndoDictionary at: ExternalAddress >> #int8AtOffset:put:
+		put: [ :csi | self undoBlockForInt8AtOffsetPut: csi ].
+	"63"
+	writingMethodsUndoDictionary at: ExternalAddress >> #uint16AtOffset:put:
+		put: [ :csi | self undoBlockForUint16AtOffsetPut: csi ].
+	"64"
+	writingMethodsUndoDictionary at: ExternalAddress >> #int16AtOffset:put:
+		put: [ :csi | self undoBlockForInt16AtOffsetPut: csi ].
+	"65"
+	writingMethodsUndoDictionary at: ExternalAddress >> #uint32AtOffset:put:
+		put: [ :csi | self undoBlockForUint16AtOffsetPut: csi ].
+	"66"
+	writingMethodsUndoDictionary at: ExternalAddress >> #int32AtOffset:put:
+		put: [ :csi | self undoBlockForInt16AtOffsetPut: csi ].
+	"67"
+	writingMethodsUndoDictionary at: ExternalAddress >> #uint64AtOffset:put:
+		put: [ :csi | self undoBlockForUint64AtOffsetPut: csi ].
+	"68"
+	writingMethodsUndoDictionary at: ExternalAddress >> #int64AtOffset:put:
+		put: [ :csi | self undoBlockForInt64AtOffsetPut: csi ].
+	"69"
+	writingMethodsUndoDictionary at: ExternalAddress >> #pointerAtOffset:put:
+		put: [ :csi | self undoBlockForPointerAtOffsetPut: csi ].
+	"70"
+	writingMethodsUndoDictionary at: ExternalAddress >> #char8AtOffset:put:
+		put: [ :csi | self undoBlockForChar8AtOffsetPut: csi ].
+	"71"
+	writingMethodsUndoDictionary at: ExternalAddress >> #char16AtOffset:put:
+		put: [ :csi | self undoBlockForChar16AtOffsetPut: csi ].
+	"72"
+	writingMethodsUndoDictionary at: ExternalAddress >> #char32AtOffset:put:
+		put: [ :csi | self undoBlockForChar32AtOffsetPut: csi ].
+	"73"
+	writingMethodsUndoDictionary at: ExternalAddress >> #float32AtOffset:put:
+		put: [ :csi | self undoBlockForFloat32AtOffsetPut: csi ].
+	"74"
+	writingMethodsUndoDictionary at: ExternalAddress >> #float64AtOffset:put:
+		put: [ :csi | self undoBlockForFloat64AtOffsetPut: csi ]
 ]
 
 { #category : #'as yet unclassified' }
