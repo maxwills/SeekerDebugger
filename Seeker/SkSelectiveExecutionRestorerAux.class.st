@@ -58,8 +58,125 @@ SkSelectiveExecutionRestorerAux class >> initializeWritingMethodsUndoDictionary 
 	writingMethodsUndoDictionary at: MirrorPrimitives class >> #'indexableFieldOf:at:put'
 		put: [ :csi | self undoBlockForIndexableFieldOfAtPut: csi ].
 	"11"
-	writingMethodsUndoDictionary at: ByteArray >> #'indexableFieldOf:at:put'
-		put: [ :csi | self undoBlockForIndexableFieldOfAtPut: csi ]
+	writingMethodsUndoDictionary at: ByteArray >> #byteAt:put:
+		put: [ :csi | self undoBlockForByteAtPut: csi ].
+	"12"
+	writingMethodsUndoDictionary at: ByteSymbol >> #privateAt:put:
+		put: [ :csi | self undoBlockForPrivateAtPut: csi ].
+	"13"
+	writingMethodsUndoDictionary at: ByteString >> #at:put: put: [ :csi | self undoBlockForAtPut: csi ].
+	"14"
+	writingMethodsUndoDictionary at: WideString >> #at:put: put: [ :csi | self undoBlockForAtPut: csi ].
+	"15"
+	writingMethodsUndoDictionary at: CompiledCode >> #objectAt:put:
+		put: [ :csi | self undoBlockForObjectAtPut: csi ].
+	"16"
+	writingMethodsUndoDictionary at: MirrorPrimitives class >> #fixedFieldOf:at:put:
+		put: [ :csi | self undoBlockForFixedFieldOfAtPut: csi ].
+	"17"
+	writingMethodsUndoDictionary at: Context >> #object:instVarAt:put:
+		put: [ :csi | self undoBlockForObjectInstVarAtPut: csi ].
+	"18"
+	writingMethodsUndoDictionary at: IndexedSlot >> #object:instVarAt:put:
+		put: [ :csi | self undoBlockForObjectInstVarAtPut: csi ].
+	"19"
+	writingMethodsUndoDictionary at: DoubleWordArray >> #replaceFrom:to:with:startingAt:
+		put: [ :csi | self undoBlockForReplaceFromToWithStartingAt: csi ].
+	"20"
+	writingMethodsUndoDictionary at: WideString >> #replaceFrom:to:with:startingAt:
+		put: [ :csi | self undoBlockForReplaceFromToWithStartingAt: csi ].
+	"21"
+	writingMethodsUndoDictionary at: DoubleByteArray >> #replaceFrom:to:with:startingAt:
+		put: [ :csi | self undoBlockForReplaceFromToWithStartingAt: csi ].
+	"22"
+	writingMethodsUndoDictionary at: FloatArray >> #replaceFrom:to:with:startingAt:
+		put: [ :csi | self undoBlockForReplaceFromToWithStartingAt: csi ].
+	"23"
+	writingMethodsUndoDictionary at: LargeInteger >> #replaceFrom:to:with:startingAt:
+		put: [ :csi | self undoBlockForReplaceFromToWithStartingAt: csi ].
+	"24"
+	writingMethodsUndoDictionary at: Array >> #replaceFrom:to:with:startingAt:
+		put: [ :csi | self undoBlockForReplaceFromToWithStartingAt: csi ].
+	"25"
+	writingMethodsUndoDictionary at: ByteArray >> #replaceFrom:to:with:startingAt:
+		put: [ :csi | self undoBlockForReplaceFromToWithStartingAt: csi ].
+	"26"
+	writingMethodsUndoDictionary at: WordArray >> #replaceFrom:to:with:startingAt:
+		put: [ :csi | self undoBlockForReplaceFromToWithStartingAt: csi ].
+	"27"
+	writingMethodsUndoDictionary at: Bitmap >> #replaceFrom:to:with:startingAt:
+		put: [ :csi | self undoBlockForReplaceFromToWithStartingAt: csi ].
+	"28"
+	writingMethodsUndoDictionary at: String >> #replaceFrom:to:with:startingAt:
+		put: [ :csi | self undoBlockForReplaceFromToWithStartingAt: csi ].
+	"29"
+	writingMethodsUndoDictionary at: ByteString >> #replaceFrom:to:with:startingAt:
+		put: [ :csi | self undoBlockForReplaceFromToWithStartingAt: csi ].
+	"30"
+	writingMethodsUndoDictionary at: DependentsArray >> #basicReplaceFrom:to:with:startingAt:
+		put: [ :csi | self undoBlockForReplaceFromToWithStartingAt: csi ].
+	"31"
+	writingMethodsUndoDictionary at: ShortIntegerArray >> #pvtAt:put:
+		put: [ :csi | self undoBlockForPvtAtPut: csi ].
+	"32"
+	writingMethodsUndoDictionary at: ShortIntegerArray >> #at:put:
+		put: [ :csi | self undoBlockForAtPut: csi ].
+	"33"
+	writingMethodsUndoDictionary at: WordArray >> #atAllPut:
+		put: [ :csi | self undoBlockForAtAllPut: csi ].
+	"34"
+	writingMethodsUndoDictionary at: Bitmap >> #primFill:
+		put: [ :csi | self undoBlockForPrimFill: csi ].
+	"35"
+	writingMethodsUndoDictionary at: ByteArray >> #atAllPut:
+		put: [ :csi | self undoBlockForAtAllPut: csi ].
+	"36"
+	writingMethodsUndoDictionary at: DoubleWordArray >> #atAllPut:
+		put: [ :csi | self undoBlockForAtAllPut: csi ].
+	"37"
+	writingMethodsUndoDictionary at: IntegerArray >> #primFill:
+		put: [ :csi | self undoBlockForPrimFill: csi ].
+	"38"
+	writingMethodsUndoDictionary at: Bitmap >> #atAllPut:
+		put: [ :csi | self undoBlockForAtAllPut: csi ].
+	"39"
+	writingMethodsUndoDictionary at: DoubleByteArray >> #atAllPut:
+		put: [ :csi | self undoBlockForAtAllPut: csi ].
+	"40"
+	writingMethodsUndoDictionary at: Bitmap >> #integerAt:put:
+		put: [ :csi | self undoBlockForIntegerAtPut: csi ].
+	"41"
+	writingMethodsUndoDictionary at: IntegerArray >> #at:put:
+		put: [ :csi | self undoBlockForAtPut: csi ].
+	"42"
+	writingMethodsUndoDictionary at: Context >> #at:put: put: [ :csi | self undoBlockForAtPut: csi ].
+	"43"
+	writingMethodsUndoDictionary at: Context >> #tempAt:put:
+		put: [ :csi | self undoBlockForTempAtPut: csi ].
+	"44"
+	writingMethodsUndoDictionary at: Context >> #basicAt:put:
+		put: [ :csi | self undoBlockForBasicAtPut: csi ].
+	"45"
+	writingMethodsUndoDictionary at: ByteArray >> #boolean8AtOffset:put:
+		put: [ :csi | self undoBlockForBoolean8AtOffsetPut: csi ].
+	"46"
+	writingMethodsUndoDictionary at: ByteArray >> #uint8AtOffset:put:
+		put: [ :csi | self undoBlockForUint8AtOffsetPut: csi ].
+	"47"
+	writingMethodsUndoDictionary at: ByteArray >> #int8AtOffset:put:
+		put: [ :csi | self undoBlockForInt8AtOffsetPut: csi ].
+	"48"
+	writingMethodsUndoDictionary at: ByteArray >> #uint16AtOffset:put:
+		put: [ :csi | self undoBlockForUint16AtOffsetPut: csi ].
+	"49"
+	writingMethodsUndoDictionary at: ByteArray >> #int16AtOffset:put:
+		put: [ :csi | self undoBlockForInt16AtOffsetPut: csi ].
+	"50"
+	writingMethodsUndoDictionary at: ByteArray >> #uint32AtOffset:put:
+		put: [ :csi | self undoBlockForUint32AtOffsetPut: csi ].
+	"51"
+	writingMethodsUndoDictionary at: ByteArray >> #int32AtOffset:put:
+		put: [ :csi | self undoBlockForInt32AtOffsetPut: csi ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -403,6 +520,16 @@ SkSelectiveExecutionRestorerAux class >> undoBlockForIntegerAtPutFor: receiver a
 	| originalValue |
 	originalValue := receiver basicAt: index.
 	^ [ receiver at: index put: originalValue ]
+]
+
+{ #category : #'as yet unclassified' }
+SkSelectiveExecutionRestorerAux class >> undoBlockForObjectAtPut: csi [
+
+	| originalValue receiver index |
+	receiver := csi messageReceiver.
+	index := csi messageArgumentAt: 1.
+	originalValue := receiver at: index.
+	^ [ receiver objectAt: index put: originalValue ]
 ]
 
 { #category : #'as yet unclassified' }
