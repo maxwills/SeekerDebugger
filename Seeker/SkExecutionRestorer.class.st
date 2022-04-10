@@ -135,15 +135,6 @@ SkExecutionRestorer >> reset [
 { #category : #accessing }
 SkExecutionRestorer >> restoreNonLocalChanges [
 
-	"	storedNonLocalChanges reverseDo: [ :each | 
-		| undoBlock |
-		undoBlock := each at: 4.
-		undoBlock value ]"
-
-	"in this implementation we only store the first changes to a variable of an object. In theory, the order they are restored is not important"
-
-	"self halt."
-
 	storedNonLocalChangesDictionary valuesDo: [ :variablesAndUndoBlocks | 
 		variablesAndUndoBlocks valuesDo: [ :undoB | undoB value ] ]
 ]
