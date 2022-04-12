@@ -47,6 +47,38 @@ Class {
 	#category : #'Seeker-Core'
 }
 
+{ #category : #'as yet unclassified' }
+SeekerDebugger class >> headlessDebug: aProcess [
+
+	"not recommended to use this method. Prefer using the block one or manually specifying the offset to ensure that the execution can actually be replayed"
+
+	"Why the offset? In a freshly created process from a block, the first context of aProcess is usually the one with the code to initialize and terminate the process. The time-traveling back end should not replay any of that. That is why it is necessary to take a few steps to enter the actual code of the block. This method can be used only if the process is in a safe to replay context already"
+
+	^ self headlessDebug: aProcess offsetBytecodes: 0
+]
+
+{ #category : #'as yet unclassified' }
+SeekerDebugger class >> headlessDebug: aProcess offsetBytecodes: aNumber [
+
+	| s |
+	s := self newFor: (SeekerDummyStDebugger new
+			      interruptedProcess: aProcess;
+			      yourself).
+	s tracer headless: true.
+	aNumber > 0 ifTrue: [ 1 to: aNumber do: [ :i | s tracer stepper basicStepBytecode ] ].
+	s quickSetup.
+	^ s
+]
+
+{ #category : #'as yet unclassified' }
+SeekerDebugger class >> headlessDebugBlock: aBlock [
+
+	| p s |
+	p := aBlock newProcess.
+	s := self headlessDebug: p offsetBytecodes: 2 "heuristic".
+	^ s
+]
+
 { #category : #'instance creation' }
 SeekerDebugger class >> newFor: aStDebugger [
 

@@ -19,7 +19,8 @@ Class {
 		'identityEnforcer',
 		'components',
 		'objectsTracker',
-		'systemCallsHandler'
+		'systemCallsHandler',
+		'headless'
 	],
 	#category : #'Seeker-Components'
 }
@@ -28,6 +29,18 @@ Class {
 SkTracerBase >> bindComponents [
 
 	components ifNotNil: [ components do: [ :c | c bindComponents ] ]
+]
+
+{ #category : #accessing }
+SkTracerBase >> blockingDoAndUpdateSessionAfter: aBlock [
+
+	"Updates the UI after executing the block. Forces UI Update, and returns after the UI cycle is completed.
+	See also: doAndUpdateSessionAfter: "
+
+	"I am not sure of the portability of this class"
+	headless ifTrue: [ ^self ].
+	debuggerUpdateCoordinator coordinateUpdatesFor: aBlock.
+	UIManager default currentWorld doOneCycleNow
 ]
 
 { #category : #testing }
@@ -59,6 +72,18 @@ SkTracerBase >> doMouseButtonEventInstrumentedBlockOnce: aBlock [
 ]
 
 { #category : #accessing }
+SkTracerBase >> headless [
+
+	^ headless
+]
+
+{ #category : #accessing }
+SkTracerBase >> headless: anObject [
+
+	headless := anObject
+]
+
+{ #category : #accessing }
 SkTracerBase >> identityEnforcer [
 
 	^ identityEnforcer
@@ -86,6 +111,7 @@ SkTracerBase >> inMouseButtonEventInstrumentationFlag: anObject [
 SkTracerBase >> initialize [
 
 	isSessionActive := false.
+	headless := false.
 	SeekerSessionHelpers doCriticalInitialization: [ 
 		self initializeInstrumentedMethods.
 		self initializeComponents.

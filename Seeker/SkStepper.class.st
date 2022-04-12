@@ -29,6 +29,17 @@ Class {
 	#category : #'Seeker-Components'
 }
 
+{ #category : #'actions api' }
+SkStepper >> basicStepBytecode [
+
+	"interprets one bytecode. no checks"
+
+	| currentContext debuggedProcess |
+	debuggedProcess := tracer debuggedProcess.
+	currentContext := debuggedProcess step.
+	tracer currentContext: currentContext
+]
+
 { #category : #initialization }
 SkStepper >> bindComponents [
 
