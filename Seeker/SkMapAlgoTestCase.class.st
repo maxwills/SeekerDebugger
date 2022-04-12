@@ -7,13 +7,15 @@ Class {
 { #category : #testing }
 SkMapAlgoTestCase class >> matchesExecutionScenario: tracer [
 
-	| safelyMatchLiterals |"
+	| safelyMatchLiterals |
+	"
 	SeekerConfig default includeTestsSetup ifFalse: [ ^ false ]."
 	safelyMatchLiterals := [ :compiledBlock | 
 	                       [ 
 	                       (compiledBlock literals at: 1) = #setUp and: [ 
 		                       (compiledBlock literals at: 2) = #performTest ] ] on: Exception
 		                       do: [ false ] ].
+	tracer currentState resetCacheTimeKey.
 	^ tracer
 		  doesAnyContextsInTheStackStatisfies: [ :context | 
 			  context method class = CompiledBlock and: [ safelyMatchLiterals value: context method ] ]

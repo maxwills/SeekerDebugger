@@ -160,7 +160,7 @@ SkSteppableTracer >> doesAnyContextsInTheStackStatisfies: aPredicateBlock [
 	"Searches iteratively"
 
 	| context |
-	context := self currentContext.
+	context := self slowCurrentContext.
 	[ aPredicateBlock value: context ] whileFalse: [ 
 		context := context sender.
 		context ifNil: [ ^ false ] ].
@@ -176,7 +176,7 @@ SkSteppableTracer >> doesAnyContextsInTheStackStatisfies: aPredicateBlock maxDep
 
 	| context depth |
 	depth := 0.
-	context := self currentContext.
+	context := self slowCurrentContext.
 	[ aPredicateBlock value: context ] whileFalse: [ 
 		depth := depth + 1.
 		depth > maxDepth ifTrue: [ ^ false ].
