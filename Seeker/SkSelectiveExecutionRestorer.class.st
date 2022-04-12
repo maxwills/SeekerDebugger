@@ -591,7 +591,7 @@ SkSelectiveExecutionRestorer class >> undoBlockForReplaceFromToWithStartingAt: c
 	arrSize := 1 + stop - start.
 	arrSize <= 0 ifTrue: [ ^ [ "Its an error" ] ].
 	originalValues := Array new: arrSize.
-	1 to: arrSize do: [ :i | originalValues at: i put: (receiver at: i + start - 1) ].
+	originalValues := receiver copyFrom: start to: stop.
 	^ [ 
 	  receiver replaceFrom: start
 		  to: stop
