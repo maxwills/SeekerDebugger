@@ -74,8 +74,13 @@ SeekerDebugger class >> headlessDebug: aProcess offsetBytecodes: aNumber [
 SeekerDebugger class >> headlessDebugBlock: aBlock [
 
 	| p s |
-	p := aBlock newProcess.
-	s := self headlessDebug: p offsetBytecodes: 2 "heuristic".
+	p := Process
+		     forContext: [ 
+			     aBlock value.
+			     "IMPORTANT: Do not step over next line of code. See method comments for details"
+			     Processor terminateRealActive ] asContext
+		     priority: Processor activePriority.
+	s := self headlessDebug: p offsetBytecodes: 2. "heuristic"
 	^ s
 ]
 

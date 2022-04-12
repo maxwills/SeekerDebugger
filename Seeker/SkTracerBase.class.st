@@ -61,6 +61,18 @@ SkTracerBase >> components: anObject [
 	components := anObject
 ]
 
+{ #category : #accessing }
+SkTracerBase >> doAndUpdateSessionAfter: aBlock [
+
+	"Updates the UI after executing the block. Forces UI Update in a defered manner
+	Returns after executing the block, and before updating the UI.
+	See also: blockingDoAndUpdateSessionAfter:.
+	"
+
+	headless ifTrue: [ ^ aBlock value ].
+	debuggerUpdateCoordinator coordinateUpdatesFor: aBlock
+]
+
 { #category : #'as yet unclassified' }
 SkTracerBase >> doMouseButtonEventInstrumentedBlockOnce: aBlock [
 
