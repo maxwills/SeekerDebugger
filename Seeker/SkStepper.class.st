@@ -193,7 +193,7 @@ SkStepper >> isExecutionFinished [
 	"Returns whether the debugged execution is finished"
 
 	^ mapper isEndReached or: [ 
-		  currentState context sender isNil or: [ 
+		  (currentState context sender isNil and: [ currentState contextPC isNotNil and:[ currentState willReturn] ]) or: [ 
 			  currentState isDead or: [ tracer debuggedProcess isTerminating ] ] ]
 ]
 

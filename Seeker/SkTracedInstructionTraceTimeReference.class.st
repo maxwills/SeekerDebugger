@@ -56,6 +56,7 @@ SkTracedInstructionTraceTimeReference >> referencesTheLocalPastOrPresent: tracer
 
 	| context |
 	context := tracer currentContext.
+	context pc ifNil: [ ^false ].
 	^ context pc >= tracedInstructionPC pc and: [ 
 		  context matchesTracedContextPC:
 			  tracedInstructionPC tracedContextPC ]

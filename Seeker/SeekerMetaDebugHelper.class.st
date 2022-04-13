@@ -63,10 +63,10 @@ SeekerMetaDebugHelper class >> getIndexOfFirstDifferingVariableValue: resultsCol
 
 { #category : #logging }
 SeekerMetaDebugHelper class >> log: text [
-
+	"
 	Transcript
 		show: text;
-		cr
+		cr"
 ]
 
 { #category : #'as yet unclassified' }
