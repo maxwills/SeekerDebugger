@@ -90,6 +90,19 @@ GeneralSeekerTests >> testCreateIndexlessStepDescriptorForConditionInStack [
 ]
 
 { #category : #tests }
+GeneralSeekerTests >> testDoSomethingWithRandom: aRandom [
+
+	| r list number |
+	r := aRandom.
+
+	list := OrderedCollection new.
+
+	1 to: 100 do: [ :i | list add: (r nextInteger: 1000) ].
+
+	list do: [ :i | number := i ]
+]
+
+{ #category : #tests }
 GeneralSeekerTests >> testExceptionScenario [
 
 	"Do this once the window opens:
@@ -330,6 +343,15 @@ GeneralSeekerTests >> testRandomSomething [
 	1 to: 100 do: [ :i | list add: (r nextInteger: 1000) ].
 
 	list do: [ :i | number := i ].
+]
+
+{ #category : #tests }
+GeneralSeekerTests >> testRandomSomething2 [
+
+	| r |
+	r := Random new.
+
+	self testDoSomethingWithRandom: r
 ]
 
 { #category : #tests }

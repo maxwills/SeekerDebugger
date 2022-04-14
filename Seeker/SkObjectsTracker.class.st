@@ -84,12 +84,10 @@ SkObjectsTracker >> doPreStepProcessForAssignments [
 	"Dont register readOnly objects or strings"
 
 	| assignLeftSide |
+	restorer enabled ifTrue: [ restorer doPreStepProcessForAssignments ].
 	assignLeftSide := currentState assignmentCurrentValue.
 	assignLeftSide isNotSeekerTrackable ifTrue: [ ^ self ].
-	self
-		registerObjectInstance: assignLeftSide
-		withOid: tracer bytecodeIndex.
-	restorer enabled ifTrue: [ restorer doPreStepProcessForAssignments ]
+	self registerObjectInstance: assignLeftSide withOid: tracer bytecodeIndex
 ]
 
 { #category : #'as yet unclassified' }

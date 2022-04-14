@@ -24,12 +24,12 @@ SeekerMetaDebugHelper class >> getIndexOfFirstDifferingAssignmentValue: resultsC
 	"returns the first index where elements differ, or nil there are no differences."
 
 	| minSize |
-	minSize := resultsCollectionA size < resultsCollectionB size
-		           ifTrue: [ resultsCollectionA size ]
+	minSize := resultsCollectionA size < resultsCollectionB size ifTrue: [ resultsCollectionA size ]
 		           ifFalse: [ resultsCollectionB size ].
 	1 to: minSize do: [ :i | 
-		(resultsCollectionA at: i) newValue
-		= (resultsCollectionB at: i) newValue ifFalse: [ ^ i ] ].
+		(resultsCollectionA at: i) newValue = (resultsCollectionB at: i) newValue ifFalse: [ 
+			SeekerGlobals instance auxiliaryTempStorage2: (resultsCollectionB at: i).
+			^ i ] ].
 	^ nil
 ]
 
@@ -180,8 +180,7 @@ SeekerMetaDebugHelper class >> searchNDSVariableFor: tracer attemps: attempts [
 
 	| query t minimumIndex |
 	t := AutoType new.
-	query := Query
-		         from: tracer newProgramStates
+	query := Query from: tracer newProgramStates
 		         select: [ :state | state isAssignment ]
 		         collect: [ :state | 
 			         t newWith
@@ -196,17 +195,13 @@ SeekerMetaDebugHelper class >> searchNDSVariableFor: tracer attemps: attempts [
 		1 to: attempts do: [ :i | 
 			| res |
 			res := query asCollection.
-			differentIndex := self
-				                  getIndexOfFirstDifferingAssignmentValue:
-				                  originalResults
-				                  comparedTo: res.
+			differentIndex := self getIndexOfFirstDifferingAssignmentValue: originalResults comparedTo: res.
 			differentIndex ifNotNil: [ 
-				minimumIndex
-					ifNil: [ minimumIndex := differentIndex ]
+				minimumIndex ifNil: [ minimumIndex := differentIndex ]
 					ifNotNil: [ minimumIndex := minimumIndex min: differentIndex ] ] ].
-		^ minimumIndex
-			  ifNil: [ nil ]
-			  ifNotNil: [ (originalResults at: differentIndex) bytecodeIndex ] ]
+		^ minimumIndex ifNil: [ nil ] ifNotNil: [ 
+			  SeekerGlobals instance auxiliaryTempStorage1: (originalResults at: differentIndex).
+			  (originalResults at: differentIndex) bytecodeIndex ] ]
 ]
 
 { #category : #'as yet unclassified' }

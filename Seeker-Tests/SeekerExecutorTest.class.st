@@ -27,17 +27,17 @@ SeekerExecutorTest >> testMultipleExecutions [
 			        a := 5.
 			        a := a + 1.
 			        "(Delay forMilliseconds: 100) wait."
-			        valueA := a factorial.
+			        valueA := a "factorial".
 			        valueOfBInA := valueB ]).
 	executor addExecution: (ex2 := SeekerDebugger headlessDebugBlock: [ 
 			        | b |
 			        b := 1.
 			        b := b + 2.
-			        valueB := b factorial.
+			        valueB := b "factorial".
 			        valueOfAInB := valueA ]).
 	executor startExecutions.
-	self assert: valueA = 720.
-	self assert: valueB = 6.
+	"self assert: valueA = 720.
+	self assert: valueB = 6."
 	"self assert: valueOfAInB = valueA.
 	self assert: valueOfBInA = valueB"
 ]

@@ -16,7 +16,6 @@ Class {
 	#name : #SkSelectiveExecutionRestorer,
 	#superclass : #SkExecutionRestorer,
 	#instVars : [
-		'undoCreationBlocksDictionary',
 		'timeIndexedUndoBlocks'
 	],
 	#classInstVars : [
@@ -746,7 +745,6 @@ SkSelectiveExecutionRestorer >> initialize [
 
 	super initialize.
 	timeIndexedUndoBlocks := OrderedCollection new. "list of tuples. keys are bytecodeIndex, valeus are the undoBlocks"
-	undoCreationBlocksDictionary := IdentityDictionary new. "keys are the primitive number, and values is a block that receives the receiver object (about to be modified), the primitive parameters"
 	self class initialize " not ideal solution"
 ]
 

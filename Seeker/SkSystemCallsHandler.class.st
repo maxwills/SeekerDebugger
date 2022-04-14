@@ -56,7 +56,8 @@ SkSystemCallsHandler >> initialize [
 	systemCalls add: Time class >> #millisecondClockValue.
 	"next methods are listed as a workaround. To be properly handled in the future"
 	systemCalls add: Mutex >> #critical:.
-	systemCalls add: Semaphore >> #critical:
+	systemCalls add: Semaphore >> #critical:.
+	systemCalls add: BlockClosure >> #fork
 ]
 
 { #category : #testing }

@@ -40,7 +40,9 @@ SeekerExecutor >> executeUntracked: aBlock [
 { #category : #initialization }
 SeekerExecutor >> initialize [
 
-	random := Random new.
+	random := Random new
+		          seed: 1;
+		          yourself.
 	abortFlag := false.
 	executionsAndLocksDictionary := Dictionary new.
 	untrackingSem := Semaphore new
@@ -67,7 +69,6 @@ SeekerExecutor >> scheduleAndExecuteAnInstruction [
 SeekerExecutor >> startExecutions [
 
 	untrackingSem initSignals.
-	untrackingSem signal.
 	self executeUntracked: [ 
 		executionsAndLocksDictionary valuesDo: [ :sem | "A patch. The interpretation of the executions leaves the signaling part of the semaphore outside of the execution, which messes up the counter for reversal. This manually reinitialize it so during replay of this function they will be ready to use again"
 			sem initSignals.
@@ -78,12 +79,12 @@ SeekerExecutor >> startExecutions [
 		SeekerMetaDebugHelper log: 'Starting Executions' ].
 	abortFlag := false.
 
-	[ abortFlag not and: [ self canStepExecutions ] ] whileTrue: [ 
+	[ abortFlag not and: [ self executeUntracked: [ self canStepExecutions ] ] ] whileTrue: [ 
 		self scheduleAndExecuteAnInstruction ].
-	self executeUntracked: [
-	executionsAndLocksDictionary valuesDo: [ :sem | 
-		(sem wait: (Duration milliSeconds: 5000)) ifTrue: [ 
-			SeekerMetaDebugHelper log: 'executions were not finished in time.' ] ]].
+	self executeUntracked: [ 
+		executionsAndLocksDictionary valuesDo: [ :sem | 
+			(sem wait: (Duration milliSeconds: 5000)) ifTrue: [ 
+				SeekerMetaDebugHelper log: 'executions were not finished in time.' ] ] ].
 	SeekerMetaDebugHelper log: 'Finsihed Executions'.
 	abortFlag ifTrue: [ SeekerMetaDebugHelper log: 'Executions were aborted' ]
 ]
