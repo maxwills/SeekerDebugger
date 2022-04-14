@@ -16,7 +16,8 @@ Class {
 	#name : #SkSelectiveExecutionRestorer,
 	#superclass : #SkExecutionRestorer,
 	#instVars : [
-		'timeIndexedUndoBlocks'
+		'timeIndexedUndoBlocks',
+		'writingEventCallback'
 	],
 	#classInstVars : [
 		'writingMethodsUndoDictionary'
@@ -718,7 +719,7 @@ SkSelectiveExecutionRestorer >> doPreStepProcessForAssignments [
 	variable isWorkspaceVariable ifTrue: [ 
 		self pushUndoBlockAtCurrentTime:
 			(self class undoBlockForWorkspaceVariableAssignmentInContext: mapper doItContext
-				 varName: variable name).
+				 variable: variable name).
 		^ self ].
 
 	(variable isLocalVariable not and: [ currentState receiverIsLocalToExecution not ]) ifTrue: [ "if the receiver is an object that was instantiated from outside the execution" 
@@ -751,7 +752,13 @@ SkSelectiveExecutionRestorer >> initialize [
 { #category : #'as yet unclassified' }
 SkSelectiveExecutionRestorer >> pushUndoBlockAtCurrentTime: aBlock [
 
-	timeIndexedUndoBlocks add: currentState bytecodeIndex -> aBlock
+	timeIndexedUndoBlocks add: currentState bytecodeIndex -> aBlock.
+	writingEventCallback ifNotNil: [ :b | 
+		b value: (SeekerWritingEventCallbackArgs new
+				 executionTime: tracer bytecodeIndex;
+				 seekerDebugger: tracer seekerDebugger;
+				 undoBlock: aBlock;
+				 yourself) ]
 ]
 
 { #category : #accessing }
@@ -780,4 +787,16 @@ SkSelectiveExecutionRestorer >> restoreNonLocalChanges [
 		| undoBlock |
 		undoBlock := undoBlockAssoc value.
 		undoBlock value "execute the undo block" ]
+]
+
+{ #category : #accessing }
+SkSelectiveExecutionRestorer >> writingEventCallback [
+
+	^ writingEventCallback
+]
+
+{ #category : #accessing }
+SkSelectiveExecutionRestorer >> writingEventCallback: anObject [
+
+	writingEventCallback := anObject
 ]

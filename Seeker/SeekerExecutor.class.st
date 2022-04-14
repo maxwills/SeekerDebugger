@@ -5,17 +5,50 @@ Class {
 		'executionsAndLocksDictionary',
 		'random',
 		'abortFlag',
-		'untrackingSem'
+		'untrackingSem',
+		'stepCounter',
+		'executionsLog'
+	],
+	#classInstVars : [
+		'eventsLog',
+		'systemTime'
 	],
 	#category : #'Seeker-Experimental'
 }
+
+{ #category : #initialization }
+SeekerExecutor class >> initialize [
+
+	systemTime := 0.
+	self resetLog
+]
+
+{ #category : #'as yet unclassified' }
+SeekerExecutor class >> registerSystemTime: aNumber executionTime: aNumber2 undoBlock: aBlock [
+
+	eventsLog add: aNumber -> (aNumber2 -> aBlock)
+]
+
+{ #category : #initialization }
+SeekerExecutor class >> resetLog [
+
+	eventsLog := OrderedCollection new
+]
+
+{ #category : #accessing }
+SeekerExecutor class >> systemTime: anObject [
+
+	systemTime := anObject
+]
 
 { #category : #adding }
 SeekerExecutor >> addExecution: aSeekerDebugger [
 
 	executionsAndLocksDictionary at: aSeekerDebugger put: (Semaphore new
 			 signal;
-			 yourself)
+			 yourself).
+	aSeekerDebugger tracer restorer writingEventCallback: [ :arg | 
+		self handleWritingEventCallback: arg ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -37,15 +70,30 @@ SeekerExecutor >> executeUntracked: aBlock [
 	^ val
 ]
 
+{ #category : #'as yet unclassified' }
+SeekerExecutor >> handleWritingEventCallback: arg [
+
+	"arg is SeekerWritingEventCallbackArgs"
+
+	| execution executionTime systemTime undoBlock |
+	execution := arg seekerDebugger.
+	executionTime := arg executionTime.
+	systemTime := stepCounter.
+	undoBlock := arg undoBlock.
+	executionsLog add: systemTime -> arg
+]
+
 { #category : #initialization }
 SeekerExecutor >> initialize [
 
 	random := Random new
 		          seed: 1;
 		          yourself.
+	stepCounter := 1.
 	abortFlag := false.
 	executionsAndLocksDictionary := Dictionary new.
-	untrackingSem := Semaphore new
+	untrackingSem := Semaphore new.
+	executionsLog := OrderedCollection new
 	"keys are SeekerDebuggerObjects. Values are semaphores for each execution"
 ]
 
@@ -57,19 +105,29 @@ SeekerExecutor >> pickAnExecution [
 	^ executions at: (random nextIntegerBetween: 1 and: executions size)
 ]
 
+{ #category : #initialization }
+SeekerExecutor >> resetExecutionsLog [
+
+	executionsLog removeAll
+]
+
 { #category : #'as yet unclassified' }
 SeekerExecutor >> scheduleAndExecuteAnInstruction [
 
 	| scheduledExecution |
 	scheduledExecution := self pickAnExecution. "the picking is the only thing needed for replay"
-	self executeUntracked: [ self stepExecution: scheduledExecution ]
+	self executeUntracked: [ 
+		self stepExecution: scheduledExecution.
+		stepCounter := stepCounter + 1 ]
 ]
 
 { #category : #'as yet unclassified' }
 SeekerExecutor >> startExecutions [
 
+	stepCounter := 1.
 	untrackingSem initSignals.
 	self executeUntracked: [ 
+		self resetExecutionsLog.
 		executionsAndLocksDictionary valuesDo: [ :sem | "A patch. The interpretation of the executions leaves the signaling part of the semaphore outside of the execution, which messes up the counter for reversal. This manually reinitialize it so during replay of this function they will be ready to use again"
 			sem initSignals.
 			sem signal ].
