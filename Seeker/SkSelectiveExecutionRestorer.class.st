@@ -849,6 +849,5 @@ SkSelectiveExecutionRestorer >> writingEventCallback [
 { #category : #accessing }
 SkSelectiveExecutionRestorer >> writingEventCallback: anObject [
 
-	SeekerMetaDebugHelper log: 'added callback handler'.
 	writingEventCallback := anObject
 ]

@@ -55,17 +55,16 @@ SeekerExecutorTest >> testWritingLog [
 			        externalVar := a
 			        "(Delay forMilliseconds: 100) wait." ]).
 	proc := ex1 interruptedProcess.
-	"executor startExecutions."
+	executor startExecutions.
 	seeker := ex1.
-	tracer := seeker tracer.
-	query := TTQAllAssignments queryFrom: tracer newProgramStates.
-	results := query asOrderedCollection.
-	[ 
+	tracer := seeker tracer."
+	query := TTQAllAssignments queryFrom: tracer newProgramStates."
+	"results := query asOrderedCollection."
+	"[ 
 	self assert: results isNotEmpty.
 	self assert: (results select: [ :state | state variableName = #externalVar ]) isNotNil ] ensure: [ 
-		proc resume ].
-
-	"self assert: executor executionsLog isNotEmpty"
+		proc resume ]."
+	self assert: executor executionsLog isNotEmpty
 	"self assert: valueA = 720.
 	self assert: valueB = 6."
 	"self assert: valueOfAInB = valueA.

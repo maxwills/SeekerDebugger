@@ -504,6 +504,12 @@ SkSteppableTracer >> timeTravelToUserStart [
 ]
 
 { #category : #'as yet unclassified' }
+SkSteppableTracer >> timeTravelingEnabled [
+
+	^ executionMappper isNotNil and: [executionMappper isMapped]
+]
+
+{ #category : #'as yet unclassified' }
 SkSteppableTracer >> traceTime [
 
 	^ currentTraceTimeReference

@@ -78,14 +78,16 @@ SeekerInspectorSynchronizer >> searchNewInspectorsFor: tracer [
 
 	StInspector allInstances do: [ :each | 
 		(inspectorAndSeekerNOidsDictionary includesKey: each) ifFalse: [ 
-			| obj oid |
+			| obj |
 			obj := each model inspectedObject.
-			oid := tracer getOidOf: obj.
-			(obj isNotNil and: [ oid isNotNil ]) ifTrue: [ 
-				inspectorAndSeekerNOidsDictionary at: each put: (SeekerAndOidPair new
-						 seeker: tracer;
-						 oid: oid;
-						 yourself) ] ] ]
+			obj ifNotNil: [ 
+				| oid |
+				oid := tracer getOidOf: obj.
+				oid ifNotNil: [ 
+					inspectorAndSeekerNOidsDictionary at: each put: (SeekerAndOidPair new
+							 seeker: tracer;
+							 oid: oid;
+							 yourself) ] ] ] ]
 ]
 
 { #category : #accessing }

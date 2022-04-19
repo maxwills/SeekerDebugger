@@ -53,7 +53,7 @@ QSBufferedResult >> resolve [
 
 	| currentBuffer |
 	currentBuffer := OrderedCollection new: buffersCapacity.
-	self queryWithoutSeekerInstrumentation do: [ :each | 
+	self query do: [ :each | 
 		currentBuffer add: each.
 		currentBuffer size >= buffersCapacity ifTrue: [ 
 			bufferReadyCallback value: currentBuffer.

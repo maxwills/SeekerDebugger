@@ -1,12 +1,12 @@
 Class {
 	#name : #QSBufferedResultTest,
 	#superclass : #TestCase,
-	#category : #'Seeker-Tests'
+	#category : #'Seeker-Tests-Query'
 }
 
 { #category : #tests }
 QSBufferedResultTest >> testQSBufferedResult [
-
+	"Useless... to be removed and replaced"
 	| br mockedQuery mockBuilder totalElements lastValue bufferCount bufferCapacity |
 	totalElements := 1000.
 	bufferCapacity := 100.

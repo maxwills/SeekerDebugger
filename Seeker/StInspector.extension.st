@@ -9,7 +9,7 @@ StInspector class >> on: aDomainObject [
 	inspector := super on: aDomainObject.
 	[ 
 	UIManager default defer: [ 
-		SkTracerBase allSubInstancesDo: [ :seeker | 
+		(SkTracerBase allSubInstances select: [ :seeker | seeker timeTravelingEnabled ]) do: [ :seeker | 
 			SeekerInspectorSynchronizer default searchNewInspectorsFor: seeker.
 			SeekerInspectorSynchronizer default updateInspectorsFor: seeker ] ] ] fork.
 
