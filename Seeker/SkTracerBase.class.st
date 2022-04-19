@@ -61,6 +61,12 @@ SkTracerBase >> components: anObject [
 	components := anObject
 ]
 
+{ #category : #'as yet unclassified' }
+SkTracerBase >> componentsLateInitialization [
+
+	components ifNotNil: [ components do: [ :c | c lateInitialization ] ]
+]
+
 { #category : #accessing }
 SkTracerBase >> doAndUpdateSessionAfter: aBlock [
 

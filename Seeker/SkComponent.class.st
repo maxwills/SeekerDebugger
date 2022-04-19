@@ -68,3 +68,9 @@ SkComponent >> initialize [
 
 	enabled := true
 ]
+
+{ #category : #'as yet unclassified' }
+SkComponent >> lateInitialization [
+
+	
+]

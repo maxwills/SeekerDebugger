@@ -57,7 +57,8 @@ SkSystemCallsHandler >> initialize [
 	"next methods are listed as a workaround. To be properly handled in the future"
 	systemCalls add: Mutex >> #critical:.
 	systemCalls add: Semaphore >> #critical:.
-	systemCalls add: BlockClosure >> #fork
+	systemCalls add: BlockClosure >> #fork.
+	systemCalls add: SeekerExecutor >> #executeUntracked:
 ]
 
 { #category : #testing }

@@ -189,6 +189,12 @@ SeekerDebugger >> instanceID [
 	^ instanceNumber
 ]
 
+{ #category : #accessing }
+SeekerDebugger >> interruptedProcess [
+
+	^ stDebugger interruptedProcess
+]
+
 { #category : #'as yet unclassified' }
 SeekerDebugger >> notifyCommandExecution: aCommand subEvent: aSymbol [
 
@@ -252,7 +258,8 @@ SeekerDebugger >> quickSetup [
 	process := stDebugger interruptedProcess.
 	process ifNil: [ ^ self ].
 	tracer session: stDebugger session.
-	tracer doMappingIfCorresponds
+	tracer doMappingIfCorresponds.
+	tracer componentsLateInitialization
 ]
 
 { #category : #starting }

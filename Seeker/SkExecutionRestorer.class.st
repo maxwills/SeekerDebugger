@@ -87,6 +87,10 @@ SkExecutionRestorer >> initialize [
 	storedNonLocalChangesDictionary := WeakIdentityKeyDictionary new. "Keys are the object owning the variable, and the value is a dictionary of keys variable name (symbol) with values the Undo block"
 ]
 
+{ #category : #initialization }
+SkExecutionRestorer >> initializeFromCurrentState [
+]
+
 { #category : #accessing }
 SkExecutionRestorer >> recordChangeForReceiver: anObject ofVar: aVariable inContext: aContext [
 

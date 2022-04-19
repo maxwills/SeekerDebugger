@@ -41,3 +41,33 @@ SeekerExecutorTest >> testMultipleExecutions [
 	"self assert: valueOfAInB = valueA.
 	self assert: valueOfBInA = valueB"
 ]
+
+{ #category : #tests }
+SeekerExecutorTest >> testWritingLog [
+
+	| ex1 executor externalVar tracer seeker query results proc |
+	externalVar := 1.
+	executor := SeekerExecutor new.
+	executor addExecution: (ex1 := SeekerDebugger headlessDebugBlock: [ 
+			        | a |
+			        a := 5.
+			        a := a + 1.
+			        externalVar := a
+			        "(Delay forMilliseconds: 100) wait." ]).
+	proc := ex1 interruptedProcess.
+	"executor startExecutions."
+	seeker := ex1.
+	tracer := seeker tracer.
+	query := TTQAllAssignments queryFrom: tracer newProgramStates.
+	results := query asOrderedCollection.
+	[ 
+	self assert: results isNotEmpty.
+	self assert: (results select: [ :state | state variableName = #externalVar ]) isNotNil ] ensure: [ 
+		proc resume ].
+
+	"self assert: executor executionsLog isNotEmpty"
+	"self assert: valueA = 720.
+	self assert: valueB = 6."
+	"self assert: valueOfAInB = valueA.
+	self assert: valueOfBInA = valueB"
+]

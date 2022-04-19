@@ -5,7 +5,6 @@ Class {
 		'executionsAndLocksDictionary',
 		'random',
 		'abortFlag',
-		'untrackingSem',
 		'stepCounter',
 		'executionsLog'
 	],
@@ -62,12 +61,15 @@ SeekerExecutor >> canStepExecutions [
 { #category : #'as yet unclassified' }
 SeekerExecutor >> executeUntracked: aBlock [
 
-	| val |
-	[ 
-	val := aBlock value.
-	untrackingSem signal ] fork.
-	untrackingSem wait.
-	^ val
+	"this is treated by seeker as a SND. So it will not be analyzed, and interpreted directily until it returns, counting as a single bytecode"
+
+	^ aBlock value
+]
+
+{ #category : #accessing }
+SeekerExecutor >> executionsLog [
+
+	^ executionsLog
 ]
 
 { #category : #'as yet unclassified' }
@@ -92,7 +94,6 @@ SeekerExecutor >> initialize [
 	stepCounter := 1.
 	abortFlag := false.
 	executionsAndLocksDictionary := Dictionary new.
-	untrackingSem := Semaphore new.
 	executionsLog := OrderedCollection new
 	"keys are SeekerDebuggerObjects. Values are semaphores for each execution"
 ]
@@ -125,7 +126,6 @@ SeekerExecutor >> scheduleAndExecuteAnInstruction [
 SeekerExecutor >> startExecutions [
 
 	stepCounter := 1.
-	untrackingSem initSignals.
 	self executeUntracked: [ 
 		self resetExecutionsLog.
 		executionsAndLocksDictionary valuesDo: [ :sem | "A patch. The interpretation of the executions leaves the signaling part of the semaphore outside of the execution, which messes up the counter for reversal. This manually reinitialize it so during replay of this function they will be ready to use again"

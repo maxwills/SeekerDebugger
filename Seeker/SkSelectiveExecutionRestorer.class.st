@@ -17,7 +17,8 @@ Class {
 	#superclass : #SkExecutionRestorer,
 	#instVars : [
 		'timeIndexedUndoBlocks',
-		'writingEventCallback'
+		'writingEventCallback',
+		'externalReceiversInStack'
 	],
 	#classInstVars : [
 		'writingMethodsUndoDictionary'
@@ -513,6 +514,15 @@ SkSelectiveExecutionRestorer class >> undoBlockForIntegerAtPutFor: receiver at: 
 ]
 
 { #category : #'as yet unclassified' }
+SkSelectiveExecutionRestorer class >> undoBlockForOGTempVariableAssignmentInContext: aContext variable: aVariable [
+	"Only works if the original context is still alive"
+	| varName originalValue |
+	varName := aVariable name.
+	originalValue := aVariable readInContext: aContext.
+	^ [ aVariable write: originalValue inContext: aContext ]
+]
+
+{ #category : #'as yet unclassified' }
 SkSelectiveExecutionRestorer class >> undoBlockForObjectAtPut: csi [
 
 	| originalValue receiver index |
@@ -700,6 +710,13 @@ SkSelectiveExecutionRestorer class >> undoBlockNonSelectiveSnapshotOfObject: anO
 	^ [ anObject copySameFrom: objCopy ]
 ]
 
+{ #category : #initialization }
+SkSelectiveExecutionRestorer >> bindComponents [
+
+	super bindComponents.
+
+]
+
 { #category : #'as yet unclassified' }
 SkSelectiveExecutionRestorer >> createDefaultUndoBlock [
 ^ [  ]
@@ -709,6 +726,7 @@ SkSelectiveExecutionRestorer >> createDefaultUndoBlock [
 SkSelectiveExecutionRestorer >> doPreStepProcessForAssignments [
 
 	| variable |
+	SeekerMetaDebugHelper log: 'Prestep assignments'.
 	"the current node is an assignment node"
 	variable := currentState node variable variable.
 	"putting the tracing for restoration (of assignments)logic here"
@@ -719,11 +737,16 @@ SkSelectiveExecutionRestorer >> doPreStepProcessForAssignments [
 	variable isWorkspaceVariable ifTrue: [ 
 		self pushUndoBlockAtCurrentTime:
 			(self class undoBlockForWorkspaceVariableAssignmentInContext: mapper doItContext
-				 variable: variable name).
+				 variable: variable).
 		^ self ].
-
-	(variable isLocalVariable not and: [ currentState receiverIsLocalToExecution not ]) ifTrue: [ "if the receiver is an object that was instantiated from outside the execution" 
-		self pushUndoBlockAtCurrentTime: (self class undoBlockForInstanceVariableAssignment: currentState) ]
+	SeekerMetaDebugHelper log: 'Prestep assignments mark2 for ' , variable name.
+	currentState receiverIsLocalToExecution not ifFalse: [ ^ self ].
+	variable isInstanceVariable ifTrue: [ 
+		self pushUndoBlockAtCurrentTime: (self class undoBlockForInstanceVariableAssignment: currentState) ].
+	((self isOGReceiver: currentState receiver) and: [ variable isTempVariable ]) ifTrue: [ 
+		self pushUndoBlockAtCurrentTime:
+			(self class undoBlockForOGTempVariableAssignmentInContext: currentState context
+				 variable: variable) ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -735,7 +758,7 @@ SkSelectiveExecutionRestorer >> doPreStepProcessForMessageSends [
 	method := currentState methodAboutToExecute.
 
 	method ifNil: [ ^ self ].
-
+SeekerMetaDebugHelper log: 'Prestep message'.
 	objectsTracker instantiationFlag ifFalse: [ 
 		currentState isWritingPrimitiveMessage ifTrue: [ 
 			self pushUndoBlockAtCurrentTime: (self class undoBlockForWritingPrimitive: currentState) ] ]
@@ -745,18 +768,46 @@ SkSelectiveExecutionRestorer >> doPreStepProcessForMessageSends [
 SkSelectiveExecutionRestorer >> initialize [
 
 	super initialize.
+	externalReceiversInStack := IdentitySet new.
 	timeIndexedUndoBlocks := OrderedCollection new. "list of tuples. keys are bytecodeIndex, valeus are the undoBlocks"
 	self class initialize " not ideal solution"
+]
+
+{ #category : #initialization }
+SkSelectiveExecutionRestorer >> initializeFromCurrentState [
+
+	| context |
+	context := currentState context.
+
+	[ context isNotNil ] whileTrue: [ 
+		externalReceiversInStack add: context receiver.
+		context := context sender ]
+]
+
+{ #category : #testing }
+SkSelectiveExecutionRestorer >> isOGReceiver: anObject [
+
+	"answers true if the object is external and is part of the initial stack receivers"
+
+	^ externalReceiversInStack includes: anObject
+]
+
+{ #category : #'as yet unclassified' }
+SkSelectiveExecutionRestorer >> lateInitialization [
+
+	self initializeFromCurrentState
 ]
 
 { #category : #'as yet unclassified' }
 SkSelectiveExecutionRestorer >> pushUndoBlockAtCurrentTime: aBlock [
 
 	timeIndexedUndoBlocks add: currentState bytecodeIndex -> aBlock.
+	SeekerMetaDebugHelper log: 'BlockPushed'.
 	writingEventCallback ifNotNil: [ :b | 
+		SeekerMetaDebugHelper log: 'callback handler called'.
 		b value: (SeekerWritingEventCallbackArgs new
 				 executionTime: tracer bytecodeIndex;
-				 seekerDebugger: tracer seekerDebugger;
+				 seekerDebugger: tracer seeker;
 				 undoBlock: aBlock;
 				 yourself) ]
 ]
@@ -798,5 +849,6 @@ SkSelectiveExecutionRestorer >> writingEventCallback [
 { #category : #accessing }
 SkSelectiveExecutionRestorer >> writingEventCallback: anObject [
 
+	SeekerMetaDebugHelper log: 'added callback handler'.
 	writingEventCallback := anObject
 ]
