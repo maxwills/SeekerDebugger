@@ -133,8 +133,7 @@ SeekerExecutor >> startExecutions [
 			sem signal ].
 
 		executionsAndLocksDictionary keysDo: [ :exec | "Another reversal patch." 
-			exec tracer restartAtBytecodeOne ].
-		SeekerMetaDebugHelper log: 'Starting Executions' ].
+			exec tracer restartAtBytecodeOne ] ].
 	abortFlag := false.
 
 	[ abortFlag not and: [ self executeUntracked: [ self canStepExecutions ] ] ] whileTrue: [ 
@@ -143,7 +142,7 @@ SeekerExecutor >> startExecutions [
 		executionsAndLocksDictionary valuesDo: [ :sem | 
 			(sem wait: (Duration milliSeconds: 5000)) ifTrue: [ 
 				SeekerMetaDebugHelper log: 'executions were not finished in time.' ] ] ].
-	SeekerMetaDebugHelper log: 'Finsihed Executions'.
+
 	abortFlag ifTrue: [ SeekerMetaDebugHelper log: 'Executions were aborted' ]
 ]
 

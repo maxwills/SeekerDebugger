@@ -726,7 +726,6 @@ SkSelectiveExecutionRestorer >> createDefaultUndoBlock [
 SkSelectiveExecutionRestorer >> doPreStepProcessForAssignments [
 
 	| variable |
-	SeekerMetaDebugHelper log: 'Prestep assignments'.
 	"the current node is an assignment node"
 	variable := currentState node variable variable.
 	"putting the tracing for restoration (of assignments)logic here"
@@ -739,7 +738,6 @@ SkSelectiveExecutionRestorer >> doPreStepProcessForAssignments [
 			(self class undoBlockForWorkspaceVariableAssignmentInContext: mapper doItContext
 				 variable: variable).
 		^ self ].
-	SeekerMetaDebugHelper log: 'Prestep assignments mark2 for ' , variable name.
 	currentState receiverIsLocalToExecution not ifFalse: [ ^ self ].
 	variable isInstanceVariable ifTrue: [ 
 		self pushUndoBlockAtCurrentTime: (self class undoBlockForInstanceVariableAssignment: currentState) ].
@@ -758,7 +756,6 @@ SkSelectiveExecutionRestorer >> doPreStepProcessForMessageSends [
 	method := currentState methodAboutToExecute.
 
 	method ifNil: [ ^ self ].
-SeekerMetaDebugHelper log: 'Prestep message'.
 	objectsTracker instantiationFlag ifFalse: [ 
 		currentState isWritingPrimitiveMessage ifTrue: [ 
 			self pushUndoBlockAtCurrentTime: (self class undoBlockForWritingPrimitive: currentState) ] ]
@@ -802,9 +799,8 @@ SkSelectiveExecutionRestorer >> lateInitialization [
 SkSelectiveExecutionRestorer >> pushUndoBlockAtCurrentTime: aBlock [
 
 	timeIndexedUndoBlocks add: currentState bytecodeIndex -> aBlock.
-	SeekerMetaDebugHelper log: 'BlockPushed'.
+
 	writingEventCallback ifNotNil: [ :b | 
-		SeekerMetaDebugHelper log: 'callback handler called'.
 		b value: (SeekerWritingEventCallbackArgs new
 				 executionTime: tracer bytecodeIndex;
 				 seekerDebugger: tracer seeker;
