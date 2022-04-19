@@ -26,20 +26,121 @@ SeekerExecutorTest >> testMultipleExecutions [
 			        | a |
 			        a := 5.
 			        a := a + 1.
-			        "(Delay forMilliseconds: 100) wait."
-			        valueA := a "factorial".
+			        valueA := a factorial.
 			        valueOfBInA := valueB ]).
 	executor addExecution: (ex2 := SeekerDebugger headlessDebugBlock: [ 
 			        | b |
 			        b := 1.
 			        b := b + 2.
-			        valueB := b "factorial".
+			        valueB := b factorial.
 			        valueOfAInB := valueA ]).
 	executor startExecutions.
-	"self assert: valueA = 720.
-	self assert: valueB = 6."
+	self assert: valueA = 720.
+	self assert: valueB = 6.
 	"self assert: valueOfAInB = valueA.
 	self assert: valueOfBInA = valueB"
+]
+
+{ #category : #tests }
+SeekerExecutorTest >> testMultipleExecutionsReverseOne [
+
+	| ex1 ex2 executor valueA valueB valueOfBInA valueOfAInB |
+	valueA := 0.
+	valueOfBInA := 0.
+	valueB := 0.
+	valueOfAInB := 0.
+	executor := SeekerExecutor new.
+	executor addExecution: (ex1 := SeekerDebugger headlessDebugBlock: [ 
+			        | a |
+			        a := 5.
+			        a := a + 1.
+			        valueA := a factorial.
+			        valueOfBInA := valueB ]).
+	executor addExecution: (ex2 := SeekerDebugger headlessDebugBlock: [ 
+			        | b |
+			        b := 1.
+			        b := b + 2.
+			        valueB := b factorial.
+			        valueOfAInB := valueA ]).
+	executor startExecutions.
+	self assert: valueA = 720.
+	self assert: valueB = 6.
+
+	self assert: (ex1 interruptedProcess suspendedContext readVariableNamed: #a) = 6.
+	self assert: (ex2 interruptedProcess suspendedContext readVariableNamed: #b) = 3.
+	ex1 tracer restartAtBytecodeOne.
+	self assert: (ex1 interruptedProcess suspendedContext readVariableNamed: #a) isNil.
+	self assert: (ex2 interruptedProcess suspendedContext readVariableNamed: #b) = 3
+]
+
+{ #category : #tests }
+SeekerExecutorTest >> testMultipleExecutionsSemaphore [
+
+	"The semaphore forces the assignment order of the sharedVar. The idea is that the variable is modified first and last by execution A. Undoing A should leave it as 0. Undoing b should leave it with the value of the first modification of #a"
+
+	| ex1 ex2 executor valueA valueB sem1 sem2 sharedVar |
+	valueA := 0.
+	sharedVar := 0.
+	sem1 := Semaphore new.
+	sem2 := Semaphore new.
+	valueB := 0.
+	executor := SeekerExecutor new.
+	executor addExecution: (ex1 := SeekerDebugger headlessDebugBlock: [ 
+			        | a |
+			        sharedVar := #a.
+			        sem1 signal.
+			        a := 5.
+			        a := a + 1.
+			        valueA := a factorial.
+			        sem2 wait.
+			        sharedVar := a ]).
+	executor addExecution: (ex2 := SeekerDebugger headlessDebugBlock: [ 
+			        | b |
+			        sem1 wait.
+			        sharedVar := #b.
+			        b := 1.
+			        b := b + 2.
+			        valueB := b factorial.
+			        sharedVar := b.
+			        sem2 signal ]).
+	executor startExecutions.
+	self assert: sharedVar = 6.
+	ex2 tracer restartAtBytecodeOne.
+	self assert: sharedVar = #a.
+	ex1 tracer restartAtBytecodeOne.
+	self assert: sharedVar = 0
+]
+
+{ #category : #tests }
+SeekerExecutorTest >> testMultipleIndependentExecutionsReverseOne [
+
+	| ex1 ex2 executor valueA valueB valueOfBInA valueOfAInB |
+	valueA := 0.
+	valueOfBInA := 0.
+	valueB := 0.
+	valueOfAInB := 0.
+	executor := SeekerExecutor new.
+	executor addExecution: (ex1 := SeekerDebugger headlessDebugBlock: [ 
+			        | a |
+			        a := 5.
+			        a := a + 1.
+			        valueA := a factorial.
+			        valueOfBInA := valueB ]).
+	executor addExecution: (ex2 := SeekerDebugger headlessDebugBlock: [ 
+			        | b |
+			        b := 1.
+			        b := b + 2.
+			        valueB := b factorial.
+			        valueOfAInB := valueA ]).
+	executor startExecutions.
+	self assert: valueA = 720.
+	self assert: valueB = 6.
+
+	self assert: (ex1 interruptedProcess suspendedContext readVariableNamed: #a) = 6.
+	self assert: (ex2 interruptedProcess suspendedContext readVariableNamed: #b) = 3.
+	ex1 tracer restartAtBytecodeOne.
+	self assert: (ex1 interruptedProcess suspendedContext readVariableNamed: #a) isNil.
+	self assert: (ex2 interruptedProcess suspendedContext readVariableNamed: #b) = 3
 ]
 
 { #category : #tests }

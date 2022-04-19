@@ -161,3 +161,17 @@ SeekerExecutor >> stepExecution: anExecution [
 		^ self ].
 	[ [ anExecution tracer stepBytecode ] ensure: [ sem signal ] ] fork
 ]
+
+{ #category : #'as yet unclassified' }
+SeekerExecutor >> timeTravelExecution: aSeekerDebugger toSystemTime: aNumber [
+
+	| minExecutionTime |
+	minExecutionTime := 0.
+	executionsLog do: [ :each | 
+		| sysTime logEntry |
+		sysTime := each key.
+		logEntry := each value.
+		(logEntry seekerDebugger == aSeekerDebugger and: [ sysTime <= aNumber ]) ifTrue: [ 
+			minExecutionTime := logEntry executionTime ] ].
+	minExecutionTime > 0 ifTrue: [ aSeekerDebugger timeTravelToBytecodeIndex: minExecutionTime ]
+]
