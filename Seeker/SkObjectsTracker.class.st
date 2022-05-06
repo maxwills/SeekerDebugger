@@ -42,6 +42,25 @@ SkObjectsTracker >> doPostStepProcess [
 	identityEnforcer enabled ifTrue: [ 
 		identityEnforcer doPostStepProcess ].
 
+	"patch for wrong query all reading of self. 
+	Code duplication from the prestep method. 
+	This is needed so the object reading is registered immediately upon arriving to the step number"
+	currentState node isVariable ifTrue: [ 
+		| objInVariable |
+		objInVariable := [ 
+		                 currentState node variable readInContext:
+			                 currentState context ] onErrorDo: [ 
+			                 SeekerMetaDebugHelper.
+			                 self flag:
+				                 'I am not sure why this fails. Doing the warmup, the test teardown throws an error here.'.
+			                 nil ].
+		objInVariable isNotSeekerTrackable ifTrue: [ ^ self ].
+		self
+			registerObjectInstance: objInVariable
+			withOid: tracer bytecodeIndex ].
+
+	"end of patch for 'query all reading of self'"
+
 	instantiationFlag ifFalse: [ ^ self ].
 
 	instancedObj := currentState contextTop.

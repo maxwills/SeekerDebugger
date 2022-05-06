@@ -515,11 +515,13 @@ SkSelectiveExecutionRestorer class >> undoBlockForIntegerAtPutFor: receiver at: 
 
 { #category : #'as yet unclassified' }
 SkSelectiveExecutionRestorer class >> undoBlockForOGTempVariableAssignmentInContext: aContext variable: aVariable [
+
 	"Only works if the original context is still alive"
+
 	| varName originalValue |
 	varName := aVariable name.
 	originalValue := aVariable readInContext: aContext.
-	^ [ aVariable write: originalValue inContext: aContext ]
+	^ [ aContext writeVariableNamed: aVariable name value: originalValue ]
 ]
 
 { #category : #'as yet unclassified' }

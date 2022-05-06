@@ -114,9 +114,11 @@ SeekerExecutorTest >> testMultipleIndependentExecutionsReverseOne [
 	valueB := 0.
 	valueOfAInB := 0.
 	executor := SeekerExecutor new.
-	executor addExecution: (ex1 := SeekerDebugger headlessDebugBlock: [ 
+	executor addExecution:
+		(ex1 := SeekerDebugger headlessDebugBlock: [ "If somehow this is finished faster than b, then the test will fail. I use a busy loop to decrease that from happening. Note that the interpretation is really slow, so dont increase the counter too much"
 			        | a |
-			        a := 5.
+			        1 to: 15 do: [ :i | a := i ].
+			        a := 9.
 			        a := a + 1.
 			        valueA := a factorial.
 			        valueOfBInA := valueB ]).
@@ -127,14 +129,19 @@ SeekerExecutorTest >> testMultipleIndependentExecutionsReverseOne [
 			        valueB := b factorial.
 			        valueOfAInB := valueA ]).
 	executor startExecutions.
-	self assert: valueA = 720.
+	self assert: valueA = 3628800.
 	self assert: valueB = 6.
 
-	self assert: (ex1 interruptedProcess suspendedContext readVariableNamed: #a) = 6.
-	self assert: (ex2 interruptedProcess suspendedContext readVariableNamed: #b) = 3.
+	self assert:
+		(ex1 interruptedProcess suspendedContext readVariableNamed: #a) = 10.
+	self assert:
+		(ex2 interruptedProcess suspendedContext readVariableNamed: #b) = 3.
 	ex1 tracer restartAtBytecodeOne.
-	self assert: (ex1 interruptedProcess suspendedContext readVariableNamed: #a) isNil.
-	self assert: (ex2 interruptedProcess suspendedContext readVariableNamed: #b) = 3
+	self assert:
+		(ex1 interruptedProcess suspendedContext readVariableNamed: #a)
+			isNil.
+	self assert:
+		(ex2 interruptedProcess suspendedContext readVariableNamed: #b) = 3
 ]
 
 { #category : #tests }

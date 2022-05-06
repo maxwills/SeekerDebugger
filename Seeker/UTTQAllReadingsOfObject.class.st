@@ -5,20 +5,6 @@ Class {
 }
 
 { #category : #'instance creation' }
-UTTQAllReadingsOfObject class >> queryFrom: programStates [
-
-	| autoType |
-	autoType := AutoType new.
-	^ self from: programStates
-		  select: [ :state | state isVariable and: [ state node variable variable isGlobalVariable ] ]
-		  collect: [ :state | 
-			  autoType newWith
-				  bytecodeIndex: state bytecodeIndex;
-				  variableName: state node variable variable name;
-				  endWith ]
-]
-
-{ #category : #'instance creation' }
 UTTQAllReadingsOfObject class >> queryFrom: programStates forOid: aNumber [
 
 	| autoType |
