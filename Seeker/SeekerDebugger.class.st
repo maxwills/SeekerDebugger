@@ -78,7 +78,9 @@ SeekerDebugger class >> headlessDebugBlock: aBlock [
 		     forContext: [ 
 			     aBlock value.
 			     "IMPORTANT: Do not step over next line of code. See method comments for details"
-			     Processor terminateRealActive ] asContext
+			     (Processor respondsTo: #terminateRealActive)
+				     ifTrue: [ Processor terminateRealActive ]
+				     ifFalse: [ Processor terminateActive ] ] asContext
 		     priority: Processor activePriority.
 	s := self headlessDebug: p offsetBytecodes: 2. "heuristic"
 	^ s

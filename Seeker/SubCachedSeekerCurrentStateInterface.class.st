@@ -120,7 +120,8 @@ Class {
 { #category : #'as yet unclassified' }
 SubCachedSeekerCurrentStateInterface >> resetCacheTimeKey [
 
-	self class slots do: [ :arg1 | arg1 write: nil to: self ]
+	self class slots do: [ :arg1 | arg1 write: nil to: self ].
+	_cacheTimeKey := 0
 ]
 
 { #category : #'as yet unclassified' }
