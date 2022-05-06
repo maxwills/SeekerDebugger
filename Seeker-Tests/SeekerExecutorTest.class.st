@@ -16,29 +16,23 @@ SeekerExecutorTest >> testExecuteUntracked [
 { #category : #tests }
 SeekerExecutorTest >> testMultipleExecutions [
 
-	| ex1 ex2 executor valueA valueB valueOfBInA valueOfAInB |
+	| ex1 ex2 executor valueA valueB |
 	valueA := 0.
-	valueOfBInA := 0.
 	valueB := 0.
-	valueOfAInB := 0.
 	executor := SeekerExecutor new.
 	executor addExecution: (ex1 := SeekerDebugger headlessDebugBlock: [ 
 			        | a |
 			        a := 5.
 			        a := a + 1.
-			        valueA := a factorial.
-			        valueOfBInA := valueB ]).
+			        valueA := a factorial ]).
 	executor addExecution: (ex2 := SeekerDebugger headlessDebugBlock: [ 
 			        | b |
 			        b := 1.
 			        b := b + 2.
-			        valueB := b factorial.
-			        valueOfAInB := valueA ]).
+			        valueB := b factorial ]).
 	executor startExecutions.
 	self assert: valueA = 720.
-	self assert: valueB = 6.
-	"self assert: valueOfAInB = valueA.
-	self assert: valueOfBInA = valueB"
+	self assert: valueB = 6
 ]
 
 { #category : #tests }
