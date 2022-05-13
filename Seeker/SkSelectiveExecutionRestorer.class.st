@@ -596,6 +596,7 @@ SkSelectiveExecutionRestorer class >> undoBlockForPvtAtPut: csi [
 SkSelectiveExecutionRestorer class >> undoBlockForReplaceFromToWithStartingAt: csi [
 
 	| originalValues arrSize receiver start stop repStart |
+	receiver basicSize = 0 ifTrue: [ ^ [ "If the size is 0 there is no replacing" ] ].
 	receiver := csi messageReceiver.
 	start := csi messageArgumentAt: 1.
 	stop := csi messageArgumentAt: 2.
@@ -605,7 +606,8 @@ SkSelectiveExecutionRestorer class >> undoBlockForReplaceFromToWithStartingAt: c
 	originalValues := Array new: arrSize.
 	originalValues := receiver copyFrom: start to: stop.
 	^ [ 
-	  receiver replaceFrom: start
+	  receiver
+		  replaceFrom: start
 		  to: stop
 		  with: originalValues
 		  startingAt: 1 ]

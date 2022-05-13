@@ -145,7 +145,7 @@ GeneralSeekerTests >> testFamixJavaclass [
 
 { #category : #tests }
 GeneralSeekerTests >> testFindInStack [
-	"launche the test and when the debugger opens with the failing assertion, evaluate 
+	"launches the test and when the debugger opens with the failing assertion, evaluate 
 	seeker stepper findContextInStack: [:aContext| aContext selector = #testFindInStack]
 	"
 	|aCol | 
