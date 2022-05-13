@@ -41,7 +41,18 @@ SkObjectsTracker >> doPostStepProcess [
 	| instancedObj |
 	identityEnforcer enabled ifTrue: [ 
 		identityEnforcer doPostStepProcess ].
-
+	instantiationFlag ifTrue: [ "Dont replace this with a guard condition return(dont do if false return self). 
+		The debugger requires this case to be processed and also variable detection one.
+		Even if a new instances is registered in both cases, there will be no conflict because the 
+		instantation from the message(which made the instantiationFlag true) is registered with an OID
+		step minus 1.
+		"
+		instancedObj := currentState contextTop.
+		instancedObj isNotSeekerTrackable ifTrue: [ ^ self ].
+		self
+			registerObjectInstance: instancedObj
+			withOid: tracer bytecodeIndex - 1.
+		instantiatedLocalObjects add: instancedObj ].
 	"patch for wrong query all reading of self. 
 	Code duplication from the prestep method. 
 	This is needed so the object reading is registered immediately upon arriving to the step number"
@@ -57,18 +68,9 @@ SkObjectsTracker >> doPostStepProcess [
 		objInVariable isNotSeekerTrackable ifTrue: [ ^ self ].
 		self
 			registerObjectInstance: objInVariable
-			withOid: tracer bytecodeIndex ].
+			withOid: tracer bytecodeIndex ]
 
 	"end of patch for 'query all reading of self'"
-
-	instantiationFlag ifFalse: [ ^ self ].
-
-	instancedObj := currentState contextTop.
-	instancedObj isNotSeekerTrackable ifTrue: [ ^ self ].
-	self
-		registerObjectInstance: instancedObj
-		withOid: tracer bytecodeIndex - 1.
-	instantiatedLocalObjects add: instancedObj
 ]
 
 { #category : #'as yet unclassified' }
