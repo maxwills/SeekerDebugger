@@ -103,6 +103,38 @@ GeneralSeekerTests >> testDoSomethingWithRandom: aRandom [
 ]
 
 { #category : #tests }
+GeneralSeekerTests >> testDynReversal [
+
+	"This is a manual test"
+
+	| aLocalVar aCollection |
+	aLocalVar := 1.
+	aCollection := OrderedCollection new.
+	aLocalVar := 2.
+	aCollection add: 1.
+	aLocalVar := 3.
+	aCollection add: 2.
+	aCollection add: 3
+	"Here, reversing the Dyn should reverse only the state of aLocalVar, the stack and the executedBytecode"
+]
+
+{ #category : #tests }
+GeneralSeekerTests >> testEffReversal [
+
+	"This is a manual test"
+
+	| aLocalVar aCollection |
+	aLocalVar := 1.
+	aCollection := OrderedCollection new.
+	aLocalVar := 2.
+	aCollection add: 1.
+	aLocalVar := 3.
+	aCollection add: 2.
+	aCollection add: 3
+	"Here, reversing the Eff should reverse only the state of aCollection"
+]
+
+{ #category : #tests }
 GeneralSeekerTests >> testExceptionScenario [
 
 	"Do this once the window opens:

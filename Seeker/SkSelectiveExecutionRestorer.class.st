@@ -770,7 +770,7 @@ SkSelectiveExecutionRestorer >> initialize [
 
 	super initialize.
 	externalReceiversInStack := IdentitySet new.
-	timeIndexedUndoBlocks := OrderedCollection new. "list of tuples. keys are bytecodeIndex, valeus are the undoBlocks"
+	timeIndexedUndoBlocks := OrderedCollection new. "list of tuples. keys are bytecodeIndex, values are the undoBlocks"
 	self class initialize " not ideal solution"
 ]
 
