@@ -335,6 +335,47 @@ SkSteppableTracer >> restartAtBytecodeOne [
 ]
 
 { #category : #'as yet unclassified' }
+SkSteppableTracer >> reverseDynToBytecodeIndex: aNumber [
+
+	"Note that this will alter an execution path. Therefore, ideally we would have invalidate posterior registered events for the reverser or the systemCallsHandler  "
+
+	self doAndUpdateSessionAfter: [ 
+		| presentTime stackCopy startingContextDepth starterCopy |
+		startingContextDepth := executionMappper contextOfExecutedBytecodeOne countDepth.
+		presentTime := self bytecodeIndex.
+		aNumber > presentTime ifTrue: [ ^ self ].
+		self timeTravelToBytecodeIndex: aNumber.
+		stackCopy := currentState context copyStack.
+		starterCopy := stackCopy findContextSuchThat: [ :c | c countDepth = startingContextDepth ].
+		self timeTravelToBytecodeIndex: presentTime.
+		debuggedProcess suspendedContext: stackCopy.
+		currentContext := stackCopy.
+		executedBytecode := aNumber.
+		executionMappper contextOfExecutedBytecodeOne: starterCopy. "need to put here the copy"
+		currentState resetCacheTimeKey ]
+]
+
+{ #category : #'as yet unclassified' }
+SkSteppableTracer >> reverseEffToBytecodeIndex: aNumber [
+
+	"Note that this will alter an execution path. Therefore, ideally we would have invalidate posterior registered events for the reverser or the systemCallsHandler  "
+
+	self doAndUpdateSessionAfter: [ 
+		| presentTime stackCopy startingContextDepth starterCopy |
+		startingContextDepth := executionMappper contextOfExecutedBytecodeOne countDepth.
+		stackCopy := currentState context copyStack.
+		starterCopy := stackCopy findContextSuchThat: [ :c | c countDepth = startingContextDepth ].
+		presentTime := self bytecodeIndex.
+		aNumber > presentTime ifTrue: [ ^ self ].
+		self timeTravelToBytecodeIndex: aNumber.
+		debuggedProcess suspendedContext: stackCopy.
+		currentContext := stackCopy.
+		executedBytecode := presentTime.
+		executionMappper contextOfExecutedBytecodeOne: starterCopy. "need to put here the copy"
+		currentState resetCacheTimeKey ]
+]
+
+{ #category : #'as yet unclassified' }
 SkSteppableTracer >> safeStepToTraceTime: aTraceTime [
 
 	"time travel with breaks. Not fully safe though. If the target time is skipped for some reson, the travel can detect it while in the same sequence(local trace time) and step"
@@ -489,7 +530,7 @@ SkSteppableTracer >> timeTravelToBytecodeIndex: aNumber [
 { #category : #'as yet unclassified' }
 SkSteppableTracer >> timeTravelToTraceTime: aTraceTime [
 
-	""
+	"Reverses the complete execution to the target traceTime"
 
 	self doAndUpdateSessionAfter: [ 
 		self restartAtBytecodeOne.
