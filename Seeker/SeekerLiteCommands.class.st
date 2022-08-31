@@ -81,19 +81,19 @@ SeekerLiteCommands >> stCodeCommandsTree [
 				  SkAllSignallingExceptionsLC " }.
 			  #smallExport.
 			  'Queries for listing message sends' }.
-			 { 
+		  { 
 			  ' Messages - Object Centric'.
 			  { 
-				  SkAllMessageSendsToSelfLC .
-				  SkAllMessageSendsToObjectInVariableLC}.
+				  SkAllMessageSendsToSelfLC.
+				  SkAllMessageSendsToObjectInVariableLC }.
 			  #objects.
 			  'Queries for listing messages sent to a specific object' }.
 		  { 
 			  'Instances Creations'.
 			  { 
 				  SkAllInstanceCreationsLC.
-				  SkAllInstanceCreationsOfClassLC".
-				  SkAllInstanceCreationsOfExceptionLC "}.
+				  SkAllInstanceCreationsOfClassLC ".
+				  SkAllInstanceCreationsOfExceptionLC " }.
 			  #smallNew.
 			  'Queries for listing instances creations' }.
 		  { 
@@ -116,8 +116,9 @@ SeekerLiteCommands >> stCodeCommandsTree [
 		  { 
 			  'SeekerDebug'.
 			  { 
-				  SkXMarkersQueryLC.
-				 " SkXDeltaQueryLC.
+				  SkAllDetectedObjects.
+				  SkXMarkersQueryLC
+				  " SkXDeltaQueryLC.
 				  SkXInstantiationPrimitivesInstancesLC" }.
 			  #changeUpdate.
 			  'Experimental Queries for Seeker Development' } }

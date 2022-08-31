@@ -47,6 +47,7 @@ SeekerExecutorTest >> testMultipleExecutionsReverseOne [
 	executor addExecution: (ex1 := SeekerDebugger headlessDebugBlock: [ 
 			        | a |
 			        1 to: 15 do: [ :i | a := i ].
+			        (Delay forMilliseconds: 1) wait.
 			        a := 9.
 			        a := a + 1.
 			        valueA := a factorial.

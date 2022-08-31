@@ -657,6 +657,12 @@ SeekerCurrentStateInterface >> objectOidIsLocal: aNumber [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerCurrentStateInterface >> objectWithOid: aNumber [
+
+	^ tracer objectWithOid: aNumber
+]
+
+{ #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> previousNoi [
 
 	"The calculated ordinal index for the previous bytecode"

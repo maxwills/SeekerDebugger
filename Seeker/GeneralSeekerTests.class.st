@@ -348,10 +348,18 @@ GeneralSeekerTests >> testRandomSomething [
 { #category : #tests }
 GeneralSeekerTests >> testRandomSomething2 [
 
-	| r |
-	r := Random new.
+	self testDoSomethingWithRandom: SharedRandom globalGenerator 
+]
 
-	self testDoSomethingWithRandom: r
+{ #category : #tests }
+GeneralSeekerTests >> testSharedRandomSomething [
+
+	| list number |
+	list := OrderedCollection new.
+
+	1 to: 100 do: [ :i | list add: (SharedRandom globalGenerator nextInteger: 1000) ].
+
+	list do: [ :i | number := i ]
 ]
 
 { #category : #tests }

@@ -21,7 +21,10 @@ Class {
 		'instantiationFlag',
 		'persistentReverseOidsDictionary',
 		'nonPersistentReverseOidsDictionary',
-		'instantiatedLocalObjects'
+		'instantiatedLocalObjects',
+		'oidRegisteredFlag',
+		'lastRegisteredOid',
+		'lastRegisteredObjectClassName'
 	],
 	#category : #'Seeker-Components'
 }
@@ -179,6 +182,18 @@ SkObjectsTracker >> isPersistent [
 ]
 
 { #category : #accessing }
+SkObjectsTracker >> lastRegisteredObjectClassName [
+
+	^ lastRegisteredObjectClassName
+]
+
+{ #category : #accessing }
+SkObjectsTracker >> lastRegisteredOid [
+
+	^ lastRegisteredOid
+]
+
+{ #category : #accessing }
 SkObjectsTracker >> nonLocalObjects [
 
 	^ nonLocalObjects
@@ -206,6 +221,21 @@ SkObjectsTracker >> objectOidIsLocal: aNumber [
 ]
 
 { #category : #accessing }
+SkObjectsTracker >> oidRegisteredFlag [
+
+	| val |
+	val := oidRegisteredFlag.
+	oidRegisteredFlag := false.
+	^ val
+]
+
+{ #category : #accessing }
+SkObjectsTracker >> oidRegisteredFlag: anObject [
+
+	oidRegisteredFlag := anObject
+]
+
+{ #category : #accessing }
 SkObjectsTracker >> oidsDictionary [
 
 	^ oidsDictionary
@@ -217,6 +247,9 @@ SkObjectsTracker >> registerObjectInstance: anObject withOid: aNumber [
 	"anObject class = Metaclass ifTrue: [ ^ self ]."
 
 	oidsDictionary at: anObject ifAbsentPut: [ 
+		oidRegisteredFlag := true.
+		lastRegisteredOid := aNumber.
+		lastRegisteredObjectClassName := anObject class name.
 		nonPersistentReverseOidsDictionary at: aNumber ifAbsentPut: [ anObject ].
 		persistentReverseOidsDictionary at: aNumber ifAbsentPut: [ anObject ].
 		aNumber ].

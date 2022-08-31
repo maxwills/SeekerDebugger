@@ -80,6 +80,12 @@ SkQueryExperimentalTracer >> objectOidIsLocal: aNumber [
 	^ objectsTracker objectOidIsLocal: aNumber
 ]
 
+{ #category : #accessing }
+SkQueryExperimentalTracer >> objectWithOid: aNumber [
+
+	^ objectsTracker getObjectByOid: aNumber
+]
+
 { #category : #'as yet unclassified' }
 SkQueryExperimentalTracer >> onTracedContextChanged [
 
