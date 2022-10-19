@@ -4,6 +4,12 @@ Class {
 	#category : #'Seeker-TimeTravelingQueries'
 }
 
+{ #category : #accessing }
+UTTQAllObjectsOfExecution class >> displayModel [
+
+	^ QdmForDetectedObjects
+]
+
 { #category : #'instance creation' }
 UTTQAllObjectsOfExecution class >> queryFrom: programStates [
 
