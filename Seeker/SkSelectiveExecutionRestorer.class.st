@@ -107,7 +107,7 @@ SkSelectiveExecutionRestorer class >> initializeWritingMethodsUndoDictionary [
 		put: [ :csi | self undoBlockForReplaceFromToWithStartingAt: csi ].
 	"22"
 	"Pharo 10-11 Compatibility"
-	tmpCls := self environment at: #FloatArray ifAbsent: (self environment at: #Float32Array).
+	tmpCls := self environment at: #FloatArray ifAbsent: [self environment at: #Float32Array].
 	
 		
 		 writingMethodsUndoDictionary at: tmpCls >> #replaceFrom:to:with:startingAt:
