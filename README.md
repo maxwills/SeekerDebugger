@@ -34,14 +34,14 @@ The baseline will:
 - Single thread executions only.
 - No UI executions support.
 - (*) The **WorldMenu >> Library >> SeekerDev >> OpenSeekerDebugger Config** option opens a UI with the configuration of some parameters of the debugger. Not Documented at the moment.
-- The execution reversal mechanism can only undo changes that originates from within an execution (the debugged execution call tree). Changes made from outside the execution could affect the reversal mechanism.
+- The execution reversal mechanism can only undo changes that originates from within an execution (the debugged execution call tree). Changes made from outside the execution could affect the deterministic replay of an execution.
 - Performance: Executing code with Seeker is slow. The emergency stop (STOP button in the toolbar) might be useful if a query is started and takes too long to finish. Consider closing it by force if necessary.
 - No support yet for "Debug Drive development". Modifying the debugged code during a debug session might produce problems with time-indices.
 - Not fully compatible with instrumentation:
   - Executing Seeker will remove all breakpoints in the system.
   - If Breakpoints are added later will result in undefined behavior (don't add breakpoints while using the debugger).
   - Not tested yet with metalinks.
-  - Code instrumented with method proxies should work.
+  - Code instrumented with method proxies works, but introduces several extra instructions, making Seeker and Queries slower.
 - The "execution interpretation and reversal mechanisms" are known to have problems with:
   - Executions that perform calls on and/or modify global state UI related objects (HandMorphs, for example), which is sadly a big part of Pharo.
   - Executions that performs class installations, and removal form the system.
