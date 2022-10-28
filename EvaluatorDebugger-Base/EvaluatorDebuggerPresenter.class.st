@@ -45,6 +45,18 @@ Class {
 }
 
 { #category : #specs }
+EvaluatorDebuggerPresenter class >> defaultLayout [
+"Method used by Pharo11"
+^ SpBoxLayout newVertical
+      add: #toolbar expand: false fill: false padding: 0;
+      add: #code;
+      add: 'Expression Value' expand: false fill: false padding: 5;
+      add: #valueLabel expand: false fill: false padding: 5;
+      add: #inspector;
+      yourself
+]
+
+{ #category : #specs }
 EvaluatorDebuggerPresenter class >> defaultSpec [
 ^ SpBoxLayout newVertical
       add: #toolbar expand: false fill: false padding: 0;

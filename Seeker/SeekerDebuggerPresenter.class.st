@@ -27,6 +27,17 @@ SeekerDebuggerPresenter class >> defaultDisplayOrder [
 	^ 1
 ]
 
+{ #category : #layout }
+SeekerDebuggerPresenter class >> defaultLayout [
+"Required to work in Pharo 11 for mistery reasons. Not used in Pharo 10 and 9"
+	^ SpBoxLayout newVertical
+		  add: 'Stepping Control' expand: false;
+		  add: #toolbar expand: false;
+		  add: #tabs expand: true;
+		  add: #currentStepLabel expand: false;
+		  yourself
+]
+
 { #category : #'debugger extension' }
 SeekerDebuggerPresenter class >> displayOrder [
 
