@@ -34,7 +34,7 @@ SkSelectiveExecutionRestorer class >> initialize [
 
 { #category : #initialization }
 SkSelectiveExecutionRestorer class >> initializeWritingMethodsUndoDictionary [
-
+|tmpCls|
 	"Manually populating the mapping of writing methods and their undo blocks"
 
 	"The methods are the same that displays the script:
@@ -106,7 +106,11 @@ SkSelectiveExecutionRestorer class >> initializeWritingMethodsUndoDictionary [
 	writingMethodsUndoDictionary at: DoubleByteArray >> #replaceFrom:to:with:startingAt:
 		put: [ :csi | self undoBlockForReplaceFromToWithStartingAt: csi ].
 	"22"
-	writingMethodsUndoDictionary at: FloatArray >> #replaceFrom:to:with:startingAt:
+	"Pharo 10-11 Compatibility"
+	tmpCls := self environment at: #FloatArray ifAbsent: (self environment at: #Float32Array).
+	
+		
+		 writingMethodsUndoDictionary at: tmpCls >> #replaceFrom:to:with:startingAt:
 		put: [ :csi | self undoBlockForReplaceFromToWithStartingAt: csi ].
 	"23"
 	writingMethodsUndoDictionary at: LargeInteger >> #replaceFrom:to:with:startingAt:
