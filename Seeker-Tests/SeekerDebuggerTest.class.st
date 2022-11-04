@@ -5,6 +5,28 @@ Class {
 }
 
 { #category : #tests }
+SeekerDebuggerTest >> testDelayExecutionsNotFreezing [
+
+	| ex1 ex2 executor valueA   |
+	valueA := 0.
+	executor := SeekerExecutorLegacy new.
+	executor addExecution: (ex1 := SeekerDebugger headlessDebugBlock: [ 
+			        | a |
+			        1 to: 15 do: [ :i | a := i ].
+			        (Delay forMilliseconds: 1) wait.
+			        a := 7.
+			        a := a + 1.
+			        valueA := a factorial]).
+	executor startExecutions.
+	self assert: valueA = 40320.
+
+	self assert: (ex1 interruptedProcess suspendedContext readVariableNamed: #a) = 8.
+	ex1 tracer restartAtBytecodeOne.
+	self assert: (ex1 interruptedProcess suspendedContext readVariableNamed: #a) isNil.
+
+]
+
+{ #category : #tests }
 SeekerDebuggerTest >> testHeadless [
 
 	| seeker proc startingContext startingNode endNode currentState |
@@ -68,7 +90,7 @@ SeekerDebuggerTest >> testTimeTravelExternalTempVar [
 	"Launches a headless time-traveling session, then seeks for the timestamps of each assignment using a Query. Then, at each timestamp the test asserts that the value of the external temp variable of referred in the execution matches the expected value. Time stamps are traversed from the latest to the earliest to trigger reverse operations"
 
 	| ex1 executor tracer query results proc externalVar |
-	executor := SeekerExecutor new.
+	executor := SeekerExecutorLegacy new.
 	executor addExecution: (ex1 := SeekerDebugger headlessDebugBlock: [ 
 			        | a |
 			        a := 5.
@@ -102,7 +124,7 @@ SeekerDebuggerTest >> testTimeTravelLocalTempVar [
 	"Launches a headless time-traveling session, then seeks for the timestamps of each assignment using a Query. Then, at each timestamp the test asserts that the value of the local variable of the execution matches the expected value. Time stamps are traversed from the latest to the earliest to trigger reverse operations"
 
 	| ex1 executor tracer query results proc |
-	executor := SeekerExecutor new.
+	executor := SeekerExecutorLegacy new.
 	executor addExecution: (ex1 := SeekerDebugger headlessDebugBlock: [ 
 			        | a |
 			        a := 5.

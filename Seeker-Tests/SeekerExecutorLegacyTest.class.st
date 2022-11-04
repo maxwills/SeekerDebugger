@@ -1,25 +1,25 @@
 Class {
-	#name : #SeekerExecutorTest,
+	#name : #SeekerExecutorLegacyTest,
 	#superclass : #TestCase,
 	#category : #'Seeker-Tests-Experimental'
 }
 
 { #category : #test }
-SeekerExecutorTest >> testExecuteUntracked [
+SeekerExecutorLegacyTest >> testExecuteUntracked [
 
 	| executor val |
-	executor := SeekerExecutor new.
+	executor := SeekerExecutorLegacy new.
 	executor executeUntracked: [ val := 1 ].
 	self assert: val = 1
 ]
 
 { #category : #tests }
-SeekerExecutorTest >> testMultipleExecutions [
+SeekerExecutorLegacyTest >> testMultipleExecutions [
 
 	| ex1 ex2 executor valueA valueB |
 	valueA := 0.
 	valueB := 0.
-	executor := SeekerExecutor new.
+	executor := SeekerExecutorLegacy new.
 	executor addExecution: (ex1 := SeekerDebugger headlessDebugBlock: [ 
 			        | a |
 			        a := 5.
@@ -36,19 +36,19 @@ SeekerExecutorTest >> testMultipleExecutions [
 ]
 
 { #category : #tests }
-SeekerExecutorTest >> testMultipleExecutionsReverseOne [
+SeekerExecutorLegacyTest >> testMultipleExecutionsReverseOne [
 
 	| ex1 ex2 executor valueA valueB valueOfBInA valueOfAInB |
 	valueA := 0.
 	valueOfBInA := 0.
 	valueB := 0.
 	valueOfAInB := 0.
-	executor := SeekerExecutor new.
+	executor := SeekerExecutorLegacy new.
 	executor addExecution: (ex1 := SeekerDebugger headlessDebugBlock: [ 
 			        | a |
 			        1 to: 15 do: [ :i | a := i ].
 			        (Delay forMilliseconds: 1) wait.
-			        a := 9.
+			        a := 7.
 			        a := a + 1.
 			        valueA := a factorial.
 			        valueOfBInA := valueB ]).
@@ -59,10 +59,10 @@ SeekerExecutorTest >> testMultipleExecutionsReverseOne [
 			        valueB := b factorial.
 			        valueOfAInB := valueA ]).
 	executor startExecutions.
-	self assert: valueA = 3628800.
+	self assert: valueA = 40320.
 	self assert: valueB = 6.
 
-	self assert: (ex1 interruptedProcess suspendedContext readVariableNamed: #a) = 10.
+	self assert: (ex1 interruptedProcess suspendedContext readVariableNamed: #a) = 8.
 	self assert: (ex2 interruptedProcess suspendedContext readVariableNamed: #b) = 3.
 	ex1 tracer restartAtBytecodeOne.
 	self assert: (ex1 interruptedProcess suspendedContext readVariableNamed: #a) isNil.
@@ -70,7 +70,7 @@ SeekerExecutorTest >> testMultipleExecutionsReverseOne [
 ]
 
 { #category : #tests }
-SeekerExecutorTest >> testMultipleExecutionsSemaphore [
+SeekerExecutorLegacyTest >> testMultipleExecutionsSemaphore [
 
 	"The semaphore forces the assignment order of the sharedVar. The idea is that the variable is modified first and last by execution A. Undoing A should leave it as 0. Undoing b should leave it with the value of the first modification of #a"
 
@@ -80,7 +80,7 @@ SeekerExecutorTest >> testMultipleExecutionsSemaphore [
 	sem1 := Semaphore new.
 	sem2 := Semaphore new.
 	valueB := 0.
-	executor := SeekerExecutor new.
+	executor := SeekerExecutorLegacy new.
 	executor addExecution: (ex1 := SeekerDebugger headlessDebugBlock: [ 
 			        | a |
 			        sharedVar := #a.
@@ -108,12 +108,12 @@ SeekerExecutorTest >> testMultipleExecutionsSemaphore [
 ]
 
 { #category : #tests }
-SeekerExecutorTest >> testMultipleIndependentExecutionsReverseOne [
+SeekerExecutorLegacyTest >> testMultipleIndependentExecutionsReverseOne [
 
 	| ex1 ex2 executor valueA valueB |
 	valueA := 0.
 	valueB := 0.
-	executor := SeekerExecutor new.
+	executor := SeekerExecutorLegacy new.
 	executor addExecution:
 		(ex1 := SeekerDebugger headlessDebugBlock: [ "If somehow this is finished faster than b, then the test will fail. I use a busy loop to decrease that from happening. Note that the interpretation is really slow, so dont increase the counter too much"
 			        | a |
@@ -145,11 +145,11 @@ SeekerExecutorTest >> testMultipleIndependentExecutionsReverseOne [
 ]
 
 { #category : #tests }
-SeekerExecutorTest >> testWritingLog [
+SeekerExecutorLegacyTest >> testWritingLog [
 
 	| ex1 executor externalVar tracer seeker query results proc |
 	externalVar := 1.
-	executor := SeekerExecutor new.
+	executor := SeekerExecutorLegacy new.
 	executor addExecution: (ex1 := SeekerDebugger headlessDebugBlock: [ 
 			        | a |
 			        a := 5.
