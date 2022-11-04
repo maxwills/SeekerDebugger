@@ -17,6 +17,13 @@ SeekerExecutor class >> newFor: anOrderedCollectionOfTCUs [
 		  yourself
 ]
 
+{ #category : #testing }
+SeekerExecutor >> canStep [
+
+	tcus do: [ :each | each tracer canStep ifFalse: [ ^ false ] ].
+	^ true
+]
+
 { #category : #'as yet unclassified' }
 SeekerExecutor >> chooseNextTCUIndex [
 
@@ -51,13 +58,28 @@ SeekerExecutor >> programTimestamp: anObject [
 	programTimestamp := anObject
 ]
 
+{ #category : #initialization }
+SeekerExecutor >> restart [
+
+	programTimestamp := 0.
+	tcus do: [ :each | each restart ]
+]
+
 { #category : #api }
 SeekerExecutor >> step [
 
-"If is firstplay, it chooses next tcu, registers the order
+	"If is firstplay, it chooses next tcu, registers the order
 If not, it reads which tcu follows from the logsDirectory 
 After, it executes the tcu
 "
+
+	| nextTcuIndex tcu |
+	programTimestamp := programTimestamp + 1.
+	nextTcuIndex := self isFirstPlayOfStep
+		                ifTrue: [ self chooseNextTCUIndex ]
+		                ifFalse: [ tcuExecutionOrder at: programTimestamp ].
+	tcu := tcus at: [ nextTcuIndex ].
+	tcu stepBytecode
 ]
 
 { #category : #accessing }

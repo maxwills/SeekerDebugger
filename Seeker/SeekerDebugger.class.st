@@ -315,6 +315,12 @@ SeekerDebugger >> stepBackOver [
 ]
 
 { #category : #'debug - stepping' }
+SeekerDebugger >> stepBytecode [
+
+	tracer stepBytecode
+]
+
+{ #category : #'debug - stepping' }
 SeekerDebugger >> stepInto [
 
 	tracer stepInto.
