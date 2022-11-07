@@ -83,6 +83,29 @@ SeekerExecutorTest >> testRestart [
 ]
 
 { #category : #test }
+SeekerExecutorTest >> testSingleThreadTimeTravel [
+
+	| executor proc ex1 tracer |
+	executor := SeekerExecutor newFor:
+		            { (SeekerDebugger headlessDebugBlock: [ 
+			             | a |
+			             a := 5.
+			             a := a + 1 ]) }.
+	"Launches a headless time-traveling session, then seeks for the timestamps of each assignment using a Query. Then, at each timestamp the test asserts that the value of the local variable of the execution matches the expected value. Time stamps are traversed from the latest to the earliest to trigger reverse operations"
+	ex1 := executor tcus at: 1.
+	proc := ex1 interruptedProcess.
+	[ 
+	tracer := ex1 tracer.
+	1 to: 4 do: [ :i | executor step ].
+	self assert: (tracer currentContext readVariableNamed: #a) equals: 5.
+	executor
+		step;
+		step.
+	self assert: (tracer currentContext readVariableNamed: #a) equals: 6 ] 
+		ensure: [ proc resume ]
+]
+
+{ #category : #test }
 SeekerExecutorTest >> testStep [
 
 	| executor |
@@ -94,4 +117,28 @@ SeekerExecutorTest >> testStep [
 	self assert: executor programTimestamp equals: 1.
 	executor step.
 	self assert: executor programTimestamp equals: 2
+]
+
+{ #category : #test }
+SeekerExecutorTest >> testTimeTravelTo [
+
+	| executor proc ex1 tracer |
+	executor := SeekerExecutor newFor:
+		            { (SeekerDebugger headlessDebugBlock: [ 
+			             | a |
+			             a := 5.
+			             a := a + 1 ]) }.
+	"Launches a headless time-traveling session, then seeks for the timestamps of each assignment using a Query. Then, at each timestamp the test asserts that the value of the local variable of the execution matches the expected value. Time stamps are traversed from the latest to the earliest to trigger reverse operations"
+	
+	ex1 := executor tcus at: 1.
+	proc := ex1 interruptedProcess.
+	[ 
+	tracer := ex1 tracer.
+	executor timeTravelTo: 4.
+	self assert: (tracer currentContext readVariableNamed: #a) equals: 5.
+	executor timeTravelTo: 6.
+	self assert: (tracer currentContext readVariableNamed: #a) equals: 6.
+	executor timeTravelTo: 4.
+	self assert: (tracer currentContext readVariableNamed: #a) equals: 5.] 
+		ensure: [ proc resume ]
 ]

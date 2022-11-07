@@ -87,13 +87,21 @@ If not, it reads which tcu follows from the logsDirectory
 After, it executes the tcu
 "
 
-	| nextTcuIndex tcu |
+	| nextTcuIndex tcu firstPlayOfStep |
+	firstPlayOfStep := self isFirstPlayOfNextStep.
 	programTimestamp := programTimestamp + 1.
-	nextTcuIndex := self isFirstPlayOfStep
+	nextTcuIndex := firstPlayOfStep
 		                ifTrue: [ self chooseNextTCUIndex ]
 		                ifFalse: [ tcuExecutionOrder at: programTimestamp ].
 	tcuExecutionOrder at: programTimestamp put: nextTcuIndex.
-	tcu := tcus at: nextTcuIndex .
+	tcu := tcus at: nextTcuIndex.
+	tcus do: [ :eachTcu | 
+		eachTcu tracer localTimestampToProgram
+			at: eachTcu tracer bytecodeIndex
+			put: programTimestamp.
+		eachTcu tracer programTimestampToLocal
+			at: programTimestamp
+			put: eachTcu tracer bytecodeIndex ].
 	tcu stepBytecode
 ]
 
@@ -119,4 +127,11 @@ SeekerExecutor >> tcus [
 SeekerExecutor >> tcus: anObject [
 
 	tcus := anObject
+]
+
+{ #category : #'as yet unclassified' }
+SeekerExecutor >> timeTravelTo: aNumber [
+
+	self restart.
+	1 to: aNumber do: [ :i | self step ]
 ]

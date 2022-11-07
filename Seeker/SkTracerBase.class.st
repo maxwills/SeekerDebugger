@@ -20,7 +20,9 @@ Class {
 		'components',
 		'objectsTracker',
 		'systemCallsHandler',
-		'headless'
+		'headless',
+		'programTimestampToLocal',
+		'localTimestampToProgram'
 	],
 	#category : #'Seeker-Components'
 }
@@ -130,6 +132,8 @@ SkTracerBase >> initialize [
 
 	isSessionActive := false.
 	headless := false.
+	programTimestampToLocal := Dictionary new "For the moment, this dictionary is directly handled by SeekerExecutor when needed".
+	localTimestampToProgram := Dictionary new "For the moment, this dictionary is directly handled by SeekerExecutor when needed".
 	SeekerSessionHelpers doCriticalInitialization: [ 
 		self initializeInstrumentedMethods.
 		self initializeComponents.
@@ -184,6 +188,12 @@ SkTracerBase >> isSessionActive [
 	^ isSessionActive
 ]
 
+{ #category : #accessing }
+SkTracerBase >> localTimestampToProgram [
+
+	^ localTimestampToProgram
+]
+
 { #category : #'as yet unclassified' }
 SkTracerBase >> notifySessionEnd [
 
@@ -201,6 +211,12 @@ SkTracerBase >> objectsTracker [
 SkTracerBase >> objectsTracker: anObject [
 
 	objectsTracker := anObject
+]
+
+{ #category : #accessing }
+SkTracerBase >> programTimestampToLocal [
+
+	^ programTimestampToLocal
 ]
 
 { #category : #starting }
