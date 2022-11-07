@@ -79,6 +79,12 @@ SeekerExecutor >> restart [
 	tcus do: [ :each | each restart ]
 ]
 
+{ #category : #controlling }
+SeekerExecutor >> resume [
+
+	tcus do: [ :each | each tracer debuggedProcess resume]
+]
+
 { #category : #api }
 SeekerExecutor >> step [
 

@@ -83,6 +83,23 @@ SeekerExecutorTest >> testRestart [
 ]
 
 { #category : #test }
+SeekerExecutorTest >> testResume [
+
+	| executor proc ex1 tracer |
+	executor := SeekerExecutor newFor:
+		            { (SeekerDebugger headlessDebugBlock: [ 
+			             | a |
+			             a := 5.
+			             a := a + 1 ]) }.
+	ex1 := executor tcus at: 1.
+	proc := ex1 interruptedProcess.
+	[ 
+	tracer := ex1 tracer.
+	executor timeTravelTo: 4 ] ensure: [ executor resume ].
+	self assert: proc isSuspended not
+]
+
+{ #category : #test }
 SeekerExecutorTest >> testSingleThreadTimeTravel [
 
 	| executor proc ex1 tracer |
@@ -128,10 +145,8 @@ SeekerExecutorTest >> testTimeTravelTo [
 			             | a |
 			             a := 5.
 			             a := a + 1 ]) }.
-	"Launches a headless time-traveling session, then seeks for the timestamps of each assignment using a Query. Then, at each timestamp the test asserts that the value of the local variable of the execution matches the expected value. Time stamps are traversed from the latest to the earliest to trigger reverse operations"
-	
-	ex1 := executor tcus at: 1.
-	proc := ex1 interruptedProcess.
+		ex1 := executor tcus at: 1.
+		proc := ex1 interruptedProcess.
 	[ 
 	tracer := ex1 tracer.
 	executor timeTravelTo: 4.
