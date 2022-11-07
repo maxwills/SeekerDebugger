@@ -27,3 +27,20 @@ SeekerExecutorTest >> testCanStep [
 		executor step ].
 	self assert: endReached
 ]
+
+{ #category : #test }
+SeekerExecutorTest >> testChooseNextTCUIndex [
+
+	| executor random nextTCU |
+	executor := SeekerExecutor newFor:
+		            { (SeekerDebugger headlessDebugBlock: [ self programA ]) }.
+	random := Random seed: 1.
+	nextTCU := executor chooseNextTCUIndex.
+	self assert: nextTCU equals: 1.
+
+	executor := SeekerExecutor newFor: { 
+			            (SeekerDebugger headlessDebugBlock: [ self programA ]).
+			            (SeekerDebugger headlessDebugBlock: [ self programA ]) }.
+	nextTCU := executor chooseNextTCUIndex.
+	self assert: (nextTCU = 1 or: [ nextTCU = 2 ])
+]

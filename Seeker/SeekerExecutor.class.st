@@ -4,7 +4,8 @@ Class {
 	#instVars : [
 		'programTimestamp',
 		'tcus',
-		'tcuExecutionOrder'
+		'tcuExecutionOrder',
+		'random'
 	],
 	#category : #'Seeker-Experimental'
 }
@@ -29,7 +30,7 @@ SeekerExecutor >> chooseNextTCUIndex [
 
 	"For now we assume equal thread priority, and a randomized scheduling strategy"
 
-	^ SharedRandom globalGenerator nextIntegerBetween: 1 and: tcus size
+	^ random nextIntegerBetween: 1 and: tcus size
 ]
 
 { #category : #initialization }
@@ -38,6 +39,7 @@ SeekerExecutor >> initialize [
 	tcus := OrderedCollection new.
 	programTimestamp := 0.
 	tcuExecutionOrder := Dictionary new.
+	random := SharedRandom globalGenerator.
 ]
 
 { #category : #testing }
@@ -56,6 +58,18 @@ SeekerExecutor >> programTimestamp [
 SeekerExecutor >> programTimestamp: anObject [
 
 	programTimestamp := anObject
+]
+
+{ #category : #accessing }
+SeekerExecutor >> random [
+
+	^ random
+]
+
+{ #category : #accessing }
+SeekerExecutor >> random: anObject [
+
+	random := anObject
 ]
 
 { #category : #initialization }
