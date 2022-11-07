@@ -43,9 +43,9 @@ SeekerExecutor >> initialize [
 ]
 
 { #category : #testing }
-SeekerExecutor >> isFirstPlayOfStep [
+SeekerExecutor >> isFirstPlayOfNextStep [
 
-	^ (tcuExecutionOrder includesKey: programTimestamp) not
+	^ (tcuExecutionOrder includesKey: programTimestamp + 1) not
 ]
 
 { #category : #accessing }
@@ -92,6 +92,7 @@ After, it executes the tcu
 	nextTcuIndex := self isFirstPlayOfStep
 		                ifTrue: [ self chooseNextTCUIndex ]
 		                ifFalse: [ tcuExecutionOrder at: programTimestamp ].
+	tcuExecutionOrder at: programTimestamp put: nextTcuIndex.
 	tcu := tcus at: nextTcuIndex .
 	tcu stepBytecode
 ]

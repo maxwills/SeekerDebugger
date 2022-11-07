@@ -44,3 +44,54 @@ SeekerExecutorTest >> testChooseNextTCUIndex [
 	nextTCU := executor chooseNextTCUIndex.
 	self assert: (nextTCU = 1 or: [ nextTCU = 2 ])
 ]
+
+{ #category : #test }
+SeekerExecutorTest >> testIsFirstPlayOfNextStep [
+
+	| executor |
+	executor := SeekerExecutor newFor:
+		            { (SeekerDebugger headlessDebugBlock: [ self programA ]) }.
+		
+	self assert: executor programTimestamp equals: 0.
+	self assert: executor isFirstPlayOfNextStep.
+	executor step.
+	self assert: executor programTimestamp equals: 1.
+	self assert: executor isFirstPlayOfNextStep.
+	executor step.
+	self assert: executor programTimestamp equals: 2.
+	self assert: executor isFirstPlayOfNextStep.
+	executor restart.
+	self assert: executor programTimestamp equals: 0.
+	self deny: executor isFirstPlayOfNextStep.
+	executor step.
+	self assert: executor programTimestamp equals: 1.
+	self deny: executor isFirstPlayOfNextStep.
+]
+
+{ #category : #test }
+SeekerExecutorTest >> testRestart [
+
+	| executor |
+	executor := SeekerExecutor newFor:
+		            { (SeekerDebugger headlessDebugBlock: [ self programA ]) }.
+	self assert: executor programTimestamp equals: 0.
+
+	executor step.
+	self deny: executor programTimestamp equals: 0.
+	executor restart.
+	self assert: executor programTimestamp equals: 0
+]
+
+{ #category : #test }
+SeekerExecutorTest >> testStep [
+
+	| executor |
+	executor := SeekerExecutor newFor:
+		            { (SeekerDebugger headlessDebugBlock: [ self programA ]) }.
+	self assert: executor programTimestamp equals: 0.
+
+	executor step.
+	self assert: executor programTimestamp equals: 1.
+	executor step.
+	self assert: executor programTimestamp equals: 2
+]
