@@ -78,7 +78,7 @@ After, it executes the tcu
 	nextTcuIndex := self isFirstPlayOfStep
 		                ifTrue: [ self chooseNextTCUIndex ]
 		                ifFalse: [ tcuExecutionOrder at: programTimestamp ].
-	tcu := tcus at: [ nextTcuIndex ].
+	tcu := tcus at: nextTcuIndex .
 	tcu stepBytecode
 ]
 
