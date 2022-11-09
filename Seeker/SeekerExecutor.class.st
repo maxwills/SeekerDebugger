@@ -111,6 +111,12 @@ After, it executes the tcu
 	tcu stepBytecode
 ]
 
+{ #category : #api }
+SeekerExecutor >> stepUntil: aBlock [
+
+	[ aBlock value or: [ self canStep not ] ] whileFalse: [ self step ]
+]
+
 { #category : #accessing }
 SeekerExecutor >> tcuExecutionOrder [
 
