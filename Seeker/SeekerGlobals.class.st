@@ -176,6 +176,7 @@ SeekerGlobals >> stopWatchingProcess: aProcess [
 { #category : #'as yet unclassified' }
 SeekerGlobals >> updateModifierKeys: anEvent [
 
+	anEvent buttons ifNil: [ ^ false ].
 	isAltPressed := (anEvent respondsTo: #altKeyPressed)
 		                ifTrue: [ anEvent altKeyPressed ]
 		                ifFalse: [ false ].
