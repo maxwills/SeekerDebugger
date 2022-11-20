@@ -21,7 +21,9 @@ SeekerExecutor class >> newFor: anOrderedCollectionOfTCUs [
 { #category : #testing }
 SeekerExecutor >> canStep [
 
-	tcus do: [ :each | each tracer canStep ifTrue: [ ^ true ] ].
+	tcus do: [ :each | 
+		each tracer debuggedProcess isWaitingForSemaphore not and: [ 
+			each tracer canStep ifTrue: [ ^ true ] ] ].
 	^ false
 ]
 
@@ -32,7 +34,11 @@ SeekerExecutor >> chooseNextTCUIndex [
 
 	| nextT |
 	nextT := random nextIntegerBetween: 1 and: tcus size.
-	[ (tcus at: nextT) tracer canStep ] whileFalse: [ 
+	[ 
+	| t |
+	t := tcus at: nextT.
+	t tracer debuggedProcess isWaitingForSemaphore not and: [ 
+		t tracer canStep ] ] whileFalse: [ 
 		nextT := random nextIntegerBetween: 1 and: tcus size ].
 	^ nextT
 ]

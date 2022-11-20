@@ -9,3 +9,12 @@ Process >> findSeeker [
 		self == s tracer debuggedProcess ifTrue: [ ^ s ] ].
 	^ nil
 ]
+
+{ #category : #'*Seeker' }
+Process >> isWaitingForSemaphore [
+
+	myList ifNil: [ ^ false ].
+	myList class = Semaphore ifTrue: [ ^ true ].
+	"myList do: [ :each | each class = Semaphore ifTrue: [ ^ true ] ]."
+	^ false
+]

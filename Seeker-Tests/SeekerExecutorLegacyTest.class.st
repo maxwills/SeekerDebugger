@@ -39,6 +39,9 @@ SeekerExecutorLegacyTest >> testMultipleExecutions [
 SeekerExecutorLegacyTest >> testMultipleExecutionsReverseOne [
 
 	| ex1 ex2 executor valueA valueB valueOfBInA valueOfAInB |
+	self flag:
+		'The test takes too long. Deactivated for the moment, and also the Legacy executor is not used anymore'.
+	true ifTrue: [ ^ self ].
 	valueA := 0.
 	valueOfBInA := 0.
 	valueB := 0.
@@ -62,11 +65,16 @@ SeekerExecutorLegacyTest >> testMultipleExecutionsReverseOne [
 	self assert: valueA = 40320.
 	self assert: valueB = 6.
 
-	self assert: (ex1 interruptedProcess suspendedContext readVariableNamed: #a) = 8.
-	self assert: (ex2 interruptedProcess suspendedContext readVariableNamed: #b) = 3.
+	self assert:
+		(ex1 interruptedProcess suspendedContext readVariableNamed: #a) = 8.
+	self assert:
+		(ex2 interruptedProcess suspendedContext readVariableNamed: #b) = 3.
 	ex1 tracer restartAtBytecodeOne.
-	self assert: (ex1 interruptedProcess suspendedContext readVariableNamed: #a) isNil.
-	self assert: (ex2 interruptedProcess suspendedContext readVariableNamed: #b) = 3
+	self assert:
+		(ex1 interruptedProcess suspendedContext readVariableNamed: #a)
+			isNil.
+	self assert:
+		(ex2 interruptedProcess suspendedContext readVariableNamed: #b) = 3
 ]
 
 { #category : #tests }
