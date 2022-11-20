@@ -46,6 +46,20 @@ SeekerExecutorTest >> testChooseNextTCUIndex [
 ]
 
 { #category : #test }
+SeekerExecutorTest >> testExecutesAllThreads [
+
+	| executor valA valB |
+	1 to: 10 do: [ :i | 
+		executor := SeekerExecutor newFor: { 
+				            (SeekerDebugger headlessDebugBlock: [ valA := 1 ]).
+				            (SeekerDebugger headlessDebugBlock: [ valB := 1 ]) }.
+		[ 
+		executor stepUntil: [ false ].
+		self assert: valA equals: 1.
+		self assert: valB equals: 1 ] ensure: [ executor resume ] ]
+]
+
+{ #category : #test }
 SeekerExecutorTest >> testIsFirstPlayOfNextStep [
 
 	| executor |
@@ -134,6 +148,16 @@ SeekerExecutorTest >> testStep [
 	self assert: executor programTimestamp equals: 1.
 	executor step.
 	self assert: executor programTimestamp equals: 2
+]
+
+{ #category : #test }
+SeekerExecutorTest >> testStepUntilFalse [
+
+	| executor valA valB |
+	executor := SeekerExecutor newFor: { 
+			            (SeekerDebugger headlessDebugBlock: [ valA := 1 ]).
+			            (SeekerDebugger headlessDebugBlock: [ valB := 1 ]) }.
+	[ executor stepUntil: [ false ] ] ensure: [ executor resume ]
 ]
 
 { #category : #test }

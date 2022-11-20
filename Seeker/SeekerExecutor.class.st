@@ -21,8 +21,8 @@ SeekerExecutor class >> newFor: anOrderedCollectionOfTCUs [
 { #category : #testing }
 SeekerExecutor >> canStep [
 
-	tcus do: [ :each | each tracer canStep ifFalse: [ ^ false ] ].
-	^ true
+	tcus do: [ :each | each tracer canStep ifTrue: [ ^ true ] ].
+	^ false
 ]
 
 { #category : #'as yet unclassified' }
@@ -30,7 +30,11 @@ SeekerExecutor >> chooseNextTCUIndex [
 
 	"For now we assume equal thread priority, and a randomized scheduling strategy"
 
-	^ random nextIntegerBetween: 1 and: tcus size
+	| nextT |
+	nextT := random nextIntegerBetween: 1 and: tcus size.
+	[ (tcus at: nextT) tracer canStep ] whileFalse: [ 
+		nextT := random nextIntegerBetween: 1 and: tcus size ].
+	^ nextT
 ]
 
 { #category : #initialization }
@@ -94,6 +98,7 @@ After, it executes the tcu
 "
 
 	| nextTcuIndex tcu firstPlayOfStep |
+	self canStep ifFalse: [ ^ false ].
 	firstPlayOfStep := self isFirstPlayOfNextStep.
 	programTimestamp := programTimestamp + 1.
 	nextTcuIndex := firstPlayOfStep
