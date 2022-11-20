@@ -60,26 +60,29 @@ ExecutionControlUnitTest >> testMultiThreadExecutionReverse [
 { #category : #tests }
 ExecutionControlUnitTest >> testSemaphore [
 
-	"slow tests. around 5 to 10 secs"
-
-	| ecu sharedObject ecuProc1 programState1 semA |
-	semA := Semaphore new.
-	sharedObject := sharedObject := ECUTestObject new.
+	| ecu sharedObject ecuProc1 programState1 sem time0 |
+	sem := Semaphore new.
+	sharedObject := nil.
 	ecu := SeekerExecutor newFor:
 		       { (SeekerDebugger headlessDebugBlock: [ 
-			        semA wait.
-			        sharedObject a: 0.
-			        sharedObject a: sharedObject b ]) }.
+			        sem wait.]) }.
 
 	ecuProc1 := (ecu tcus at: 1) tracer debuggedProcess.
 	programState1 := (ecu tcus at: 1) tracer currentState.
 
 	[ 
-	self deny: ecuProc1 isWaitingForSemaphore.
-	ecu stepUntil: [ ecuProc1 isWaitingForSemaphore ].
-	self assert: ecuProc1 isWaitingForSemaphore.
-	semA signal.
-	ecu stepUntil: [ false ] ] ensure: [ ecu resume ]
+	ecu stepUntil: [ sharedObject isNotNil ].
+	ecu stepUntil: [ sharedObject a = 0 ].
+	self assert: sharedObject a equals: 0.
+	1 to: 100 do: [ :k | ecu step ].
+	time0 := ecu programTimestamp.
+	sem signal.
+	self assert: sharedObject a equals: 0.
+	ecu stepUntil: [ sharedObject a = 1 ].
+	self assert: sharedObject a equals: 1.
+	sem signal.
+	ecu stepUntil: [ false ].
+	self assert: sharedObject a equals: 2 ] ensure: [ ecu resume ]
 ]
 
 { #category : #tests }
@@ -181,37 +184,72 @@ ExecutionControlUnitTest >> testSemaphoreSignaledFromMonitoredHaveExpectedValues
 { #category : #tests }
 ExecutionControlUnitTest >> testSemaphoreSignaledFromUnmonitored [
 
-	| procA ecu sharedObject objB ecuProc1 programState1 sem time0 |
-	sem := Semaphore new.
-	sharedObject := nil.
-	ecu := SeekerExecutor newFor:
-		       { (SeekerDebugger headlessDebugBlock: [ 
-			        sharedObject := ECUTestObject new.
-			        sharedObject a: 0.
-			        sharedObject a: sharedObject a + 1.
-			        sem wait.
-			        sem wait.
-			        sharedObject a: sharedObject a + 1 ]) }.
+	| ecu sharedObject ecuProc1 programState1 sem time0 |
+	1 to: 20 do: [ :i | 
+		sem := Semaphore new.
+		sharedObject := nil.
+		ecu := SeekerExecutor newFor:
+			       { (SeekerDebugger headlessDebugBlock: [ 
+				        sharedObject := ECUTestObject new.
+				        sharedObject a: 0.
+				        sharedObject a: sharedObject a + 1.
+				        sem wait.
+				        sem wait.
+				        sharedObject a: sharedObject a + 1 ]) }.
 
-	ecuProc1 := (ecu tcus at: 1) tracer debuggedProcess.
-	programState1 := (ecu tcus at: 1) tracer currentState.
+		ecuProc1 := (ecu tcus at: 1) tracer debuggedProcess.
+		programState1 := (ecu tcus at: 1) tracer currentState.
 
-	[ 
-	ecu stepUntil: [ sharedObject isNotNil ].
-	ecu stepUntil: [ sharedObject a = 0 ].
-	self assert: sharedObject a equals: 0.
-	time0 := ecu programTimestamp.
-	sem signal.
-	self assert: sharedObject a equals: 0.
-	ecu stepUntil: [ sharedObject a = 1 ].
-	sem signal.
-	self assert: sharedObject a equals: 1.
-	self assert: sharedObject a equals: 1 ] ensure: [ ecu resume ]
+		[ 
+		ecu stepUntil: [ sharedObject isNotNil ].
+		ecu stepUntil: [ sharedObject a = 0 ].
+		self assert: sharedObject a equals: 0.
+		1 to: 100 do: [ :k | ecu step ].
+		time0 := ecu programTimestamp.
+		sem signal.
+		self assert: sharedObject a equals: 0.
+		ecu stepUntil: [ sharedObject a = 1 ].
+		self assert: sharedObject a equals: 1.
+		sem signal.
+		ecu stepUntil: [ false ].
+		self assert: sharedObject a equals: 2 ] ensure: [ ecu resume ] ]
 ]
 
 { #category : #tests }
 ExecutionControlUnitTest >> testSemaphores [
 
+	"Takes around 10 secs"
+
+	| ecu sharedObject ecuProc1 programState1 semA |
+	semA := Semaphore new.
+	sharedObject := sharedObject := ECUTestObject new.
+	ecu := SeekerExecutor newFor:
+		       { (SeekerDebugger headlessDebugBlock: [ semA wait ]) }.
+
+	ecuProc1 := (ecu tcus at: 1) tracer debuggedProcess.
+	programState1 := (ecu tcus at: 1) tracer currentState.
+
+	[ 1 to: 10 do: [ :s | ecu step ] ] ensure: [ ecu resume ]
+]
+
+{ #category : #tests }
+ExecutionControlUnitTest >> testSemaphores1 [
+
+	"Takes around 10 secs"
+
+	| ecu sharedObject ecuProc1 programState1 semA |
+	semA := Semaphore new.
+	sharedObject := sharedObject := ECUTestObject new.
+	ecu := SeekerExecutor newFor:
+		       { (SeekerDebugger headlessDebugBlock: [ semA wait ]) }.
+
+	ecuProc1 := (ecu tcus at: 1) tracer debuggedProcess.
+	programState1 := (ecu tcus at: 1) tracer currentState.
+
+	[ 
+	ecu stepUntil: [ ecuProc1 isWaitingForSemaphore ].
+	self assert: ecuProc1 isWaitingForSemaphore.
+	semA signal ] ensure: [ ecu resume ]
 ]
 
 { #category : #tests }

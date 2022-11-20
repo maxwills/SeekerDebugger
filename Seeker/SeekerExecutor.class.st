@@ -32,24 +32,23 @@ SeekerExecutor >> chooseNextTCUIndex [
 
 	"For now we assume equal thread priority, and a randomized scheduling strategy"
 
-	| nextT |
-	nextT := random nextIntegerBetween: 1 and: tcus size.
-	[ 
-	| t |
-	t := tcus at: nextT.
-	t tracer debuggedProcess isWaitingForSemaphore not and: [ 
-		t tracer canStep ] ] whileFalse: [ 
-		nextT := random nextIntegerBetween: 1 and: tcus size ].
-	^ nextT
+	| indices |
+	indices := (1 to: tcus size) asOrderedCollection shuffleBy: random.
+	indices do: [ :each | 
+		| t |
+		t := tcus at: each.
+		(t tracer debuggedProcess isWaitingForSemaphore not and: [ 
+			 t tracer canStep ]) ifTrue: [ ^ each ] ].
+	^ 1
 ]
 
 { #category : #initialization }
-SeekerExecutor >> initialize [ 
+SeekerExecutor >> initialize [
 
 	tcus := OrderedCollection new.
 	programTimestamp := 0.
 	tcuExecutionOrder := Dictionary new.
-	random := SharedRandom globalGenerator.
+	random := SharedRandom globalGenerator
 ]
 
 { #category : #testing }

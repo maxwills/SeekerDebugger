@@ -32,7 +32,9 @@ SkSystemCallsHandler >> handleSystemCall: interpretationBlock [
 	| bytecodeIndex returnValue storedReturnValue hasStoredValue nextContext |
 	bytecodeIndex := currentState bytecodeIndex.
 	hasStoredValue := true.
-	storedReturnValue := returnValuesDictionary at: bytecodeIndex ifAbsent: [ hasStoredValue := false ].
+	storedReturnValue := returnValuesDictionary
+		                     at: bytecodeIndex
+		                     ifAbsent: [ hasStoredValue := false ].
 	hasStoredValue
 		ifFalse: [ "first time executing the systemCall. interpret it and store the returned value"
 			nextContext := interpretationBlock value.
@@ -57,7 +59,8 @@ SkSystemCallsHandler >> initialize [
 	"next methods are listed as a workaround. To be properly handled in the future"
 	"Note that critical might call other system calls inside. Then, a deterministic replay should log those systems calls. However, at which timestamp? and how to enforce the system call (most likely a signal) that should happen at that point?"
 	"systemCalls add: Mutex >> #critical:."
-	"systemCalls add: Semaphore >> #wait """.
+	systemCalls add: Semaphore >> #wait .
+	systemCalls add: Semaphore >> #signal.
 	systemCalls add: BlockClosure >> #fork "this cant be correct, but need to investigate its effects in detail".
 	systemCalls add: SeekerExecutorLegacy >> #executeUntracked:
 ]

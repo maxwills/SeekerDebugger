@@ -309,34 +309,49 @@ This will fail if the code relies on more encoders (Need to test in Pharo 9.0)"
 	currentContext := tracer currentContext.
 	iteratingFlag := true.
 	[ "currentCtx := self currentContext."
-	instrStream := InstructionStream on: currentContext compiledCode pc: currentContext pc.
-	Processor activeProcess
-		evaluate: [ 
-			[ (emergencyStopFlag or: aBlock) or: [ self cantStep ] ] whileFalse: [ 
-				| previousContext startingNode |
-				previousContext := currentContext.
-				startingNode := currentState node.
-				tracer doPreStepProcess.
-				"currentContext stepIntoQuickMethod: true."
-				currentContext := skipFlag
+	instrStream := InstructionStream
+		               on: currentContext compiledCode
+		               pc: currentContext pc.
+	[ (emergencyStopFlag or: aBlock) or: [ self cantStep ] ] whileFalse: [ 
+		| previousContext startingNode |
+		previousContext := currentContext.
+		startingNode := currentState node.
+		tracer doPreStepProcess.
+		"currentContext stepIntoQuickMethod: true."
+		currentContext := skipFlag
+			                  ifTrue: [ 
+				                  skipFlag := false.
+				                  debuggedProcess completeStep: currentContext ]
+			                  ifFalse: [ 
+				                  (systemCallsHandler enabled and: [ 
+					                   systemCallsHandler isSystemCall ])
 					                  ifTrue: [ 
-						                  skipFlag := false.
-						                  debuggedProcess completeStep: currentContext ]
+						                  systemCallsHandler handleSystemCall: [ 
+							                  self flag:
+								                  'the execution of the problematic method is considered as 1 bytecode for the moment'.
+							                  Processor activeProcess
+								                  evaluate: [ 
+								                  debuggedProcess completeStep: currentContext ]
+								                  onBehalfOf: debuggedProcess "instrStream interpretNextSistaV1InstructionFor: currentContext " ] ]
 					                  ifFalse: [ 
-						                  (systemCallsHandler enabled and: [ systemCallsHandler isSystemCall ])
-							                  ifTrue: [ 
-								                  systemCallsHandler handleSystemCall: [ 
-									                  self flag:
-										                  'the execution of the problematic method is considered as 1 bytecode for the moment'.
-									                  debuggedProcess completeStep: currentContext "instrStream interpretNextSistaV1InstructionFor: currentContext " ] ]
-							                  ifFalse: [ instrStream interpretNextSistaV1InstructionFor: currentContext ] ].
-				tracer currentContext: currentContext.
-				instrStream method: currentContext compiledCode pc: currentContext pc.
-				debuggedProcess suspendedContext: currentContext.
-				tracer doPostStepProcessWithPrevNode: startingNode andPrevContext: previousContext.
-				afterStepBlock ifNotNil: afterStepBlock ] ]
-		onBehalfOf: debuggedProcess ] ensure: [ iteratingFlag := false ].
-	^ emergencyStopFlag ifTrue: [ self handleEmergencyStopFlag ]
+						                  Processor activeProcess
+							                  evaluate: [ 
+							                  instrStream 
+								                  interpretNextSistaV1InstructionFor:
+								                  currentContext ]
+							                  onBehalfOf: debuggedProcess ] ].
+		tracer currentContext: currentContext.
+		instrStream
+			method: currentContext compiledCode
+			pc: currentContext pc.
+		debuggedProcess suspendedContext: currentContext.
+		tracer
+			doPostStepProcessWithPrevNode: startingNode
+			andPrevContext: previousContext.
+		afterStepBlock ifNotNil: afterStepBlock ] ] ensure: [ 
+		iteratingFlag := false ].
+	^ emergencyStopFlag
+		  ifTrue: [ self handleEmergencyStopFlag ]
 		  ifFalse: [ self cantStep not ]
 ]
 
