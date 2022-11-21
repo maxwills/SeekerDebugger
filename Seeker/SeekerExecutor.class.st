@@ -122,6 +122,12 @@ After, it executes the tcu
 ]
 
 { #category : #api }
+SeekerExecutor >> stepToEnd [
+
+	^ self stepUntil: [ false ]
+]
+
+{ #category : #api }
 SeekerExecutor >> stepUntil: aBlock [
 
 	[ aBlock value or: [ self canStep not ] ] whileFalse: [ self step ]
