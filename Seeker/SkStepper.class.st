@@ -24,7 +24,8 @@ Class {
 		'skippableMethods',
 		'skipFlag',
 		'emergencyStopFlag',
-		'systemCallsHandler'
+		'systemCallsHandler',
+		'haltableMode'
 	],
 	#category : #'Seeker-Components'
 }
@@ -100,11 +101,23 @@ SkStepper >> getAllMethodsOfPackageNamed: aString [
 	^ methods
 ]
 
+{ #category : #accessing }
+SkStepper >> haltableMode [
+
+	^ haltableMode
+]
+
+{ #category : #accessing }
+SkStepper >> haltableMode: anObject [
+
+	haltableMode := anObject
+]
+
 { #category : #'actions api' }
 SkStepper >> handleEmergencyStopFlag [
 
 	emergencyStopFlag := false.
-	self inform: 'Seeker Emergency Stop'.
+	"self inform: 'Seeker Emergency Stop'."
 	tracer updateUI.
 	^ false
 ]
@@ -116,6 +129,7 @@ SkStepper >> initialize [
 	iteratingFlag := false.
 	skipFlag := false.
 	emergencyStopFlag := false.
+	haltableMode := true "used to handle halts".
 	self initializeSkippableMethods
 ]
 

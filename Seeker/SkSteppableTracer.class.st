@@ -61,6 +61,14 @@ SkSteppableTracer >> bytecodeIndex [
 	^ executedBytecode
 ]
 
+{ #category : #mapping }
+SkSteppableTracer >> bytecodeIndex: anObject [
+
+	"total number of bytecode steps executed"
+
+	executedBytecode := anObject
+]
+
 { #category : #accessing }
 SkSteppableTracer >> checkPreventNextLiveStateRestoration [
 
@@ -129,6 +137,16 @@ SkSteppableTracer >> debuggedProcess [
 SkSteppableTracer >> debuggedProcess: anObject [
 
 	debuggedProcess := anObject
+]
+
+{ #category : #'as yet unclassified' }
+SkSteppableTracer >> doAsUnhaltable: aBlock [
+
+	| haltableFlag |
+	haltableFlag := stepper haltableMode.
+	stepper haltableMode: false.
+
+	aBlock ensure: [ stepper haltableMode: haltableFlag ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -517,14 +535,16 @@ SkSteppableTracer >> timeTravelToBytecodeIndex: aNumber [
 
 	self doAndUpdateSessionAfter: [ 
 		aNumber = executedBytecode ifTrue: [ ^ self ].
-		aNumber > executedBytecode
-			ifTrue: [ "no need to restart"
-				| targetTraceTime |
-				targetTraceTime := aNumber asExecutedBytecodeTraceTime.
-				self stepBytecodeUntilConditionIsTrue: [ 
-					self traceTime @>= targetTraceTime ] ]
-			ifFalse: [ 
-			self timeTravelToTraceTime: aNumber asExecutedBytecodeTraceTime ] ]
+		self doAsUnhaltable: [ 
+			aNumber > executedBytecode
+				ifTrue: [ "no need to restart"
+					| targetTraceTime |
+					targetTraceTime := aNumber asExecutedBytecodeTraceTime.
+					self doAsUnhaltable: [ 
+						self stepBytecodeUntilConditionIsTrue: [ 
+							self traceTime @>= targetTraceTime ] ] ]
+				ifFalse: [ 
+				self timeTravelToTraceTime: aNumber asExecutedBytecodeTraceTime ] ] ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -534,8 +554,9 @@ SkSteppableTracer >> timeTravelToTraceTime: aTraceTime [
 
 	self doAndUpdateSessionAfter: [ 
 		self restartAtBytecodeOne.
-		self stepBytecodeUntilConditionIsTrue: [ 
-			self traceTime @>= aTraceTime ] ]
+		self doAsUnhaltable: [ 
+			self stepBytecodeUntilConditionIsTrue: [ 
+				self traceTime @>= aTraceTime ] ] ]
 ]
 
 { #category : #starting }

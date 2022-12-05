@@ -112,6 +112,32 @@ TimeTravelingQuery >> displayModel: anObject [
 	displayModel := anObject
 ]
 
+{ #category : #enumerating }
+TimeTravelingQuery >> do: aBlock [
+
+	| tracer queryingFlag |
+	tracer := self findTracer.
+	queryingFlag := tracer stepper haltableMode.
+	tracer stepper haltableMode: false.
+	[ super do: aBlock ] ensure: [ 
+		tracer stepper haltableMode: queryingFlag ]
+]
+
+{ #category : #enumerating }
+TimeTravelingQuery >> do: aBlock withTimedCallback: timedCallbackBlock every: anIntMilliseconds [
+
+	| tracer queryingFlag |
+	tracer := self findTracer.
+	queryingFlag := tracer stepper haltableMode.
+	tracer stepper haltableMode: false.
+	[ 
+	super
+		do: aBlock
+		withTimedCallback: timedCallbackBlock
+		every: anIntMilliseconds ] ensure: [ 
+		tracer stepper haltableMode: queryingFlag ]
+]
+
 { #category : #execution }
 TimeTravelingQuery >> executeAndShowIn: aSeekerTracer [
 
