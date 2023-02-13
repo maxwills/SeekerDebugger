@@ -596,6 +596,20 @@ SeekerCurrentStateInterface >> methodSelector [
 	^ self context selector
 ]
 
+{ #category : #testing }
+SeekerCurrentStateInterface >> newMethod [
+
+	<qwpSubCached>
+	^ self node isVariable
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> newMethodRenamedASD [
+
+	<qwpSubCached>
+	^ self node isVariable
+]
+
 { #category : #accessing }
 SeekerCurrentStateInterface >> node [
 

@@ -217,12 +217,12 @@ SkStepper >> isRiskyStep [
 	| context receiver |
 	context := currentState context.
 	receiver := context receiver.
-	^ currentState methodSelector = #primitiveFailed or: [ 
+	^ currentState methodSelector = #primitiveFailed or: [
 		  receiver isClass
-			  ifTrue: [ 
-			  receiver == TestResult and: [ context methodSelector = #failure ] ]
-			  ifFalse: [ 
-				  currentState methodSelector = #defaultAction and: [ 
+			  ifTrue: [
+			  receiver == TestResult and: [ context selector = #failure ] ]
+			  ifFalse: [
+				  currentState methodSelector = #defaultAction and: [
 					  receiver class inheritsFrom: Exception ] ] ]
 ]
 

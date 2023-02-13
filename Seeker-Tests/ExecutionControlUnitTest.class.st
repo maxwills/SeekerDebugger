@@ -35,15 +35,37 @@ expectedEvaluationStepState add: { 4 . 3 . 1 . 1 . 1 . 3 . 3 . 4 . 3}.
 
 { #category : #'as yet unclassified' }
 ExecutionControlUnitTest >> serializeState: objectsDUS [
-|d u s|
-{d . u . s} << objectsDUS.
-^ { d a . d b . d c . u a . u b . u c . s a . s b .s c }
+
+	| d u s |
+	d := objectsDUS at: 1.
+	u := objectsDUS at: 2.
+	s := objectsDUS at: 3.
+	^ {
+		  d a.
+		  d b.
+		  d c.
+		  u a.
+		  u b.
+		  u c.
+		  s a.
+		  s b.
+		  s c }
+]
+
+{ #category : #running }
+ExecutionControlUnitTest >> setUp [
+	super setUp.
+
+	"Put here a common initialization logic for tests"
+	
 ]
 
 { #category : #tests }
 ExecutionControlUnitTest >> testEvaluationScenario [
 
-	| d u s ta tb tc ecu tcua tcub stepLocks |
+	| d u s ta tb tc ecu tcua tcub stepLocks storedStates |
+	storedStates := OrderedCollection new.
+	self initialieExpectedEvaluationStepStates.
 	"(D)ebugged execution writings by thread a (ta) and tb. (U)nmonitored execution writings by tc. (S) shared writings by ta and tb and tc"
 	d := ECUTestObject new
 		     a: 1;
@@ -60,25 +82,55 @@ ExecutionControlUnitTest >> testEvaluationScenario [
 		     b: 1;
 		     c: 1;
 		     yourself.
+	self assert: ((self serializeState: {
+				  d.
+				  u.
+				  s }) hasEqualElements: (expectedEvaluationStepState at: 1)).
 	stepLocks := OrderedCollection new.
 	"One lock for each step in the figure"
-	1 to: 7 do: [ :i | stepLocks add: false ].
+	1 to: 7 do: [ :i |
+		stepLocks add: false.
+		storedStates add: nil ].
 
 	tcua := SeekerDebugger headlessDebugBlock: [
 		        d a: 2.
-		        s a: 2 ].
-	tcub := SeekerDebugger headlessDebugBlock: [  ].
-	tc := [  ] newProcess.
+		        s a: 2.
+		        stepLocks at: 1 put: true ].
+	tcub := SeekerDebugger headlessDebugBlock: [
+		        [ stepLocks at: 2 ] lockUntilTrue.
+		        storedStates at: 2 put: (self serializeState: {
+					         d.
+					         u.
+					         s }).
+		        d b: 2.
+		        s b: 2.
+		        stepLocks at: 3 put: true.
+		        storedStates at: 3 put: (self serializeState: {
+					         d.
+					         u.
+					         s }) ].
+	tc := [
+	      [ stepLocks at: 1 ] lockUntilTrue.
+	      storedStates at: 1 put: (self serializeState: {
+				       d.
+				       u.
+				       s }).
+	      u c: 2.
+	      s c: 2.
 
+	      stepLocks at: 2 put: true ] newProcess.
 	ecu := SeekerExecutor newFor: {
 			       tcua.
 			       tcub }.
-	[
+	"["
 	tc resume.
-	ecu stepUntil: [ false ] ] ensure: [
+	ecu stepUntil: [ false ].
+	1 to: 3 do: [ :i | "] ensure: [
 		1 to: 7 do: [ :i | stepLocks at: i put: true ].
 		ecu resume.
-		tc resume ]
+		tc isTerminated ifFalse: [ tc terminate ] ]"
+		(storedStates at: i) hasEqualElements:
+			(expectedEvaluationStepState at: i) ]
 ]
 
 { #category : #tests }
