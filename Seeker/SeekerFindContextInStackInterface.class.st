@@ -33,13 +33,12 @@ SeekerFindContextInStackInterface >> endingContextForMarkedSession [
 
 { #category : #'as yet unclassified' }
 SeekerFindContextInStackInterface >> endingContextForTestCase [
-
 	"Returns the context where the test is considered to be finished"
 
 	^ SkContextHelpers
-		  findContextInStack: [ :aContext | 
-			  aContext receiver class = TestExecutionEnvironment and: [ 
-				  aContext methodSelector = #runTestCaseUnderWatchdog: and: [ 
+		  findContextInStack: [ :aContext |
+			  aContext receiver class = TestExecutionEnvironment and: [
+				  aContext selector = #runTestCaseUnderWatchdog: and: [
 					  aContext compiledCode isCompiledBlock ] ] ]
 		  startingContext: tracer currentContext
 	"SkContextHelpers
@@ -134,15 +133,14 @@ SeekerFindContextInStackInterface >> recordStartContextForTestCase [
 
 { #category : #'as yet unclassified' }
 SeekerFindContextInStackInterface >> recordStartContextForTestCaseNoSetup [
-
 	"Returns the context that seeker Debugger restarts to begin a new replay"
 
 	"^ self endingContextForTestCase sender"
 
 	^ SkContextHelpers
-		  findContextInStack: [ :aContext | 
-			  aContext receiver = CurrentExecutionEnvironment and: [ 
-				  aContext methodSelector = #runTestCase: and: [ 
+		  findContextInStack: [ :aContext |
+			  aContext receiver = CurrentExecutionEnvironment and: [
+				  aContext selector = #runTestCase: and: [
 					  aContext compiledCode isCompiledMethod ] ] ]
 		  startingContext: tracer currentContext "SkContextHelpers
 		  findContextInStack: [ :aContext | 
@@ -187,12 +185,12 @@ SeekerFindContextInStackInterface >> userStartContextForMarkedSession [
 SeekerFindContextInStackInterface >> userStartContextForTestCase [
 
 	^ SkContextHelpers
-		  findContextInStack: [ :aContext | 
+		  findContextInStack: [ :aContext |
 			  | senderContext |
 			  senderContext := aContext sender.
-			  senderContext isNotNil and: [ 
-				  (senderContext receiver class inheritsFrom: TestCase) and: [ 
-					  senderContext methodSelector = #performTest ] ] ]
+			  senderContext isNotNil and: [
+				  (senderContext receiver class inheritsFrom: TestCase) and: [
+					  senderContext selector = #performTest ] ] ]
 		  startingContext: tracer currentContext
 ]
 
@@ -200,8 +198,8 @@ SeekerFindContextInStackInterface >> userStartContextForTestCase [
 SeekerFindContextInStackInterface >> userStartContextForTestCaseNoSetup [
 
 	^ SkContextHelpers
-		  findContextInStack: [ :aContext | 
-			  (aContext receiver class inheritsFrom: TestCase) and: [ 
-				  aContext methodSelector = #performTest ] ]
+		  findContextInStack: [ :aContext |
+			  (aContext receiver class inheritsFrom: TestCase) and: [
+				  aContext selector = #performTest ] ]
 		  startingContext: tracer currentContext
 ]
