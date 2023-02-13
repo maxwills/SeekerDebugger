@@ -226,9 +226,9 @@ SeekerDebugger >> notifyPlugins [
 
 	| senderContext methodSelector |
 	senderContext := thisContext sender.
-	methodSelector := senderContext methodSelector.
-	plugins do: [ :plugin | 
-		(plugin handlesMethod: methodSelector) ifTrue: [ 
+	methodSelector := senderContext selector.
+	plugins do: [ :plugin |
+		(plugin handlesMethod: methodSelector) ifTrue: [
 			plugin
 				handleMethod: methodSelector
 				withArguments: senderContext arguments ] ]

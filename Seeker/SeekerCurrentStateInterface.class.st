@@ -593,7 +593,7 @@ SeekerCurrentStateInterface >> methodReturnValue [
 SeekerCurrentStateInterface >> methodSelector [
 
 	<qwpSubCached>
-	^ self context methodSelector
+	^ self context selector
 ]
 
 { #category : #accessing }

@@ -1,8 +1,85 @@
 Class {
 	#name : #ExecutionControlUnitTest,
 	#superclass : #TestCase,
+	#instVars : [
+		'expectedEvaluationStepState'
+	],
 	#category : #'Seeker-Tests-ECU'
 }
+
+{ #category : #'as yet unclassified' }
+ExecutionControlUnitTest >> assertSerializedState: objectsDUS atStep: aNumber [
+
+	self assert: ((self serializeState: objectsDUS) hasEqualElements:
+			 (self expectedStateAtStep: aNumber))
+]
+
+{ #category : #'as yet unclassified' }
+ExecutionControlUnitTest >> expectedStateAtStep: aNumber [
+
+^ expectedEvaluationStepState at: aNumber 
+]
+
+{ #category : #'as yet unclassified' }
+ExecutionControlUnitTest >> initialieExpectedEvaluationStepStates [
+
+expectedEvaluationStepState := OrderedCollection new.
+expectedEvaluationStepState add: { 1 . 1 . 1 . 1 . 1 . 1 . 1 . 1 . 1}.
+expectedEvaluationStepState add: { 2 . 1 . 1 . 1 . 1 . 1 . 2 . 1 . 1}.
+expectedEvaluationStepState add: { 2 . 1 . 1 . 1 . 1 . 2 . 2 . 1 . 2}.
+expectedEvaluationStepState add: { 2 . 2 . 1 . 1 . 1 . 2 . 2 . 2 . 2}.
+expectedEvaluationStepState add: { 3 . 2 . 1 . 1 . 1 . 2 . 3 . 3 . 2}.
+expectedEvaluationStepState add: { 3 . 2 . 1 . 1 . 1 . 3 . 3 . 3 . 3}.
+expectedEvaluationStepState add: { 4 . 3 . 1 . 1 . 1 . 3 . 3 . 4 . 3}.
+]
+
+{ #category : #'as yet unclassified' }
+ExecutionControlUnitTest >> serializeState: objectsDUS [
+|d u s|
+{d . u . s} << objectsDUS.
+^ { d a . d b . d c . u a . u b . u c . s a . s b .s c }
+]
+
+{ #category : #tests }
+ExecutionControlUnitTest >> testEvaluationScenario [
+
+	| d u s ta tb tc ecu tcua tcub stepLocks |
+	"(D)ebugged execution writings by thread a (ta) and tb. (U)nmonitored execution writings by tc. (S) shared writings by ta and tb and tc"
+	d := ECUTestObject new
+		     a: 1;
+		     b: 1;
+		     c: 1;
+		     yourself.
+	u := ECUTestObject new
+		     a: 1;
+		     b: 1;
+		     c: 1;
+		     yourself.
+	s := ECUTestObject new
+		     a: 1;
+		     b: 1;
+		     c: 1;
+		     yourself.
+	stepLocks := OrderedCollection new.
+	"One lock for each step in the figure"
+	1 to: 7 do: [ :i | stepLocks add: false ].
+
+	tcua := SeekerDebugger headlessDebugBlock: [
+		        d a: 2.
+		        s a: 2 ].
+	tcub := SeekerDebugger headlessDebugBlock: [  ].
+	tc := [  ] newProcess.
+
+	ecu := SeekerExecutor newFor: {
+			       tcua.
+			       tcub }.
+	[
+	tc resume.
+	ecu stepUntil: [ false ] ] ensure: [
+		1 to: 7 do: [ :i | stepLocks at: i put: true ].
+		ecu resume.
+		tc resume ]
+]
 
 { #category : #tests }
 ExecutionControlUnitTest >> testMTEBusySync [
@@ -14,7 +91,7 @@ ExecutionControlUnitTest >> testMTEBusySync [
 	sharedObject := sharedObject := ECUTestObject new.
 	ecu := SeekerExecutor newFor:
 		       { (SeekerDebugger headlessDebugBlock: [ 
-			        [ checkA1 ] whileFalse: [ "busy wait" true ] ]) }.
+			        [ checkA1 ] lockUntilTrue  ]) }.
 
 	ecuProc1 := (ecu tcus at: 1) tracer debuggedProcess.
 	programState1 := (ecu tcus at: 1) tracer currentState.
