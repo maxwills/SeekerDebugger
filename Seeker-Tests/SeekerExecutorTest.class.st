@@ -179,5 +179,5 @@ SeekerExecutorTest >> testTimeTravelTo [
 	self assert: (tracer currentContext readVariableNamed: #a) equals: 6.
 	executor timeTravelTo: 4.
 	self assert: (tracer currentContext readVariableNamed: #a) equals: 5.] 
-		ensure: [ proc resume ]
+		ensure: [ "proc resume "]
 ]

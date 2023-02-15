@@ -42,6 +42,26 @@ SeekerExecutor >> chooseNextTCUIndex [
 	^ 1
 ]
 
+{ #category : #'as yet unclassified' }
+SeekerExecutor >> doUndoBlocks [
+
+	| mergedUndos |
+	mergedUndos := OrderedCollection new.
+	tcus do: [ :tcu |
+		| tracer timeIndexedUndoBlocks |
+		tracer := tcu tracer.
+		timeIndexedUndoBlocks := tracer restorer timeIndexedUndoBlocks.
+		timeIndexedUndoBlocks keysAndValuesDo: [ :key :val |
+			| execTime |
+			execTime := tcu localToExecutionTime at: key.
+			mergedUndos add: {
+					execTime.
+					val value "this is the undoblock(The key was an integer)" } ].
+				tcu tracer restorer timeIndexedUndoBlocks removeAll. ].
+	mergedUndos sort: [ :a :b | "the latest first" a first > b first ].
+	mergedUndos do: [ :each | each second value "executes the undo block" ]
+]
+
 { #category : #initialization }
 SeekerExecutor >> initialize [
 
@@ -85,6 +105,7 @@ SeekerExecutor >> random: anObject [
 SeekerExecutor >> restart [
 
 	programTimestamp := 0.
+	self doUndoBlocks.
 	tcus do: [ :each | each restart ]
 ]
 
@@ -96,7 +117,6 @@ SeekerExecutor >> resume [
 
 { #category : #api }
 SeekerExecutor >> step [
-
 	"If is firstplay, it chooses next tcu, registers the order
 If not, it reads which tcu follows from the logsDirectory 
 After, it executes the tcu
@@ -111,13 +131,16 @@ After, it executes the tcu
 		                ifFalse: [ tcuExecutionOrder at: programTimestamp ].
 	tcuExecutionOrder at: programTimestamp put: nextTcuIndex.
 	tcu := tcus at: nextTcuIndex.
-	tcus do: [ :eachTcu | 
+	tcus do: [ :eachTcu |
 		eachTcu tracer localTimestampToProgram
 			at: eachTcu tracer bytecodeIndex
 			put: programTimestamp.
 		eachTcu tracer programTimestampToLocal
 			at: programTimestamp
 			put: eachTcu tracer bytecodeIndex ].
+	tcu localToExecutionTime
+		at: tcu tracer bytecodeIndex
+		put: programTimestamp.
 	tcu stepBytecode
 ]
 

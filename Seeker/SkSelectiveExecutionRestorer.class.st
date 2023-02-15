@@ -845,6 +845,12 @@ SkSelectiveExecutionRestorer >> restoreNonLocalChanges [
 ]
 
 { #category : #accessing }
+SkSelectiveExecutionRestorer >> timeIndexedUndoBlocks [
+
+	^ timeIndexedUndoBlocks
+]
+
+{ #category : #accessing }
 SkSelectiveExecutionRestorer >> writingEventCallback [
 
 	^ writingEventCallback

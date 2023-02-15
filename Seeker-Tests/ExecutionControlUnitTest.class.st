@@ -312,7 +312,7 @@ There are other specialized tests for deterministic replay of the ECU.
 { #category : #tests }
 ExecutionControlUnitTest >> testEvaluationScenarioFullReversal [
 	"Executes the evaluation scenario. 
-This tests only asserts forward execution. 
+This tests only asserts a forward execution, followed by a restart (reverse monitored thread effects) , then a scenario reset and replay. 
 Time traveling and their outcomes are tested in other methods.
 The post step synchrozation is require to ensure deterministic re-run of the test.
 While the ECU ensures a deterministic replayability of its monitored threads,
@@ -394,7 +394,7 @@ There are other specialized tests for deterministic replay of the ECU.
 	self assert: ((self serializeState: {
 				  d.
 				  u.
-				  s }) hasEqualElements: {1 . 1 . 1 . 1 . 1 . 3 . 1 . 1 . 3}).
+				  s }) hasEqualElements: {1 . 1 . 1 . 1 . 1 . 1 . 1 . 1 . 1}).
 	tc resume.
 	ecu stepUntil: [ false ].
 	unmonitoredFinishedSem wait.
