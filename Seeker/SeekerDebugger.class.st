@@ -39,7 +39,8 @@ Class {
 		'tracer',
 		'plugins',
 		'seekerDebuggerPresenter',
-		'instanceNumber'
+		'instanceNumber',
+		'localToExecutionTime'
 	],
 	#classVars : [
 		'instanceNumberTotal'
@@ -171,6 +172,7 @@ SeekerDebugger >> initialize [
 		instanceNumber := instanceNumberTotal.
 		plugins := OrderedCollection new.
 		SeekerCache reset.
+		localToExecutionTime := Dictionary new.
 		super initialize.
 		self initializePlugins ]
 ]
@@ -195,6 +197,12 @@ SeekerDebugger >> instanceID [
 SeekerDebugger >> interruptedProcess [
 
 	^ stDebugger interruptedProcess
+]
+
+{ #category : #accessing }
+SeekerDebugger >> localToExecutionTime [
+   "This is only used by the ECU."
+	^ localToExecutionTime
 ]
 
 { #category : #'as yet unclassified' }
