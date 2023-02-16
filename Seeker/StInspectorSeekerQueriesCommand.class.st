@@ -44,6 +44,9 @@ StInspectorSeekerQueriesCommand >> execute [
 		target: self
 		selector: #seekAllMessages:
 		argument: object.
+	menu add: 'List all messages with selector... (opens prompt)' target: self
+		selector: #showMessageSelectorPrompt:
+		argument: object.
 	menu add: 'Specific message...' subMenu: (self privMakeSelectorsMenu: object).
 	menu add: 'List all assignment to the instance variables of the inspected object'
 		target: self
@@ -184,6 +187,19 @@ StInspectorSeekerQueriesCommand >> seekAllMessages: anObject [
 StInspectorSeekerQueriesCommand >> seekAllMessagesOn: anObject ofSelector: selector [
 
 	anObject seekAndDisplayAllMessagesSentToMeWithSelector: selector
+]
+
+{ #category : #'as yet unclassified' }
+StInspectorSeekerQueriesCommand >> showMessageSelectorPrompt: object [
+
+	| selector |
+	selector := UIManager default
+		            request: 'Enter selector:'
+		            initialAnswer: '#mySelector'
+		            title: 'Enter selector'.
+	selector := selector copyReplaceAll: '#' with: ''.
+	selector isEmpty ifTrue: [ ^ self ].
+	self seekAllMessagesOn: object ofSelector: selector asSymbol
 ]
 
 { #category : #'as yet unclassified' }
