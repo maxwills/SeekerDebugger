@@ -10,6 +10,14 @@ Class {
 	#category : #'Seeker-Experimental'
 }
 
+{ #category : #'as yet unclassified' }
+SeekerExecutor class >> executeUntracked: aBlock [
+
+	"this is treated by seeker as a SND. So it will not be analyzed, and interpreted directily until it returns, counting as a single bytecode"
+
+	^ aBlock value
+]
+
 { #category : #'instance creation' }
 SeekerExecutor class >> newFor: anOrderedCollectionOfTCUs [
 
@@ -51,15 +59,18 @@ SeekerExecutor >> doUndoBlocks [
 		| tracer timeIndexedUndoBlocks |
 		tracer := tcu tracer.
 		timeIndexedUndoBlocks := tracer restorer timeIndexedUndoBlocks.
-		timeIndexedUndoBlocks keysAndValuesDo: [ :key :val |
-			| execTime |
-			execTime := tcu localToExecutionTime at: key.
+		timeIndexedUndoBlocks do: [:each| |tcuTime undoBlock execTime|
+			tcuTime:= each key.
+			undoBlock:= each value.
+			execTime := tcu localToExecutionTime at: tcuTime.
 			mergedUndos add: {
 					execTime.
-					val value "this is the undoblock(The key was an integer)" } ].
-				tcu tracer restorer timeIndexedUndoBlocks removeAll. ].
-	mergedUndos sort: [ :a :b | "the latest first" a first > b first ].
-	mergedUndos do: [ :each | each second value "executes the undo block" ]
+					undoBlock } ].
+		tcu tracer restorer timeIndexedUndoBlocks removeAll ].
+	mergedUndos := mergedUndos sorted: [ :a :b | "the latest first"
+		               a first > b first ].
+	mergedUndos do: [ :each |
+		each second value "executes the undo block" ]
 ]
 
 { #category : #initialization }
@@ -106,7 +117,7 @@ SeekerExecutor >> restart [
 
 	programTimestamp := 0.
 	self doUndoBlocks.
-	tcus do: [ :each | each restart ]
+	tcus do: [ :each | each tracer restartAtBytecodeOne ]
 ]
 
 { #category : #controlling }
@@ -184,5 +195,5 @@ SeekerExecutor >> tcus: anObject [
 SeekerExecutor >> timeTravelTo: aNumber [
 
 	self restart.
-	1 to: aNumber do: [ :i | self step ]
+	self stepUntil: [ programTimestamp = aNumber ]
 ]

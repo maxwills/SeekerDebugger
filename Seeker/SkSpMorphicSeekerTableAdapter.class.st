@@ -225,21 +225,20 @@ SkSpMorphicSeekerTableAdapter >> selectedIndexes [
 
 { #category : #factory }
 SkSpMorphicSeekerTableAdapter >> selectionChanged: ann [
-	| diff selection |
 
+	| diff selection |
 	selection := self presenter selection.
 	selection selectIndexes: (selection isMultipleSelection
-		ifTrue: [ 
-			 (ann newSelectedIndexes reject: [ :e | e = 0 ]) ]
-		ifFalse: [ 
-			{ ann newSelectedIndexes
-				ifNotEmpty: [ :indexes | indexes first ]
-				ifEmpty: [ 0 ] } ]).
+			 ifTrue: [ ann newSelectedIndexes reject: [ :e | e = 0 ] ]
+			 ifFalse: [
+				 { (ann newSelectedIndexes
+					  ifNotEmpty: [ :indexes | indexes first ]
+					  ifEmpty: [ 0 ]) } ]).
 
 	diff := ann newSelectedIndexes difference: ann oldSelectedIndexes.
-	(diff notEmpty and: [ self presenter activatesOnSingleClick ])
+	(diff notEmpty and: [ self presenter isActiveOnSingleClick ])
 		ifTrue: [ self presenter doActivateAtIndex: diff last ].
-		
+
 	ann newSelectedIndexes ifEmpty: [ selection unselectAll ]
 ]
 

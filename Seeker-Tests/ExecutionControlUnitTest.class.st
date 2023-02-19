@@ -12,16 +12,194 @@ Class {
 		'tcua',
 		'tcub',
 		'storedStates',
-		'unmonitoredFinishedSem'
+		'unmonitoredFinishedSem',
+		'expectedEvaluationStateFromTo'
 	],
 	#category : #'Seeker-Tests-ECU'
 }
 
-{ #category : #'as yet unclassified' }
-ExecutionControlUnitTest >> assertSerializedState: objectsDUS atStep: aNumber [
+{ #category : #tests }
+ExecutionControlUnitTest >> doEvaluationScenarioReversalFrom: fromTime to: toTime [
+"Executes a particular reversal operation according to the fromTime and toTime arguments.
+The unmonitored thread is added to the ECU so the interleaving of threads can be controlled by the test.
+The unmonitored thread writings instruction have no effect on reversal, because they are executed in a block
+that is not tracked by the TCUs (therefore, undoblocks are not generated). Replaying the unmonitored thread will write nothing, because of the prevent writings flag.
+"
+	| currentTime actualFromExecutionTime actualToExecutionTime updateCurrentTimeTo tcuc stepAndAssert preventWriting |
+	preventWriting := false.
+	currentTime := 0.
+	storedStates := OrderedCollection new.
+	stepLocks := OrderedCollection new.
 
-	self assert: ((self serializeState: objectsDUS) hasEqualElements:
-			 (self expectedStateAtStep: aNumber))
+	self initialieExpectedEvaluationStepStates.
+	"(D)ebugged execution writings by thread a (ta) and tb. (U)nmonitored execution writings by tc. (S) shared writings by ta and tb and tc"
+	d := ECUTestObject new.
+	u := ECUTestObject new.
+	s := ECUTestObject new.
+	updateCurrentTimeTo := [ :time | currentTime := time ].
+	stepLocks := OrderedCollection new.
+	currentTime := 0.
+	self resetTestControlObjects: updateCurrentTimeTo.
+	self assert: (self serializeState hasEqualElements:
+			 (expectedEvaluationStepState at: currentTime + 1)).
+	tcua := SeekerDebugger headlessDebugBlock: [
+		        d a: 2.
+		        s a: 2.
+		        updateCurrentTimeTo value: 1.
+		        d a: 3.
+		        s a: 3.
+		        s b: 3.
+		        updateCurrentTimeTo value: 4 ].
+	tcub := SeekerDebugger headlessDebugBlock: [
+		        d b: 2.
+		        s b: 2.
+		        updateCurrentTimeTo value: 3.
+
+		        d a: 4.
+		        d b: 3.
+		        s b: 4.
+		        updateCurrentTimeTo value: 6 ].
+	tcuc := SeekerDebugger headlessDebugBlock: [
+		        SeekerExecutor executeUntracked: [
+			        preventWriting ifFalse: [
+				        u c: 2.
+				        s c: 2 ] ].
+
+		        updateCurrentTimeTo value: 2.
+
+		        SeekerExecutor executeUntracked: [
+			        preventWriting ifFalse: [
+				        u c: 3.
+				        s c: 3 ] ].
+		        updateCurrentTimeTo value: 5 ].
+	ecu := ECUForTest newFor: {
+			       tcua.
+			       tcub.
+			       tcuc }.
+	"Manual forward execution to ensure the test always do the same"
+	updateCurrentTimeTo value: 0.
+	stepAndAssert := [ :tcuIndex :targetTime |
+	                 actualFromExecutionTime ifNil: [
+		                 ecu steppingTCUIndex: tcuIndex.
+		                 ecu stepUntil: [ currentTime = targetTime ].
+		                 targetTime = toTime ifTrue: [
+			                 actualToExecutionTime := ecu programTimestamp ].
+		                 targetTime = fromTime ifTrue: [
+			                 actualFromExecutionTime := ecu programTimestamp ].
+		                 self assert:
+			                 (self serializeState hasEqualElements:
+				                  (expectedEvaluationStepState at: currentTime + 1)) ] ].
+
+	stepAndAssert value: nil value: 0.
+	stepAndAssert value: 1 value: 1.
+	stepAndAssert value: 3 value: 2.
+	stepAndAssert value: 2 value: 3.
+	stepAndAssert value: 1 value: 4.
+	stepAndAssert value: 3 value: 5.
+	stepAndAssert value: 2 value: 6.
+	self assert: currentTime equals: fromTime.
+	self assert: actualFromExecutionTime isNotNil.
+	self assert: actualToExecutionTime isNotNil.
+
+	ecu steppingTCUIndex: nil. "ecu will use recorded order"
+	preventWriting := true.
+	tcuc tracer restorer timeIndexedUndoBlocks removeAll.
+	ecu timeTravelTo: actualToExecutionTime.
+	self assert: (self serializeState hasEqualElements:
+			 (expectedEvaluationStateFromTo at: fromTime -> toTime)).
+	"finish the debugged processes"
+	ecu stepUntil: [ false ].
+	ecu resume
+]
+
+{ #category : #tests }
+ExecutionControlUnitTest >> doEvaluationScenarioReversalFrom: fromTime to: toTime withTimeOut: timeout [
+"Obsolete. Violates assumption of having no unmonitored thread interfeering with the debugged threads"
+	| currentTime actualFromExecutionTime actualToExecutionTime updateCurrentTimeTo actualFromExecutionTimeCopy actualToExecutionTimeCopy |
+	currentTime := 0.
+	storedStates := OrderedCollection new.
+	stepLocks := OrderedCollection new.
+
+	self initialieExpectedEvaluationStepStates.
+	"(D)ebugged execution writings by thread a (ta) and tb. (U)nmonitored execution writings by tc. (S) shared writings by ta and tb and tc"
+	d := ECUTestObject new.
+	u := ECUTestObject new.
+	s := ECUTestObject new.
+	updateCurrentTimeTo := [ :time |
+	                       fromTime = time ifTrue: [
+		                       actualFromExecutionTime := ecu
+			                                                  programTimestamp ].
+	                       toTime = time ifTrue: [
+		                       actualToExecutionTime := ecu programTimestamp ].
+	                       currentTime := time ].
+	stepLocks := OrderedCollection new.
+	currentTime := 0.
+	self resetTestControlObjects: updateCurrentTimeTo.
+	self assert: ((self serializeState) hasEqualElements:
+			 (expectedEvaluationStepState at: currentTime + 1)).
+	tcua := SeekerDebugger headlessDebugBlock: [
+		        d a: 2.
+		        s a: 2.
+		        updateCurrentTimeTo value: 1.
+		        stepLocks at: 1 put: true.
+		        [ stepLocks at: 3 ] lockUntilTrue.
+		        storedStates at: 3 put: (self serializeState).
+		        d a: 3.
+		        s a: 3.
+		        s b: 3.
+		        updateCurrentTimeTo value: 4.
+		        stepLocks at: 4 put: true ].
+	tcub := SeekerDebugger headlessDebugBlock: [
+		        [ stepLocks at: 2 ] lockUntilTrue.
+		        storedStates at: 2 put: (self serializeState).
+		        d b: 2.
+		        s b: 2.
+		        updateCurrentTimeTo value: 3.
+		        stepLocks at: 3 put: true.
+		        [ stepLocks at: 5 ] lockUntilTrue.
+		        storedStates at: 5 put: (self serializeState).
+		        d a: 4.
+		        d b: 3.
+		        s b: 4.
+		        updateCurrentTimeTo value: 6.
+		        stepLocks at: 6 put: true.
+		        storedStates at: 6 put: (self serializeState) ].
+
+	ecu := SeekerExecutor newFor: {
+			       tcua.
+			       tcub }.
+	updateCurrentTimeTo value: 0.
+	tc resume.
+	ecu stepUntil: [ currentTime = fromTime ].
+	self assert: actualFromExecutionTime isNotNil.
+	self assert: actualToExecutionTime isNotNil.
+	(unmonitoredFinishedSem waitTimeoutMSecs: timeout) ifTrue: [
+		tc terminate ]. "might require to tune this up according to system speed"
+
+	self assert: ((self serializeState) hasEqualElements:
+			 (expectedEvaluationStepState at: fromTime + 1)).
+	actualFromExecutionTimeCopy := actualFromExecutionTime. "We need this because the TT undoes its value"
+	actualToExecutionTimeCopy := actualToExecutionTime. "We need this because the TT undoes its value"
+	ecu restart.
+	stepLocks at: 2 put: false.
+	stepLocks at: 5 put: false.
+	1 to: 6 do: [ :i | self deny: (stepLocks at: i) ].
+	unmonitoredFinishedSem := Semaphore new.
+	tc := [
+	      [ stepLocks at: 1 ] lockUntilTrue.
+	      updateCurrentTimeTo value: 2.
+	      stepLocks at: 2 put: true.
+	      [ stepLocks at: 4 ] lockUntilTrue.
+	      updateCurrentTimeTo value: 5.
+	      stepLocks at: 5 put: true.
+	      unmonitoredFinishedSem signal ] newProcess.
+	tc resume.
+	self assert: actualToExecutionTimeCopy isNotNil.
+	ecu timeTravelTo: actualToExecutionTimeCopy.
+	(unmonitoredFinishedSem waitTimeoutMSecs: timeout) ifTrue: [
+		tc terminate ]. "might require to tune this up according to system speed"
+	self assert: ((self serializeState) hasEqualElements:
+			 (expectedEvaluationStateFromTo at: fromTime -> toTime))
 ]
 
 { #category : #'as yet unclassified' }
@@ -33,14 +211,93 @@ ExecutionControlUnitTest >> expectedStateAtStep: aNumber [
 { #category : #'as yet unclassified' }
 ExecutionControlUnitTest >> initialieExpectedEvaluationStepStates [
 
-expectedEvaluationStepState := OrderedCollection new.
-expectedEvaluationStepState add: { 1 . 1 . 1 . 1 . 1 . 1 . 1 . 1 . 1}.
-expectedEvaluationStepState add: { 2 . 1 . 1 . 1 . 1 . 1 . 2 . 1 . 1}.
-expectedEvaluationStepState add: { 2 . 1 . 1 . 1 . 1 . 2 . 2 . 1 . 2}.
-expectedEvaluationStepState add: { 2 . 2 . 1 . 1 . 1 . 2 . 2 . 2 . 2}.
-expectedEvaluationStepState add: { 3 . 2 . 1 . 1 . 1 . 2 . 3 . 3 . 2}.
-expectedEvaluationStepState add: { 3 . 2 . 1 . 1 . 1 . 3 . 3 . 3 . 3}.
-expectedEvaluationStepState add: { 4 . 3 . 1 . 1 . 1 . 3 . 3 . 4 . 3}.
+	expectedEvaluationStepState := OrderedCollection new.
+	expectedEvaluationStepState add: { 1. 1. 1. 1. 1. 1. 1. 1. 1 }.
+	expectedEvaluationStepState add: { 2. 1. 1. 1. 1. 1. 2. 1. 1 }.
+	expectedEvaluationStepState add: { 2. 1. 1. 1. 1. 2. 2. 1. 2 }.
+	expectedEvaluationStepState add: { 2. 2. 1. 1. 1. 2. 2. 2. 2 }.
+	expectedEvaluationStepState add: { 3. 2. 1. 1. 1. 2. 3. 3. 2 }.
+	expectedEvaluationStepState add: { 3. 2. 1. 1. 1. 3. 3. 3. 3 }.
+	expectedEvaluationStepState add: { 4. 3. 1. 1. 1. 3. 3. 4. 3 }.
+
+	"this is the reversal table"
+	expectedEvaluationStateFromTo := Dictionary new.
+	expectedEvaluationStateFromTo
+		at: 6 -> 5
+		put: { 3. 2. 1 . 1 . 1 . 3. 3. 3. 3 }.
+	expectedEvaluationStateFromTo
+		at: 6 -> 4
+		put: { 3. 2. 1 . 1 . 1 . 3. 3. 3. 3 }.
+	expectedEvaluationStateFromTo
+		at: 6 -> 3
+		put: { 2. 2. 1 . 1 . 1 . 3. 2. 2. 3 }.
+	expectedEvaluationStateFromTo
+		at: 6 -> 2
+		put: { 2. 1. 1 . 1 . 1 . 3. 2. 1. 3 }.
+	expectedEvaluationStateFromTo
+		at: 6 -> 1
+		put: { 2. 1. 1 . 1 . 1 . 3. 2. 1. 3 }.
+	expectedEvaluationStateFromTo
+		at: 6 -> 0
+		put: { 1. 1. 1 . 1 . 1 . 3. 1. 1. 3 }.
+	expectedEvaluationStateFromTo
+		at: 5 -> 4
+		put: { 3. 2. 1 . 1 . 1 . 3. 3. 3. 3 }.
+	expectedEvaluationStateFromTo
+		at: 5 -> 3
+		put: { 2. 2. 1 . 1 . 1 . 3. 2. 2. 3 }.
+	expectedEvaluationStateFromTo
+		at: 5 -> 2
+		put: { 2. 1. 1 . 1 . 1 . 3. 2. 1. 3 }.
+	expectedEvaluationStateFromTo
+		at: 5 -> 1
+		put: { 2. 1. 1 . 1 . 1 . 3. 2. 1. 3 }.
+	expectedEvaluationStateFromTo
+		at: 5 -> 0
+		put: { 1. 1. 1 . 1 . 1 . 3. 1. 1. 3 }.
+	expectedEvaluationStateFromTo
+		at: 4 -> 3
+		put: { 2. 2. 1 . 1 . 1 . 2. 2. 2. 2 }.
+	expectedEvaluationStateFromTo
+		at: 4 -> 2
+		put: { 2. 1. 1 . 1 . 1 . 2. 2. 1. 2 }.
+	expectedEvaluationStateFromTo
+		at: 4 -> 1
+		put: { 2. 1. 1 . 1 . 1 . 2. 2. 1. 2 }.
+	expectedEvaluationStateFromTo
+		at: 4 -> 0
+		put: { 1. 1. 1 . 1 . 1 . 2. 1. 1. 2 }.
+	expectedEvaluationStateFromTo
+		at: 3 -> 2
+		put: { 2. 1. 1 . 1 . 1 . 2. 2. 1. 2 }.
+	expectedEvaluationStateFromTo
+		at: 3 -> 1
+		put: { 2. 1. 1 . 1 . 1 . 2. 2. 1. 2 }.
+	expectedEvaluationStateFromTo
+		at: 3 -> 0
+		put: { 1. 1. 1 . 1 . 1 . 2. 1. 1. 2 }.
+	expectedEvaluationStateFromTo
+		at: 2 -> 1
+		put: { 2. 1. 1 . 1 . 1 . 2. 2. 1. 2 }.
+	expectedEvaluationStateFromTo
+		at: 2 -> 0
+		put: { 1. 1. 1 . 1 . 1 . 2. 1. 1. 2 }.
+	expectedEvaluationStateFromTo
+		at: 1 -> 0
+		put: { 1. 1. 1 . 1 . 1 . 1. 1. 1. 1 }.
+]
+
+{ #category : #tests }
+ExecutionControlUnitTest >> obsolete_testEvaluationReverseScenariosFrom [
+self skip.
+	"Executes the evaluation scenario. 
+Obsolete version. The method #doEvaluationScenarioReversalFrom:to:withTimeOut:
+violates the assumption of having no unmonitored processes interfeering with the debugged ones.
+"
+
+	1 to: 3 do: [ :fromTime |
+		0 to: fromTime - 1 do: [ :toTime |
+			self doEvaluationScenarioReversalFrom: fromTime to: toTime withTimeOut:100] ]
 ]
 
 { #category : #initialization }
@@ -55,18 +312,12 @@ ExecutionControlUnitTest >> resetTestControlObjects [
 		storedStates add: nil ].
 	tc := [
 	      [ stepLocks at: 1 ] lockUntilTrue.
-	      storedStates at: 1 put: (self serializeState: {
-				       d.
-				       u.
-				       s }).
+	      storedStates at: 1 put: (self serializeState).
 	      u c: 2.
 	      s c: 2.
 	      stepLocks at: 2 put: true.
 	      [ stepLocks at: 4 ] lockUntilTrue.
-	      storedStates at: 4 put: (self serializeState: {
-				       d.
-				       u.
-				       s }).
+	      storedStates at: 4 put: (self serializeState).
 	      u c: 3.
 	      s c: 3.
 	      stepLocks at: 5 put: true.
@@ -85,13 +336,48 @@ ExecutionControlUnitTest >> resetTestControlObjects [
 		c: 1
 ]
 
-{ #category : #'as yet unclassified' }
-ExecutionControlUnitTest >> serializeState: objectsDUS [
+{ #category : #initialization }
+ExecutionControlUnitTest >> resetTestControlObjects: setTimeBlock [
+	"a block that receives an integer"
 
-	| d u s |
-	d := objectsDUS at: 1.
-	u := objectsDUS at: 2.
-	s := objectsDUS at: 3.
+	unmonitoredFinishedSem := Semaphore new.
+	stepLocks removeAll.
+	storedStates removeAll.
+	"One lock for each step in (Fig 5)"
+	1 to: 6 do: [ :i |
+		stepLocks add: false.
+		storedStates add: nil ].
+	tc := [
+	      [ stepLocks at: 1 ] lockUntilTrue.
+	      storedStates at: 1 put: (self serializeState).
+	      u c: 2.
+	      s c: 2.
+	      setTimeBlock value: 2.
+	      stepLocks at: 2 put: true.
+	      [ stepLocks at: 4 ] lockUntilTrue.
+	      storedStates at: 4 put: (self serializeState).
+	      u c: 3.
+	      s c: 3.
+	      setTimeBlock value: 5.
+	      stepLocks at: 5 put: true.
+	      unmonitoredFinishedSem signal ] newProcess.
+	d
+		a: 1;
+		b: 1;
+		c: 1.
+	u
+		a: 1;
+		b: 1;
+		c: 1.
+	s
+		a: 1;
+		b: 1;
+		c: 1
+]
+
+{ #category : #'as yet unclassified' }
+ExecutionControlUnitTest >> serializeState [
+
 	^ {
 		  d a.
 		  d b.
@@ -113,9 +399,8 @@ ExecutionControlUnitTest >> setUp [
 ]
 
 { #category : #tests }
-ExecutionControlUnitTest >> testEvaluationReverseScenarios [
-
-   "Executes the evaluation scenario. 
+ExecutionControlUnitTest >> testEvaluationReverseScenariosFrom1_6 [
+	"Executes the evaluation scenario. 
 This tests only asserts forward execution. 
 Time traveling and their outcomes are tested in other methods.
 The post step synchrozation is require to ensure deterministic re-run of the test.
@@ -126,79 +411,9 @@ That is the reason for the synchronization objects in these tests.
 There are other specialized tests for deterministic replay of the ECU.
 "
 
-
-	self initialieExpectedEvaluationStepStates.
-	"(D)ebugged execution writings by thread a (ta) and tb. (U)nmonitored execution writings by tc. (S) shared writings by ta and tb and tc"
-	d := ECUTestObject new
-		     a: 1;
-		     b: 1;
-		     c: 1;
-		     yourself.
-	u := ECUTestObject new
-		     a: 1;
-		     b: 1;
-		     c: 1;
-		     yourself.
-	s := ECUTestObject new
-		     a: 1;
-		     b: 1;
-		     c: 1;
-		     yourself.
-	self assert: ((self serializeState: {
-				  d.
-				  u.
-				  s }) hasEqualElements: (expectedEvaluationStepState at: 1)).
-	stepLocks := OrderedCollection new.
-	
-	self resetTestControlObjects.
-
-	tcua := SeekerDebugger headlessDebugBlock: [
-		        d a: 2.
-		        s a: 2.
-		        stepLocks at: 1 put: true.
-		        [ stepLocks at: 3 ] lockUntilTrue.
-		        storedStates at: 3 put: (self serializeState: {
-					         d.
-					         u.
-					         s }).
-		        d a: 3.
-		        s a: 3.
-		        s b: 3.
-		        stepLocks at: 4 put: true ].
-	tcub := SeekerDebugger headlessDebugBlock: [
-		        [ stepLocks at: 2 ] lockUntilTrue.
-		        storedStates at: 2 put: (self serializeState: {
-					         d.
-					         u.
-					         s }).
-		        d b: 2.
-		        s b: 2.
-		        stepLocks at: 3 put: true.
-		        [ stepLocks at: 5 ] lockUntilTrue.
-		        storedStates at: 5 put: (self serializeState: {
-					         d.
-					         u.
-					         s }).
-		        d a: 4.
-		        d b: 3.
-		        s b: 4.
-		        stepLocks at: 6 put: true.
-		        storedStates at: 6 put: (self serializeState: {
-					         d.
-					         u.
-					         s }) ].
-	
-	ecu := SeekerExecutor newFor: {
-			       tcua.
-			       tcub }.
-	tc resume.
-	ecu stepUntil: [ false ].
-	unmonitoredFinishedSem wait.
-	1 to: 6 do: [ :i |
-		self assert: ((storedStates at: i) hasEqualElements:
-				 (expectedEvaluationStepState at: i + 1)) ].
-	ecu restart.
-	
+	1 to: 6 do: [ :fromTime |
+		0 to: fromTime - 1 do: [ :toTime |
+			self doEvaluationScenarioReversalFrom: fromTime to: toTime] ]
 ]
 
 { #category : #tests }
@@ -215,7 +430,6 @@ That is the reason for the synchronization objects in these tests.
 There are other specialized tests for deterministic replay of the ECU.
 "
 
-	| d u s tc ecu tcua tcub stepLocks storedStates unmonitoredFinishedSem |
 	storedStates := OrderedCollection new.
 	unmonitoredFinishedSem := Semaphore new.
 	self initialieExpectedEvaluationStepStates.
@@ -235,10 +449,7 @@ There are other specialized tests for deterministic replay of the ECU.
 		     b: 1;
 		     c: 1;
 		     yourself.
-	self assert: ((self serializeState: {
-				  d.
-				  u.
-				  s }) hasEqualElements: (expectedEvaluationStepState at: 1)).
+	self assert: ((self serializeState) hasEqualElements: (expectedEvaluationStepState at: 1)).
 	stepLocks := OrderedCollection new.
 	"One lock for each step in (Fig 5)"
 	1 to: 6 do: [ :i |
@@ -250,50 +461,32 @@ There are other specialized tests for deterministic replay of the ECU.
 		        s a: 2.
 		        stepLocks at: 1 put: true.
 		        [ stepLocks at: 3 ] lockUntilTrue.
-		        storedStates at: 3 put: (self serializeState: {
-					         d.
-					         u.
-					         s }).
+		        storedStates at: 3 put: (self serializeState).
 		        d a: 3.
 		        s a: 3.
 		        s b: 3.
 		        stepLocks at: 4 put: true ].
 	tcub := SeekerDebugger headlessDebugBlock: [
 		        [ stepLocks at: 2 ] lockUntilTrue.
-		        storedStates at: 2 put: (self serializeState: {
-					         d.
-					         u.
-					         s }).
+		        storedStates at: 2 put: (self serializeState).
 		        d b: 2.
 		        s b: 2.
 		        stepLocks at: 3 put: true.
 		        [ stepLocks at: 5 ] lockUntilTrue.
-		        storedStates at: 5 put: (self serializeState: {
-					         d.
-					         u.
-					         s }).
+		        storedStates at: 5 put: (self serializeState).
 		        d a: 4.
 		        d b: 3.
 		        s b: 4.
 		        stepLocks at: 6 put: true.
-		        storedStates at: 6 put: (self serializeState: {
-					         d.
-					         u.
-					         s }) ].
+		        storedStates at: 6 put: (self serializeState) ].
 	tc := [
 	      [ stepLocks at: 1 ] lockUntilTrue.
-	      storedStates at: 1 put: (self serializeState: {
-				       d.
-				       u.
-				       s }).
+	      storedStates at: 1 put: (self serializeState).
 	      u c: 2.
 	      s c: 2.
 	      stepLocks at: 2 put: true.
 	      [ stepLocks at: 4 ] lockUntilTrue.
-	      storedStates at: 4 put: (self serializeState: {
-				       d.
-				       u.
-				       s }).
+	      storedStates at: 4 put: (self serializeState).
 	      u c: 3.
 	      s c: 3.
 	      stepLocks at: 5 put: true.
@@ -334,46 +527,31 @@ There are other specialized tests for deterministic replay of the ECU.
 	stepLocks := OrderedCollection new.
 
 	self resetTestControlObjects.
-	self assert: ((self serializeState: {
-				  d.
-				  u.
-				  s }) hasEqualElements: (expectedEvaluationStepState at: 1)).
+	self assert: ((self serializeState) hasEqualElements: (expectedEvaluationStepState at: 1)).
 
 	tcua := SeekerDebugger headlessDebugBlock: [
 		        d a: 2.
 		        s a: 2.
 		        stepLocks at: 1 put: true.
 		        [ stepLocks at: 3 ] lockUntilTrue.
-		        storedStates at: 3 put: (self serializeState: {
-					         d.
-					         u.
-					         s }).
+		        storedStates at: 3 put: (self serializeState).
 		        d a: 3.
 		        s a: 3.
 		        s b: 3.
 		        stepLocks at: 4 put: true ].
 	tcub := SeekerDebugger headlessDebugBlock: [
 		        [ stepLocks at: 2 ] lockUntilTrue.
-		        storedStates at: 2 put: (self serializeState: {
-					         d.
-					         u.
-					         s }).
+		        storedStates at: 2 put: (self serializeState).
 		        d b: 2.
 		        s b: 2.
 		        stepLocks at: 3 put: true.
 		        [ stepLocks at: 5 ] lockUntilTrue.
-		        storedStates at: 5 put: (self serializeState: {
-					         d.
-					         u.
-					         s }).
+		        storedStates at: 5 put: (self serializeState).
 		        d a: 4.
 		        d b: 3.
 		        s b: 4.
 		        stepLocks at: 6 put: true.
-		        storedStates at: 6 put: (self serializeState: {
-					         d.
-					         u.
-					         s }) ].
+		        storedStates at: 6 put: (self serializeState) ].
 
 	ecu := SeekerExecutor newFor: {
 			       tcua.
@@ -386,15 +564,9 @@ There are other specialized tests for deterministic replay of the ECU.
 				 (expectedEvaluationStepState at: i + 1)) ].
 	ecu restart.
 	"Assert te T6 to t0 outcome as shown in figure"
-	self assert: ((self serializeState: {
-				  d.
-				  u.
-				  s }) hasEqualElements: {1 . 1 . 1 . 1 . 1 . 3 . 1 . 1 . 3}).
+	self assert: ((self serializeState) hasEqualElements: {1 . 1 . 1 . 1 . 1 . 3 . 1 . 1 . 3}).
 	self resetTestControlObjects.
-	self assert: ((self serializeState: {
-				  d.
-				  u.
-				  s }) hasEqualElements: {1 . 1 . 1 . 1 . 1 . 1 . 1 . 1 . 1}).
+	self assert: ((self serializeState) hasEqualElements: {1 . 1 . 1 . 1 . 1 . 1 . 1 . 1 . 1}).
 	tc resume.
 	ecu stepUntil: [ false ].
 	unmonitoredFinishedSem wait.
@@ -408,7 +580,7 @@ ExecutionControlUnitTest >> testMTEBusySync [
 
 	"Busy sync should be able to be released"
 
-	| ecu sharedObject ecuProc1 programState1 checkA1 |
+	|  sharedObject ecuProc1 programState1 checkA1 |
 	checkA1 := false.
 	sharedObject := sharedObject := ECUTestObject new.
 	ecu := SeekerExecutor newFor:
@@ -430,7 +602,7 @@ ExecutionControlUnitTest >> testMTEBusySyncExpectedValues [
 
 	"Busy sync should be able to be released"
 
-	| ecu sharedObject ecuProc1 programState1 checkA1 time0 |
+	|  sharedObject ecuProc1 programState1 checkA1 time0 |
 	checkA1 := false.
 	sharedObject := sharedObject := ECUTestObject new.
 	ecu := SeekerExecutor newFor:
@@ -457,7 +629,7 @@ ExecutionControlUnitTest >> testSTEBusySyncExpectedValues [
 
 	"Busy sync should be able to be released"
 
-	| ecu sharedObject ecuProc1 programState1 checkA1 time0 |
+	|  sharedObject ecuProc1 programState1 checkA1 time0 |
 	checkA1 := false.
 	sharedObject := sharedObject := ECUTestObject new.
 	ecu := SeekerExecutor newFor:
@@ -480,9 +652,73 @@ ExecutionControlUnitTest >> testSTEBusySyncExpectedValues [
 ]
 
 { #category : #tests }
+ExecutionControlUnitTest >> testSharedWritingScenarioReversal [
+	"This scenario is about a debugged program with two threads. all writing to the same object slotprogram "
+
+	| var currentTime updateCurrentTimeTo programTime1 programTime2 programTime3 programTime4 |
+	currentTime := 0.
+
+	stepLocks := OrderedCollection new.
+	updateCurrentTimeTo := [ :time | currentTime := time ].
+	var := 1.
+
+	1 to: 4 do: [ :i | stepLocks add: false ].
+
+	tcua := SeekerDebugger headlessDebugBlock: [
+		        var := 2.
+		        updateCurrentTimeTo value: 1.
+		        stepLocks at: 1 put: true.
+		        [ stepLocks at: 2 ] lockUntilTrue.
+		        var := 4.
+		        updateCurrentTimeTo value: 3.
+		        stepLocks at: 3 put: true ].
+	tcub := SeekerDebugger headlessDebugBlock: [
+		        [ stepLocks at: 1 ] lockUntilTrue.
+		        var := 3.
+		        updateCurrentTimeTo value: 2.
+		        stepLocks at: 2 put: true.
+		        [ stepLocks at: 3 ] lockUntilTrue.
+		        var := 5.
+		        updateCurrentTimeTo value: 4.
+		        stepLocks at: 4 put: true ].
+
+	ecu := SeekerExecutor newFor: {
+			       tcua.
+			       tcub }.
+	"Asserting forward steps"
+	updateCurrentTimeTo value: 0.
+	self assert: var equals: 1.
+	ecu stepUntil: [ currentTime = 1 ].
+	self assert: var equals: 2.
+	programTime1 := ecu programTimestamp.
+	ecu stepUntil: [ currentTime = 2 ].
+	self assert: var equals: 3.
+	programTime2 := ecu programTimestamp.
+	ecu stepUntil: [ currentTime = 3 ].
+	self assert: var equals: 4.
+	programTime3 := ecu programTimestamp.
+	ecu stepUntil: [ currentTime = 4 ].
+	self assert: var equals: 5.
+	programTime4 := ecu programTimestamp.
+	"Assert time-travels"
+	ecu timeTravelTo: programTime4.
+	self assert: var equals: 5.
+	ecu timeTravelTo: programTime3.
+	self assert: var equals: 4.
+	ecu timeTravelTo: programTime2.
+	self assert: var equals: 3.
+	ecu timeTravelTo: programTime1.
+	self assert: var equals: 2.
+	ecu timeTravelTo: 0.
+	self assert: var equals: 1.
+	ecu stepUntil: [ false ].
+	ecu resume
+]
+
+{ #category : #tests }
 ExecutionControlUnitTest >> testSingleThreadExecutionReverse [
 
-	| procA ecu sharedObject objB ecuProc1 programState1 sem time0 |
+	| procA sharedObject objB ecuProc1 programState1 sem time0 |
 	sem := Semaphore new.
 	objB := ECUTestObject new.
 	objB a: 0.

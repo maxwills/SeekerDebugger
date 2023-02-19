@@ -79,13 +79,14 @@ SkSystemCallsHandler >> initialize [
 	systemCalls add: Semaphore >> #signal.
 	systemCalls add: BlockClosure >> #fork. "this cant be correct, but need to investigate its effects in detail"
 	systemCalls add: SeekerExecutorLegacy >> #executeUntracked:.
+	systemCalls add: SeekerExecutor class >> #executeUntracked:.
 
 	"Halts"
 	haltingMethods := IdentitySet new.
 	haltingMethods add: Halt class >> #once.
 	haltingMethods add: Halt class >> #now.
 	haltingMethods add: Object >> #halt.
-	haltingMethods add: Object >> #haltOnce.
+	haltingMethods add: Object >> #haltOnce
 ]
 
 { #category : #testing }
