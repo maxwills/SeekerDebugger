@@ -458,7 +458,7 @@ SeekerCurrentStateInterface >> messageArgumentAt: aNumber [
 		  self contextTop "inlined messages should not have arguments" ]
 		  ifFalse: [ 
 			  | pointer |
-			  pointer := 1 + context stackPtr - node numArgs. "Heuristics"
+			  pointer := aNumber + context stackPtr - node numArgs. "Heuristics"
 			  pointer <= 0 ifTrue: [ pointer := 1 ]. "I'm not sure these cases happen"
 			  pointer > context size ifTrue: [ ^ nil ].
 			  context at: pointer "Heuristics" ]
