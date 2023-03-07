@@ -23,7 +23,7 @@ SkSelectionAssignmentsOfAnInstanceVariableOfObject >> objectOid: anObject [
 { #category : #accessing }
 SkSelectionAssignmentsOfAnInstanceVariableOfObject >> value: programState [
 
-	^ programState nodeIsAssignmentOfInstanceVariable and: [ 
+	^ programState isAssignmentOfInstanceVariable and: [ 
 		  programState receiverOid == objectOid and: [ 
 			  programState node variable variable name == variableName ] ]
 ]

@@ -7,5 +7,5 @@ Class {
 { #category : #accessing }
 SkSelectionAssignments >> value: programState [
 
-	^ programState nodeIsAssignment
+	^ programState isAssignment
 ]

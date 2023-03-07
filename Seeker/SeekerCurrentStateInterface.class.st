@@ -161,14 +161,6 @@ SeekerCurrentStateInterface class >> writingPrimitives [
 	
 ]
 
-{ #category : #testing }
-SeekerCurrentStateInterface >> aboutToSwitchContext [
-
-	<qwpSubCached>
-	^ self willSend or: [ 
-		  self willReturn or: [ self willStore or: [ self willCreateBlock ] ] ]
-]
-
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> aliasOfObject: anObject [
 
@@ -345,9 +337,20 @@ SeekerCurrentStateInterface >> initializeWritingPrimitiveMethods [
 
 { #category : #testing }
 SeekerCurrentStateInterface >> isAssignment [
+	"Prefer this method over nodeIsAssignment. Several bytecodes could be executed in the same node. 
+	This method only returns true for the actual store instruction."
 
 	<qwpSubCached>
-	^ self node isAssignment
+	^ self nodeIsAssignment and: [self willStore  ]
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> isAssignmentOfInstanceVariable [
+	"Prefer this method over nodeIsAssignment. Several bytecodes could be executed in the same node. 
+	This method only returns true for the actual store instruction."
+
+	<qwpSubCached>
+	^ self nodeIsAssignmentOfInstanceVariable and: [self willStore]
 ]
 
 { #category : #testing }
@@ -384,6 +387,15 @@ and the method called corresponds to an instantiation primitive.
 	methodAboutToExecute := self methodAboutToExecute.
 	^ methodAboutToExecute notNil and: [ 
 		  instantiationPrimitiveMethods includes: methodAboutToExecute ]
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> isInterestingInstruction [
+	"The standardard debugger only stops on these kind of instructions. This is used to emulate the standard debugger stepping"
+
+	<qwpSubCached>
+	^ self willSend or: [
+		  self willReturn or: [ self willStore or: [ self willCreateBlock ] ] ]
 ]
 
 { #category : #testing }

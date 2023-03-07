@@ -10,7 +10,7 @@ Class {
 { #category : #accessing }
 SkSelectionAssignmentsOfVariableNamed >> value: programState [
 
-	^ programState nodeIsAssignment and: [ programState assignmentVariableName == variableName ]
+	^ programState isAssignment and: [ programState assignmentVariableName == variableName ]
 ]
 
 { #category : #accessing }

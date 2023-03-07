@@ -37,7 +37,7 @@ SeekerStDebuggerDebuggerActionModel >> doStepToFirstInterestingBytecode [
 	startingBytecode := tracer bytecodeIndex.
 	tracer stepBytecode.
 	tracer stepBytecodeUntilConditionIsTrueAccountingInstrumentation: [ 
-		currentState aboutToSwitchContext ].
+		currentState isInterestingInstruction ].
 	^ startingBytecode ~= tracer bytecodeIndex
 ]
 
@@ -68,7 +68,7 @@ SeekerStDebuggerDebuggerActionModel >> restartContext: aContext [
 		ifTrue: [ 
 			tracer blockingDoAndUpdateSessionAfter: [ 
 				tracer perform restartContext: aContext.
-				currentState aboutToSwitchContext ifFalse: [ 
+				currentState isInterestingInstruction ifFalse: [ 
 					self doStepToFirstInterestingBytecode ].
 				self session updateContextTo: currentState context.
 				self updateTopContext ] ]
@@ -140,7 +140,7 @@ SeekerStDebuggerDebuggerActionModel >> stepOver: aContext [
 				"If we are back in the same sequence, but forward in time"
 				((startingTraceTime referencesTheLocalPast: tracer) or: [ (startingTraceTime referencesTheLocalFuture: tracer) "fix for inlined loops"]) ifTrue: [ 
 					shouldStop := true ] ].
-			currentState aboutToSwitchContext ifFalse: [ 
+			currentState isInterestingInstruction ifFalse: [ 
 				self doStepToFirstInterestingBytecode ].
 			self session updateContextTo: currentState context.
 			self session triggerEvent: #stepOver.

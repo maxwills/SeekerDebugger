@@ -22,6 +22,6 @@ SkSelectionAssignmentsOfInstanceVariablesOfObject >> objectOid: anObject [
 { #category : #accessing }
 SkSelectionAssignmentsOfInstanceVariablesOfObject >> value: programState [
 
-	^ programState nodeIsAssignmentOfInstanceVariable and: [ 
+	^ programState isAssignmentOfInstanceVariable and: [ 
 		  programState receiverOid == objectOid ]
 ]

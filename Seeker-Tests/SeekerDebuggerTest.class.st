@@ -151,8 +151,7 @@ SeekerDebuggerTest >> testTimeTravelLocalTempVar [
 SeekerDebuggerTest >> testTimeTravelNestedExternalTempVar [
 	"Launches a headless time-traveling session, then seeks for the timestamps of each assignment using a Query. Then, at each timestamp the test asserts that the value of the external temp variable of referred in the execution matches the expected value. Time stamps are traversed from the latest to the earliest to trigger reverse operations"
 
-	| ex1  tracer queryExternal queryOuter queryInner proc externalVar assert |
-	[^self] value.
+	| ex1  tracer queryExternal queryOuter queryInner proc externalVar  |
 	ex1 := SeekerDebugger headlessDebugBlock: [
 			        | a outerVar |
 			        externalVar := #external1.
@@ -189,16 +188,42 @@ SeekerDebuggerTest >> testTimeTravelNestedExternalTempVar [
 		(queryExternal at: 3) bytecodeIndex + 1.
 	self assert: externalVar = #external3.
 	self assert:
-		(proc suspendedContext readVariableNamed: #externalVar) = 3.
+		(proc suspendedContext readVariableNamed: #externalVar) = #external3.
 	tracer timeTravelToBytecodeIndex:
 		(queryExternal at: 2) bytecodeIndex + 1.
 	self assert: externalVar = #external2.
 	self assert:
-		(proc suspendedContext readVariableNamed: #externalVar) = 2.
+		(proc suspendedContext readVariableNamed: #externalVar) = #external2.
 	tracer timeTravelToBytecodeIndex: (queryExternal at: 1) bytecodeIndex.
 	self assert: externalVar isNil.
-
 	self assert:
-		(proc suspendedContext readVariableNamed: #externalVar) isNil ]
+		(proc suspendedContext readVariableNamed: #externalVar) isNil.
+	
+	tracer timeTravelToBytecodeIndex:
+		(queryInner at: 1) bytecodeIndex + 1.
+	self assert:
+		(proc suspendedContext readVariableNamed: #innerVar) = #inner.
+   tracer timeTravelToBytecodeIndex:
+		(queryInner at: 1) bytecodeIndex .
+	self assert:
+		(proc suspendedContext readVariableNamed: #innerVar) = nil.
+
+   tracer timeTravelToBytecodeIndex:
+		(queryOuter at: 2) bytecodeIndex + 1.
+	self assert:
+		(proc suspendedContext readVariableNamed: #outerVar) = #outerVarInsideInner.
+	tracer timeTravelToBytecodeIndex:
+		(queryOuter at: 2) bytecodeIndex .
+	self assert:
+		(proc suspendedContext readVariableNamed: #outerVar) = #outer.
+tracer timeTravelToBytecodeIndex:
+		(queryOuter at: 1) bytecodeIndex + 1.
+	self assert:
+		(proc suspendedContext readVariableNamed: #outerVar) = #outer.
+	tracer timeTravelToBytecodeIndex:
+		(queryOuter at: 1) bytecodeIndex .
+	self assert:
+		(proc suspendedContext readVariableNamed: #outerVar) isNil.	
+	 ]
 		ensure: [ proc resume ]
 ]
