@@ -525,7 +525,10 @@ SkSelectiveExecutionRestorer class >> undoBlockForOGTempVariableAssignmentInCont
 	| varName originalValue |
 	varName := aVariable name.
 	originalValue := aVariable readInContext: aContext.
-	^ [ aContext writeVariableNamed: aVariable name value: originalValue ]
+	^ [
+		"this is a dirty patch. Ideally, the undoblock should have not been registered at all"
+		aContext isDead ifFalse:[
+		 aContext writeVariableNamed: aVariable name value: originalValue] ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -733,25 +736,40 @@ SkSelectiveExecutionRestorer >> createDefaultUndoBlock [
 { #category : #accessing }
 SkSelectiveExecutionRestorer >> doPreStepProcessForAssignments [
 
-	| variable |
+	| variable context |
 	"the current node is an assignment node"
 	variable := currentState node variable variable.
 	"putting the tracing for restoration (of assignments)logic here"
-	variable isGlobalVariable ifTrue: [ 
-		self pushUndoBlockAtCurrentTime: (self class undoBlockForGlobalVariableAssignment: currentState).
+	variable isGlobalVariable ifTrue: [
+		self pushUndoBlockAtCurrentTime:
+			(self class undoBlockForGlobalVariableAssignment: currentState).
 		^ self ].
 
-	variable isWorkspaceVariable ifTrue: [ 
-		self pushUndoBlockAtCurrentTime:
-			(self class undoBlockForWorkspaceVariableAssignmentInContext: mapper doItContext
+	variable isWorkspaceVariable ifTrue: [
+		self pushUndoBlockAtCurrentTime: (self class
+				 undoBlockForWorkspaceVariableAssignmentInContext:
+				 mapper doItContext
 				 variable: variable).
 		^ self ].
 	currentState receiverIsLocalToExecution not ifFalse: [ ^ self ].
-	variable isInstanceVariable ifTrue: [ 
-		self pushUndoBlockAtCurrentTime: (self class undoBlockForInstanceVariableAssignment: currentState) ].
-	((self isOGReceiver: currentState receiver) and: [ variable isTempVariable ]) ifTrue: [ 
+	variable isInstanceVariable ifTrue: [
 		self pushUndoBlockAtCurrentTime:
-			(self class undoBlockForOGTempVariableAssignmentInContext: currentState context
+			(self class undoBlockForInstanceVariableAssignment: currentState).
+		^ self ].
+	"Next is for local variables of external objects. This includes the contexts that are already in the stack.
+Only temp variables that are not initialized by the debugged execution should generate undo blocks.
+Therefore, we check if the variable is declared in the current context. this is tricky for inlined code.
+Alternativelly, checking if the variable is defined in an outerContext would make it elegible to generate undoBlock"
+	context := currentState context.
+	(context isVarDeclaredInAnOuterContext: variable name) ifTrue: [ "
+		THIS CODE WORKS BUT CREATES UNDOBLOCKS FOR SEVERAL ASSIGNMENTS UNNECESSARILY.
+		The problem is that it still creates undoblocks for variables that are defined in blocks that are instantiated by the execution.
+		It is patched now within the undoblock, and the undo block doesnt do anything if such context is dead (otherwise, it will crash the restore mechanism, as it was before that patch).
+		Another solution would be to remember every instantiated context and consider their temporal variables, similarly of what we do with instance variables.
+		In such case, we can prevent the creation of these erroneous undoblock.
+		"
+		self pushUndoBlockAtCurrentTime: (self class
+				 undoBlockForOGTempVariableAssignmentInContext: context
 				 variable: variable) ]
 ]
 

@@ -51,6 +51,18 @@ Context >> defaultSeekerCacheObjectClass [
 ]
 
 { #category : #'*Seeker' }
+Context >> isVarDeclaredInAnOuterContext: varName [
+	| ctx |
+	ctx := self outerContext.
+	ctx ifNil: [ ^ false ].
+	[ ctx ~~ self ] whileTrue: [
+		(ctx hasTemporaryVariableNamed: varName) ifTrue: [ ^ true ].
+		ctx := ctx outerContext.
+		ctx ifNil: [ ^ false ] ].
+	^ false
+]
+
+{ #category : #'*Seeker' }
 Context >> matchesTracedContextPC: aBcp [
 
 	sender ifNil: [ ^ false ].
