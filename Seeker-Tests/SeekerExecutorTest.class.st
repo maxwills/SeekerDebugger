@@ -101,15 +101,16 @@ SeekerExecutorTest >> testResume [
 
 	| executor proc ex1 tracer |
 	executor := SeekerExecutor newFor:
-		            { (SeekerDebugger headlessDebugBlock: [ 
+		            { (SeekerDebugger headlessDebugBlock: [
 			             | a |
 			             a := 5.
 			             a := a + 1 ]) }.
 	ex1 := executor tcus at: 1.
 	proc := ex1 interruptedProcess.
-	[ 
+	[
 	tracer := ex1 tracer.
-	executor timeTravelTo: 4 ] ensure: [ executor resume ].
+	executor timeTravelTo: 4.
+	self assert: proc isSuspended ] ensure: [ executor resume ].
 	self assert: proc isSuspended not
 ]
 
@@ -131,10 +132,15 @@ SeekerExecutorTest >> testStep [
 SeekerExecutorTest >> testStepUntilFalse [
 
 	| executor valA valB |
-	executor := SeekerExecutor newFor: { 
+	executor := SeekerExecutor newFor: {
 			            (SeekerDebugger headlessDebugBlock: [ valA := 1 ]).
 			            (SeekerDebugger headlessDebugBlock: [ valB := 1 ]) }.
-	[ executor stepUntil: [ false ] ] ensure: [ executor resume ]
+	self assert: executor programTimestamp equals: 0.
+	[
+	executor stepUntil: [ false ].
+	self assert: executor programTimestamp > 0.
+	self assert: executor programTimestamp < 1000 ] ensure: [
+		executor resume ]
 ]
 
 { #category : #test }
@@ -142,19 +148,20 @@ SeekerExecutorTest >> testTimeTravelTo [
 
 	| executor proc ex1 tracer |
 	executor := SeekerExecutor newFor:
-		            { (SeekerDebugger headlessDebugBlock: [ 
+		            { (SeekerDebugger headlessDebugBlock: [
 			             | a |
 			             a := 5.
 			             a := a + 1 ]) }.
-		ex1 := executor tcus at: 1.
-		proc := ex1 interruptedProcess.
-	[ 
+	ex1 := executor tcus at: 1.
+	proc := ex1 interruptedProcess.
+	[
 	tracer := ex1 tracer.
+	"Manually calculated timestamps"
 	executor timeTravelTo: 4.
 	self assert: (tracer currentContext readVariableNamed: #a) equals: 5.
 	executor timeTravelTo: 6.
 	self assert: (tracer currentContext readVariableNamed: #a) equals: 6.
 	executor timeTravelTo: 4.
-	self assert: (tracer currentContext readVariableNamed: #a) equals: 5.] 
-		ensure: [ "proc resume "]
+	self assert: (tracer currentContext readVariableNamed: #a) equals: 5 ]
+		ensure: [ executor resume ]
 ]
