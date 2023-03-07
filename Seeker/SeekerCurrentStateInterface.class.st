@@ -368,6 +368,13 @@ SeekerCurrentStateInterface >> isExceptionSignaledMethod [
 		  exceptionSignalSelectors includes: self methodSelector ]
 ]
 
+{ #category : #testing }
+SeekerCurrentStateInterface >> isFalseIfNilSend [
+
+	<qwpSubCached>
+	^self node isInlineIfNil and: [ self willJumpIfTrueOrFalse not ]
+]
+
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> isFirstBytecodeOfMethod [
 <superCached>
@@ -407,11 +414,13 @@ SeekerCurrentStateInterface >> isMessageNode [
 
 { #category : #testing }
 SeekerCurrentStateInterface >> isMessageSend [
-"A more realiable version of isMessageNode. The difference is that several bytecodes might correspond to the same message node. This method returns true only once for the bytecode when the message will be sent."
-	^ self isMessageNode and: [ 
-		  self willSend or: [ 
-			  self node isInlined and: [ 
-				  self willJumpIfFalse or: [ self willJumpIfTrue ] ] ] ]
+	"A more realiable version of isMessageNode. The difference is that several bytecodes might correspond to the same message node. This method returns true only once for the bytecode when the message will be sent."
+
+	^ self isMessageNode and: [
+		  self isFalseIfNilSend not and: [
+			  self willSend or: [
+				  self node isInlined and: [
+					  self willJumpIfFalse or: [ self willJumpIfTrue ] ] ] ] ]
 ]
 
 { #category : #testing }
@@ -887,6 +896,16 @@ SeekerCurrentStateInterface >> willJumpIfTrue [
 
 	<qwpSubCached>
 	^ EncoderForSistaV1 isBranchIfTrueAt: self contextPC in: self method
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> willJumpIfTrueOrFalse [
+	"Answer whether the next bytecode is a jump-if-false."
+
+	"^ self encoderClass isBranchIfFalseAt: self contextPC in: self method"
+
+	<qwpSubCached>
+	^ self willJumpIfTrue or: [ self willJumpIfFalse ]
 ]
 
 { #category : #testing }
