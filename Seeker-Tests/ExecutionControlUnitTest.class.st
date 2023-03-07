@@ -112,96 +112,6 @@ that is not tracked by the TCUs (therefore, undoblocks are not generated). Repla
 	ecu resume
 ]
 
-{ #category : #tests }
-ExecutionControlUnitTest >> doEvaluationScenarioReversalFrom: fromTime to: toTime withTimeOut: timeout [
-"Obsolete. Violates assumption of having no unmonitored thread interfeering with the debugged threads"
-	| currentTime actualFromExecutionTime actualToExecutionTime updateCurrentTimeTo actualFromExecutionTimeCopy actualToExecutionTimeCopy |
-	currentTime := 0.
-	storedStates := OrderedCollection new.
-	stepLocks := OrderedCollection new.
-
-	self initialieExpectedEvaluationStepStates.
-	"(D)ebugged execution writings by thread a (ta) and tb. (U)nmonitored execution writings by tc. (S) shared writings by ta and tb and tc"
-	d := ECUTestObject new.
-	u := ECUTestObject new.
-	s := ECUTestObject new.
-	updateCurrentTimeTo := [ :time |
-	                       fromTime = time ifTrue: [
-		                       actualFromExecutionTime := ecu
-			                                                  programTimestamp ].
-	                       toTime = time ifTrue: [
-		                       actualToExecutionTime := ecu programTimestamp ].
-	                       currentTime := time ].
-	stepLocks := OrderedCollection new.
-	currentTime := 0.
-	self resetTestControlObjects: updateCurrentTimeTo.
-	self assert: ((self serializeState) hasEqualElements:
-			 (expectedEvaluationStepState at: currentTime + 1)).
-	tcua := SeekerDebugger headlessDebugBlock: [
-		        d a: 2.
-		        s a: 2.
-		        updateCurrentTimeTo value: 1.
-		        stepLocks at: 1 put: true.
-		        [ stepLocks at: 3 ] lockUntilTrue.
-		        storedStates at: 3 put: (self serializeState).
-		        d a: 3.
-		        s a: 3.
-		        s b: 3.
-		        updateCurrentTimeTo value: 4.
-		        stepLocks at: 4 put: true ].
-	tcub := SeekerDebugger headlessDebugBlock: [
-		        [ stepLocks at: 2 ] lockUntilTrue.
-		        storedStates at: 2 put: (self serializeState).
-		        d b: 2.
-		        s b: 2.
-		        updateCurrentTimeTo value: 3.
-		        stepLocks at: 3 put: true.
-		        [ stepLocks at: 5 ] lockUntilTrue.
-		        storedStates at: 5 put: (self serializeState).
-		        d a: 4.
-		        d b: 3.
-		        s b: 4.
-		        updateCurrentTimeTo value: 6.
-		        stepLocks at: 6 put: true.
-		        storedStates at: 6 put: (self serializeState) ].
-
-	ecu := SeekerExecutor newFor: {
-			       tcua.
-			       tcub }.
-	updateCurrentTimeTo value: 0.
-	tc resume.
-	ecu stepUntil: [ currentTime = fromTime ].
-	self assert: actualFromExecutionTime isNotNil.
-	self assert: actualToExecutionTime isNotNil.
-	(unmonitoredFinishedSem waitTimeoutMSecs: timeout) ifTrue: [
-		tc terminate ]. "might require to tune this up according to system speed"
-
-	self assert: ((self serializeState) hasEqualElements:
-			 (expectedEvaluationStepState at: fromTime + 1)).
-	actualFromExecutionTimeCopy := actualFromExecutionTime. "We need this because the TT undoes its value"
-	actualToExecutionTimeCopy := actualToExecutionTime. "We need this because the TT undoes its value"
-	ecu restart.
-	stepLocks at: 2 put: false.
-	stepLocks at: 5 put: false.
-	1 to: 6 do: [ :i | self deny: (stepLocks at: i) ].
-	unmonitoredFinishedSem := Semaphore new.
-	tc := [
-	      [ stepLocks at: 1 ] lockUntilTrue.
-	      updateCurrentTimeTo value: 2.
-	      stepLocks at: 2 put: true.
-	      [ stepLocks at: 4 ] lockUntilTrue.
-	      updateCurrentTimeTo value: 5.
-	      stepLocks at: 5 put: true.
-	      unmonitoredFinishedSem signal ] newProcess.
-	tc resume.
-	self assert: actualToExecutionTimeCopy isNotNil.
-	ecu timeTravelTo: actualToExecutionTimeCopy.
-	(unmonitoredFinishedSem waitTimeoutMSecs: timeout) ifTrue: [
-		tc terminate ]. "might require to tune this up according to system speed"
-	self assert: ((self serializeState) hasEqualElements:
-			 (expectedEvaluationStateFromTo at: fromTime -> toTime))
-]
-
 { #category : #'as yet unclassified' }
 ExecutionControlUnitTest >> expectedStateAtStep: aNumber [
 
@@ -285,19 +195,6 @@ ExecutionControlUnitTest >> initialieExpectedEvaluationStepStates [
 	expectedEvaluationStateFromTo
 		at: 1 -> 0
 		put: { 1. 1. 1 . 1 . 1 . 1. 1. 1. 1 }.
-]
-
-{ #category : #tests }
-ExecutionControlUnitTest >> obsolete_testEvaluationReverseScenariosFrom [
-self skip.
-	"Executes the evaluation scenario. 
-Obsolete version. The method #doEvaluationScenarioReversalFrom:to:withTimeOut:
-violates the assumption of having no unmonitored processes interfeering with the debugged ones.
-"
-
-	1 to: 3 do: [ :fromTime |
-		0 to: fromTime - 1 do: [ :toTime |
-			self doEvaluationScenarioReversalFrom: fromTime to: toTime withTimeOut:100] ]
 ]
 
 { #category : #initialization }
