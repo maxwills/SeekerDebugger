@@ -1,5 +1,5 @@
 "
-Ued for headless execution for the moment.
+Used for headless execution for the moment.
 "
 Class {
 	#name : #SeekerDummyStDebugger,

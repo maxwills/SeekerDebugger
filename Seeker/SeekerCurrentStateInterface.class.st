@@ -510,6 +510,17 @@ SeekerCurrentStateInterface >> messageIsSeekerMarkerMethod [
 ]
 
 { #category : #testing }
+SeekerCurrentStateInterface >> messageNumberOfArguments [
+
+	<qwpSubCached>
+	| node context nArgs |
+	context := self context.
+	node := self node.
+	nArgs := node arguments size.
+	^ nArgs
+]
+
+{ #category : #testing }
 SeekerCurrentStateInterface >> messageReceiver [
 
 	"Returns the message receiver of the current message node. Assumes the current node is a message node

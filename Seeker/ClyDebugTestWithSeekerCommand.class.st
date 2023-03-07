@@ -32,7 +32,7 @@ ClyDebugTestWithSeekerCommand >> runTest: testSelector of: testClass [
 
 	| process suspendedContext |
 	"Current version is not compatible with break points"
-	Breakpoint removeAll.
+	"Breakpoint removeAll."
 	process := [ super runTest: testSelector of: testClass ] newProcess.
 	SeekerGlobals instance watchProcess: process.
 	suspendedContext := process suspendedContext.

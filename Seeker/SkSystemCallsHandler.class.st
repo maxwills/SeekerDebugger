@@ -27,15 +27,22 @@ SkSystemCallsHandler >> enabled [
 
 { #category : #'as yet unclassified' }
 SkSystemCallsHandler >> handleHalts [
-
 	"The debugger should stop iterating if it is not in querymode."
 
-	| ctx |
+	| ctx nargs |
 	ctx := currentState context.
-	tracer stepper haltableMode ifTrue: [ 
-		tracer stepper emergencyStopFlag: true ].
+	tracer stepper haltableMode ifTrue: [
+		tracer stepper emergencyStopFlag: true.
+		"This should be replaced by some notification (announcement, or event system) approach"
+		tracer headless ifFalse: [ UIManager default inform: 'SeekerDebugger: Breakpoint or Halt reached.' ]
+		 ].
 	tracer bytecodeIndex: tracer bytecodeIndex + 1.
-	currentState context pc: currentState context pc + 1. "not sure about this value"
+	ctx pc: ctx pc + 1. "skip the send. not sure about this value"
+	nargs := currentState messageNumberOfArguments.
+	nargs > 0 ifTrue: [
+		1 to: nargs do: [ :i |
+			ctx pop.
+			tracer bytecodeIndex: tracer bytecodeIndex + 1 ] ].
 	^ ctx
 ]
 
@@ -86,7 +93,8 @@ SkSystemCallsHandler >> initialize [
 	haltingMethods add: Halt class >> #once.
 	haltingMethods add: Halt class >> #now.
 	haltingMethods add: Object >> #halt.
-	haltingMethods add: Object >> #haltOnce
+	haltingMethods add: Object >> #haltOnce.
+	haltingMethods add: Breakpoint >>#breakInContext:node:
 ]
 
 { #category : #testing }

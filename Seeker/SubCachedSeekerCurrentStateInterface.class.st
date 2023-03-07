@@ -56,6 +56,8 @@ Class {
 		'__cached_messageArgumentsTimeKey',
 		'__cached_messageIsSeekerMarkerMethod',
 		'__cached_messageIsSeekerMarkerMethodTimeKey',
+		'__cached_messageNumberOfArguments',
+		'__cached_messageNumberOfArgumentsTimeKey',
 		'__cached_messageReceiver',
 		'__cached_messageReceiverOid',
 		'__cached_messageReceiverOidTimeKey',
