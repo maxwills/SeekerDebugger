@@ -1,3 +1,8 @@
+"
+Lists all writings in an object. Ie, assignments and writing primitives.
+Note that writing performed with the method writeSlot: and derivates target a different receiver (the receiver of those messages is the slot, and not the object owner of the slot).
+We could extend this query to include writings to its slots, but it requires some sort of multipass approach.
+"
 Class {
 	#name : #UTTQAllWritingsOnObject,
 	#superclass : #UserTTQ,
