@@ -216,8 +216,9 @@ SkObjectsTracker >> objectOidIsLocal: aNumber [
 	"Returns true if the object that corresponds to the given Tid is instantiated during the execution"
 
 	"Beware that the execution corresponds only to the already executed part."
-
-	^ (nonLocalObjects includes: aNumber) not
+	|obj|
+	obj := oidsDictionary at:aNumber.
+	^ (nonLocalObjects includes: obj) not
 ]
 
 { #category : #accessing }

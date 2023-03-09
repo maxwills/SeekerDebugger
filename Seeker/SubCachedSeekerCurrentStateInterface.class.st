@@ -2,8 +2,6 @@ Class {
 	#name : #SubCachedSeekerCurrentStateInterface,
 	#superclass : #SeekerCurrentStateInterface,
 	#instVars : [
-		'__cached_aboutToSwitchContext',
-		'__cached_aboutToSwitchContextTimeKey',
 		'__cached_assignmentCurrentValue',
 		'__cached_assignmentCurrentValueTimeKey',
 		'__cached_assignmentNextValue',
