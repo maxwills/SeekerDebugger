@@ -59,6 +59,8 @@ Class {
 		'__cached_messageNumberOfArguments',
 		'__cached_messageNumberOfArgumentsTimeKey',
 		'__cached_messageReceiver',
+		'__cached_messageReceiverIsLocalToExecution',
+		'__cached_messageReceiverIsLocalToExecutionTimeKey',
 		'__cached_messageReceiverOid',
 		'__cached_messageReceiverOidTimeKey',
 		'__cached_messageReceiverTimeKey',

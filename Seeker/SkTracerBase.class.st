@@ -222,7 +222,7 @@ SkTracerBase >> programTimestampToLocal [
 { #category : #starting }
 SkTracerBase >> restart [
 
-	self error: 'obsolete method. Use restartFromBytecodeOne instead'
+	self restartAtBytecodeOne
 ]
 
 { #category : #'as yet unclassified' }

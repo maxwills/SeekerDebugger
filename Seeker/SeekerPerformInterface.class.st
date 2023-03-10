@@ -1,3 +1,7 @@
+"
+The idea of this class was to separate the public debugging API from the rest. So, the UI or model could potentially only need the seekerPerformInterface to do actions.
+At this point, everything is mixed, and a bigger refactoring is needed. I leave this class as a reminder of this.
+"
 Class {
 	#name : #SeekerPerformInterface,
 	#superclass : #SeekerInterfaceObject,
@@ -40,6 +44,12 @@ Therefore, calculating the next statement in the sequence should be done differe
 							statementIndex > startingStatementIndex ] ] ] ] ] ]
 ]
 
+{ #category : #starting }
+SeekerPerformInterface >> restartAtBytecodeOne [
+
+	tracer restartAtBytecodeOne
+]
+
 { #category : #'debugging actions' }
 SeekerPerformInterface >> restartContext: aContext [
 
@@ -48,12 +58,6 @@ SeekerPerformInterface >> restartContext: aContext [
 		targetContextTraceTime := aContext tracedContextPC
 			                          asTraceTimeReference.
 		tracer safeTimeTravelToTraceTime: targetContextTraceTime ]
-]
-
-{ #category : #starting }
-SeekerPerformInterface >> restartFromBytecodeOne [
-
-	tracer restartAtBytecodeOne
 ]
 
 { #category : #'as yet unclassified' }

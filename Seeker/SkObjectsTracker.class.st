@@ -206,7 +206,7 @@ SkObjectsTracker >> objectIsLocal: anObject [
 
 	"Beware that the execution corresponds only to the already executed part."
 
-	anObject class = Metaclass ifTrue: [ ^ true ].
+	"anObject class = Metaclass ifTrue: [ ^ true ]."
 	^ instantiatedLocalObjects includes: anObject
 ]
 
@@ -245,12 +245,12 @@ SkObjectsTracker >> oidsDictionary [
 { #category : #'as yet unclassified' }
 SkObjectsTracker >> registerObjectInstance: anObject withOid: aNumber [
 
-	"anObject class = Metaclass ifTrue: [ ^ self ]."
+	anObject class = Metaclass ifTrue: [ ^ self ].
 
 	oidsDictionary at: anObject ifAbsentPut: [ 
 		oidRegisteredFlag := true.
 		lastRegisteredOid := aNumber.
-		lastRegisteredObjectClassName := anObject class name.
+		lastRegisteredObjectClassName := #anon."anObject class name." "Trying to fix metaclass instantiation problem"
 		nonPersistentReverseOidsDictionary at: aNumber ifAbsentPut: [ anObject ].
 		persistentReverseOidsDictionary at: aNumber ifAbsentPut: [ anObject ].
 		aNumber ].

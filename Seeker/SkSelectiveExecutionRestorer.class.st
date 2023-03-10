@@ -775,16 +775,17 @@ Alternativelly, checking if the variable is defined in an outerContext would mak
 
 { #category : #'as yet unclassified' }
 SkSelectiveExecutionRestorer >> doPreStepProcessForMessageSends [
-
 	"handling message sends cases"
 
 	| method |
 	method := currentState methodAboutToExecute.
 
 	method ifNil: [ ^ self ].
-	objectsTracker instantiationFlag ifFalse: [ 
-		currentState isWritingPrimitiveMessage ifTrue: [ 
-			self pushUndoBlockAtCurrentTime: (self class undoBlockForWritingPrimitive: currentState) ] ]
+	objectsTracker instantiationFlag ifFalse: [
+		(currentState isWritingPrimitiveMessage and: [
+			 currentState messageReceiverIsLocalToExecution not ]) ifTrue: [
+			self pushUndoBlockAtCurrentTime:
+				(self class undoBlockForWritingPrimitive: currentState) ] ]
 ]
 
 { #category : #initialization }

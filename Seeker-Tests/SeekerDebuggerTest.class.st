@@ -31,6 +31,50 @@ SeekerDebuggerTest >> testDelayExecutionsNotFreezing [
 ]
 
 { #category : #tests }
+SeekerDebuggerTest >> testDeterministicIdentities [
+
+	| ex1 tracer proc createProgramBlock objects recordedOrder notEqualFlag stepCount|
+	objects := IdentityDictionary new.
+
+	createProgramBlock := [
+	                      [
+	                      1 to: 100 do: [ :i |
+		                      | obj |
+		                      obj := Object new.
+		                      objects at: obj put: obj ] ] ].
+	ex1 := SeekerDebugger headlessDebugBlock: createProgramBlock value.
+	proc := ex1 interruptedProcess.
+	[
+	tracer := ex1 tracer.
+	tracer stepToEnd.
+	stepCount := tracer bytecodeIndex.
+	self assert: objects size equals: 100.
+	recordedOrder := objects keys asOrderedCollection.
+	self assert:
+		(objects keys asOrderedCollection hasEqualElements: recordedOrder).
+	1 to: 5 do: [ :i |
+		tracer restart.
+		self assert: objects isEmpty.
+		tracer stepToEnd.
+		self assert: tracer  bytecodeIndex equals: stepCount.
+		self assert: objects size equals: 100.
+		self assert:
+			(objects keys asOrderedCollection hasEqualElements: recordedOrder) ] ]
+		ensure: [ proc resume ].
+	notEqualFlag := false.
+	1 to: 5 do: [ :i |
+		| programBlock |
+		objects := IdentityDictionary new.
+		programBlock := createProgramBlock value.
+		programBlock value.
+		self assert: objects size equals: 100.
+
+		(objects keys asOrderedCollection hasEqualElements: recordedOrder)
+			ifFalse: [ notEqualFlag := true ] ].
+	self assert: notEqualFlag
+]
+
+{ #category : #tests }
 SeekerDebuggerTest >> testHeadless [
 
 	| seeker proc startingContext startingNode endNode currentState |

@@ -101,15 +101,6 @@ SkQueryExperimentalTracer >> onTracedContextChanged [
 	super onTracedContextChanged
 ]
 
-{ #category : #'object - api' }
-SkQueryExperimentalTracer >> perform [
-
-	| interface |
-	interface := SeekerPerformInterface new.
-	interface tracer: self.
-	^ interface
-]
-
 { #category : #starting }
 SkQueryExperimentalTracer >> restartAtBytecodeOne [
 

@@ -26,6 +26,61 @@ SkSystemCallsHandler >> enabled [
 ]
 
 { #category : #'as yet unclassified' }
+SkSystemCallsHandler >> handleAMetaclassBasicNew: interpretationBlock [
+
+	| nextContext instancedObj messageReceiver |
+	"Setting some basic object data because the debugger relies on that data.
+	These data will be overriden by the initialize method call, but in the mean time, the debugger need these fields to contain something to work.
+	It is possible (and likely) that even less fields are required. not a concern at the moment.""nextContext := interpretationBlock value."
+	messageReceiver := currentState messageReceiver.
+	nextContext := currentState context.
+	[
+	self flag:
+		'cant use the following method. Accessing the context without setting the class name crashes the image.'.
+	nextContext := currentState context.
+	instancedObj := currentState contextTop.
+	instancedObj setName: #unnamedClassTaggedBySeekerDebugger ].
+	self flag: 'Instead, we do it without reflection.'.
+	Processor activeProcess
+		evaluate: [
+			| newMetaclass newClass |
+			newMetaclass := messageReceiver.
+			"
+			newMetaclass := Metaclass basicNew."
+		
+			"newMetaclass
+				superclass: Object class
+				withLayoutType: FixedLayout
+				slots: {  }."
+			newMetaclass.
+			newClass := newMetaclass basicNew.
+
+			newClass setName: #whatever.
+			newClass superclass: Object withLayoutType: FixedLayout slots: {  }.
+
+			newClass environment: Object environment.
+			newClass sharedPools: OrderedCollection new.
+	newClass environment: Object environment.
+			instancedObj := newClass ".
+			instancedObj setName: #unnamedClassTaggedBySeekerDebugger" ]
+		onBehalfOf: tracer debuggedProcess.
+	nextContext pc: nextContext pc + 1.
+	nextContext at: nextContext stackPtr put: instancedObj.
+	^ nextContext
+]
+
+{ #category : #'as yet unclassified' }
+SkSystemCallsHandler >> handleBehaviorInitialize: interpretationBlock [
+
+	| nextContext instancedObj|
+	nextContext := currentState context."interpretationBlock value."
+	
+	"We just skip it"
+	nextContext pc: nextContext pc+1.
+	^ nextContext
+]
+
+{ #category : #'as yet unclassified' }
 SkSystemCallsHandler >> handleHalts [
 	"The debugger should stop iterating if it is not in querymode."
 
@@ -46,6 +101,22 @@ SkSystemCallsHandler >> handleHalts [
 	^ ctx
 ]
 
+{ #category : #'as yet unclassified' }
+SkSystemCallsHandler >> handleMetaclassInstantiation: interpretationBlock [
+
+	| nextContext instancedObj|
+	nextContext := currentState context."interpretationBlock value."
+	instancedObj := Metaclass basicNew."currentState contextTop."
+	"Setting some basic object data because the debugger relies on that data.
+	These data will be overriden by the initialize method call, but in the mean time, the debugger need these fields to contain something to work.
+	It is possible (and likely) that even less fields are required. not a concern at the moment.".
+	instancedObj superclass: Object class withLayoutType: FixedLayout  slots: { }.
+	
+	nextContext pc: nextContext pc+1.
+	nextContext at: nextContext stackPtr put: instancedObj.
+	^ nextContext
+]
+
 { #category : #testing }
 SkSystemCallsHandler >> handleSystemCall: interpretationBlock [
 
@@ -53,6 +124,9 @@ SkSystemCallsHandler >> handleSystemCall: interpretationBlock [
 
 	| bytecodeIndex returnValue storedReturnValue hasStoredValue nextContext |
 	self isHalt ifTrue: [ ^ self handleHalts ].
+	self isAMetaclassBasicNewMethod ifTrue: [ ^self handleAMetaclassBasicNew: interpretationBlock  ].
+	self isMetaclassInstantiation ifTrue: [ ^self handleMetaclassInstantiation: interpretationBlock  ].
+	self isBehaviorInitialize ifTrue: [ ^self handleBehaviorInitialize: interpretationBlock  ].
 	bytecodeIndex := currentState bytecodeIndex.
 	hasStoredValue := true.
 	storedReturnValue := returnValuesDictionary
@@ -77,6 +151,7 @@ SkSystemCallsHandler >> initialize [
 
 	forceInterpret := true.
 	returnValuesDictionary := Dictionary new.
+	
 	systemCalls := IdentitySet new.
 	systemCalls add: Time class >> #millisecondClockValue.
 	"next methods are listed as a workaround. To be properly handled in the future"
@@ -98,12 +173,31 @@ SkSystemCallsHandler >> initialize [
 ]
 
 { #category : #testing }
+SkSystemCallsHandler >> isAMetaclassBasicNewMethod [
+
+	^ currentState messageReceiver class == Metaclass and: [currentState messageSelector  = #basicNew]
+]
+
+{ #category : #testing }
+SkSystemCallsHandler >> isBehaviorInitialize [
+currentState node isInlined ifTrue: [ ^false ].
+^currentState methodAboutToExecute methodClass == Behavior and: [currentState messageSelector =#initialize]
+]
+
+{ #category : #testing }
 SkSystemCallsHandler >> isHalt [
 
 	| m |
 	currentState isMessageSend ifFalse: [ ^ false ].
 	m := currentState methodAboutToExecute.
 	^ haltingMethods includes: m
+]
+
+{ #category : #testing }
+SkSystemCallsHandler >> isMetaclassInstantiation [
+
+	^ currentState messageReceiver == Metaclass and: [
+		  currentState messageSelector  = #basicNew ]
 ]
 
 { #category : #testing }
@@ -115,5 +209,8 @@ SkSystemCallsHandler >> isSystemCall [
 	(systemCalls includes: currentState methodAboutToExecute) ifTrue: [ 
 		^ true ].
 	self isHalt ifTrue: [ ^ true ].
+	self isAMetaclassBasicNewMethod ifTrue: [ ^true ].
+	self isMetaclassInstantiation ifTrue: [ ^true ].
+	self isBehaviorInitialize ifTrue: [ ^true ].
 	^ false
 ]

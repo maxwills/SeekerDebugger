@@ -553,6 +553,13 @@ SeekerCurrentStateInterface >> messageReceiver [
 			  context at: pointer "Heuristics" ]
 ]
 
+{ #category : #testing }
+SeekerCurrentStateInterface >> messageReceiverIsLocalToExecution [
+
+	<qwpSubCached>
+	^ tracer objectIsLocal: self messageReceiver
+]
+
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> messageReceiverOid [
 

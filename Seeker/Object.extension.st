@@ -115,8 +115,14 @@ Object >> isIterableDataSource [
 
 { #category : #'*Seeker' }
 Object >> isNotSeekerTrackable [
-
+	self class = Metaclass ifTrue: [ ^true ].
 	^ self isReadOnlyObject or: [ self isString ]
+]
+
+{ #category : #'*Seeker' }
+Object >> mirrorPrimIdentityHash [
+
+	^ MirrorPrimitives identityHashOf: self
 ]
 
 { #category : #'*Seeker' }
