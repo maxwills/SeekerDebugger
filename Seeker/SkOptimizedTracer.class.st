@@ -3,7 +3,9 @@ Class {
 	#superclass : #SkSteppableTracer,
 	#instVars : [
 		'cachedCurrentContextTimeKey',
-		'cachedCurrentContext'
+		'cachedCurrentContext',
+		'showUnsupportedCaseWarning',
+		'unsupportedCases'
 	],
 	#category : #'Seeker-Components'
 }
@@ -42,12 +44,16 @@ SkOptimizedTracer >> doPostStepProcessWithPrevNode: preProcessAstNode andPrevCon
 { #category : #'as yet unclassified' }
 SkOptimizedTracer >> doPreStepProcess [
 
+	showUnsupportedCaseWarning ifTrue: [
+		unsupportedCases checkCaseSupport: currentState ].
 	objectsTracker enabled ifTrue: [ objectsTracker doPreStepProcess ]
 ]
 
 { #category : #initialization }
 SkOptimizedTracer >> initialize [
-	super initialize
+	super initialize.
+	showUnsupportedCaseWarning := true.
+	unsupportedCases := SkUnsupportedCases new.
 ]
 
 { #category : #starting }
