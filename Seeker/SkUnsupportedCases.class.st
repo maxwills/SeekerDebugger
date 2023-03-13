@@ -23,11 +23,11 @@ SkUnsupportedCases >> checkCaseSupport: programState [
 SkUnsupportedCases >> initialize [ 
 logMessage :=''.
 unsupportedClassesForInstantiation := {
-	Semaphore.
+	"Semaphore."
 	Process.
 } asIdentitySet.
 unsupportedClassesAsReceiver := {
-	Semaphore.
+	"Semaphore."
 } asIdentitySet.
 unsupportedMethods := { 
 	BlockClosure >>#newProcess.
