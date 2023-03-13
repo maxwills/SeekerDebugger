@@ -25,3 +25,9 @@ UTTQSeekerMarkers class >> queryFrom: aDataSource [
 				  markerArg: arg;
 				  endWith ]
 ]
+
+{ #category : #'as yet unclassified' }
+UTTQSeekerMarkers >> ttqTitle [
+
+	^ 'Find Seeker Markers'
+]

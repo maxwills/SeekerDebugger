@@ -343,6 +343,18 @@ SeekerDebugger >> stepOver [
 	self printTrace"
 ]
 
+{ #category : #'debug - stepping' }
+SeekerDebugger >> stepToEnd [
+
+	tracer stepToEnd
+]
+
+{ #category : #'as yet unclassified' }
+SeekerDebugger >> timeTravelTo: stepNumber [
+
+	^ tracer timeTravelToBytecodeIndex: stepNumber
+]
+
 { #category : #accessing }
 SeekerDebugger >> tracer [
 

@@ -5,32 +5,6 @@ Class {
 }
 
 { #category : #tests }
-SeekerDebuggerTest >> testDelayExecutionsNotFreezing [
-
-	| ex1 ex2 executor valueA |
-	self flag: 'The test freezes the image. TO BE FIXED'.
-	true ifTrue: [ ^ self ].
-	valueA := 0.
-	executor := SeekerExecutorLegacy new.
-	executor addExecution: (ex1 := SeekerDebugger headlessDebugBlock: [ 
-			        | a |
-			        1 to: 15 do: [ :i | a := i ].
-			        (Delay forMilliseconds: 1) wait.
-			        a := 7.
-			        a := a + 1.
-			        valueA := a factorial ]).
-	executor startExecutions.
-	self assert: valueA = 40320.
-
-	self assert:
-		(ex1 interruptedProcess suspendedContext readVariableNamed: #a) = 8.
-	ex1 tracer restartAtBytecodeOne.
-	self assert:
-		(ex1 interruptedProcess suspendedContext readVariableNamed: #a)
-			isNil
-]
-
-{ #category : #tests }
 SeekerDebuggerTest >> testDeterministicIdentities [
 
 	| ex1 tracer proc createProgramBlock objects recordedOrder notEqualFlag stepCount|
@@ -130,6 +104,25 @@ SeekerDebuggerTest >> testHeadlessMessagesQuery [
 	results := query asOrderedCollection.
 	self assert: results isNotEmpty.
 	self assert: results first messageSelector = #+ ] ensure: [ proc resume ]
+]
+
+{ #category : #tests }
+SeekerDebuggerTest >> testHeadlessQuery [
+
+	| external queryResults myProgramBlock |
+	myProgramBlock := [| a b |
+	                  external := 1.
+	                  a := 1.
+	                  external := 2.
+	                  b := 2.
+	                  a := b.
+	                  external := 3 ].
+	queryResults := (myProgramBlock programQuery allAssignments select: [
+		                 :state | state assignmentVariableName = #external ])
+		                asOrderedCollection.
+	Object assert: queryResults size = 3.
+	Object assert: external isNil.
+	queryResults
 ]
 
 { #category : #tests }

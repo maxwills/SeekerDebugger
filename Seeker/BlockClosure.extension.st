@@ -21,6 +21,13 @@ BlockClosure >> lockUntilTrue [
 ]
 
 { #category : #'*Seeker' }
+BlockClosure >> programQuery [
+"Experimental feature"
+	^ SeekerQueryInterface new tracer:
+		  (SeekerDebugger headlessDebugBlock: self) tracer
+]
+
+{ #category : #'*Seeker' }
 BlockClosure >> switchCase: anArrayOfCases [
 
 	"A case is a pair where the first item is the key for the case and the value is a block to be executed if the result of self value matches the key value. if the result of the evaluation of self is not found in the keys values, it will execute the #defaultCase keyed case from the list. Throws and error if no case was matched"

@@ -4,6 +4,32 @@ Class {
 	#category : #'Seeker-Tests-Experimental'
 }
 
+{ #category : #tests }
+SeekerExecutorLegacyTest >> testDelayExecutionsNotFreezing [
+
+	| ex1 ex2 executor valueA |
+	self flag: 'The test freezes the image. It wont be fixed. SeekerExecutorLegacy is obsolete'.
+	true ifTrue: [ ^ self ].
+	valueA := 0.
+	executor := SeekerExecutorLegacy new.
+	executor addExecution: (ex1 := SeekerDebugger headlessDebugBlock: [ 
+			        | a |
+			        1 to: 15 do: [ :i | a := i ].
+			        (Delay forMilliseconds: 1) wait.
+			        a := 2.
+			        a := a + 1.
+			        valueA := a factorial ]).
+	executor startExecutions.
+	self assert: valueA = 40320.
+
+	self assert:
+		(ex1 interruptedProcess suspendedContext readVariableNamed: #a) = 8.
+	ex1 tracer restartAtBytecodeOne.
+	self assert:
+		(ex1 interruptedProcess suspendedContext readVariableNamed: #a)
+			isNil
+]
+
 { #category : #test }
 SeekerExecutorLegacyTest >> testExecuteUntracked [
 
