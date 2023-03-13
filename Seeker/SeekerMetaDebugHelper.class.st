@@ -48,16 +48,19 @@ SeekerMetaDebugHelper class >> getIndexOfFirstDifferingPrimitiveReturnValue: res
 
 { #category : #'as yet unclassified' }
 SeekerMetaDebugHelper class >> getIndexOfFirstDifferingVariableValue: resultsCollectionA comparedTo: resultsCollectionB [
-
 	"returns the first index where elements differ, or nil there are no differences."
 
 	| minSize |
 	minSize := resultsCollectionA size < resultsCollectionB size
 		           ifTrue: [ resultsCollectionA size ]
 		           ifFalse: [ resultsCollectionB size ].
-	1 to: minSize do: [ :i | 
-		(resultsCollectionA at: i) variableValue
-		= (resultsCollectionB at: i) variableValue ifFalse: [ ^ i ] ].
+	1 to: minSize do: [ :i |
+		| varAVal varBVal |
+		varAVal := (resultsCollectionA at: i) variableValue.
+		varBVal := (resultsCollectionB at: i) variableValue.
+		(varAVal isBlock and: [ varBVal isBlock ])
+			ifTrue: [ varAVal sourceNode = varBVal sourceNode ifFalse: [ ^ i ] ]
+			ifFalse: [ varAVal = varBVal ifFalse: [ ^ i ] ] ].
 	^ nil
 ]
 

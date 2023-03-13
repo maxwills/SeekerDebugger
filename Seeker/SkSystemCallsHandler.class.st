@@ -205,7 +205,7 @@ SkSystemCallsHandler >> isSystemCall [
 
 	currentState isMessageSend ifFalse: [ ^ false ].
 	"^ currentState isPrimitive"
-
+currentState methodAboutToExecute ifNil: [ ^false "this happens if the message is not understood."].
 	(systemCalls includes: currentState methodAboutToExecute) ifTrue: [ 
 		^ true ].
 	self isHalt ifTrue: [ ^ true ].
