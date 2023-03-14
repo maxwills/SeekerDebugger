@@ -166,11 +166,11 @@ TimeTravelingQuery >> showInSeeker [
 TimeTravelingQuery >> ttqInitialize [
 
 	displayModel := self class displayModel newForQuery: self.
-	displayModel title: self ttqTile
+	displayModel title: self ttqTitle
 ]
 
 { #category : #'as yet unclassified' }
-TimeTravelingQuery >> ttqTile [
+TimeTravelingQuery >> ttqTitle [
 
 	"Override this method to show a more specific name"
 

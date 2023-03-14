@@ -40,8 +40,14 @@ SpCodeRunSeekerScopedQueryCommand >> compile: aStream for: anObject in: evalCont
 		compile
 ]
 
+{ #category : #execution }
+SpCodeRunSeekerScopedQueryCommand >> execute [
+
+	self showQueriesMenu 
+]
+
 { #category : #private }
-SpCodeRunSeekerScopedQueryCommand >> debug: aStream [
+SpCodeRunSeekerScopedQueryCommand >> makeProcess: aStream [
 	| method doItReceiver doItContext |
 
 	(self context respondsTo: #doItReceiver)
@@ -53,39 +59,51 @@ SpCodeRunSeekerScopedQueryCommand >> debug: aStream [
 		
 	method := self compile: aStream for: doItReceiver in: doItContext.
 	method isReturnSpecial
-		ifTrue: [ self inform: 'Nothing to debug, the expression is optimized'.
-			^ self ].
+		ifTrue: [ self inform: 'Nothing to execute, the expression is optimized'.
+			^ nil ].
 	method notNil
-		ifTrue: [ self debug: method receiver: doItReceiver in: doItContext ]
+		ifTrue: [ ^self makeProcessFor: method receiver: doItReceiver in: doItContext ].
+		^nil
 ]
 
 { #category : #private }
-SpCodeRunSeekerScopedQueryCommand >> debug: aCompiledMethod receiver: anObject in: evalContext [
+SpCodeRunSeekerScopedQueryCommand >> makeProcessFor: aCompiledMethod receiver: anObject in: evalContext [
 
-	| process suspendedContext |
+	| process |
 	process := [ 
 	           aCompiledMethod
 		           valueWithReceiver: anObject
 		           arguments: (aCompiledMethod numArgs = 0
 				            ifTrue: [ #(  ) ]
 				            ifFalse: [ { evalContext } ]) ] newProcess.
-	SeekerGlobals instance watchProcess: process.
-	suspendedContext := process suspendedContext.
-
-	(OupsDebugRequest newForContext: suspendedContext)
-		process: process;
-		compiledMethod: aCompiledMethod;
-		label: 'debug it';
-		submit
+	^process 
 ]
 
 { #category : #execution }
-SpCodeRunSeekerScopedQueryCommand >> execute [
+SpCodeRunSeekerScopedQueryCommand >> makeProgramStatesFromSelection [
 
-	| selection |
+	| selection proc|
 	selection := self selectedTextOrLine.
 	selection ifEmpty: [ ^ '' ].
 
-	self debug: selection readStream.
-	self inform: 'SeekerDebugger: Time-Traveling enabled'
+	proc:=self makeProcess: selection readStream.
+^ (SeekerDebugger headlessDebug: proc offsetBytecodes: 2) tracer newProgramStates  "To enter the apropriate context"
+]
+
+{ #category : #'as yet unclassified' }
+SpCodeRunSeekerScopedQueryCommand >> showQueriesMenu [
+
+	| menu |
+	menu := MenuMorph new.
+
+	UserTTQ allSubclassesDo: [ :sc |
+		| q |
+		q := sc new.
+		menu
+			add: q ttqTitle
+			target: [
+				(sc queryFrom: self makeProgramStatesFromSelection)
+					asOrderedCollection inspect ]
+			selector: #value ].
+	menu invokeModal
 ]

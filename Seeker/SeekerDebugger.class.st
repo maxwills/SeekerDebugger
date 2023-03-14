@@ -83,7 +83,7 @@ SeekerDebugger class >> headlessDebugBlock: aBlock [
 				     ifTrue: [ Processor terminateRealActive ]
 				     ifFalse: [ Processor terminateActive ] ] asContext
 		     priority: Processor activePriority.
-	s := self headlessDebug: p offsetBytecodes: 2. "heuristic"
+	s := self headlessDebug: p offsetBytecodes: 2. "heuristic to enter the block"
 	^ s
 ]
 

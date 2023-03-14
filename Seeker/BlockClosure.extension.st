@@ -23,8 +23,7 @@ BlockClosure >> lockUntilTrue [
 { #category : #'*Seeker' }
 BlockClosure >> programQuery [
 "Experimental feature"
-	^ SeekerQueryInterface new tracer:
-		  (SeekerDebugger headlessDebugBlock: self) tracer
+	^ SeekerQueryInterface newForBlock: self
 ]
 
 { #category : #'*Seeker' }
