@@ -87,7 +87,7 @@ SpCodeRunSeekerScopedQueryCommand >> makeProgramStatesFromSelection [
 	selection ifEmpty: [ ^ '' ].
 
 	proc:=self makeProcess: selection readStream.
-^ (SeekerDebugger headlessDebug: proc offsetBytecodes: 2) tracer newProgramStates  "To enter the apropriate context"
+^ (SeekerDebugger headlessDebugForDoIt: proc) tracer newProgramStates 
 ]
 
 { #category : #'as yet unclassified' }

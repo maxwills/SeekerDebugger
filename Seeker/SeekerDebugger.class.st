@@ -87,6 +87,22 @@ SeekerDebugger class >> headlessDebugBlock: aBlock [
 	^ s
 ]
 
+{ #category : #'as yet unclassified' }
+SeekerDebugger class >> headlessDebugForDoIt: aProcess [
+
+	| s |
+	s := self newFor: (SeekerDummyStDebugger new
+			      interruptedProcess: aProcess;
+			      yourself).
+	s tracer headless: true.
+	"completely unreliable approach."
+	s tracer stepper basicStepBytecode.
+	[ s tracer slowCurrentContext compiledCode isDoIt ] whileFalse: [ s tracer stepper basicStepBytecode. ].
+	s quickSetup.
+	s tracer mapper recordOnThisContext.
+	^ s
+]
+
 { #category : #'instance creation' }
 SeekerDebugger class >> newFor: aStDebugger [
 
@@ -280,6 +296,18 @@ SeekerDebugger >> restart [
 	tracer timeTravelToUserStart
 ]
 
+{ #category : #controlling }
+SeekerDebugger >> resume [
+"used to resume the process. Time-traveling can't be used after this"
+	tracer debuggedProcess resume
+]
+
+{ #category : #starting }
+SeekerDebugger >> revert [
+
+	^ self restart
+]
+
 { #category : #accessing }
 SeekerDebugger >> seekerDebuggerPresenter [
 
@@ -347,6 +375,12 @@ SeekerDebugger >> stepOver [
 SeekerDebugger >> stepToEnd [
 
 	tracer stepToEnd
+]
+
+{ #category : #'debugging actions' }
+SeekerDebugger >> terminate [
+
+	tracer debuggedProcess terminate
 ]
 
 { #category : #'as yet unclassified' }
