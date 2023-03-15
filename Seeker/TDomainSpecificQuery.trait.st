@@ -11,3 +11,8 @@ Trait {
 TDomainSpecificQuery classSide >> isForDomainObject: anObject [
 	^self explicitRequirement 
 ]
+
+{ #category : #testing }
+TDomainSpecificQuery classSide >> requiresADomainObject [
+	^false
+]

@@ -54,6 +54,13 @@ SeekerLiteCommands >> addTree: aCollection toGroup: commandGroup [
 ]
 
 { #category : #building }
+SeekerLiteCommands >> domainSpecificQueries [
+
+	^ (TDomainSpecificQueryMenuBuilder users collect: [ :user |
+		   user new buildCodeCommandTreeMenu ]) asArray
+]
+
+{ #category : #building }
 SeekerLiteCommands >> makeUTTQsMenu [
 
 	| uttqs |

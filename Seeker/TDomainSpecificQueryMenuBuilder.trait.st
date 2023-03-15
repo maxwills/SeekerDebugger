@@ -8,11 +8,28 @@ Trait {
 
 { #category : #'menu building' }
 TDomainSpecificQueryMenuBuilder >> buildCodeCommandTreeMenu [
-	^self explicitRequirement 
+	|commands|
+	commands := self domainCommands reject:[:commandClass| commandClass query requiresADomainObject].
+	^{
+		self domainTitle.
+		commands.
+		self domainIconName.
+		self domainDescription
+	}
 ]
 
 { #category : #'menu building' }
 TDomainSpecificQueryMenuBuilder >> buildinspectorMenu [
+	^self explicitRequirement 
+]
+
+{ #category : #accessing }
+TDomainSpecificQueryMenuBuilder >> domainCommands [
+	^self explicitRequirement 
+]
+
+{ #category : #accessing }
+TDomainSpecificQueryMenuBuilder >> domainDescription [
 	^self explicitRequirement 
 ]
 
