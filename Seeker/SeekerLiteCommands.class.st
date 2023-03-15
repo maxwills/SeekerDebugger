@@ -79,7 +79,7 @@ SeekerLiteCommands >> registerCommands: stDebuggerInstance forRoot: rootCommandG
 
 	| codeGroup seekerGroup |
 	seekerGroup := CmCommandGroup new.
-	seekerGroup name: 'SeekerQueries'.
+	seekerGroup name: 'Seeker Queries'.
 	seekerGroup description:
 		'A collection of commands to query a program''s execution'.
 	seekerGroup := seekerGroup asSpecGroupWithIconNamed: #exception.
