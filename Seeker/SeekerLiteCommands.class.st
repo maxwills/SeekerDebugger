@@ -135,7 +135,7 @@ SeekerLiteCommands >> stCodeCommandsTree [
 			  #changeUpdate.
 			  'Queries for listing asignments on variables' }.
 			{
-			  'UserTTQs'.
+			  'User Queries'.
 			  self makeUTTQsMenu .
 			  #exception.
 			  'User-defined Time-traveling Queries' }
