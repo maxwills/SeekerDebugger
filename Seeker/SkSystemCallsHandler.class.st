@@ -153,6 +153,10 @@ SkSystemCallsHandler >> initialize [
 	returnValuesDictionary := Dictionary new.
 	
 	systemCalls := IdentitySet new.
+	"leave the gc out alone"
+	systemCalls add: SmalltalkImage >> #garbageCollect.
+	systemCalls add: SmalltalkImage >> #garbageCollectMost.
+		
 	systemCalls add: Time class >> #millisecondClockValue.
 	"next methods are listed as a workaround. To be properly handled in the future"
 	"Note that critical might call other system calls inside. Then, a deterministic replay should log those systems calls. However, at which timestamp? and how to enforce the system call (most likely a signal) that should happen at that point?"

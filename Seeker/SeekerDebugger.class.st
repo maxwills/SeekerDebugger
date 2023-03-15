@@ -183,6 +183,7 @@ SeekerDebugger >> evaluateExpression: aString inContext: aContext throws: anErro
 SeekerDebugger >> initialize [
 
 	self doUnsafeCode: [ 
+		Smalltalk garbageCollect.
 		instanceNumberTotal ifNil: [ instanceNumberTotal := 0 ].
 		instanceNumberTotal := instanceNumberTotal + 1.
 		instanceNumber := instanceNumberTotal.

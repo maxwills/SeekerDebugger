@@ -36,6 +36,22 @@ BlockClosure >> programQuery: queriesBlock [
 ]
 
 { #category : #'*Seeker' }
+BlockClosure >> programStates [
+	"experimental feature"
+
+	^ (SeekerDebugger headlessDebugBlock: self) tracer newProgramStates
+]
+
+{ #category : #'*Seeker' }
+BlockClosure >> programStates: block [
+	"experimental feature. cleaner notation"
+
+	| sk |
+	sk := SeekerDebugger headlessDebugBlock: self.
+	[ block value: sk tracer newProgramStates ] ensure: [ sk terminate ]
+]
+
+{ #category : #'*Seeker' }
 BlockClosure >> reversibleValue [
 	"experimental feature. Quite slow"
 
