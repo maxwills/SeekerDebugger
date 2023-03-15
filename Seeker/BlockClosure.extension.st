@@ -27,6 +27,15 @@ BlockClosure >> programQuery [
 ]
 
 { #category : #'*Seeker' }
+BlockClosure >> programQuery: queriesBlock [
+	"Experimental feature"
+
+	| sqi |
+	sqi := SeekerQueryInterface newForBlock: self.
+	[ queriesBlock value: sqi ] ensure: [ sqi terminate ]
+]
+
+{ #category : #'*Seeker' }
 BlockClosure >> reversibleValue [
 	"experimental feature. Quite slow"
 

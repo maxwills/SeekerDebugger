@@ -29,3 +29,9 @@ SeekerQueryInterface >> allProgramStates [
 		  select: [ :state | true ]
 		  collect: [ :state | state ]
 ]
+
+{ #category : #'debugging actions' }
+SeekerQueryInterface >> terminate [
+
+tracer seeker terminate
+]
