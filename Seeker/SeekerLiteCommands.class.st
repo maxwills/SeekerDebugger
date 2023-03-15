@@ -53,7 +53,7 @@ SeekerLiteCommands >> addTree: aCollection toGroup: commandGroup [
 					ifFalse: [ self addTree: each toGroup: commandGroup ] ] ]
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #building }
 SeekerLiteCommands >> makeUTTQsMenu [
 
 	| uttqs |
@@ -72,7 +72,7 @@ SeekerLiteCommands >> makeUTTQsMenu [
 	^ uttqs asArray
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #building }
 SeekerLiteCommands >> registerCommands: stDebuggerInstance forRoot: rootCommandGroup [
 
 	"This method is called from the stDebugger"
@@ -90,7 +90,7 @@ SeekerLiteCommands >> registerCommands: stDebuggerInstance forRoot: rootCommandG
 	self addTree: self stCodeCommandsTree toGroup: seekerGroup
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #building }
 SeekerLiteCommands >> stCodeCommandsTree [
 
 	^ {
@@ -133,7 +133,8 @@ SeekerLiteCommands >> stCodeCommandsTree [
 				  SkChangesOfAnyVariableLC.
 				  SkChangesOfAnyObjectOfClassLC }.
 			  #changeUpdate.
-			  'Queries for listing asignments on variables' }.
+			  'Queries for listing assignments on variables' }.
+			self domainSpecificQueries.
 			{
 			  'User Queries'.
 			  self makeUTTQsMenu .
