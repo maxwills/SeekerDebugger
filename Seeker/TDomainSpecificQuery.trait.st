@@ -13,6 +13,6 @@ TDomainSpecificQuery classSide >> isForDomainObject: anObject [
 ]
 
 { #category : #testing }
-TDomainSpecificQuery classSide >> requiresADomainObject [
+TDomainSpecificQuery classSide >> requiresDomainObject [
 	^false
 ]
