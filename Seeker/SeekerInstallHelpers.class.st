@@ -32,7 +32,7 @@ SeekerInstallHelpers class >> install [
 	| authorName |
 	authorName := Author uniqueInstance fullNamePerSe.
 	Author uniqueInstance fullName: 'SeekerInstaller'.
-	self installDeprecationPatch.
+	"self installDeprecationPatch."
 	self overrideStDebuggerActionModel.
 	self debuggerExtensionEnabled: true.
 	self instrumentHandMorph.
