@@ -21,6 +21,24 @@ UTTQAllReadingsOfInstanceVariable class >> queryFrom: programStates forOid: aNum
 				  endWith ]
 ]
 
+{ #category : #'instance creation' }
+UTTQAllReadingsOfInstanceVariable class >> queryInteractivelyFrom: programStates [
+
+	| oid varName |
+	oid := self
+		       requestNumberInput: 'Enter object oid:'
+		       initialAnswer: 'aNumber'
+		       title: 'OID'.
+	varName := (self
+		            requestInput: 'Enter instance variable name:'
+		            initialAnswer: 'variableName'
+		            title: 'Variable Name') asSymbol.
+	^ self
+		  queryFrom: programStates
+		  forOid: oid
+		  andInstanceVarNamed: varName
+]
+
 { #category : #'as yet unclassified' }
 UTTQAllReadingsOfInstanceVariable >> ttqTitle [
 

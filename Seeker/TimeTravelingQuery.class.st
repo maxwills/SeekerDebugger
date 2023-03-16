@@ -69,6 +69,34 @@ TimeTravelingQuery class >> queryFrom: aDataSource [
 		  yourself
 ]
 
+{ #category : #'instance creation' }
+TimeTravelingQuery class >> queryInteractivelyFrom: aDataSource [
+	"Queries that requires arguments other than the programsStates iterable override this method to request the user for these arguments. If no other argument is required, this is equivalten to a call to queryFrom: "
+
+	^ self from: aDataSource
+]
+
+{ #category : #'as yet unclassified' }
+TimeTravelingQuery class >> requestInput: message initialAnswer: initialAnswer title: title [
+
+	^ UIManager default
+		  request: message
+		  initialAnswer: initialAnswer
+		  title: title
+]
+
+{ #category : #'as yet unclassified' }
+TimeTravelingQuery class >> requestNumberInput: message initialAnswer: initialAnswer title: title [
+	"request user input, and test it for number. If not a number returns nil"
+
+	| input |
+	input := UIManager default
+		         request: message
+		         initialAnswer: initialAnswer
+		         title: title.
+	[ ^ input asNumber ] onErrorDo: [ :e | ^ nil ]
+]
+
 { #category : #'as yet unclassified' }
 TimeTravelingQuery class >> runAllChecks [
 

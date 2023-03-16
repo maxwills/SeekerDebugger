@@ -102,7 +102,7 @@ SpCodeRunSeekerScopedQueryCommand >> showQueriesMenu [
 		menu
 			add: q ttqTitle
 			target: [
-				(sc queryFrom: self makeProgramStatesFromSelection)
+				(sc queryInteractivelyFrom: self makeProgramStatesFromSelection)
 					asOrderedCollection inspect ]
 			selector: #value ].
 	menu invokeModal

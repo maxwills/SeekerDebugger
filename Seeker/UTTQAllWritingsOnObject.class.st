@@ -29,6 +29,17 @@ UTTQAllWritingsOnObject class >> queryFrom: programStates forOid: aNumber [
 				  endWith ]
 ]
 
+{ #category : #'instance creation' }
+UTTQAllWritingsOnObject class >> queryInteractivelyFrom: programStates [
+
+	| oid |
+	oid := self
+		       requestNumberInput: 'Enter object oid:'
+		       initialAnswer: 'aNumber'
+		       title: 'OID'.
+	^ self queryFrom: programStates forOid: oid
+]
+
 { #category : #'as yet unclassified' }
 UTTQAllWritingsOnObject >> ttqTitle [
 
