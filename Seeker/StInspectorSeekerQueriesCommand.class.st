@@ -53,6 +53,7 @@ StInspectorSeekerQueriesCommand >> execute [
 		selector: #seekAllChanges:
 		argument: object.
 	menu add: 'Specific instance variable...' subMenu: (self privMakeVariablesMenu: object).
+	TDomainSpecificQueryMenuBuilder users do:[:builder| builder new buildInspectorMenu: menu withObject: object]. 
 	self privAddFindAllReadingsMenuEntry: menu.
 	menu invokeModal
 ]
