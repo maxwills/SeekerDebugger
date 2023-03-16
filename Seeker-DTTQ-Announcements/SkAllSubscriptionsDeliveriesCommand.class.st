@@ -3,7 +3,7 @@ I command the execution of the domain-specific query TTQAllSubscriptionsDeliveri
 "
 Class {
 	#name : #SkAllSubscriptionsDeliveriesCommand,
-	#superclass : #SeekerLiteCommand,
+	#superclass : #SkDomainSpecificCommand,
 	#category : #'Seeker-DTTQ-Announcements-Commands'
 }
 
@@ -19,19 +19,6 @@ SkAllSubscriptionsDeliveriesCommand >> description [
 	^ self commonDescriptionIntroString
 	  ,
 	  'for every <sent message>. Every listed result corresponds to the moment before performing the message send. (Sender''s point of view)'
-]
-
-{ #category : #executing }
-SkAllSubscriptionsDeliveriesCommand >> executeCommand [
-
-	self showResultFor:
-		(self class query queryFrom: self tracer newProgramStates)
-]
-
-{ #category : #accessing }
-SkAllSubscriptionsDeliveriesCommand >> icon [
-
-	^ #smallExport
 ]
 
 { #category : #accessing }
