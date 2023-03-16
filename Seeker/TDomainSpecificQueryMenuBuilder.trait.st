@@ -9,7 +9,7 @@ Trait {
 { #category : #'menu building' }
 TDomainSpecificQueryMenuBuilder >> buildCodeCommandTreeMenu [
 	|commands|
-	commands := self domainCommands reject:[:commandClass| commandClass query requiresADomainObject].
+	commands := self domainCommands reject:[:commandClass| commandClass query requiresDomainObject].
 	^{
 		self domainTitle.
 		commands.
@@ -19,8 +19,14 @@ TDomainSpecificQueryMenuBuilder >> buildCodeCommandTreeMenu [
 ]
 
 { #category : #'menu building' }
-TDomainSpecificQueryMenuBuilder >> buildinspectorMenu [
-	^self explicitRequirement 
+TDomainSpecificQueryMenuBuilder >> buildInspectorMenu: menu withObject: object [
+self halt.
+	(self domainCommands select: [ :commandClass |
+		 commandClass query requiresDomainObject and: [
+			 commandClass query isForDomainObject: object ] ]) do: [ :commandClass |
+		| cmd |
+		cmd := commandClass on: object.
+		menu add: cmd name target: cmd selector: #execute ]
 ]
 
 { #category : #accessing }
@@ -35,6 +41,11 @@ TDomainSpecificQueryMenuBuilder >> domainDescription [
 
 { #category : #accessing }
 TDomainSpecificQueryMenuBuilder >> domainIconName [
+	^self explicitRequirement 
+]
+
+{ #category : #accessing }
+TDomainSpecificQueryMenuBuilder >> domainMenuEntries [
 	^self explicitRequirement 
 ]
 
