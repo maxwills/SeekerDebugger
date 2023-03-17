@@ -1,6 +1,18 @@
 Extension { #name : #BlockClosure }
 
 { #category : #'*Seeker' }
+BlockClosure >> asReversibleDo: aBlock [
+	"example"
+
+	| reversibleExecution |
+	reversibleExecution := (SeekerDebugger headlessDebugBlock: self)
+		                       stepToEnd;
+		                       yourself.
+	[ aBlock value: reversibleExecution ] ensure: [
+		reversibleExecution terminate ]
+]
+
+{ #category : #'*Seeker' }
 BlockClosure >> case: caseBlock do: doBlock [
 
 	^ self value: caseBlock value: doBlock
