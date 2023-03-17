@@ -309,6 +309,13 @@ SeekerDebugger >> revert [
 	^ self restart
 ]
 
+{ #category : #'as yet unclassified' }
+SeekerDebugger >> runReversibly [
+	"just an alias to match the asReversibleDo: dynamic"
+
+	^ self stepToEnd
+]
+
 { #category : #accessing }
 SeekerDebugger >> seekerDebuggerPresenter [
 

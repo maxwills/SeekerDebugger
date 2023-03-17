@@ -2,11 +2,10 @@ Extension { #name : #BlockClosure }
 
 { #category : #'*Seeker' }
 BlockClosure >> asReversibleDo: aBlock [
-	"example"
+	"See test for examples (see senders of this method)"
 
 	| reversibleExecution |
 	reversibleExecution := (SeekerDebugger headlessDebugBlock: self)
-		                       stepToEnd;
 		                       yourself.
 	[ aBlock value: reversibleExecution ] ensure: [
 		reversibleExecution terminate ]

@@ -9,14 +9,16 @@ SeekerReversibleValueTest >> testAsReversibleDo [
 
 	| b |
 	b := 1.
-	self assert: b equals: 1.
-	[ b := 3 ] asReversibleDo: [ :reversibleProgram |
-		self assert: b equals: 3.
-		reversibleProgram revert.
+
+	[ b := 3 ] asReversibleDo: [ :program |
 		self assert: b equals: 1.
-		reversibleProgram stepToEnd.
+		program runReversibly.
 		self assert: b equals: 3.
-		reversibleProgram revert ].
+		program revert.
+		self assert: b equals: 1.
+		program runReversibly.
+		self assert: b equals: 3.
+		program revert ].
 	self assert: b equals: 1
 ]
 
