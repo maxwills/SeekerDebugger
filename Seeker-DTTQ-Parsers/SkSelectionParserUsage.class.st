@@ -9,5 +9,5 @@ SkSelectionParserUsage >> value: aProgramState [
 
 	^ (super value: aProgramState) and: [
 		 " (aProgramState messageReceiver isKindOf: PP2Node) and: ["
-			  'parse*' match: aProgramState messageSelector asString "]" ]
+			  'parse*:*' match: aProgramState messageSelector asString "]" ]
 ]
