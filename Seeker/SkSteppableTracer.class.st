@@ -203,6 +203,12 @@ SkSteppableTracer >> doesAnyContextsInTheStackStatisfies: aPredicateBlock maxDep
 	^ true
 ]
 
+{ #category : #accessing }
+SkSteppableTracer >> executedBytecode [
+
+	^ executedBytecode
+]
+
 { #category : #mapping }
 SkSteppableTracer >> executionProgress [
 
