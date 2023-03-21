@@ -163,7 +163,8 @@ SkObjectsTracker >> initialize [
 	nonLocalObjects := WeakIdentitySet new.
 	persistentReverseOidsDictionary := Dictionary new.
 	nonPersistentReverseOidsDictionary := Dictionary new.
-	instantiationFlag := false
+	instantiationFlag := false.
+	oidRegisteredFlag :=false "Only used by UTTQAllObjects"
 ]
 
 { #category : #'as yet unclassified' }
@@ -224,6 +225,7 @@ SkObjectsTracker >> objectOidIsLocal: aNumber [
 
 { #category : #accessing }
 SkObjectsTracker >> oidRegisteredFlag [
+	"Note that this method and instance variable is only used by TTQAllObjectsQuery "
 
 	| val |
 	val := oidRegisteredFlag.
