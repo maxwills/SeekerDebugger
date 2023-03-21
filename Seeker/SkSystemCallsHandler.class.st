@@ -169,12 +169,8 @@ SkSystemCallsHandler >> initialize [
 	systemCalls add: SeekerExecutor class >> #executeUntracked:.
 
 	"Halts"
-	haltingMethods := IdentitySet new.
-	haltingMethods add: Halt class >> #once.
-	haltingMethods add: Halt class >> #now.
-	haltingMethods add: Object >> #halt.
-	haltingMethods add: Object >> #haltOnce.
-	haltingMethods add: Breakpoint >> #breakInContext:node:
+	haltingMethods := SeekerCurrentStateInterface getHaltingMethods
+		                  asIdentitySet
 ]
 
 { #category : #testing }

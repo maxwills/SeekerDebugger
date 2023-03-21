@@ -102,6 +102,19 @@ Class {
 	#category : #'Seeker-Interfaces'
 }
 
+{ #category : #'as yet unclassified' }
+SeekerCurrentStateInterface class >> getHaltingMethods [
+	"Try to cache this methods return (dont directly call this in a query because it is slow).
+The get prefix implies that it is not a simple accessor"
+
+	^ {
+		  (Halt class >> #once).
+		  (Halt class >> #now).
+		  (Object >> #halt).
+		  (Object >> #haltOnce).
+		  (Breakpoint >> #breakInContext:node:) }
+]
+
 { #category : #initialization }
 SeekerCurrentStateInterface class >> initialize [
 
