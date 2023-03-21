@@ -310,6 +310,14 @@ SkSteppableTracer >> onTracedStatementChanged [
 
 ]
 
+{ #category : #actions }
+SkSteppableTracer >> perform [
+
+	^ SeekerPerformInterface new
+		  tracer: self;
+		  yourself
+]
+
 { #category : #accessing }
 SkSteppableTracer >> preventNextTimeRestoration [
 

@@ -77,7 +77,7 @@ SkExecutionRestorer >> doPreStepProcessForMessageSends [
 { #category : #accessing }
 SkExecutionRestorer >> enabled [
 
-	^ SeekerConfig default restorationEnabled
+	^ enabled and: [ SeekerConfig default restorationEnabled ]
 ]
 
 { #category : #initialization }

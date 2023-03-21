@@ -37,7 +37,7 @@ we check if we have the 'same' element from a previous replay. If so, we make th
 { #category : #accessing }
 SkIdentityEnforcer >> enabled [
 
-	^ SeekerConfig default identityEnforcingEnabled
+	^ enabled and: [ SeekerConfig default identityEnforcingEnabled ]
 ]
 
 { #category : #'as yet unclassified' }
