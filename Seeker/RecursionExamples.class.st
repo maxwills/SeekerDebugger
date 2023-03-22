@@ -4,6 +4,18 @@ Class {
 	#category : #'Seeker-BugCollection-Tests'
 }
 
+{ #category : #'test-support' }
+RecursionExamples class >> directFibonacci: aNumber [
+	"Example of breakpoint navigation. 
+Put a breakpoint anywhere here, and debug with seeker the following code from a Playground, then query allBreakpointsAndHalts. Code:
+RecursionExamples directFibonacci: 10
+"
+
+	aNumber <= 1 ifTrue: [ ^ 1 ].
+	^ (self directFibonacci: aNumber - 1)
+	  + (self directFibonacci: aNumber - 2)
+]
+
 { #category : #'as yet unclassified' }
 RecursionExamples >> deferredFibonacci: aNumber [
  (aNumber <= 1) ifTrue: [ ^ 1].

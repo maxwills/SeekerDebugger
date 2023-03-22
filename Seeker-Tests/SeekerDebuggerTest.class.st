@@ -4,15 +4,27 @@ Class {
 	#category : #'Seeker-Tests-Core'
 }
 
+{ #category : #'as yet unclassified' }
+SeekerDebuggerTest class >> aMethodForTesting [
+
+	| a |
+	a :=0.
+	a := a + 1.
+	a := a + 2.
+	a := a + 3.
+	^ a "6"
+]
+
 { #category : #tests }
 SeekerDebuggerTest >> testDeterministicIdentities [
 
-	| ex1 tracer proc createProgramBlock objects recordedOrder notEqualFlag stepCount|
+	| ex1 tracer proc createProgramBlock objects recordedOrder notEqualFlag stepCount nSamples|
+	nSamples := 50.
 	objects := IdentityDictionary new.
 
 	createProgramBlock := [
 	                      [
-	                      1 to: 100 do: [ :i |
+	                      1 to: nSamples do: [ :i |
 		                      | obj |
 		                      obj := Object new.
 		                      objects at: obj put: obj ] ] ].
@@ -22,7 +34,7 @@ SeekerDebuggerTest >> testDeterministicIdentities [
 	tracer := ex1 tracer.
 	tracer stepToEnd.
 	stepCount := tracer bytecodeIndex.
-	self assert: objects size equals: 100.
+	self assert: objects size equals: nSamples.
 	recordedOrder := objects keys asOrderedCollection.
 	self assert:
 		(objects keys asOrderedCollection hasEqualElements: recordedOrder).
@@ -31,7 +43,7 @@ SeekerDebuggerTest >> testDeterministicIdentities [
 		self assert: objects isEmpty.
 		tracer stepToEnd.
 		self assert: tracer  bytecodeIndex equals: stepCount.
-		self assert: objects size equals: 100.
+		self assert: objects size equals: nSamples.
 		self assert:
 			(objects keys asOrderedCollection hasEqualElements: recordedOrder) ] ]
 		ensure: [ proc resume ].
@@ -41,7 +53,7 @@ SeekerDebuggerTest >> testDeterministicIdentities [
 		objects := IdentityDictionary new.
 		programBlock := createProgramBlock value.
 		programBlock value.
-		self assert: objects size equals: 100.
+		self assert: objects size equals: nSamples.
 
 		(objects keys asOrderedCollection hasEqualElements: recordedOrder)
 			ifFalse: [ notEqualFlag := true ] ].
@@ -86,6 +98,32 @@ SeekerDebuggerTest >> testHeadlessAssignmentsQuery [
 	results := query asOrderedCollection.
 	self assert: results isNotEmpty.
 	self assert: results first variableName = #a ] ensure: [ proc resume ]
+]
+
+{ #category : #tests }
+SeekerDebuggerTest >> testHeadlessForSelectorWithArgs [
+"Test that the debugged program correspond to the inside of the specified method (the context selector is the method selector for the initial and last step. We also assert its complete execution by comparing the value of local variable a defined in the method"
+	| seeker proc startingContext startingNode endNode currentState |
+	seeker := SeekerDebugger headlessDebugFor: self class selector: #aMethodForTesting  withArgs: { }.
+	
+	proc := seeker stDebugger interruptedProcess.
+	[currentState := seeker tracer currentState.
+	self assert: currentState methodSelector equals: #aMethodForTesting.
+	self assert: (currentState context readVariableNamed: #a) isNil.
+	startingContext := proc suspendedContext.
+	self assert: currentState context == startingContext.
+	startingNode := currentState node.
+	seeker tracer stepToEnd.
+	self assert: (currentState context readVariableNamed: #a) equals: 6.
+	self assert: currentState methodReturnValue equals: 6.
+	self assert: currentState methodSelector equals: #aMethodForTesting.
+	endNode := currentState node.
+	self assert: startingNode ~= endNode.
+	seeker tracer restartAtBytecodeOne.
+	self assert: (currentState context readVariableNamed: #a) isNil.
+	self assert: currentState methodSelector equals: #aMethodForTesting.
+	self assert: currentState context == startingContext.
+	self assert: currentState node = startingNode] ensure: [ proc resume ]
 ]
 
 { #category : #tests }

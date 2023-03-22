@@ -88,6 +88,23 @@ SeekerDebugger class >> headlessDebugBlock: aBlock [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerDebugger class >> headlessDebugFor: receiver selector: selector withArgs: argsArray [
+
+	| p s |
+	p := Process
+		     forContext: [
+			     receiver perform: selector withArguments: argsArray.
+			     "IMPORTANT: Do not step over next line of code. See method comments for details"
+			     (Processor respondsTo: #terminateRealActive)
+				     ifTrue: [ Processor terminateRealActive ]
+				     ifFalse: [ Processor terminateActive ] ] asContext
+		     priority: Processor activePriority.
+	s := self headlessDebug: p offsetBytecodes: 4. "heuristic to enter the block"
+	s tracer mapper recordOnThisContext.
+	^ s
+]
+
+{ #category : #'as yet unclassified' }
 SeekerDebugger class >> headlessDebugForDoIt: aProcess [
 
 	| s |
@@ -114,7 +131,7 @@ SeekerDebugger class >> newFor: aStDebugger [
 	updateCoordinator stDebugger: aStDebugger.
 
 	"Initialize the tracer to be injected in the seeker debugger"
-	stepper := SeekerGlobals instance defaultStepperClass new.
+	stepper := SeekerGlobals instance defaultTracerClass new.
 	stepper stDebugger: aStDebugger.
 	stepper debuggedProcess: aStDebugger interruptedProcess. "aStDebugger session interruptedProcess"
 	stepper debuggerUpdateCoordinator: updateCoordinator.

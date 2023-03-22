@@ -73,7 +73,7 @@ TimeTravelingQuery class >> queryFrom: aDataSource [
 TimeTravelingQuery class >> queryInteractivelyFrom: aDataSource [
 	"Queries that requires arguments other than the programsStates iterable override this method to request the user for these arguments. If no other argument is required, this is equivalten to a call to queryFrom: "
 
-	^ self from: aDataSource
+	^ self queryFrom: aDataSource
 ]
 
 { #category : #'as yet unclassified' }

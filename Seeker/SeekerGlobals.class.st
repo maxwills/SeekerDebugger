@@ -5,12 +5,12 @@ Class {
 		'seekerCodePresenterText',
 		'auxiliaryTempStorage1',
 		'auxiliaryTempStorage2',
-		'defaultStepperClass',
 		'watchedProcesses',
 		'ordinatedNodesDictionary',
 		'isAltPressed',
 		'isShiftPressed',
-		'isCommandPressed'
+		'isCommandPressed',
+		'defaultTracerClass'
 	],
 	#classVars : [
 		'instance'
@@ -66,19 +66,19 @@ SeekerGlobals >> debugCommandKeysPressed [
 ]
 
 { #category : #'as yet unclassified' }
-SeekerGlobals >> defaultStepperClass [
-
-	| fallbackDefault |
-	fallbackDefault := SkQueryableTracer.
-	defaultStepperClass ifNil: [ defaultStepperClass := fallbackDefault ].
-	(defaultStepperClass class inheritsFrom: SkSteppableTracer) 
-		ifFalse: [ defaultStepperClass := fallbackDefault ].
-	^ defaultStepperClass
+SeekerGlobals >> defaultStepperClass: aStepperClass [
+	defaultTracerClass := aStepperClass
 ]
 
 { #category : #'as yet unclassified' }
-SeekerGlobals >> defaultStepperClass: aStepperClass [
-	defaultStepperClass := aStepperClass
+SeekerGlobals >> defaultTracerClass [
+
+	| fallbackDefault |
+	fallbackDefault := SkQueryableTracer.
+	defaultTracerClass ifNil: [ defaultTracerClass := fallbackDefault ].
+	(defaultTracerClass class inheritsFrom: SkSteppableTracer) 
+		ifFalse: [ defaultTracerClass := fallbackDefault ].
+	^ defaultTracerClass
 ]
 
 { #category : #'as yet unclassified' }
