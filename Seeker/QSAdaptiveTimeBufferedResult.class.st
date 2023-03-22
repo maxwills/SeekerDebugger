@@ -50,6 +50,7 @@ QSAdaptiveTimeBufferedResult >> resolve [
 	currentBuffer := OrderedCollection new: 1000.
 	iterationCounter := 0.
 	actualQuery := self queryToSolve.
+	self setInitialTime.
 	[ 
 	actualQuery
 		do: [ :each | 
@@ -70,6 +71,7 @@ QSAdaptiveTimeBufferedResult >> resolve [
 				              b: timeFormulaIterationMax.
 			SeekerMath clampedLerp: normalized a: minTime b: maxTime ] ] 
 		ensure: [ 
+			timeToRun := self ellapsedTime.
 			currentBuffer ifNotEmpty: [ 
 				bufferReadyCallback value: currentBuffer ].
 			actualQuery errors ifNotEmpty: [ actualQuery errors inspect ] ]

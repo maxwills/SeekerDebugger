@@ -52,24 +52,27 @@ QSTimeBufferedResult >> initialize [
 
 { #category : #navigating }
 QSTimeBufferedResult >> resolve [
-
 	"This will call the buffer callback every x milliseconds or when the buffer reaches its full capacity"
 
 	| currentBuffer shouldEmitBuffer |
 	shouldEmitBuffer := false.
 	currentBuffer := OrderedCollection new: 1000.
+	self setInitialTime.
 	self queryToSolve
-		do: [ :each | 
+		do: [ :each |
 			currentBuffer add: each.
-			(shouldEmitBuffer or: [ currentBuffer size >= buffersCapacity ]) 
-				ifTrue: [ 
+			(shouldEmitBuffer or: [ currentBuffer size >= buffersCapacity ])
+				ifTrue: [
+					timeToRun := self ellapsedTime.
 					bufferReadyCallback value: currentBuffer copy.
 					currentBuffer := currentBuffer removeAll "OrderedCollection new: buffersCapacity" ].
 
 			shouldEmitBuffer := false ]
 		withTimedCallback: [ shouldEmitBuffer := true ]
 		every: timespan.
-	currentBuffer ifNotEmpty: [ bufferReadyCallback value: currentBuffer ]
+	currentBuffer ifNotEmpty: [
+		timeToRun := self ellapsedTime.
+		bufferReadyCallback value: currentBuffer ]
 ]
 
 { #category : #accessing }

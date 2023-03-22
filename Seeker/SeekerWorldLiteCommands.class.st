@@ -52,7 +52,7 @@ SeekerWorldLiteCommands class >> menuBrowseSeekerTracerClass: aBuilder [
 		label: 'Browser Seeker Tracer Class';
 		icon: (self iconNamed: 'smallDebug');
 		help: 'Opens the Seeker tracer class';
-		action: [ SkQueryExperimentalTracer  browse ] 
+		action: [ SkQueryableTracer  browse ] 
 ]
 
 { #category : #'as yet unclassified' }

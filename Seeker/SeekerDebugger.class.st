@@ -113,8 +113,8 @@ SeekerDebugger class >> newFor: aStDebugger [
 	updateCoordinator := DebuggerUpdateCoordinator new. "The coordinator is owned by the presenter"
 	updateCoordinator stDebugger: aStDebugger.
 
-	"Initialize the DebuggerStepperBase subclass to be injected in the seeker debugger"
-	stepper := SkQueryExperimentalTracer new. "SeekerGlobals instance defaultStepperClass new"
+	"Initialize the tracer to be injected in the seeker debugger"
+	stepper := SeekerGlobals instance defaultStepperClass new.
 	stepper stDebugger: aStDebugger.
 	stepper debuggedProcess: aStDebugger interruptedProcess. "aStDebugger session interruptedProcess"
 	stepper debuggerUpdateCoordinator: updateCoordinator.
@@ -183,7 +183,7 @@ SeekerDebugger >> evaluateExpression: aString inContext: aContext throws: anErro
 SeekerDebugger >> initialize [
 
 	self doUnsafeCode: [ 
-		5 timesRepeat: [Smalltalk garbageCollect].
+		[Smalltalk garbageCollectMost ] fork.
 		instanceNumberTotal ifNil: [ instanceNumberTotal := 0 ].
 		instanceNumberTotal := instanceNumberTotal + 1.
 		instanceNumber := instanceNumberTotal.

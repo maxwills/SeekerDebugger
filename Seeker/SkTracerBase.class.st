@@ -1,7 +1,15 @@
 "
-Current Step Is the last node of the trace (Its included).
-When it is about to be executed, it is noted as open, and it is logged as return when exited.
+Base class of the tracer.
+The tracer class hierarchy was originally designed to offer increasing amounts of features (each subclass adds more features than its ancestor).
+For exmple, the SteppableTracer was able to perform time-travels and normal steppings; the OptimizedTracer offered the same but with caching mechanims and other optimization attempts,
+and the QueryableTracer (formerly QueryExperimentalTracer) added a querying API.
+The reason for this design was to group up the tracer behavior: all methods related to querying, for instance, are in the same class.
+Currently, the hierarchy idea stays the same, however, it is not rigorously implemented and at this point, there is no even guarantee that subclasses could be instantiated at all.
+TLDR: Just use SkQueryableTracer.
 
+## SkTracerBase information
+
+Objects of this class act as a components initializer and holder. Meaning that it has ownershipt over the components, and each component pointing to the componentHolder will have reference the tracer.
 "
 Class {
 	#name : #SkTracerBase,
@@ -149,13 +157,13 @@ SkTracerBase >> initializeComponents [
 		(stepper := SystemVersion current major = 9 ifTrue: [ SkClassicStepper newFor: self ]
 			            ifFalse: [ 
 				            self flag:
-					            'This is used experimentally for Pharo 10 and 11. Possibly faster than the other. Not compatible with Pharo 9. '.
+					            'This is used for Pharo 10 and 11. Possibly faster than the other. Not compatible with Pharo 9. '.
 				            SkStepper newFor: self ]).
-	components add: (restorer := SkSelectiveExecutionRestorer newFor: self). "SkExecutionRestorer"
+	components add: (restorer := SkSelectiveExecutionRestorer newFor: self).
 	components add: (objectsTracker := SkObjectsTracker newFor: self).
 	components add: (identityEnforcer := SkIdentityEnforcer newFor: self).
-	components add: (systemCallsHandler := SkSystemCallsHandler newFor: self). "SkOmniSystemCallsHandler"
-
+	components add: (systemCallsHandler := SkSystemCallsHandler newFor: self). 
+	
 	self bindComponents
 ]
 

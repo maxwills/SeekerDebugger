@@ -244,10 +244,8 @@ SeekerQueriesPresenter >> makeDefaultQuerySolverFor: aQueryDisplayModel [
 	solver := QSAdaptiveTimeBufferedResult newForQuery:
 		          aQueryDisplayModel query.
 	solver bufferReadyCallback: [ :b | 
-		aQueryDisplayModel timeToRun:
-			Time millisecondClockValue - startingTime.
+		aQueryDisplayModel timeToRun: solver timeToRun.
 		SeekerUIHelpers safeInvoke: [ self appendResults: b ] ].
-
 
 	^ solver
 ]

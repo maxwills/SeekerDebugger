@@ -363,7 +363,7 @@ SkSteppableTracer >> restartAtBytecodeOne [
 	currentState updateCacheTimeKey.
 	self onTracedContextChanged.
 	self onTracedStatementChanged.
-	Smalltalk garbageCollect "this is quite slow, but seems to be necessary to prevent some memory issues"
+	[Smalltalk garbageCollect "this is quite slow, but seems to be necessary to prevent some memory issues.. so I fork it"] fork 
 ]
 
 { #category : #'as yet unclassified' }

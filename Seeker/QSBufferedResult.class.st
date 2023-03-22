@@ -53,10 +53,13 @@ QSBufferedResult >> resolve [
 
 	| currentBuffer |
 	currentBuffer := OrderedCollection new: buffersCapacity.
+	self setInitialTime.
 	self query do: [ :each | 
 		currentBuffer add: each.
 		currentBuffer size >= buffersCapacity ifTrue: [ 
 			bufferReadyCallback value: currentBuffer.
 			currentBuffer := OrderedCollection new: buffersCapacity ] ].
-	currentBuffer ifNotEmpty: [ bufferReadyCallback value: currentBuffer ]
+	currentBuffer ifNotEmpty: [ 
+		timeToRun := self ellapsedTime.
+		bufferReadyCallback value: currentBuffer ]
 ]

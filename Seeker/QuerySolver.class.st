@@ -3,7 +3,9 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'query',
-		'resultsLimit'
+		'resultsLimit',
+		'timeToRun',
+		'initialTime'
 	],
 	#classVars : [
 		'IncludeInstrumentation',
@@ -129,12 +131,19 @@ QuerySolver class >> solve: aQuery [
 	^ (self newForQuery: aQuery) resolve
 ]
 
+{ #category : #'as yet unclassified' }
+QuerySolver >> ellapsedTime [
+
+	^  Time millisecondClockValue - initialTime - Smalltalk vm totalGCTime
+]
+
 { #category : #initialization }
 QuerySolver >> initialize [
 
 	resultsLimit := self seekerConfig queryResultsLimitEnabled
 		                ifTrue: [ self seekerConfig queryResultsLimit ]
-		                ifFalse: [ 9999999 "a big number" ]
+		                ifFalse: [ 9999999 "a big number" ].
+	timeToRun := 0
 ]
 
 { #category : #'as yet unclassified' }
@@ -190,4 +199,16 @@ QuerySolver >> resolve [
 QuerySolver >> seekerConfig [
 
 	^ SeekerConfig default
+]
+
+{ #category : #initialization }
+QuerySolver >> setInitialTime [
+
+	initialTime := Time millisecondClockValue - Smalltalk vm totalGCTime
+]
+
+{ #category : #accessing }
+QuerySolver >> timeToRun [
+
+	^ timeToRun
 ]

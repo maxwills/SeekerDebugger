@@ -9,6 +9,21 @@ Components work all together to make things works (they depend on the existance 
 
 This component design is thought as a way of clarifying objects concerns, and to have an easier time isolating the causes of some errors.
 
+## Components initialization and binding stages
+
+Components can have cross-references. Without a clear initialization order it is likely to have unexpected results or unwanted nil references.
+
+To prevent that, the componentsHolder needs to be first initialized. In its initialization, it creates the instances of each component receiving as a parameter the componentHolder.
+Once all components are initialized, all their references other than the componentHolder are nil.
+The component holder then calls each component's bindComponents method.
+The method bindComponents must grab only ""first-level"" references from the component holder to fill the component's references to other components.
+Then, the method componentsLateInitialization does all the remaining initialization logic.
+
+One can think of this design as a set of stages:
+- Stage 1 - Initialization: During each component initialization, the other referenced compoenents might not be initialized or even instantiated.
+- Stage 2 - Binding: when the #bindComponents of a component is called, it is guaranteed that the component holder is referenced and it points to the references of all other components (which are instantiated but not necesarilly initialized). We use this stage to set up cross references.
+- Stage 3 - ComponentLateInitialization: All the intialization that is not required by other components. At this point, we can consider other components as initialized. 
+
 "
 Class {
 	#name : #SkComponent,

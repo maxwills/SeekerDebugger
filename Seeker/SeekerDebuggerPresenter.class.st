@@ -485,8 +485,7 @@ SeekerDebuggerPresenter >> stepToEndHandler [
 	startingBytecode := self seekerDebugger tracer bytecodeIndex.
 	ms := [
 	      self seekerDebugger tracer doAndUpdateSessionAfter: [
-		      self seekerDebugger tracer stepToEnd ] ] timeToRun
-		      asMilliSeconds.
+		      self seekerDebugger tracer stepToEnd ] ] timeToRunWithoutGC.
 	totalBytecodes := self seekerDebugger tracer bytecodeIndex
 	                  - startingBytecode.
 	message := 'StepToEnd executed ' , totalBytecodes asString

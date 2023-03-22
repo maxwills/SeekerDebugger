@@ -1,5 +1,5 @@
 Class {
-	#name : #SkQueryExperimentalTracer,
+	#name : #SkQueryableTracer,
 	#superclass : #SkOptimizedTracer,
 	#instVars : [
 		'shouldAlwaysRunToEnd'
@@ -8,7 +8,7 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> checkIfShouldRunToEnd [
+SkQueryableTracer >> checkIfShouldRunToEnd [
 
 	"If in the execution we find elements that need to finish their execution before restarting,
 	this method will set a flag true. In that case, seeker will ensure that the execution is run to the end everytime it is internally restarted. This is used in cases like Tests clean up phases, and syncronization objects (Semaphores, Monitors, Etc)"
@@ -20,7 +20,7 @@ SkQueryExperimentalTracer >> checkIfShouldRunToEnd [
 ]
 
 { #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> createContextCacheFor: aContext [
+SkQueryableTracer >> createContextCacheFor: aContext [
 
 	| contextVars |
 	contextVars := aContext temporaryVariables size.
@@ -28,13 +28,13 @@ SkQueryExperimentalTracer >> createContextCacheFor: aContext [
 ]
 
 { #category : #'UI specific' }
-SkQueryExperimentalTracer >> executeAndShow: aQuery [
+SkQueryableTracer >> executeAndShow: aQuery [
 
 	seeker seekerDebuggerPresenter showInResult: aQuery displayModel
 ]
 
 { #category : #'object - api' }
-SkQueryExperimentalTracer >> findContextInStack [
+SkQueryableTracer >> findContextInStack [
 
 	| findContextInterface |
 	findContextInterface := SeekerFindContextInStackInterface new 
@@ -43,13 +43,13 @@ SkQueryExperimentalTracer >> findContextInStack [
 ]
 
 { #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> getOidOf: anObject [
+SkQueryableTracer >> getOidOf: anObject [
 
 	^ objectsTracker getOidOf: anObject
 ]
 
 { #category : #initialization }
-SkQueryExperimentalTracer >> initialize [
+SkQueryableTracer >> initialize [
 
 	shouldAlwaysRunToEnd := false.
 	super initialize.
@@ -57,37 +57,37 @@ SkQueryExperimentalTracer >> initialize [
 ]
 
 { #category : #testing }
-SkQueryExperimentalTracer >> isTopContext: aContext [
+SkQueryableTracer >> isTopContext: aContext [
 
 	^ stDebugger interruptedContext = aContext
 ]
 
 { #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> newProgramStates [
+SkQueryableTracer >> newProgramStates [
 
 	^ SkProgramStates newForTracer: self
 ]
 
 { #category : #accessing }
-SkQueryExperimentalTracer >> objectIsLocal: anObject [
+SkQueryableTracer >> objectIsLocal: anObject [
 
 	^ objectsTracker objectIsLocal: anObject
 ]
 
 { #category : #accessing }
-SkQueryExperimentalTracer >> objectOidIsLocal: aNumber [
+SkQueryableTracer >> objectOidIsLocal: aNumber [
 
 	^ objectsTracker objectOidIsLocal: aNumber
 ]
 
 { #category : #accessing }
-SkQueryExperimentalTracer >> objectWithOid: aNumber [
+SkQueryableTracer >> objectWithOid: aNumber [
 
 	^ objectsTracker getObjectByOid: aNumber
 ]
 
 { #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> onTracedContextChanged [
+SkQueryableTracer >> onTracedContextChanged [
 
 	"self createContextCacheFor: self currentContext."
 
@@ -102,7 +102,7 @@ SkQueryExperimentalTracer >> onTracedContextChanged [
 ]
 
 { #category : #starting }
-SkQueryExperimentalTracer >> restartAtBytecodeOne [
+SkQueryableTracer >> restartAtBytecodeOne [
 
 	"Before restarting, check if the execution should be executed to end"
 
@@ -118,19 +118,19 @@ SkQueryExperimentalTracer >> restartAtBytecodeOne [
 ]
 
 { #category : #accessing }
-SkQueryExperimentalTracer >> selectedCode [
+SkQueryableTracer >> selectedCode [
 
 	^ stDebugger code selectedText
 ]
 
 { #category : #'accessing context' }
-SkQueryExperimentalTracer >> selectedContext [
+SkQueryableTracer >> selectedContext [
 
 	^ stDebugger selectedContext
 ]
 
 { #category : #accessing }
-SkQueryExperimentalTracer >> selectedNode [
+SkQueryableTracer >> selectedNode [
 
 	"Returns the node under the StDebugger code presenter selection."
 
@@ -138,13 +138,13 @@ SkQueryExperimentalTracer >> selectedNode [
 ]
 
 { #category : #accessing }
-SkQueryExperimentalTracer >> selectedSelector [
+SkQueryableTracer >> selectedSelector [
 
 	^ stDebugger code selectedSelector
 ]
 
 { #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> stepToNextIteration [
+SkQueryableTracer >> stepToNextIteration [
 
 	"we want to get to the same node of when the context receiver is the same as the current"
 
@@ -177,7 +177,7 @@ SkQueryExperimentalTracer >> stepToNextIteration [
 ]
 
 { #category : #'as yet unclassified' }
-SkQueryExperimentalTracer >> stepToNextMarker [
+SkQueryableTracer >> stepToNextMarker [
 
 	self doAndUpdateSessionAfter: [ 
 		self stepBytecode.
