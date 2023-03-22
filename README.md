@@ -79,9 +79,12 @@ This is only mentioned here, because it is the factor that makes possible to que
 
 "This query obtains an OrderedCollection containing the list of all the methods of any step that corresponds to a message send to any method with the selector #add:".
 
-(UserTTQ queryFrom: seeker newProgramStates "or just use the workspace variable: programStates"
+(UserTTQ from: seeker newProgramStates "or just use the workspace variable: programStates"
     select: [ :state | state isMessageSend and: [ state node selector = #add: ] ]
-    collect: [ :state | state methodAboutToExecute ]) asOrderedCollection
+    collect: [ :state | state methodAboutToExecute ]) asOrderedCollection.
+    
+"Reuse predefined UserTTQs using the queryFrom: method instead of from: (so the selection is applied additively instead of overridding it)"
+((UTTQAllReadings queryFrom: programStates) select: [ :state| state node variable name = #each ]) asOrderedCollection.
 ```
 
 Then, select all the code, and **inspect it** (right click, and select **Inspect it** from the context menu, or simply press **cmd+i**). 
@@ -143,6 +146,31 @@ The methods #select: and #collect: of Queries returns new Queries objects (not t
 - The field bytecodeIndex is mandatory. Include it like in the example.
 - AutoType automatically creates a class (and instances. The class is not registered in the system) that serves the collection function. To make time traveling queries, it is mandatory to include the bytecodeIndex field.
 
+###  Other debugger usage ideas
+
+#### Reversible execute block
+
+Execute any block of your program with reversible capabilities, with a simple api.
+```Smalltalk
+| b |
+  b := 1.
+  [ b := 3 ] asReversibleDo: [ :program |
+      self assert: b equals: 1.
+      program runReversibly.
+      self assert: b equals: 3.
+      program revert.
+      self assert: b equals: 1.
+      program runReversibly.
+      self assert: b equals: 3.
+      program revert ].
+      self assert: b equals: 1
+```
+
+See `SeekerReversibleValueTest>>#testAsReversibleDo` for more info.
+
+#### Scoped queries
+	
+Documentation in progress.	
 	
 ### 2021/11 functionalities
 
