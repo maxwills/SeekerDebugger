@@ -491,7 +491,7 @@ SeekerDebuggerPresenter >> stepToEndHandler [
 	message := 'StepToEnd executed ' , totalBytecodes asString
 	           , ' bytecodes in ' , ms asString , 'ms'.
 	SeekerMetaDebugHelper log: message.
-	UIManager default inform: message
+		"UIManager default inform: message" "No UI Update, because it introduces NDS for code that uses anoncements"
 ]
 
 { #category : #'as yet unclassified' }
