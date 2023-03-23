@@ -537,7 +537,7 @@ SkSelectiveExecutionRestorer class >> undoBlockForObjectAtPut: csi [
 	| originalValue receiver index |
 	receiver := csi messageReceiver.
 	index := csi messageArgumentAt: 1.
-	originalValue := receiver at: index.
+	originalValue := receiver objectAt: index.
 	^ [ receiver objectAt: index put: originalValue ]
 ]
 

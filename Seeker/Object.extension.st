@@ -118,8 +118,8 @@ Object >> isNotSeekerTrackable [
 "I know, overriding this method in subclasses would make prettier code, but I would loose the whole picture.
 In this case, I preffer this ugly version"
 	"self class = Metaclass ifTrue: [ ^true ]."
-	self class = Process ifTrue: [ ^true ].
-	self class = ProcessorScheduler ifTrue:[^true].
+	self class = Process ifTrue: [ ^true ]."
+	self class = ProcessorScheduler ifTrue:[^true]."
 	^ self isReadOnlyObject or: [ self isString ]
 ]
 
