@@ -4,7 +4,7 @@ On the class side, we can check if they are a query meant for a domain-specific 
 "
 Trait {
 	#name : #TDomainSpecificQuery,
-	#category : #'Seeker-TimeTravelingQueries'
+	#category : #'Seeker-DomainSpecificQueries'
 }
 
 { #category : #testing }

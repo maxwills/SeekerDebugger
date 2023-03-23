@@ -27,13 +27,14 @@ BaselineOfSeeker >> baseline: spec [
 			package: 'EvaluatorDebugger-Base';
 			package: 'Seeker'
 			with: [ spec requires: #( 'EvaluatorDebugger-Base' 'AutoType' 'LanguageExtensions' 'MockFlex' 'QuickWrap') ];
+			package: 'Seeker-DomainSpecificQueries' with: [spec requires: #( 'Seeker' ) ];
 			package: 'Seeker-Tests' with: [ ";
 			package: 'SeekerDebuggerSpy'
 			with: [ spec requires: #( 'Seeker' ) ]" 
 				spec requires: #( 'Seeker' ) ]. "remove this after experiment"
 		spec
 			group: 'default'
-			with: #( 'EvaluatorDebugger-Base' 'Seeker' 'Seeker-Tests' ) ]
+			with: #( 'EvaluatorDebugger-Base' 'Seeker' 'Seeker-DomainSpecificQueries' 'Seeker-Tests' ) ]
 ]
 
 { #category : #actions }

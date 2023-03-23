@@ -3,7 +3,7 @@ My users know how to build domain-specific time-traveling queries menus.
 "
 Trait {
 	#name : #TDomainSpecificQueryMenuBuilder,
-	#category : #'Seeker-UI'
+	#category : #'Seeker-DomainSpecificQueries'
 }
 
 { #category : #'menu building' }
@@ -20,12 +20,13 @@ TDomainSpecificQueryMenuBuilder >> buildCodeCommandTreeMenu [
 
 { #category : #'menu building' }
 TDomainSpecificQueryMenuBuilder >> buildInspectorMenu: menu withObject: object [
-self halt.
+
 	(self domainCommands select: [ :commandClass |
 		 commandClass query requiresDomainObject and: [
-			 commandClass query isForDomainObject: object ] ]) do: [ :commandClass |
+			 commandClass query isForDomainObject: object ] ]) do: [
+		:commandClass |
 		| cmd |
-		cmd := commandClass on: object.
+		cmd := commandClass new context: object.
 		menu add: cmd name target: cmd selector: #execute ]
 ]
 
@@ -41,11 +42,6 @@ TDomainSpecificQueryMenuBuilder >> domainDescription [
 
 { #category : #accessing }
 TDomainSpecificQueryMenuBuilder >> domainIconName [
-	^self explicitRequirement 
-]
-
-{ #category : #accessing }
-TDomainSpecificQueryMenuBuilder >> domainMenuEntries [
 	^self explicitRequirement 
 ]
 
