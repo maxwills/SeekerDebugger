@@ -781,6 +781,7 @@ SkSelectiveExecutionRestorer >> doPreStepProcessForMessageSends [
 	method := currentState methodAboutToExecute.
 
 	method ifNil: [ ^ self ].
+	self isFlushCache ifTrue: [ ^ self handleFlushCache ].
 	objectsTracker instantiationFlag ifFalse: [
 		(currentState isWritingPrimitiveMessage and: [
 			 currentState messageReceiverIsLocalToExecution not ]) ifTrue: [
@@ -860,7 +861,8 @@ SkSelectiveExecutionRestorer >> restoreNonLocalChanges [
 	timeIndexedUndoBlocks reverseDo: [ :undoBlockAssoc | 
 		| undoBlock |
 		undoBlock := undoBlockAssoc value.
-		undoBlock value "execute the undo block" ]
+		undoBlock value "execute the undo block" ].
+	storedFlushCacheBlocks reverseDo: [ :b| b value ].
 ]
 
 { #category : #accessing }

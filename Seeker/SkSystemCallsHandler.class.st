@@ -162,6 +162,10 @@ SkSystemCallsHandler >> initialize [
 	systemCalls add: Time class >> #microsecondClockValue.
 	systemCalls add: Time class >> #primMillisecondClock.
 	systemCalls add: Time class >> #primUTCMicrosecondsClock.
+	systemCalls add: DelayMicrosecondTicker >> #nowTick.
+	systemCalls add: DelayMillisecondTicker >> #nowTick.
+	
+	
 	
 	"next methods are listed as a workaround. To be properly handled in the future"
 	"Note that critical might call other system calls inside. Then, a deterministic replay should log those systems calls. However, at which timestamp? and how to enforce the system call (most likely a signal) that should happen at that point?"

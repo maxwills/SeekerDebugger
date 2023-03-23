@@ -403,7 +403,7 @@ and the method called corresponds to an instantiation primitive.
 
 	<qwpSubCached>
 	| methodAboutToExecute |
-	self isMessageNode ifFalse: [ ^ false ].
+	self isMessageSend ifFalse: [ ^ false ].
 	methodAboutToExecute := self methodAboutToExecute.
 	^ methodAboutToExecute notNil and: [ 
 		  instantiationPrimitiveMethods includes: methodAboutToExecute ]
