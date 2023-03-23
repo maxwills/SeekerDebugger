@@ -9,6 +9,12 @@ Class {
 	#category : #'Seeker-DTTQ-Announcements-Queries'
 }
 
+{ #category : #accessing }
+TTQAllSubscriptionsDeliveries class >> displayModel [
+
+	^ QdmForAnnouncementsDeliveries 
+]
+
 { #category : #testing }
 TTQAllSubscriptionsDeliveries class >> isForDomainObject: anObject [
 	^false
