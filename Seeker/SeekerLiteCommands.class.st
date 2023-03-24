@@ -106,6 +106,7 @@ SeekerLiteCommands >> stCodeCommandsTree [
 			  {
 				  SkAllMessageSendsLC.
 				  SkAllMessageSendsWithSelectorLC.
+				  SkAllMessageSendsWithSelectorPromptLC.
 				  SkAllReceivedMessagesLC ".
 				  SkAllSignallingExceptionsLC " }.
 			  #smallExport.
@@ -121,7 +122,9 @@ SeekerLiteCommands >> stCodeCommandsTree [
 			  'Instances Creations'.
 			  {
 				  SkAllInstanceCreationsLC.
-				  SkAllInstanceCreationsOfClassLC ".
+				  SkAllInstanceCreationsOfClassLC.
+				  SkAllInstanceCreationsOfClassPromptLC ".
+				
 				  SkAllInstanceCreationsOfExceptionLC " }.
 			  #smallNew.
 			  'Queries for listing instances creations' }.
@@ -141,12 +144,10 @@ SeekerLiteCommands >> stCodeCommandsTree [
 				  SkChangesOfAnyObjectOfClassLC }.
 			  #changeUpdate.
 			  'Queries for listing assignments on variables' }.
-			self domainSpecificQueries.
-			{
+		  self domainSpecificQueries.
+		  {
 			  'User Queries'.
-			  self makeUTTQsMenu .
+			  self makeUTTQsMenu.
 			  #exception.
-			  'User-defined Time-traveling Queries' }
-
- }
+			  'User-defined Time-traveling Queries' } }
 ]

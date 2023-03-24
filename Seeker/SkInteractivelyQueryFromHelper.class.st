@@ -5,6 +5,15 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
+SkInteractivelyQueryFromHelper class >> requestClassName [
+
+	^ self
+		  requestSymbolInput: 'Enter class name:'
+		  initialAnswer: 'MyClass'
+		  title: 'Enter class name'
+]
+
+{ #category : #'as yet unclassified' }
 SkInteractivelyQueryFromHelper class >> requestInput: message initialAnswer: initialAnswer title: title [
 
 	^ UIManager default

@@ -20,6 +20,14 @@ TTQAllInstanceCreationsOfClassWithName class >> queryFrom: source withClassName:
 ]
 
 { #category : #'as yet unclassified' }
+TTQAllInstanceCreationsOfClassWithName class >> queryInteractivelyFrom: source [ 
+
+	^ (self queryFrom: source)
+		  newInstanceClassName: SkInteractivelyQueryFromHelper requestClassName;
+		  yourself
+]
+
+{ #category : #'as yet unclassified' }
 TTQAllInstanceCreationsOfClassWithName class >> selectionFunction [
 
 	^ SkSelectionInstanceCreationsOfClassNamed
