@@ -77,27 +77,6 @@ TimeTravelingQuery class >> queryInteractivelyFrom: aDataSource [
 ]
 
 { #category : #'as yet unclassified' }
-TimeTravelingQuery class >> requestInput: message initialAnswer: initialAnswer title: title [
-
-	^ UIManager default
-		  request: message
-		  initialAnswer: initialAnswer
-		  title: title
-]
-
-{ #category : #'as yet unclassified' }
-TimeTravelingQuery class >> requestNumberInput: message initialAnswer: initialAnswer title: title [
-	"request user input, and test it for number. If not a number returns nil"
-
-	| input |
-	input := UIManager default
-		         request: message
-		         initialAnswer: initialAnswer
-		         title: title.
-	[ ^ input asNumber ] onErrorDo: [ :e | ^ nil ]
-]
-
-{ #category : #'as yet unclassified' }
 TimeTravelingQuery class >> runAllChecks [
 
 	<script>

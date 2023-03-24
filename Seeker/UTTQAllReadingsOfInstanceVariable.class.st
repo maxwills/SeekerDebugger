@@ -25,14 +25,8 @@ UTTQAllReadingsOfInstanceVariable class >> queryFrom: programStates forOid: aNum
 UTTQAllReadingsOfInstanceVariable class >> queryInteractivelyFrom: programStates [
 
 	| oid varName |
-	oid := self
-		       requestNumberInput: 'Enter object oid:'
-		       initialAnswer: 'aNumber'
-		       title: 'OID'.
-	varName := (self
-		            requestInput: 'Enter instance variable name:'
-		            initialAnswer: 'variableName'
-		            title: 'Variable Name') asSymbol.
+	oid := SkInteractivelyQueryFromHelper requestOID.
+	varName := SkInteractivelyQueryFromHelper requestVariableName.
 	^ self
 		  queryFrom: programStates
 		  forOid: oid

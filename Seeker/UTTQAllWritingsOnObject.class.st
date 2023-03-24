@@ -31,12 +31,10 @@ UTTQAllWritingsOnObject class >> queryFrom: programStates forOid: aNumber [
 
 { #category : #'instance creation' }
 UTTQAllWritingsOnObject class >> queryInteractivelyFrom: programStates [
+	"Note that this method doesnt work for scoped querys (since a new seeker debugger instance will run the query with different OIDs"
 
 	| oid |
-	oid := self
-		       requestNumberInput: 'Enter object oid:'
-		       initialAnswer: 'aNumber'
-		       title: 'OID'.
+	oid := SkInteractivelyQueryFromHelper requestOID.
 	^ self queryFrom: programStates forOid: oid
 ]
 

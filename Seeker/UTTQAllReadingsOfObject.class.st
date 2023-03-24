@@ -24,10 +24,7 @@ UTTQAllReadingsOfObject class >> queryFrom: programStates forOid: aNumber [
 UTTQAllReadingsOfObject class >> queryInteractivelyFrom: programStates [
 
 	| oid |
-	oid := self
-		       requestNumberInput: 'Enter object oid:'
-		       initialAnswer: 'aNumber'
-		       title: 'OID'.
+	oid := SkInteractivelyQueryFromHelper requestOID.
 	^ self queryFrom: programStates forOid: oid
 ]
 

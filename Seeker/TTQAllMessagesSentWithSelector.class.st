@@ -20,6 +20,14 @@ TTQAllMessagesSentWithSelector class >> queryFrom: source withSelector: anObject
 ]
 
 { #category : #'as yet unclassified' }
+TTQAllMessagesSentWithSelector class >> queryInteractivelyFrom: source [
+
+	^ (self queryFrom: source)
+		  selector: SkInteractivelyQueryFromHelper requestSelector;
+		  yourself
+]
+
+{ #category : #'as yet unclassified' }
 TTQAllMessagesSentWithSelector class >> selectionFunction [
 
 	^ SkSelectionMessagesSentWithSelector
