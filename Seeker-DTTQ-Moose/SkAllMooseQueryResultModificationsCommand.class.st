@@ -13,13 +13,11 @@ SkAllMooseQueryResultModificationsCommand class >> query [
 { #category : #accessing }
 SkAllMooseQueryResultModificationsCommand >> description [
 
-	^ self commonDescriptionIntroString
-	  ,
-	  'for every <sent message>. Every listed result corresponds to the moment before performing the message send. (Sender''s point of view)'
+	^ 'Finds all addings to every MooseQueryResult used in this execution.'
 ]
 
 { #category : #accessing }
 SkAllMooseQueryResultModificationsCommand >> name [
 
-	^'All Moose query results modifications'
+	^'All elements added to instances of MooseQueryResult and any of its subclasses'
 ]

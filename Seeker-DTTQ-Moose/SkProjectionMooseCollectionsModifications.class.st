@@ -16,6 +16,7 @@ SkProjectionMooseCollectionsModifications >> value: state [
 	^ autoType newWith
 		  bytecodeIndex: state bytecodeIndex;		 		
 		  messageArguments: (args size = 1 ifTrue:[args first] ifFalse:[ args]);		
+		  messageReceiver: msgRcvr;
 		  messageReceiverClass: msgRcvrClass value;
 		  endWith
 ]

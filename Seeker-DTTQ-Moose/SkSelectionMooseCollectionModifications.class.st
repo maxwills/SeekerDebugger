@@ -14,5 +14,6 @@ SkSelectionMooseCollectionModifications >> mooseCollectionModificationSelectors 
 SkSelectionMooseCollectionModifications >> value: aProgramState [
 
 	^ (super value: aProgramState) and: [ 
-		  self mooseCollectionModificationSelectors includes: aProgramState messageSelector ]
+		  self mooseCollectionModificationSelectors includes:
+			  aProgramState messageSelector ]
 ]
