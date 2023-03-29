@@ -1,12 +1,12 @@
 Class {
-	#name : #SkSelectionMooseQueryResultModification,
+	#name : #SkSelectionMooseGroupModification,
 	#superclass : #SkSelectionMooseCollectionModification,
 	#category : #'Seeker-DTTQ-Moose-Functions'
 }
 
 { #category : #accessing }
-SkSelectionMooseQueryResultModification >> value: aProgramState [
+SkSelectionMooseGroupModification >> value: aProgramState [
 
 	^ (super value: aProgramState) and: [ 
-		  aProgramState messageReceiver isKindOf: MooseQueryResult ]
+		  aProgramState messageReceiver isKindOf: MooseGroup ]
 ]
