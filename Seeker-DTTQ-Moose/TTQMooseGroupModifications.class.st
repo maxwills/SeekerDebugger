@@ -9,7 +9,7 @@ Class {
 { #category : #accessing }
 TTQMooseGroupModifications class >> displayModel [
 
-	^ QdmForMooseQueryResultsModifications
+	^ QdmForMooseCollectionsModifications
 ]
 
 { #category : #testing }

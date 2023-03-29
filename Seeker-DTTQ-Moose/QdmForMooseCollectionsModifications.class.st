@@ -1,11 +1,11 @@
 Class {
-	#name : #QdmForMooseQueryResultsModifications,
+	#name : #QdmForMooseCollectionsModifications,
 	#superclass : #QueryDisplayModel,
 	#category : #'Seeker-DTTQ-Moose-Commands'
 }
 
 { #category : #'as yet unclassified' }
-QdmForMooseQueryResultsModifications >> buildContextMenuForResults: aQueryResutls withSelectedItem: selection forTracer: tracer [
+QdmForMooseCollectionsModifications >> buildContextMenuForResults: aQueryResutls withSelectedItem: selection forTracer: tracer [
 
 	"builds a context menu for an item of this display model"
 
@@ -32,17 +32,17 @@ QdmForMooseQueryResultsModifications >> buildContextMenuForResults: aQueryResutl
 			  item
 				  name: 'Inspect the query result collection';
 				  action: [ aQueryResutls inspect ] ];
-		  "openWithSpecAt: self currentHand position"yourself
+		  yourself
 ]
 
 { #category : #'as yet unclassified' }
-QdmForMooseQueryResultsModifications >> defaultQueryTitle [
+QdmForMooseCollectionsModifications >> defaultQueryTitle [
 
-	^ 'Message Sends Query'
+	^ 'Moose collections modifications Query'
 ]
 
 { #category : #initialization }
-QdmForMooseQueryResultsModifications >> initializeModel [
+QdmForMooseCollectionsModifications >> initializeModel [
 
 	columns := { 
 		           ((ColumnDefinition newForKey: #bytecodeIndex)
