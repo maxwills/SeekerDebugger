@@ -9,7 +9,10 @@ Class {
 { #category : #accessing }
 SkMooseQueryMenuBuilder >> domainCommands [
 
-	^ { SkAllMooseQueryResultModificationsCommand }
+	^ { 
+		  SkAllMooseQueryResultModificationsCommand.
+		  SkAllMooseGroupModificationsCommand.
+		  SkAllFamixReferenceNavigationsCommand }
 ]
 
 { #category : #accessing }
