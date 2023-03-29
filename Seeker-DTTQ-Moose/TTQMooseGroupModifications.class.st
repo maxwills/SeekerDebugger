@@ -1,5 +1,5 @@
 Class {
-	#name : #TTQMooseQueryResultsModifications,
+	#name : #TTQMooseGroupModifications,
 	#superclass : #TTQAllMessageSends,
 	#traits : 'TDomainSpecificQuery',
 	#classTraits : 'TDomainSpecificQuery classTrait',
@@ -7,24 +7,24 @@ Class {
 }
 
 { #category : #accessing }
-TTQMooseQueryResultsModifications class >> displayModel [
+TTQMooseGroupModifications class >> displayModel [
 
 	^ QdmForMooseQueryResultsModifications
 ]
 
 { #category : #testing }
-TTQMooseQueryResultsModifications class >> isForDomainObject: anObject [
+TTQMooseGroupModifications class >> isForDomainObject: anObject [
 	^false
 ]
 
 { #category : #'as yet unclassified' }
-TTQMooseQueryResultsModifications class >> projectionFunction [
+TTQMooseGroupModifications class >> projectionFunction [
 
 	^ SkProjectionMooseCollectionsModifications 
 ]
 
 { #category : #'as yet unclassified' }
-TTQMooseQueryResultsModifications class >> selectionFunction [
+TTQMooseGroupModifications class >> selectionFunction [
 
-	^ SkSelectionMooseQueryResultModifications 
+	^ SkSelectionMooseGroupModifications 
 ]

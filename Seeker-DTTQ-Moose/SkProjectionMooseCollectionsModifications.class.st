@@ -1,11 +1,11 @@
 Class {
-	#name : #SkProjectionMooseQueryResultsModification,
+	#name : #SkProjectionMooseCollectionsModifications,
 	#superclass : #SeekerProjectionFunction,
 	#category : #'Seeker-DTTQ-Moose-Functions'
 }
 
 { #category : #accessing }
-SkProjectionMooseQueryResultsModification >> value: state [
+SkProjectionMooseCollectionsModifications >> value: state [
 
 	| msgRcvrNode msgRcvrClass msgRcvr receiverOid args|
 	msgRcvrNode := state node receiver.

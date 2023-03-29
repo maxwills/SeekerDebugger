@@ -1,17 +1,17 @@
 Class {
-	#name : #SkSelectionMooseCollectionModification,
+	#name : #SkSelectionMooseCollectionModifications,
 	#superclass : #SkSelectionMessageSends,
 	#category : #'Seeker-DTTQ-Moose-Functions'
 }
 
 { #category : #accessing }
-SkSelectionMooseCollectionModification >> mooseCollectionModificationSelectors [
+SkSelectionMooseCollectionModifications >> mooseCollectionModificationSelectors [
 
 	^ #( add: addAll: )
 ]
 
 { #category : #accessing }
-SkSelectionMooseCollectionModification >> value: aProgramState [
+SkSelectionMooseCollectionModifications >> value: aProgramState [
 
 	^ (super value: aProgramState) and: [ 
 		  self mooseCollectionModificationSelectors includes: aProgramState messageSelector ]
