@@ -1,7 +1,7 @@
 Class {
 	#name : #QdmForMooseCollectionsModifications,
 	#superclass : #QueryDisplayModel,
-	#category : #'Seeker-DTTQ-Moose-Commands'
+	#category : #'Seeker-DTTQ-Moose-Queries'
 }
 
 { #category : #'as yet unclassified' }
