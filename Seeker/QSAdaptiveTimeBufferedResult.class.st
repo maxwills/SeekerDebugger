@@ -74,5 +74,6 @@ QSAdaptiveTimeBufferedResult >> resolve [
 			timeToRun := self ellapsedTime.
 			currentBuffer ifNotEmpty: [ 
 				bufferReadyCallback value: currentBuffer ].
+			queryFinishedCallback ifNotNil: [ queryFinishedCallback value ].
 			actualQuery errors ifNotEmpty: [ actualQuery errors inspect ] ]
 ]
