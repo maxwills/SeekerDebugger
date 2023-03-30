@@ -5,7 +5,8 @@ Class {
 		'query',
 		'resultsLimit',
 		'timeToRun',
-		'initialTime'
+		'initialTime',
+		'queryFinishedCallback'
 	],
 	#classVars : [
 		'IncludeInstrumentation',
@@ -163,6 +164,12 @@ QuerySolver >> query [
 QuerySolver >> query: anObject [
 
 	query := anObject
+]
+
+{ #category : #accessing }
+QuerySolver >> queryFinishedCallback: anObject [
+
+	queryFinishedCallback := anObject
 ]
 
 { #category : #'as yet unclassified' }

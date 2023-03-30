@@ -125,6 +125,8 @@ Set the tables columns from the ordered collection
 	table columns: spColumns.
 	"self applyResultFilter."
 	self updateDisplayedResults.
+	solver queryFinishedCallback: [ queryTitle label: queryDisplayModel title].	
+	queryTitle label: 'Running...'.
 	[ solver resolve ] fork
 ]
 
