@@ -215,9 +215,9 @@ See `SeekerReversibleValueTest>>#testAsReversibleDo` for more info.
 
 #### Scoped queries
 	
-Documentation in progress.
+Documentation in progress.  
 These are queries that can be run outside a time-traveling debugging session. 
-Just select some, rightclick to open the context menu, and chose a scoped query.
+Just select some code, rightclick to open the context menu, and chose a scoped query.
 They can be use to quickly get execution (dynamic) program data from code.
 For example, the scoped query AllBreakpointAndHalts will list all the breakpoints hits and halts that the selected code would hit if normally executed.
 
