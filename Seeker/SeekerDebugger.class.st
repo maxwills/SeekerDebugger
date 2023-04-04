@@ -294,6 +294,12 @@ SeekerDebugger >> notifyTimeTravel: stateString [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerDebugger >> programStates [
+
+	^ tracer newProgramStates
+]
+
+{ #category : #'as yet unclassified' }
 SeekerDebugger >> quickSetup [
 
 	| process |
@@ -387,6 +393,12 @@ SeekerDebugger >> stepInto [
 	tracer stepInto.
 	"Transcript clear."
 	self printTrace
+]
+
+{ #category : #'as yet unclassified' }
+SeekerDebugger >> stepNumber [
+
+	^ tracer bytecodeIndex
 ]
 
 { #category : #'debug - stepping' }

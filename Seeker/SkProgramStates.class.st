@@ -96,6 +96,12 @@ SkProgramStates >> excluding: anObject [
 ]
 
 { #category : #'as yet unclassified' }
+SkProgramStates >> findSeeker [
+
+	^ tracer seeker
+]
+
+{ #category : #'as yet unclassified' }
 SkProgramStates >> findTracer [
 
 	tracer isMapped ifFalse: [ self error: 'Time Traveling not enabled' ].
@@ -162,6 +168,13 @@ SkProgramStates >> stepAndInEachStateDo: aBlock [
 						e.
 						autoE }.
 				aBlock value: autoE ] ]
+]
+
+{ #category : #initialization }
+SkProgramStates >> terminate [
+	"This terminates the underlying debugger. This method should not be called by the debugger, or it is likely to have a cyclic finalization calls"
+
+	^ self findSeeker terminate
 ]
 
 { #category : #accessing }

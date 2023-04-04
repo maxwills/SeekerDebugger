@@ -64,6 +64,7 @@ SkQueryableTracer >> isTopContext: aContext [
 
 { #category : #'as yet unclassified' }
 SkQueryableTracer >> newProgramStates [
+	"Obsolete. use instead programStates"
 
 	^ SkProgramStates newForTracer: self
 ]
@@ -99,6 +100,12 @@ SkQueryableTracer >> onTracedContextChanged [
 			withOid: executedBytecode - 1 ].
 
 	super onTracedContextChanged
+]
+
+{ #category : #'as yet unclassified' }
+SkQueryableTracer >> programStates [
+
+	^ SkProgramStates newForTracer: self
 ]
 
 { #category : #starting }

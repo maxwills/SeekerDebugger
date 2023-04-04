@@ -6,36 +6,31 @@ Class {
 
 { #category : #tests }
 SeekerBlockProgramStatesTest >> testBlockProgramStates [
-	"this leaves a suspended process alive. Prefer the other notation"
+	"This leaves a suspended process alive and requires the ensure: call. Prefer the other notation"
+	
+	"The semaphore is just part of the debugged program. It has no relevance on the usage of block's programStates querying notation"
 
-	| sem sk endReached |
-	self skip.
+	| sem res programStates endReached |
 	sem := Semaphore new.
+	[(Delay forMilliseconds: 300) wait. sem signal ] fork.
+	[programStates := [sem wait. endReached := true ] programStates.
+	
+	res := (TTQAllMessageSends queryFrom: programStates) asOrderedCollection.
 
-	[
-	(Delay forMilliseconds: 300) wait.
-	sem signal ] fork.
-
-	sk := (TTQAllMessageSends queryFrom: [
-		       sem wait.
-		       endReached := true ] programStates) asOrderedCollection.
-	self assert: sk size equals: 1
+	self assert: res size equals: 1 ] ensure: [ programStates terminate ]
 ]
 
 { #category : #tests }
 SeekerBlockProgramStatesTest >> testBlockProgramStates2 [
 
-	| sem sk endReached |
+"The semaphore is just part of the debugged program. It has no relevance on the usage of block's programStates querying notation"
+	| sem res endReached |
 	sem := Semaphore new.
 
-	[
-	(Delay forMilliseconds: 300) wait.
-	sem signal ] fork.
+	[(Delay forMilliseconds: 300) wait. sem signal ] fork.
 
-	[
-	sem wait.
-	endReached := true ] programStates: [ :programStates |
-		sk := (TTQAllMessageSends queryFrom: programStates)
-			      asOrderedCollection.
-		self assert: sk size equals: 1 ]
+	[sem wait. endReached := true ] programStates: 
+     [:programStates |
+	    res := (TTQAllMessageSends queryFrom: programStates) asOrderedCollection.
+		 self assert: res size equals: 1 ]
 ]

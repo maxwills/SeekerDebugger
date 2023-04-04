@@ -59,7 +59,7 @@ BlockClosure >> programStates: block [
 
 	| sk |
 	sk := SeekerDebugger headlessDebugBlock: self.
-	[ block value: sk tracer newProgramStates ] ensure: [ sk terminate ]
+	[ block value: sk programStates ] ensure: [ sk terminate ]
 ]
 
 { #category : #'*Seeker' }
