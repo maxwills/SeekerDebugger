@@ -1,7 +1,7 @@
 Class {
 	#name : #SkProjectionMooseFamixAssociationNavigation,
 	#superclass : #SeekerProjectionFunction,
-	#category : #'Seeker-DTTQ-Moose-Functions'
+	#category : #'Seeker-DTTQ-Moose-Functions-Projection'
 }
 
 { #category : #accessing }

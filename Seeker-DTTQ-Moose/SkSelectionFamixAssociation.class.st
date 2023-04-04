@@ -5,7 +5,7 @@ Class {
 		'slotsOfInterest',
 		'famixAssociationSlotsNames'
 	],
-	#category : #'Seeker-DTTQ-Moose-Functions'
+	#category : #'Seeker-DTTQ-Moose-Functions-Selection'
 }
 
 { #category : #accessing }

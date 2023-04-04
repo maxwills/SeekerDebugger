@@ -1,7 +1,7 @@
 Class {
 	#name : #SkSelectionFamixAssociationNavigation,
 	#superclass : #SkSelectionFamixAssociation,
-	#category : #'Seeker-DTTQ-Moose-Functions'
+	#category : #'Seeker-DTTQ-Moose-Functions-Selection'
 }
 
 { #category : #accessing }

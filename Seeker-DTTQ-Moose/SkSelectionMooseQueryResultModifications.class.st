@@ -1,7 +1,7 @@
 Class {
 	#name : #SkSelectionMooseQueryResultModifications,
 	#superclass : #SkSelectionMooseCollectionModifications,
-	#category : #'Seeker-DTTQ-Moose-Functions'
+	#category : #'Seeker-DTTQ-Moose-Functions-Selection'
 }
 
 { #category : #accessing }
