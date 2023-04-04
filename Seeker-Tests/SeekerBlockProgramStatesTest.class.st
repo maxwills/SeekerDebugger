@@ -13,11 +13,9 @@ SeekerBlockProgramStatesTest >> testBlockProgramStates [
 	| sem res programStates endReached |
 	sem := Semaphore new.
 	[(Delay forMilliseconds: 300) wait. sem signal ] fork.
-	[programStates := [sem wait. endReached := true ] programStates.
-	
-	res := (TTQAllMessageSends queryFrom: programStates) asOrderedCollection.
-
-	self assert: res size equals: 1 ] ensure: [ programStates terminate ]
+   programStates := [sem wait. endReached := true ] programStates.
+	[res := (TTQAllMessageSends queryFrom: programStates) asOrderedCollection.
+	  self assert: res size equals: 1 ] ensure:[ programStates terminate ]
 ]
 
 { #category : #tests }
