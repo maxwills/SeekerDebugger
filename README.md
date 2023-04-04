@@ -79,7 +79,7 @@ This is only mentioned here, because it is the factor that makes possible to que
 
 "This query obtains an OrderedCollection containing the list of all the methods of any step that corresponds to a message send to any method with the selector #add:".
 
-(UserTTQ from: seeker newProgramStates "or just use the workspace variable: programStates"
+(UserTTQ from: seeker programStates "or just use the workspace variable: programStates"
     select: [ :state | state isMessageSend and: [ state node selector = #add: ] ]
     collect: [ :state | state methodAboutToExecute ]) asOrderedCollection.
     
@@ -105,7 +105,7 @@ To transform a Query into a Time-Traveling Query (with integration in the UI)
 "In the scripting presenter, paste the following code:"
 | autoResultType |
     autoResultType := AutoType new.
-    (UserTTQ from: seeker newProgramStates
+    (UserTTQ from: seeker programStates
         select: [ :state | state isMessageSend and: [ state node selector = #add: ] ]
         collect: [ :state | 
             autoResultType newWith
@@ -125,7 +125,7 @@ Queries and TTQs can be composed. Ie, they can be used as a data source for othe
 ```Smalltalk
 
 | query1 query2 |
-   query1 := (Query from: seeker newProgramStates "or just use the workspace variable: programStates"
+   query1 := (Query from: seeker programStates "or just use the workspace variable: programStates"
     select: [ :state | state isMessageSend and: [ state node selector = #add: ] ]
     collect: [ :state | state methodAboutToExecute ]).
     
@@ -145,6 +145,51 @@ The methods #select: and #collect: of Queries returns new Queries objects (not t
 - The Query object instantiation doesn't trigger the production of results.
 - The field bytecodeIndex is mandatory. Include it like in the example.
 - AutoType automatically creates a class (and instances. The class is not registered in the system) that serves the collection function. To make time traveling queries, it is mandatory to include the bytecodeIndex field.
+
+### Running TTQs in headless mode.
+
+It can be done in several ways:
+
+#### A. Straightforward
+
+Use this if you already have a headless mode instance of SeekerDebugger.
+```Smalltalk
+myBlock := [|a|
+  a:=1.
+  a:= a+a ].
+seeker := SeekerDebugger headlessDebugBlock: myBlock.
+"Or if you want to query directly inside a method do as follows:"
+seeker := SeekerDebugger headlessDebugFor: receiver selector: #aSelector withArgs:{}.
+
+"Then just create a query, passing as argument the programStates object"
+(TTQAllAssignments queryFrom: seeker programStates) asOrderedCollection inspect 
+```
+#### B. Scoped querying (Directly using a block's programStates)
+This is recommended if you only intend to query a program contained in a block, and do not intent to perform time-travels or extra tasks, as this hides the need to initialize the debugging session.
+Using this will terminate the underlaying debugged process once the execution exits the scope of the programStates.
+Just note that the effects of the block are always reverted at the end.
+```Smalltalk
+myBlock := [|a|
+  a:=1.
+  a:= a+a ].
+myBlock programStates: [ :programStates |
+  |queryRes|
+  queryRes := (TTQAllMessageSends queryFrom: programStates) asOrderedCollection.
+  "You could run other queries if needed"
+  queryRes inspect ].
+  "Once the programStates scope is escaped, the underlying time-traveling debugging session is automatically terminated
+```
+#### C. Alternative (Also directly using a block's programStates)
+This is similar to the previous one in the sense that it hides the debugger, and it is simpler, but the problem is that the debugged process is not terminated. If you use it, remember to terminate the debugger.
+
+```Smalltalk
+myBlock:= [|a|
+  a:=1.
+  a:= a+a ].
+programStates := myBlock programStates.
+[(TTQAllAssignments queryFrom: programStates) inspect]
+  ensure: [programStates findSeeker terminate]
+```
 
 ###  Other debugger usage ideas
 
@@ -212,25 +257,3 @@ What happens behind courtains is that a Seeker headless debug session is created
 1. Open the Seeker Config UI (as described in **Limitations and known issues**, point (*)), and click in the ***Reset emergency deactivation*** button.
 
 This should enable the normal debugger, and with the Breakpoints and halts removed, it should bring back Seeker.
-	
-### 2021/11 functionalities
-
-- Command queries not executed in the UI thread (A status bar updates during their execution). However, the waiting cursor is now missing.
-- New scripting functions:  
-```Smalltalk
-"setting custom execution boundaries"
-seeker recordFromHereWithExecutionEndingConditionOnState: [:state| state bytecodeIndex = 2   ].
-seeker recordOnThisContext.
-
-"stepping to a marker"
-seeker stepToNextMarker.
-"other stepping"
-seeker timeTravelToBytecodeIndex:  1001.
-seeker stepBytecodes: 100.
-
-"Not new, but useful to remember"
-seeker timeTravelToTraceTime: 5 asExecutedBytecodeTraceTime 
-
-```
-
-
