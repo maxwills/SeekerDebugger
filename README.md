@@ -188,7 +188,7 @@ myBlock:= [|a|
   a:= a+a ].
 programStates := myBlock programStates.
 [(TTQAllAssignments queryFrom: programStates) inspect]
-  ensure: [programStates findSeeker terminate]
+  ensure: [programStates terminate]
 ```
 
 ###  Other debugger usage ideas
