@@ -25,40 +25,40 @@ The baseline will:
 - Change the `StDebugger` `debuggerActionModel` default class to `SeekerStDebuggerActionModel`. This will make the StDebugger to need Seeker to be enabled to work. (You can still debug normaly without Seeker, but it will be shown at the right, even if it is not used). Don't use this if you rely on your own modifications of `StDebuggerActionModel`. If you unload Seeker, you will need to manually restore `StDebugger>>#debuggerActionModel`.
 - Add a line to `HandMorph>>handleEvent:` to capture the pressed state of modifier keys.
 
+## Headless mode
 
-## Limitations and known issues.
+```Smalltalk
+|myProgramBlock|
+myProgramBlock := [|a| 
+  a:=1 .
+  a:= a+a.
+  a:= a+a.
+  a].
 
-- Supports "Debug it" and TestCases when launched from the corresponding seeker menu entry. No support for non intentional debugging.
-- Can be launched from the Playground, and SystemBrowser (for testCase methods), and from withing any instance of the StDebugger (Including other Seeker Debugging sessions) form the Right-Click Context Menu. The user MUST choose the "Debug it with Seeker Option" in order to enable a Time-Traveling Debugging session. Otherwise, a normal StDebugger debugging session will be started (even if Seeker is displayed in the Extensions panel).
-- No complete support for test clean up at the moment.
-- Single thread executions only.
-- No UI executions support.
-- (*) The **WorldMenu >> Library >> SeekerDev >> OpenSeekerDebugger Config** option opens a UI with the configuration of some parameters of the debugger. Not Documented at the moment.
-- The execution reversal mechanism can only undo changes that originates from within an execution (the debugged execution call tree). Changes made from outside the execution could affect the deterministic replay of an execution.
-- Performance: Executing code with Seeker is slow. The emergency stop (STOP button in the toolbar) might be useful if a query is started and takes too long to finish. Consider closing it by force if necessary.
-- No support yet for "Debug Drive development". Modifying the debugged code during a debug session might produce problems with time-indices.
-- Not fully compatible with instrumentation:
-  - Executing Seeker will remove all breakpoints in the system.
-  - If Breakpoints are added later will result in undefined behavior (don't add breakpoints while using the debugger).
-  - Not tested yet with metalinks.
-  - Code instrumented with method proxies works, but introduces several extra instructions, making Seeker and Queries slower.
-- The "execution interpretation and reversal mechanisms" are known to have problems with:
-  - Executions that perform calls on and/or modify global state UI related objects (HandMorphs, for example), which is sadly a big part of Pharo.
-  - Executions that performs class installations, and removal form the system.
-  - Executions that compile code (adding methods to objects and classes).
-  - Explicit garbage collection calls (Although not tested).
-- ObservableSlots "extra behavior" is suspected to not be monitored by the debugger, and therefore it might be left out of the Queries and from the execution reversal mechanism. This hasn't been tested yet.
+"use this if your program correspond to the code of a block"
+SeekerDebugger headlessDebugBlock: myProgramBlock.
 
-### Troubleshooting
+"Try to avoid using auxiliary blocks (ie, avoid doing the following):
+SeekerDebugger headlessDebugBlock: [ anObject theProgramMethod].
+For that case, it is better to use the following initialization."
+"Use this if your program corresponds to a call of a method:"
+SeekerDebugger headlessDebugFor: receiver selector: selector withArgs: argsArray
+"This way, the time-traveling step 1 corresponds to the first instruction of the method instead of the auxiliary block"
 
-**Problem:** I can't open a debugger anymore. Any time I try to debug something, the Emergency debugger is shown instead of the StDebugger, even if I am not using "debug it with Seeker". What can I do?
+"Optionally, although not recommended, unless you know what you do"
+SeekerDebugger headlessDebug: aProcess
 
-**Answer:** Since Seeker performs several initalization logic (which might fail), when a failure is detected during this phase, a flag is set to prevent any opening of the StDebugger. The reason for this is that once a failure is detected, Pharo will try to open a debugger to debug the failure, which result in the image being locked. If you didn't modify Seeker or StDebugger code, then the most likely cause of the failure is a Breakpoint or a halt in your domain code (that is being executed during the initialization of the Time-Traveling mechanism). **To fix this:**
-
-1. Open the Seeker Config UI (as described in **Limitations and known issues**, point (*)), and click in the ***Reset emergency deactivation*** button.
-
-This should enable the normal debugger, and with the Breakpoints and halts removed, it should bring back Seeker.
-
+"API main methods"
+|sk| sk:=SeekerDebugger headlessDebugBlock: myProgramBlock.
+sk restart. "reverts execution to step 1"
+sk timeTravelTo: stepNumber "Advances or reverses the execution until reaching the step number"
+sk resume. "ends the time-traveling debugging session by resuming the debugged process"
+sk terminate. "terminates the debugged process"
+sk step. "advances debugged execution by one bytecode"
+sk stepNumber. "returns the current step number."
+sk stepToEnd. "executes every bytecode of the program, until it cannot advance anymore"
+sk programStates. "An iterable object representing all the states of the debugged program. Used mostly for queries"
+```
 
 ## Time-Traveling Queries Usage / Quick reference:
 The Quick Reference pdf document is included in the repository, and can be accessed [here](./Resources/TTQs-QuickReference.pdf).
@@ -170,7 +170,48 @@ See `SeekerReversibleValueTest>>#testAsReversibleDo` for more info.
 
 #### Scoped queries
 	
-Documentation in progress.	
+Documentation in progress.
+These are queries that can be run outside a time-traveling debugging session. 
+Just select some, rightclick to open the context menu, and chose a scoped query.
+They can be use to quickly get execution (dynamic) program data from code.
+For example, the scoped query AllBreakpointAndHalts will list all the breakpoints hits and halts that the selected code would hit if normally executed.
+
+What happens behind courtains is that a Seeker headless debug session is created with the selected code, and a time-traveling query is run on that program. After collecting the queries result, Seeker reverts the effects of the executed code, as if nothing had been executed.
+(Although, current Seeker reverse mechanism doesn't cover yet changes in the filesystem or other external resources).
+
+
+## Limitations and known issues.
+
+- Supports "Debug it" and TestCases when launched from the corresponding seeker menu entry. No support for non intentional debugging.
+- Can be launched from the Playground, and SystemBrowser (for testCase methods), and from withing any instance of the StDebugger (Including other Seeker Debugging sessions) form the Right-Click Context Menu. The user MUST choose the "Debug it with Seeker Option" in order to enable a Time-Traveling Debugging session. Otherwise, a normal StDebugger debugging session will be started (even if Seeker is displayed in the Extensions panel).
+- No complete support for test clean up at the moment.
+- Single thread executions only.
+- No UI executions support.
+- (*) The **WorldMenu >> Library >> SeekerDev >> OpenSeekerDebugger Config** option opens a UI with the configuration of some parameters of the debugger. Not Documented at the moment.
+- The execution reversal mechanism can only undo changes that originates from within an execution (the debugged execution call tree). Changes made from outside the execution could affect the deterministic replay of an execution.
+- Performance: Executing code with Seeker is slow. The emergency stop (STOP button in the toolbar) might be useful if a query is started and takes too long to finish. Consider closing it by force if necessary.
+- No support yet for "Debug Drive development". Modifying the debugged code during a debug session might produce problems with time-indices.
+- Not fully compatible with instrumentation:
+  - Executing Seeker will remove all breakpoints in the system.
+  - If Breakpoints are added later will result in undefined behavior (don't add breakpoints while using the debugger).
+  - Not tested yet with metalinks.
+  - Code instrumented with method proxies works, but introduces several extra instructions, making Seeker and Queries slower.
+- The "execution interpretation and reversal mechanisms" are known to have problems with:
+  - Executions that perform calls on and/or modify global state UI related objects (HandMorphs, for example), which is sadly a big part of Pharo.
+  - Executions that performs class installations, and removal form the system.
+  - Executions that compile code (adding methods to objects and classes).
+  - Explicit garbage collection calls (Although not tested).
+- ObservableSlots "extra behavior" is suspected to not be monitored by the debugger, and therefore it might be left out of the Queries and from the execution reversal mechanism. This hasn't been tested yet.
+
+### Troubleshooting
+
+**Problem:** I can't open a debugger anymore. Any time I try to debug something, the Emergency debugger is shown instead of the StDebugger, even if I am not using "debug it with Seeker". What can I do?
+
+**Answer:** Since Seeker performs several initalization logic (which might fail), when a failure is detected during this phase, a flag is set to prevent any opening of the StDebugger. The reason for this is that once a failure is detected, Pharo will try to open a debugger to debug the failure, which result in the image being locked. If you didn't modify Seeker or StDebugger code, then the most likely cause of the failure is a Breakpoint or a halt in your domain code (that is being executed during the initialization of the Time-Traveling mechanism). **To fix this:**
+
+1. Open the Seeker Config UI (as described in **Limitations and known issues**, point (*)), and click in the ***Reset emergency deactivation*** button.
+
+This should enable the normal debugger, and with the Breakpoints and halts removed, it should bring back Seeker.
 	
 ### 2021/11 functionalities
 
@@ -191,3 +232,5 @@ seeker stepBytecodes: 100.
 seeker timeTravelToTraceTime: 5 asExecutedBytecodeTraceTime 
 
 ```
+
+
