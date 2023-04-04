@@ -1,3 +1,6 @@
+"
+Intended to replace the current systemcalls handler at some point. Not yet.
+"
 Class {
 	#name : #SkNDSHandler,
 	#superclass : #Object,

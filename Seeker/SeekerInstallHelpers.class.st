@@ -32,6 +32,7 @@ SeekerInstallHelpers class >> install [
 	| authorName |
 	authorName := Author uniqueInstance fullNamePerSe.
 	Author uniqueInstance fullName: 'SeekerInstaller'.
+	"self installDeprecationPatch."
 	self overrideStDebuggerActionModel.
 	self debuggerExtensionEnabled: true.
 	self instrumentHandMorph.
@@ -54,6 +55,18 @@ SeekerInstallHelpers class >> installAndShowMessageOnCompletion [
 			showModalDialog:
 			'SeekerDebugger installation is finished. The debugger is ready to use.'
 			withTitle: 'Installation complete' ] ] fork "Done this way to avoid blocking the progressbar with the modal"
+]
+
+{ #category : #'as yet unclassified' }
+SeekerInstallHelpers class >> installDeprecationPatch [
+	"prevents the deprecation warning message"
+
+	| newCode |
+	newCode := (Deprecation >> #transform) sourceCode
+		           copyReplaceAll:
+		           'self shouldTransform ifFalse: [ ^ self signal].'
+		           with: 'self shouldTransform ifFalse: [ ^ self ].'.
+	Deprecation compile: newCode
 ]
 
 { #category : #'as yet unclassified' }

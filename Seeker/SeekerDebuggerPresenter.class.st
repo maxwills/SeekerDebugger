@@ -478,11 +478,20 @@ self doAndUpdateSessionAfter: [ self seekerDebugger tracer pushNavigationHistory
 { #category : #'as yet unclassified' }
 SeekerDebuggerPresenter >> stepToEndHandler [
 
-	self seekerDebugger tracer isMapped ifFalse: [ 
+	| ms startingBytecode totalBytecodes message |
+	self seekerDebugger tracer isMapped ifFalse: [
 		^ self error:
 			  'The execution needs to be mapped to perform this action. Ensure that the code was debugged using a "Debug it with Seeker" option' ].
-	self seekerDebugger tracer doAndUpdateSessionAfter: [ 
-		self seekerDebugger tracer stepToEnd ]
+	startingBytecode := self seekerDebugger tracer bytecodeIndex.
+	ms := [
+	      self seekerDebugger tracer doAndUpdateSessionAfter: [
+		      self seekerDebugger tracer stepToEnd ] ] timeToRunWithoutGC.
+	totalBytecodes := self seekerDebugger tracer bytecodeIndex
+	                  - startingBytecode.
+	message := 'StepToEnd executed ' , totalBytecodes asString
+	           , ' bytecodes in ' , ms asString , 'ms'.
+	SeekerMetaDebugHelper log: message.
+		"UIManager default inform: message" "No UI Update, because it introduces NDS for code that uses anoncements"
 ]
 
 { #category : #'as yet unclassified' }

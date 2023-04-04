@@ -22,7 +22,7 @@ SkSystemCallsHandler >> bindComponents [
 { #category : #accessing }
 SkSystemCallsHandler >> enabled [
 
-	^ SeekerConfig default systemCallsHandlerEnabled
+	^ enabled and: [SeekerConfig default systemCallsHandlerEnabled]
 ]
 
 { #category : #'as yet unclassified' }
@@ -149,27 +149,36 @@ SkSystemCallsHandler >> handleSystemCall: interpretationBlock [
 { #category : #initialization }
 SkSystemCallsHandler >> initialize [
 
+	super initialize.
 	forceInterpret := true.
 	returnValuesDictionary := Dictionary new.
-	
+
 	systemCalls := IdentitySet new.
+	"leave the gc out alone"
+	systemCalls add: SmalltalkImage >> #garbageCollect.
+	systemCalls add: SmalltalkImage >> #garbageCollectMost.
+
 	systemCalls add: Time class >> #millisecondClockValue.
+	systemCalls add: Time class >> #microsecondClockValue.
+	systemCalls add: Time class >> #primMillisecondClock.
+	systemCalls add: Time class >> #primUTCMicrosecondsClock.
+	systemCalls add: DelayMicrosecondTicker >> #nowTick.
+	systemCalls add: DelayMillisecondTicker >> #nowTick.
+	
+	
+	
 	"next methods are listed as a workaround. To be properly handled in the future"
 	"Note that critical might call other system calls inside. Then, a deterministic replay should log those systems calls. However, at which timestamp? and how to enforce the system call (most likely a signal) that should happen at that point?"
 	"systemCalls add: Mutex >> #critical:."
-"	systemCalls add: Semaphore >> #wait.
+	"	systemCalls add: Semaphore >> #wait.
 	systemCalls add: Semaphore >> #signal."
 	systemCalls add: BlockClosure >> #fork. "this cant be correct, but need to investigate its effects in detail"
 	systemCalls add: SeekerExecutorLegacy >> #executeUntracked:.
 	systemCalls add: SeekerExecutor class >> #executeUntracked:.
 
 	"Halts"
-	haltingMethods := IdentitySet new.
-	haltingMethods add: Halt class >> #once.
-	haltingMethods add: Halt class >> #now.
-	haltingMethods add: Object >> #halt.
-	haltingMethods add: Object >> #haltOnce.
-	haltingMethods add: Breakpoint >>#breakInContext:node:
+	haltingMethods := SeekerCurrentStateInterface getHaltingMethods
+		                  asIdentitySet
 ]
 
 { #category : #testing }

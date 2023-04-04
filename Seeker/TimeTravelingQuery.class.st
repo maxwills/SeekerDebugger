@@ -69,6 +69,13 @@ TimeTravelingQuery class >> queryFrom: aDataSource [
 		  yourself
 ]
 
+{ #category : #'instance creation' }
+TimeTravelingQuery class >> queryInteractivelyFrom: aDataSource [
+	"Queries that requires arguments other than the programsStates iterable override this method to request the user for these arguments. If no other argument is required, this is equivalten to a call to queryFrom: "
+
+	^ self queryFrom: aDataSource
+]
+
 { #category : #'as yet unclassified' }
 TimeTravelingQuery class >> runAllChecks [
 
@@ -166,11 +173,11 @@ TimeTravelingQuery >> showInSeeker [
 TimeTravelingQuery >> ttqInitialize [
 
 	displayModel := self class displayModel newForQuery: self.
-	displayModel title: self ttqTile
+	displayModel title: self ttqTitle
 ]
 
 { #category : #'as yet unclassified' }
-TimeTravelingQuery >> ttqTile [
+TimeTravelingQuery >> ttqTitle [
 
 	"Override this method to show a more specific name"
 

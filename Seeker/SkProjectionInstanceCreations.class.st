@@ -10,9 +10,12 @@ SkProjectionInstanceCreations >> value: state [
 	| msgRcvrClass msgRcvrPackage instMsgReceiver |
 	instMsgReceiver := state messageReceiver.
 	msgRcvrClass := instMsgReceiver class.
-	msgRcvrPackage := instMsgReceiver isClass
-		                  ifTrue: [ instMsgReceiver package name ]
-		                  ifFalse: [ instMsgReceiver class package name ].
+	msgRcvrPackage := msgRcvrClass = Metaclass
+		                  ifTrue: [ '' "Newly instantiated metaclasses will throw an error"]
+		                  ifFalse: [
+			                  instMsgReceiver isClass
+				                  ifTrue: [ instMsgReceiver package name ]
+				                  ifFalse: [ instMsgReceiver class package name ] ].
 	^ autoType newWith
 		  bytecodeIndex: state bytecodeIndex;
 		  methodSelector: state methodSelector;

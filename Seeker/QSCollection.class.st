@@ -12,11 +12,12 @@ QSCollection >> resolve [
 	| resultsCollection count |
 	count := 0.
 	resultsCollection := OrderedCollection new: 1024.
-
+	self setInitialTime.
 	self queryToSolve do: [ :item | 
 		resultsCollection add: item.
 		(count := count + 1) >= resultsLimit ifTrue: [ 
 			self notifyResultsLimitReached.
 			^ resultsCollection ] ].
+	timeToRun := self ellapsedTime.
 	^ resultsCollection
 ]

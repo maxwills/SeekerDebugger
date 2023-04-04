@@ -12,7 +12,9 @@ Class {
 		'storedNonLocalChangesDictionary',
 		'mapper',
 		'stepper',
-		'objectsTracker'
+		'objectsTracker',
+		'flushCacheMethods',
+		'storedFlushCacheBlocks'
 	],
 	#category : #'Seeker-Components'
 }
@@ -77,18 +79,39 @@ SkExecutionRestorer >> doPreStepProcessForMessageSends [
 { #category : #accessing }
 SkExecutionRestorer >> enabled [
 
-	^ SeekerConfig default restorationEnabled
+	^ enabled and: [ SeekerConfig default restorationEnabled ]
+]
+
+{ #category : #testing }
+SkExecutionRestorer >> handleFlushCache [
+
+	| rcvr |
+	rcvr := currentState messageReceiver.
+	storedFlushCacheBlocks add: [ rcvr flushCache ]
 ]
 
 { #category : #initialization }
 SkExecutionRestorer >> initialize [
 
 	super initialize.
-	storedNonLocalChangesDictionary := WeakIdentityKeyDictionary new. "Keys are the object owning the variable, and the value is a dictionary of keys variable name (symbol) with values the Undo block"
+	storedFlushCacheBlocks := OrderedCollection new.
+	flushCacheMethods := {
+		                     (CompiledMethod >> #flushCache).
+		                     (Symbol >> #flushCache).
+		                     (Behavior >> #flushCache).
+		                     (ReflectiveMethod >> #flushCache) }
+		                     asIdentitySet.
+	storedNonLocalChangesDictionary := WeakIdentityKeyDictionary new "Keys are the object owning the variable, and the value is a dictionary of keys variable name (symbol) with values the Undo block"
 ]
 
 { #category : #initialization }
 SkExecutionRestorer >> initializeFromCurrentState [
+]
+
+{ #category : #testing }
+SkExecutionRestorer >> isFlushCache [
+
+	^ flushCacheMethods includes: currentState methodAboutToExecute
 ]
 
 { #category : #accessing }
@@ -133,14 +156,16 @@ SkExecutionRestorer >> recordSnapshotOfObject: anObject [
 { #category : #'add/remove' }
 SkExecutionRestorer >> reset [
 
-	storedNonLocalChangesDictionary removeAll
+	storedNonLocalChangesDictionary removeAll.
+	storedFlushCacheBlocks removeAll
 ]
 
 { #category : #accessing }
 SkExecutionRestorer >> restoreNonLocalChanges [
 
-	storedNonLocalChangesDictionary valuesDo: [ :variablesAndUndoBlocks | 
-		variablesAndUndoBlocks valuesDo: [ :undoB | undoB value ] ]
+	storedNonLocalChangesDictionary valuesDo: [ :variablesAndUndoBlocks |
+		variablesAndUndoBlocks valuesDo: [ :undoB | undoB value ] ].
+	flushCacheMethods reverseDo: [ :b | b value ]
 ]
 
 { #category : #accessing }

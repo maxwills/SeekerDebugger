@@ -125,6 +125,8 @@ Set the tables columns from the ordered collection
 	table columns: spColumns.
 	"self applyResultFilter."
 	self updateDisplayedResults.
+	solver queryFinishedCallback: [ queryTitle label: queryDisplayModel title].	
+	queryTitle label: 'Running...'.
 	[ solver resolve ] fork
 ]
 
@@ -244,10 +246,8 @@ SeekerQueriesPresenter >> makeDefaultQuerySolverFor: aQueryDisplayModel [
 	solver := QSAdaptiveTimeBufferedResult newForQuery:
 		          aQueryDisplayModel query.
 	solver bufferReadyCallback: [ :b | 
-		aQueryDisplayModel timeToRun:
-			Time millisecondClockValue - startingTime.
+		aQueryDisplayModel timeToRun: solver timeToRun.
 		SeekerUIHelpers safeInvoke: [ self appendResults: b ] ].
-
 
 	^ solver
 ]

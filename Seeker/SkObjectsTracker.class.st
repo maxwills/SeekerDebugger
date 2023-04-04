@@ -133,7 +133,7 @@ SkObjectsTracker >> doPreStepProcessForMessageSends [
 { #category : #accessing }
 SkObjectsTracker >> enabled [
 
-	^ SeekerConfig default objectTrackingEnabled
+	^ enabled and: [SeekerConfig default objectTrackingEnabled]
 ]
 
 { #category : #initialization }
@@ -157,12 +157,14 @@ SkObjectsTracker >> getPersistentObjectByOid: aNumber [
 { #category : #initialization }
 SkObjectsTracker >> initialize [
 
+	super initialize.
 	oidsDictionary := WeakIdentityKeyDictionary new.
 	instantiatedLocalObjects := WeakIdentitySet new.
 	nonLocalObjects := WeakIdentitySet new.
 	persistentReverseOidsDictionary := Dictionary new.
 	nonPersistentReverseOidsDictionary := Dictionary new.
-	instantiationFlag := false
+	instantiationFlag := false.
+	oidRegisteredFlag :=false "Only used by UTTQAllObjects"
 ]
 
 { #category : #'as yet unclassified' }
@@ -223,6 +225,7 @@ SkObjectsTracker >> objectOidIsLocal: aNumber [
 
 { #category : #accessing }
 SkObjectsTracker >> oidRegisteredFlag [
+	"Note that this method and instance variable is only used by TTQAllObjectsQuery "
 
 	| val |
 	val := oidRegisteredFlag.
@@ -250,7 +253,7 @@ SkObjectsTracker >> registerObjectInstance: anObject withOid: aNumber [
 	oidsDictionary at: anObject ifAbsentPut: [ 
 		oidRegisteredFlag := true.
 		lastRegisteredOid := aNumber.
-		lastRegisteredObjectClassName := #anon."anObject class name." "Trying to fix metaclass instantiation problem"
+		lastRegisteredObjectClassName := anObject class name.
 		nonPersistentReverseOidsDictionary at: aNumber ifAbsentPut: [ anObject ].
 		persistentReverseOidsDictionary at: aNumber ifAbsentPut: [ anObject ].
 		aNumber ].

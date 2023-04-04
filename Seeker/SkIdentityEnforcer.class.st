@@ -23,7 +23,25 @@ SkIdentityEnforcer >> bindComponents [
 
 { #category : #accessing }
 SkIdentityEnforcer >> doPostStepProcess [
+	"Immediately after interpreting a bytecode, if it corresponds to an instantiation message primitive,
+we check if we have the 'same' element from a previous replay. If so, we make the new object to have the old one.
 
+(Side note, Instantiations are always local to the execution)
+"
+
+	objectsTracker instantiationFlag ifFalse: [ ^ self ].
+
+	^ self enforceObjectPreviousIdentity
+]
+
+{ #category : #accessing }
+SkIdentityEnforcer >> enabled [
+
+	^ enabled and: [ SeekerConfig default identityEnforcingEnabled ]
+]
+
+{ #category : #'as yet unclassified' }
+SkIdentityEnforcer >> enforceObjectPreviousIdentity [
 	"Immediately after interpreting a bytecode, if it corresponds to an instantiation message primitive,
 we check if we have the 'same' element from a previous replay. If so, we make the new object to have the old one.
 
@@ -31,20 +49,17 @@ we check if we have the 'same' element from a previous replay. If so, we make th
 "
 
 	| instancedObj previousIdentity |
-	objectsTracker instantiationFlag ifFalse: [ ^ self ].
-
 	instancedObj := currentState contextTop.
 	instancedObj isReadOnlyObject ifTrue: [ ^ false ].
 
-	previousIdentity := objectsTracker getPersistentObjectByOid: tracer bytecodeIndex - 1.
+	instancedObj class = Process ifTrue: [
+		^ UIManager default inform: 'SeekerNote: Process Instantiated' ].
+
+	previousIdentity := objectsTracker getPersistentObjectByOid:
+		                    tracer bytecodeIndex - 1.
 	previousIdentity ifNotNil: [ "There are exceptional cases where objects oid differ by +-1 (the previous identity is executedBytecode). Not sure yet why. The next if patches that."
-		(previousIdentity class = instancedObj class and: [ previousIdentity canBecome ]) ifTrue: [ "previousIdentity copyFrom: instancedObj.
+		(previousIdentity class = instancedObj class and: [
+			 previousIdentity canBecome ]) ifTrue: [ "previousIdentity copyFrom: instancedObj.
 "
 			previousIdentity becomeForward: instancedObj copyHash: true "pointers to previousIdentity point now to instancedObj,  and instancedObj has previousIdentity identityHash" ] ]
-]
-
-{ #category : #accessing }
-SkIdentityEnforcer >> enabled [
-
-	^ SeekerConfig default identityEnforcingEnabled
 ]

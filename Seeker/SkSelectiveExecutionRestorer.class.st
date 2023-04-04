@@ -537,7 +537,7 @@ SkSelectiveExecutionRestorer class >> undoBlockForObjectAtPut: csi [
 	| originalValue receiver index |
 	receiver := csi messageReceiver.
 	index := csi messageArgumentAt: 1.
-	originalValue := receiver at: index.
+	originalValue := receiver objectAt: index.
 	^ [ receiver objectAt: index put: originalValue ]
 ]
 
@@ -781,6 +781,7 @@ SkSelectiveExecutionRestorer >> doPreStepProcessForMessageSends [
 	method := currentState methodAboutToExecute.
 
 	method ifNil: [ ^ self ].
+	self isFlushCache ifTrue: [ ^ self handleFlushCache ].
 	objectsTracker instantiationFlag ifFalse: [
 		(currentState isWritingPrimitiveMessage and: [
 			 currentState messageReceiverIsLocalToExecution not ]) ifTrue: [
@@ -860,7 +861,8 @@ SkSelectiveExecutionRestorer >> restoreNonLocalChanges [
 	timeIndexedUndoBlocks reverseDo: [ :undoBlockAssoc | 
 		| undoBlock |
 		undoBlock := undoBlockAssoc value.
-		undoBlock value "execute the undo block" ]
+		undoBlock value "execute the undo block" ].
+	storedFlushCacheBlocks reverseDo: [ :b| b value ].
 ]
 
 { #category : #accessing }

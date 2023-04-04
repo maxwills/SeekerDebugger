@@ -83,7 +83,40 @@ SeekerDebugger class >> headlessDebugBlock: aBlock [
 				     ifTrue: [ Processor terminateRealActive ]
 				     ifFalse: [ Processor terminateActive ] ] asContext
 		     priority: Processor activePriority.
-	s := self headlessDebug: p offsetBytecodes: 2. "heuristic"
+	s := self headlessDebug: p offsetBytecodes: 2. "heuristic to enter the block"
+	^ s
+]
+
+{ #category : #'as yet unclassified' }
+SeekerDebugger class >> headlessDebugFor: receiver selector: selector withArgs: argsArray [
+
+	| p s |
+	p := Process
+		     forContext: [
+			     receiver perform: selector withArguments: argsArray.
+			     "IMPORTANT: Do not step over next line of code. See method comments for details"
+			     (Processor respondsTo: #terminateRealActive)
+				     ifTrue: [ Processor terminateRealActive ]
+				     ifFalse: [ Processor terminateActive ] ] asContext
+		     priority: Processor activePriority.
+	s := self headlessDebug: p offsetBytecodes: 4. "heuristic to enter the block"
+	s tracer mapper recordOnThisContext.
+	^ s
+]
+
+{ #category : #'as yet unclassified' }
+SeekerDebugger class >> headlessDebugForDoIt: aProcess [
+
+	| s |
+	s := self newFor: (SeekerDummyStDebugger new
+			      interruptedProcess: aProcess;
+			      yourself).
+	s tracer headless: true.
+	"completely unreliable approach."
+	s tracer stepper basicStepBytecode.
+	[ s tracer slowCurrentContext compiledCode isDoIt ] whileFalse: [ s tracer stepper basicStepBytecode. ].
+	s quickSetup.
+	s tracer mapper recordOnThisContext.
 	^ s
 ]
 
@@ -97,8 +130,8 @@ SeekerDebugger class >> newFor: aStDebugger [
 	updateCoordinator := DebuggerUpdateCoordinator new. "The coordinator is owned by the presenter"
 	updateCoordinator stDebugger: aStDebugger.
 
-	"Initialize the DebuggerStepperBase subclass to be injected in the seeker debugger"
-	stepper := SkQueryExperimentalTracer new. "SeekerGlobals instance defaultStepperClass new"
+	"Initialize the tracer to be injected in the seeker debugger"
+	stepper := SeekerGlobals instance defaultTracerClass new.
 	stepper stDebugger: aStDebugger.
 	stepper debuggedProcess: aStDebugger interruptedProcess. "aStDebugger session interruptedProcess"
 	stepper debuggerUpdateCoordinator: updateCoordinator.
@@ -167,6 +200,7 @@ SeekerDebugger >> evaluateExpression: aString inContext: aContext throws: anErro
 SeekerDebugger >> initialize [
 
 	self doUnsafeCode: [ 
+		[Smalltalk garbageCollectMost ] fork.
 		instanceNumberTotal ifNil: [ instanceNumberTotal := 0 ].
 		instanceNumberTotal := instanceNumberTotal + 1.
 		instanceNumber := instanceNumberTotal.
@@ -280,6 +314,25 @@ SeekerDebugger >> restart [
 	tracer timeTravelToUserStart
 ]
 
+{ #category : #controlling }
+SeekerDebugger >> resume [
+"used to resume the process. Time-traveling can't be used after this"
+	tracer debuggedProcess resume
+]
+
+{ #category : #starting }
+SeekerDebugger >> revert [
+
+	^ self restart
+]
+
+{ #category : #'as yet unclassified' }
+SeekerDebugger >> runReversibly [
+	"just an alias to match the asReversibleDo: dynamic"
+
+	^ self stepToEnd
+]
+
 { #category : #accessing }
 SeekerDebugger >> seekerDebuggerPresenter [
 
@@ -347,6 +400,12 @@ SeekerDebugger >> stepOver [
 SeekerDebugger >> stepToEnd [
 
 	tracer stepToEnd
+]
+
+{ #category : #'debugging actions' }
+SeekerDebugger >> terminate [
+
+	tracer debuggedProcess terminate
 ]
 
 { #category : #'as yet unclassified' }

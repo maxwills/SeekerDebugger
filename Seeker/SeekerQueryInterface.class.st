@@ -4,6 +4,12 @@ Class {
 	#category : #'Seeker-Interfaces'
 }
 
+{ #category : #'instance creation' }
+SeekerQueryInterface class >> newForBlock: aBlock [
+
+	^ self new tracer: (SeekerDebugger headlessDebugBlock: aBlock) tracer
+]
+
 { #category : #'as yet unclassified' }
 SeekerQueryInterface >> allAssignments [
 
@@ -22,4 +28,10 @@ SeekerQueryInterface >> allProgramStates [
 	^ UserTTQ from: tracer newProgramStates 
 		  select: [ :state | true ]
 		  collect: [ :state | state ]
+]
+
+{ #category : #'debugging actions' }
+SeekerQueryInterface >> terminate [
+
+tracer seeker terminate
 ]

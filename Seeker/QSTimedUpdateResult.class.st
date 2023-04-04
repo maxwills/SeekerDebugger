@@ -44,16 +44,18 @@ QSTimedUpdateResult >> resolve [
 	| currentBuffer shouldEmitBuffer |
 	shouldEmitBuffer := false.
 	currentBuffer := OrderedCollection new: 1000.
+	self setInitialTime.
 	self queryToSolve
 		do: [ :each | 
 			currentBuffer add: each.
 			shouldEmitBuffer ifTrue: [ 
+				timeToRun := self ellapsedTime.
 				bufferReadyCallback value: currentBuffer copy.
 				currentBuffer := currentBuffer removeAll ].
 			shouldEmitBuffer := false ]
 		withTimedCallback: [ shouldEmitBuffer := true ]
 		every: timespan.
-	currentBuffer ifNotEmpty: [ bufferReadyCallback value: currentBuffer ]
+	currentBuffer ifNotEmpty: [timeToRun := self ellapsedTime. bufferReadyCallback value: currentBuffer ]
 ]
 
 { #category : #accessing }

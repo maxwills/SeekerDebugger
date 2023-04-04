@@ -20,6 +20,14 @@ UTTQAllReadingsOfObject class >> queryFrom: programStates forOid: aNumber [
 				  endWith ]
 ]
 
+{ #category : #'instance creation' }
+UTTQAllReadingsOfObject class >> queryInteractivelyFrom: programStates [
+
+	| oid |
+	oid := SkInteractivelyQueryFromHelper requestOID.
+	^ self queryFrom: programStates forOid: oid
+]
+
 { #category : #'as yet unclassified' }
 UTTQAllReadingsOfObject >> ttqTitle [
 

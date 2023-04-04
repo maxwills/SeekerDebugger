@@ -203,6 +203,12 @@ SkSteppableTracer >> doesAnyContextsInTheStackStatisfies: aPredicateBlock maxDep
 	^ true
 ]
 
+{ #category : #accessing }
+SkSteppableTracer >> executedBytecode [
+
+	^ executedBytecode
+]
+
 { #category : #mapping }
 SkSteppableTracer >> executionProgress [
 
@@ -304,6 +310,14 @@ SkSteppableTracer >> onTracedStatementChanged [
 
 ]
 
+{ #category : #actions }
+SkSteppableTracer >> perform [
+
+	^ SeekerPerformInterface new
+		  tracer: self;
+		  yourself
+]
+
 { #category : #accessing }
 SkSteppableTracer >> preventNextTimeRestoration [
 
@@ -330,12 +344,11 @@ SkSteppableTracer >> recountExecutedBytecodes [
 
 { #category : #starting }
 SkSteppableTracer >> restartAtBytecodeOne [
-
 	"Restart a record and debug session from the stored startingContextForRecord"
 
 	"No UI updates."
 
-	executionMappper contextOfExecutedBytecodeOne ifNil: [ 
+	executionMappper contextOfExecutedBytecodeOne ifNil: [
 		^ self error: 'Must specify a starting context for record' ].
 	self clearSeekerCache.
 	currentState resetCacheTimeKey.
@@ -349,7 +362,8 @@ SkSteppableTracer >> restartAtBytecodeOne [
 	currentContext := self slowCurrentContext. "session interruptedProcess suspendedContext"
 	currentState updateCacheTimeKey.
 	self onTracedContextChanged.
-	self onTracedStatementChanged
+	self onTracedStatementChanged.
+	[Smalltalk garbageCollect "this is quite slow, but seems to be necessary to prevent some memory issues.. so I fork it"] fork 
 ]
 
 { #category : #'as yet unclassified' }

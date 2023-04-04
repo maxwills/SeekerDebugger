@@ -24,9 +24,11 @@ SkUnsupportedCases >> initialize [
 logMessage :=''.
 unsupportedClassesForInstantiation := {
 	"Semaphore."
+	Deprecation.
 	Process.
 } asIdentitySet.
 unsupportedClassesAsReceiver := {
+Deprecation.
 	"Semaphore."
 } asIdentitySet.
 unsupportedMethods := { 

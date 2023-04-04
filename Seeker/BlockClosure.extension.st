@@ -1,6 +1,17 @@
 Extension { #name : #BlockClosure }
 
 { #category : #'*Seeker' }
+BlockClosure >> asReversibleDo: aBlock [
+	"See test for examples (see senders of this method)"
+
+	| reversibleExecution |
+	reversibleExecution := (SeekerDebugger headlessDebugBlock: self)
+		                       yourself.
+	[ aBlock value: reversibleExecution ] ensure: [
+		reversibleExecution terminate ]
+]
+
+{ #category : #'*Seeker' }
 BlockClosure >> case: caseBlock do: doBlock [
 
 	^ self value: caseBlock value: doBlock
@@ -23,8 +34,41 @@ BlockClosure >> lockUntilTrue [
 { #category : #'*Seeker' }
 BlockClosure >> programQuery [
 "Experimental feature"
-	^ SeekerQueryInterface new tracer:
-		  (SeekerDebugger headlessDebugBlock: self) tracer
+	^ SeekerQueryInterface newForBlock: self
+]
+
+{ #category : #'*Seeker' }
+BlockClosure >> programQuery: queriesBlock [
+	"Experimental feature"
+
+	| sqi |
+	sqi := SeekerQueryInterface newForBlock: self.
+	[ queriesBlock value: sqi ] ensure: [ sqi terminate ]
+]
+
+{ #category : #'*Seeker' }
+BlockClosure >> programStates [
+	"experimental feature"
+
+	^ (SeekerDebugger headlessDebugBlock: self) tracer newProgramStates
+]
+
+{ #category : #'*Seeker' }
+BlockClosure >> programStates: block [
+	"experimental feature. cleaner notation"
+
+	| sk |
+	sk := SeekerDebugger headlessDebugBlock: self.
+	[ block value: sk tracer newProgramStates ] ensure: [ sk terminate ]
+]
+
+{ #category : #'*Seeker' }
+BlockClosure >> reversibleValue [
+	"experimental feature. Quite slow"
+
+	^ (SeekerDebugger headlessDebugBlock: self)
+		  stepToEnd;
+		  yourself
 ]
 
 { #category : #'*Seeker' }

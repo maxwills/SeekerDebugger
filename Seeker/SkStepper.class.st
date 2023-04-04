@@ -25,7 +25,8 @@ Class {
 		'skipFlag',
 		'emergencyStopFlag',
 		'systemCallsHandler',
-		'haltableMode'
+		'haltableMode',
+		'instructionStream'
 	],
 	#category : #'Seeker-Components'
 }
@@ -129,7 +130,8 @@ SkStepper >> initialize [
 	iteratingFlag := false.
 	skipFlag := false.
 	emergencyStopFlag := false.
-	haltableMode := true "used to handle halts".
+	haltableMode := true. "used to handle halts"
+	instructionStream := InstructionStream new.
 	self initializeSkippableMethods
 ]
 
@@ -306,7 +308,6 @@ SkStepper >> stepBytecodeUntilConditionIsTrue: aBlock [
 
 { #category : #'actions api' }
 SkStepper >> stepBytecodeUntilConditionIsTrue: aBlock doingAfterEachStep: afterStepBlock [
-
 	"returns true if the execution can be still be stepped. False otherwise. 
 	Since this method might be used inside loops, if a false return is detected, then the loop must be stopped, otherwise risking a endless loop.
 	normally, the method will return true if the stepping stopping condition (aBlock) is satisfied and the execution is not finished yet (more steps are available).
@@ -318,51 +319,44 @@ SkStepper >> stepBytecodeUntilConditionIsTrue: aBlock doingAfterEachStep: afterS
 	"(*)In Pharo 10, current date 2021/12 there is only one class encoder. So, we interpret instructions for it.
 This will fail if the code relies on more encoders (Need to test in Pharo 9.0)"
 
-	| instrStream currentContext debuggedProcess |
+	| currentContext debuggedProcess |
 	debuggedProcess := tracer debuggedProcess.
 	currentContext := tracer currentContext.
 	iteratingFlag := true.
 	[ "currentCtx := self currentContext."
-	instrStream := InstructionStream
-		               on: currentContext compiledCode
-		               pc: currentContext pc.
-	[ (emergencyStopFlag or: aBlock) or: [ self cantStep ] ] whileFalse: [ 
+	instructionStream
+		method: currentContext compiledCode
+		pc: currentContext pc.
+	[ (emergencyStopFlag or: aBlock) or: [ self cantStep ] ] whileFalse: [
 		| previousContext startingNode |
 		previousContext := currentContext.
 		startingNode := currentState node.
 		tracer doPreStepProcess.
 		"currentContext stepIntoQuickMethod: true."
-		currentContext := skipFlag
-			                  ifTrue: [ 
-				                  skipFlag := false.
-				                  debuggedProcess completeStep: currentContext ]
-			                  ifFalse: [ 
-				                  (systemCallsHandler enabled and: [ 
-					                   systemCallsHandler isSystemCall ])
-					                  ifTrue: [ 
-						                  systemCallsHandler handleSystemCall: [ 
-							                  self flag:
-								                  'the execution of the problematic method is considered as 1 bytecode for the moment'.
-							                  Processor activeProcess
-								                  evaluate: [ 
-								                  debuggedProcess completeStep: currentContext ]
-								                  onBehalfOf: debuggedProcess "instrStream interpretNextSistaV1InstructionFor: currentContext " ] ]
-					                  ifFalse: [ 
-						                  Processor activeProcess
-							                  evaluate: [ 
-							                  instrStream 
-								                  interpretNextSistaV1InstructionFor:
-								                  currentContext ]
-							                  onBehalfOf: debuggedProcess ] ].
+		currentContext := (systemCallsHandler enabled and: [
+			                   systemCallsHandler isSystemCall ])
+			                  ifTrue: [
+				                  systemCallsHandler handleSystemCall: [ "'the execution of the problematic method is considered as 1 bytecode for the moment'"
+					                  Processor activeProcess
+						                  evaluate: [
+						                  debuggedProcess completeStep: currentContext ]
+						                  onBehalfOf: debuggedProcess "instrStream interpretNextSistaV1InstructionFor: currentContext " ] ]
+			                  ifFalse: [
+				                  Processor activeProcess
+					                  evaluate: [
+						                  instructionStream
+							                  interpretNextSistaV1InstructionFor:
+							                  currentContext ]
+					                  onBehalfOf: debuggedProcess ].
 		tracer currentContext: currentContext.
-		instrStream
+		instructionStream
 			method: currentContext compiledCode
 			pc: currentContext pc.
 		debuggedProcess suspendedContext: currentContext.
 		tracer
 			doPostStepProcessWithPrevNode: startingNode
 			andPrevContext: previousContext.
-		afterStepBlock ifNotNil: afterStepBlock ] ] ensure: [ 
+		afterStepBlock ifNotNil: [ afterStepBlock value ] ] ] ensure: [
 		iteratingFlag := false ].
 	^ emergencyStopFlag
 		  ifTrue: [ self handleEmergencyStopFlag ]
