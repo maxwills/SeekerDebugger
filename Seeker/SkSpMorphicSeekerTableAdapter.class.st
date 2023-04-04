@@ -236,7 +236,7 @@ SkSpMorphicSeekerTableAdapter >> selectionChanged: ann [
 					  ifEmpty: [ 0 ]) } ]).
 
 	diff := ann newSelectedIndexes difference: ann oldSelectedIndexes.
-	(diff notEmpty and: [ self presenter isActiveOnSingleClick ])
+	(diff notEmpty "and: [ self presenter isActiveOnSingleClick ]")
 		ifTrue: [ self presenter doActivateAtIndex: diff last ].
 
 	ann newSelectedIndexes ifEmpty: [ selection unselectAll ]

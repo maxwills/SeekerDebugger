@@ -12,7 +12,8 @@ SkMooseQueryMenuBuilder >> domainCommands [
 	^ { 
 		  SkAllMooseQueryResultModificationsCommand.
 		  SkAllMooseGroupModificationsCommand.
-		  SkAllFamixReferenceNavigationsCommand }
+		  SkAllFamixAssociationsNavigationsCommand.
+		  SkAllFamixAssociationsNodesAccessesCommand }
 ]
 
 { #category : #accessing }

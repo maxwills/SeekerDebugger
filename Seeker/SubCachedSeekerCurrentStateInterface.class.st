@@ -108,6 +108,8 @@ Class {
 		'__cached_receiverTimeKey',
 		'__cached_valueToBeAssigned',
 		'__cached_valueToBeAssignedTimeKey',
+		'__cached_variable',
+		'__cached_variableTimeKey',
 		'__cached_variableValue',
 		'__cached_variableValueTimeKey',
 		'__cached_willCreateBlock',

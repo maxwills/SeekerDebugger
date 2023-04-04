@@ -864,6 +864,13 @@ SeekerCurrentStateInterface >> valueToBeAssigned [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerCurrentStateInterface >> variable [
+
+	<qwpSubCached>
+	^ self node variable
+]
+
+{ #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> variableValue [
 
 	<qwpSubCached>

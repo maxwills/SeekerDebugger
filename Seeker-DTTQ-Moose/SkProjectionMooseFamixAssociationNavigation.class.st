@@ -1,11 +1,11 @@
 Class {
-	#name : #SkProjectionMooseFamixReferenceNavigation,
+	#name : #SkProjectionMooseFamixAssociationNavigation,
 	#superclass : #SeekerProjectionFunction,
 	#category : #'Seeker-DTTQ-Moose-Functions'
 }
 
 { #category : #accessing }
-SkProjectionMooseFamixReferenceNavigation >> value: state [
+SkProjectionMooseFamixAssociationNavigation >> value: state [
 
 	| msgRcvrClass msgRcvr receiverOid args|
 	msgRcvr := state receiver.
