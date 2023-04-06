@@ -18,5 +18,5 @@ SkSelectionSymbolEquality >> value: aProgramState [
 		  or: [receiverClass == ByteString and: [ argumentClass == ByteSymbol ] ]
 
 
-	"or: [ aProgramState messageSelector = #asSymbol ] ]"
+
 ]
