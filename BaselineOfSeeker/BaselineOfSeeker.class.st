@@ -29,6 +29,7 @@ BaselineOfSeeker >> baseline: spec [
 			with: [ spec requires: #( 'EvaluatorDebugger-Base' 'AutoType' 'LanguageExtensions' 'MockFlex' 'QuickWrap') ];
 			package: 'Seeker-DomainSpecificQueries' with: [spec requires: #( 'Seeker' ) ];
 			package: 'Seeker-DTTQ-Moose' with: [spec requires: #( 'Seeker-DomainSpecificQueries' ) ];
+			package: 'Seeker-DTTQ-Microdown' with: [spec requires: #( 'Seeker-DomainSpecificQueries' ) ];		
 			package: 'Seeker-DTTQ-Announcements' with: [spec requires: #( 'Seeker-DomainSpecificQueries' ) ];
 			package: 'Seeker-Tests' with: [ ";
 			package: 'SeekerDebuggerSpy'
@@ -39,7 +40,13 @@ BaselineOfSeeker >> baseline: spec [
 			with: #( 'EvaluatorDebugger-Base' 'Seeker' 'Seeker-DomainSpecificQueries' 'Seeker-Tests' ).
 		spec
 			group: 'Moose'
-			with: #( 'EvaluatorDebugger-Base' 'Seeker' 'Seeker-DomainSpecificQueries' 'Seeker-DTTQ-Announcements' 'Seeker-DTTQ-Moose' ) ].
+			with: #( 'EvaluatorDebugger-Base' 'Seeker' 'Seeker-DomainSpecificQueries' 'Seeker-DTTQ-Announcements' 'Seeker-DTTQ-Moose' ).
+		spec
+			group: 'Microdown'
+			with: #( 'EvaluatorDebugger-Base' 'Seeker' 'Seeker-DomainSpecificQueries' 'Seeker-DTTQ-Announcements' 'Seeker-DTTQ-Microdown' ) ].
+		
+	
+
 ]
 
 { #category : #actions }
