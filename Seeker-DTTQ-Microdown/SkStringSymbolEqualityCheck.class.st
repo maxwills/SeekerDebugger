@@ -14,6 +14,35 @@ Class {
 }
 
 { #category : #'ston-core' }
+SkStringSymbolEqualityCheck class >> executedQuery [
+	"Warning: takes time to run and freezes the system meanwhile!"
+	<script>
+	| queryResult uDownTestClasses queryBlock |
+	queryResult := OrderedCollection new.
+	uDownTestClasses := 'Microdown-Tests' asPackage classes select: [ :c |
+		                    c isTestCase ].
+
+	uDownTestClasses do: [ :c |
+		| methods |
+		methods := c methods select: #isTestMethod.
+		methods do: [ :m |
+			| testInstance |
+			testInstance := c new.
+			testInstance setUp.
+			queryBlock := [
+			              [ testInstance perform: m selector ]
+				              on: Error
+				              do: [  ] ].
+
+			queryBlock programStates: [ :programStates |
+				queryResult add:
+					(TTQAllSymbolsWithStringsComparisonsToRewrite queryFrom:
+						 programStates) asOrderedCollection ] ] ].
+
+	^ (queryResult select: #notEmpty) flattened asSet inspect
+]
+
+{ #category : #'ston-core' }
 SkStringSymbolEqualityCheck class >> inspectStoredData [
 
 	<example>
