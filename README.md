@@ -38,26 +38,28 @@ myProgramBlock := [|a|
 "use this if your program correspond to the code of a block"
 SeekerDebugger headlessDebugBlock: myProgramBlock.
 
-"Try to avoid using auxiliary blocks (ie, avoid doing the following):
+"Try to avoid using auxiliary blocks (ie, avoid doing the following):"
 SeekerDebugger headlessDebugBlock: [ anObject theProgramMethod].
-For that case, it is better to use the following initialization."
+"For that case, it is better to use the following initialization."
 "Use this if your program corresponds to a call of a method:"
-SeekerDebugger headlessDebugFor: receiver selector: selector withArgs: argsArray
-"This way, the time-traveling step 1 corresponds to the first instruction of the method instead of the auxiliary block"
+ SeekerDebugger headlessDebugFor: receiver selector: selector withArgs: argsArray
+"This way, the time-traveling step 1 corresponds to the first
+ instruction of the method instead of the auxiliary block"
 
 "Optionally, although not recommended, unless you know what you do"
 SeekerDebugger headlessDebug: aProcess
 
 "API main methods"
-|sk| sk:=SeekerDebugger headlessDebugBlock: myProgramBlock.
+|sk| sk := SeekerDebugger headlessDebugBlock: myProgramBlock.
 sk restart. "reverts execution to step 1"
-sk timeTravelTo: stepNumber "Advances or reverses the execution until reaching the step number"
+sk timeTravelTo: stepNumber. "Advances or reverses the execution until reaching the step number"
 sk resume. "ends the time-traveling debugging session by resuming the debugged process"
 sk terminate. "terminates the debugged process"
 sk step. "advances debugged execution by one bytecode"
 sk stepNumber. "returns the current step number."
 sk stepToEnd. "executes every bytecode of the program, until it cannot advance anymore"
-sk programStates. "An iterable object representing all the states of the debugged program. Used mostly for queries"
+sk programStates. "An iterable object representing
+ all the states of the debugged program. Used mostly for queries"
 ```
 
 ## Time-Traveling Queries Usage / Quick reference:
@@ -69,21 +71,26 @@ Developers can use the scripting area to write their own program queries.
 
 ### The Query Notation
 
-The Query notation is a general purpose notation to write queries over collections (Any collection, not just the ones related to executions). It uses standandar selection and collection semantics, however, the only difference is that selection and collection are lazily evaluated (This should be of no concern when writing the queries. 
-This is only mentioned here, because it is the factor that makes possible to query the execution like this (ie, an eager evaluation select and collect would not work)).
+The Query notation is a general purpose notation to write queries over collections (Any collection, not just the ones related to executions). 
+It uses standandar selection and collection semantics, however, the only difference is that selection and collection are lazily evaluated (This should be of no concern when writing the queries. 
+
+***This is just a regular query, and not a Time-Traveling Query (TTQ). ***
 
 **Example**
 
 ```Smalltalk
 "In the scripting presenter, paste the following code:"
 
-"This query obtains an OrderedCollection containing the list of all the methods of any step that corresponds to a message send to any method with the selector #add:".
+"This query obtains an OrderedCollection containing the list of all the methods
+ of any step that corresponds to a message send to any method with the selector #add:".
 
-(UserTTQ from: seeker programStates "or just use the workspace variable: programStates"
+(Query from: seeker programStates "or just use the workspace variable: programStates"
     select: [ :state | state isMessageSend and: [ state node selector = #add: ] ]
     collect: [ :state | state methodAboutToExecute ]) asOrderedCollection.
     
-"Reuse predefined UserTTQs using the queryFrom: method instead of from: (so the selection is applied additively instead of overridding it)"
+"Reuse predefined queries (subclasses of UserTTQ) using the #queryFrom: method
+ instead of #from:. This way, the selection is applied additively instead of overridding the predefined one.
+For example: "
 ((UTTQAllReadings queryFrom: programStates) select: [ :state| state node variable name = #each ]) asOrderedCollection.
 ```
 
@@ -125,7 +132,7 @@ Queries and TTQs can be composed. Ie, they can be used as a data source for othe
 ```Smalltalk
 
 | query1 query2 |
-   query1 := (Query from: seeker programStates "or just use the workspace variable: programStates"
+   query1 := (Query from: seeker programStates "or just use the workspace variable #programStates"
     select: [ :state | state isMessageSend and: [ state node selector = #add: ] ]
     collect: [ :state | state methodAboutToExecute ]).
     
@@ -177,7 +184,8 @@ myBlock programStates: [ :programStates |
   queryRes := (TTQAllMessageSends queryFrom: programStates) asOrderedCollection.
   "You could run other queries if needed"
   queryRes inspect ].
-  "Once the programStates scope is escaped, the underlying time-traveling debugging session is automatically terminated
+  "Once the programStates scope is escaped, the underlying time-traveling
+   debugging session is automatically terminated."
 ```
 #### C. Alternative (Also directly using a block's programStates)
 This is similar to the previous one in the sense that it hides the debugger, and it is simpler, but the problem is that the debugged process is not terminated. If you use it, remember to terminate the debugger.
