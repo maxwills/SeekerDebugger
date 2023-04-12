@@ -48,6 +48,51 @@ Class {
 	#category : #'Seeker-Core'
 }
 
+{ #category : #'instance creation' }
+SeekerDebugger class >> debugBlock: aBlock [
+	"Starts a UI-based debug session with Seeker debugger, and returns the debugger instance"
+
+	| p suspendedContext sk2 |
+	p := aBlock newProcess.
+	p
+		step;
+		step.
+	SeekerGlobals instance watchProcess: p.
+	suspendedContext := p suspendedContext.
+
+	(OupsDebugRequest newForContext: suspendedContext)
+		process: p;
+		compiledMethod: suspendedContext method;
+		label: 'debug it';
+		submit.
+	UIManager default currentWorld doOneCycleNow.
+	sk2 := SeekerDebugger findUIDebuggerInstanceForProcess: p.
+	sk2 tracer mapper recordOnThisContext.
+	^ sk2
+]
+
+{ #category : #'as yet unclassified' }
+SeekerDebugger class >> findHeadlessDebuggerInstanceForProcess: aProcess [
+	"returns the last instance debugging the process"
+
+	^ (self allInstances select: [ :s |
+		   s tracer debuggedProcess == aProcess and: [
+			   aProcess tracer headless ] ])
+		  ifNotEmpty: [ :l | l last ]
+		  ifEmpty: [ nil ]
+]
+
+{ #category : #'as yet unclassified' }
+SeekerDebugger class >> findUIDebuggerInstanceForProcess: aProcess [
+	"returns the last instance debugging the process"
+
+	^ (self allInstances select: [ :s |
+		   s tracer debuggedProcess == aProcess and: [
+			   s tracer headless not ] ])
+		  ifNotEmpty: [ :l | l last ]
+		  ifEmpty: [ nil ]
+]
+
 { #category : #'as yet unclassified' }
 SeekerDebugger class >> headlessDebug: aProcess [
 
