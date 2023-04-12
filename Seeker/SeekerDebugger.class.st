@@ -66,7 +66,7 @@ SeekerDebugger class >> debugBlock: aBlock [
 		label: 'debug it';
 		submit.
 	UIManager default currentWorld doOneCycleNow.
-	sk2 := SeekerDebugger findUIDebuggerInstanceForProcess: p.
+	sk2 := self findUIDebuggerInstanceForProcess: p.
 	sk2 tracer mapper recordOnThisContext.
 	^ sk2
 ]
@@ -86,11 +86,9 @@ SeekerDebugger class >> findHeadlessDebuggerInstanceForProcess: aProcess [
 SeekerDebugger class >> findUIDebuggerInstanceForProcess: aProcess [
 	"returns the last instance debugging the process"
 
-	^ (self allInstances select: [ :s |
+	^ (self allInstances select: [ :s | s tracer isNotNil and: [
 		   s tracer debuggedProcess == aProcess and: [
-			   s tracer headless not ] ])
-		  ifNotEmpty: [ :l | l last ]
-		  ifEmpty: [ nil ]
+			   s tracer headless not ]] ]) lastOrNil
 ]
 
 { #category : #'as yet unclassified' }
@@ -197,9 +195,48 @@ SeekerDebugger class >> nextInstanceID [
 	^ instanceNumberTotal + 1
 ]
 
+{ #category : #'as yet unclassified' }
+SeekerDebugger >> asUIBasedSession [
+	"takes a headless mode session, and continues it as UI based with the StDebugger"
+
+	| p suspendedContext sk2 pres st|
+	tracer headless ifFalse: [ ^ self ].
+
+	p := tracer debuggedProcess.
+	SeekerGlobals instance watchProcess: p.
+	suspendedContext := p suspendedContext.
+
+	(OupsDebugRequest newForContext: suspendedContext)
+		process: p;
+		compiledMethod: suspendedContext method;
+		label: 'debug it';
+		submit.
+	UIManager default currentWorld doOneCycleNow.
+	sk2 := self class findUIDebuggerInstanceForProcess: p.
+	st := sk2 stDebugger.
+	pres := SeekerDebuggerPresenter findPresenterInstanceFor: sk2.
+	"Make self not headless and replace the SeekerDebugger instantiated from opening the StDebugger"
+	self tracer headless: false.
+	pres seekerDebugger: self.
+	self setStDebugger: st andCoordinator: sk2 debuggerUpdateCoordinator.
+	sk2 deinitialize.
+	^ self
+]
+
 { #category : #'accessing context' }
 SeekerDebugger >> currentContext [
 ^tracer currentContext
+]
+
+{ #category : #'as yet unclassified' }
+SeekerDebugger >> deinitialize [
+	"Sets instance variables to nil. Used to prevent further manipulations of the debugged process by this instance of the debugger, and it is used when granting ownership of the debugger process to another debugger instance"
+
+	stDebugger := nil.
+	tracer := nil.
+	seekerDebuggerPresenter := nil.
+	instanceNumber := nil.
+	localToExecutionTime := nil
 ]
 
 { #category : #'as yet unclassified' }
@@ -399,6 +436,19 @@ SeekerDebugger >> seekerDebuggerPresenter: anObject [
 { #category : #initialization }
 SeekerDebugger >> setSelectedContextAsStartingPoint: aContext [
 	tracer setSelectedContextAsStartingPoint: aContext
+]
+
+{ #category : #initialization }
+SeekerDebugger >> setStDebugger: aStDebugger andCoordinator: updateCoordinator [
+
+	tracer stDebugger: aStDebugger.
+	tracer debuggedProcess: aStDebugger interruptedProcess. "aStDebugger session interruptedProcess"
+	tracer debuggerUpdateCoordinator: updateCoordinator.
+	updateCoordinator tracer: tracer.
+
+	stDebugger := aStDebugger.
+	debuggerUpdateCoordinator := updateCoordinator.
+	tracer seeker: self
 ]
 
 { #category : #accessing }

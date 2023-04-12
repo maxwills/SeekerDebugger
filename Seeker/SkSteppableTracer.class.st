@@ -151,7 +151,6 @@ SkSteppableTracer >> doAsUnhaltable: aBlock [
 
 { #category : #'as yet unclassified' }
 SkSteppableTracer >> doMappingIfCorresponds [
-
 	"Short decription: Was the StDebugger opened with the intention of using seeker? if true, map the execution"
 
 	"This method is called to perform the mapping of an execution when the StDebugger is opened. The reason is that the StDebugger can be opened in any of these scenarios
@@ -163,10 +162,13 @@ and therefore, we need to map the execution).
 Note that for the other SeekerDebugging scenarios, the StDebugger is always opened with the 
 intent of using seeker. So the process is not placed in the watchlist.
 "
-	executionMappper isTestCaseOrDoIT ifFalse: [ executionMappper quickMap "always map these" ]
+
+	executionMappper isMapped ifTrue: [ ^ self ].
+	executionMappper isTestCaseOrDoIT
+		ifFalse: [ executionMappper quickMap "always map these" ]
 		ifTrue: [ "map only in it is a watchedProcess"
-			(SeekerGlobals instance isWatchedProcess: debuggedProcess) ifTrue: [ 
-				[ executionMappper quickMap ] ensure: [ 
+			(SeekerGlobals instance isWatchedProcess: debuggedProcess) ifTrue: [
+				[ executionMappper quickMap ] ensure: [
 					SeekerGlobals instance stopWatchingProcess: debuggedProcess ] ] ]
 ]
 
