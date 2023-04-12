@@ -50,6 +50,13 @@ SeekerDebuggerPresenter class >> displayOrder: anInteger [
 	debuggerExtensionDisplayOrder := anInteger
 ]
 
+{ #category : #'as yet unclassified' }
+SeekerDebuggerPresenter class >> findPresenterInstanceFor: aSeekerDebugger [
+
+	^ (self allInstances select: [ :p |
+		   p seekerDebugger == aSeekerDebugger ]) lastOrNil
+]
+
 { #category : #'debugger extension' }
 SeekerDebuggerPresenter class >> showInDebugger [
 	^showDebuggerExtension ifNil: [showDebuggerExtension := false]
