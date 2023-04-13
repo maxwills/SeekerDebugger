@@ -20,7 +20,7 @@ SkProjectionMessageSends >> value: state [
 		  messageReceiver: msgRcvr;
 		  messageReceiverOid: receiverOid;
 		  formattedMessageReceiver: (msgRcvrNode isVariable
-				   ifTrue: [ 
+				   slowIfTrue:  [ 
 					   msgRcvrNode variable name , ' (' , msgRcvrClass asString , ')' ]
 				   ifFalse: [ 
 					   [ msgRcvr asString , ' (' , msgRcvrNode sourceCode , ')' ] 
