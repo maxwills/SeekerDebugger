@@ -140,7 +140,11 @@ SkSystemCallsHandler >> handleSystemCall: interpretationBlock [
 		ifTrue: [ "The systemCall was already executed before. So use the stored value."
 			self flag:
 				'should check if forceInterpretation is true or false here. For now, we assume it is, so the execution advances normally'.
-			nextContext := interpretationBlock value.
+			"nextContext := interpretationBlock value."
+			"alternativelly, just skip the call"
+			nextContext := currentState context."interpretationBlock value."
+	"We just skip it"
+	nextContext pc: nextContext pc+1.
 			"inject the stored value in the return"
 			nextContext at: nextContext stackPtr put: storedReturnValue ].
 	^ nextContext
@@ -164,9 +168,11 @@ SkSystemCallsHandler >> initialize [
 	systemCalls add: Time class >> #primUTCMicrosecondsClock.
 	systemCalls add: DelayMicrosecondTicker >> #nowTick.
 	systemCalls add: DelayMillisecondTicker >> #nowTick.
-	
-	
-	
+
+	"We include all methods of WorldMorph, since they seem problematic"
+	WorldMorph methodDictionary valuesDo: [ :m | systemCalls add: m ].
+	WorldMorph class methodDictionary valuesDo: [ :m | systemCalls add: m ].
+
 	"next methods are listed as a workaround. To be properly handled in the future"
 	"Note that critical might call other system calls inside. Then, a deterministic replay should log those systems calls. However, at which timestamp? and how to enforce the system call (most likely a signal) that should happen at that point?"
 	"systemCalls add: Mutex >> #critical:."

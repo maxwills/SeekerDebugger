@@ -102,6 +102,12 @@ Query class >> from: aSeekerDataSet select: aPredicateBlock collect: aProjection
 		  yourself
 ]
 
+{ #category : #'instance creation' }
+Query class >> from: aSeekerDataSet select: aPredicateBlock collectAs: stateAndOutputBlock [
+
+	^ (self from: aSeekerDataSet select:aPredicateBlock) collectAs: stateAndOutputBlock
+]
+
 { #category : #accessing }
 Query class >> identityProjection [
 
@@ -288,6 +294,20 @@ Query >> collect: aBlock [
 		  (BlockComposer
 			   projectionCompositionOf: projectionFunction
 			   and: aBlock)
+]
+
+{ #category : #enumerating }
+Query >> collectAs: stateAndOutputBlock [
+	"This syntax hides the Autotype declaration from the user, and provides an cleaner declaration.
+See select:collect:
+"
+	| t |
+	t := AutoType new.
+	^ self collect: [ :state |
+		  | item |
+		  item := t newWith.
+		  stateAndOutputBlock value: state value: item.
+		  item endWith ]
 ]
 
 { #category : #enumerating }
@@ -701,6 +721,25 @@ Query >> select: aBlock [
 Query >> select: aBlock collect: aProjectionBlock [
 
 	^ (self select: aBlock) collect: aProjectionBlock
+]
+
+{ #category : #enumerating }
+Query >> select: aBlock collectAs: stateAndOutputBlock [
+"This syntax hides the Autotype declaration from the user, and provides an cleaner declaration.
+ For example: 
+((Query from: programStates) 
+  select: [ :state| state isAssignment ]
+  collectAs: [:state :output| output  
+	bytecodeIndex: state bytecodeIndex;
+	variableName: state assignmentVariableName ])
+"
+	| t |
+	t := AutoType new.
+	^ (self select: aBlock) collect: [ :state |
+		  | item |
+		  item := t newWith.
+		  stateAndOutputBlock value: state value: item.
+		  item endWith ]
 ]
 
 { #category : #'as yet unclassified' }
