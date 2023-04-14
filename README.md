@@ -107,7 +107,6 @@ To transform a Query into a Time-Traveling Query (with integration in the UI)
 2. Use **Autotype** for collected items.
 3. Include the **#bytecodeIndex** key as in this example:
 
-
 ```Smalltalk
 "In the scripting presenter, paste the following code:"
 | autoResultType |
@@ -124,6 +123,24 @@ To transform a Query into a Time-Traveling Query (with integration in the UI)
 ```
 Then select all the code, and **do it** (right click, and select **Do it** from the context menu, or simply press **cmd+d**). 
 The query should be displayed in the query tab of Seeker (you need to manually change to the tab at the moment).
+
+***UPDATE APRIL 2023***
+
+#### New collection style - #collectAs:
+This new collection style hides AutoType, allowing a cleaner query definition. 
+For example, the same code of the previous example, if using the new #collectAs: method, is writen as follows:
+
+```Smalltalk
+(UserTTQ from: seeker programStates
+  select: [ :state | state isMessageSend and: [ state node selector = #add: ] ]
+  collectAs: [ :state :res| 
+    res bytecodeIndex: state bytecodeIndex;
+        methodClass: state methodAboutToExecute methodClass name;
+        messageSelector: state methodAboutToExecute selector;
+        newColumnASD: 123 ]) showInSeeker
+```
+The Autotype instantiation and management is performed by the `#collectAs:` method. 
+The two collection styles are equivalent.
 
 ### Queries (and TTQ) Composition.
 
