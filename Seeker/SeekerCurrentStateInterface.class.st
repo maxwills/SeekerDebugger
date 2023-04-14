@@ -300,6 +300,15 @@ SeekerCurrentStateInterface >> fieldNames [
 	^ { #dynamic }
 ]
 
+{ #category : #testing }
+SeekerCurrentStateInterface >> implicitReadInstanceVariable [
+	"Assumes it is a quick accessor"
+
+	self methodAboutToExecute ast allChildren do: [ :n |
+		n isReturn ifTrue: [ ^ n value variable ] ].
+	^ nil
+]
+
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> initialPC [
 
@@ -392,6 +401,23 @@ SeekerCurrentStateInterface >> isFalseIfNilSend [
 SeekerCurrentStateInterface >> isFirstBytecodeOfMethod [
 <superCached>
 	^self contextPC = self initialPC
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> isImplicitReadingOfInstanceVariable [
+	"Occurs when an optimized accessor is executed (and no context is pushed to the stack)"
+
+	| m returnNodes retnode |
+	self isMessageSend ifFalse: [ ^ false ].
+	m := self methodAboutToExecute.
+	m isQuick ifFalse: [ ^ false ].
+	returnNodes := m ast allChildren select: [ :n | n isReturn ].
+	returnNodes ifEmpty: [ ^false "I guess in this case self is returned"].
+	returnNodes size > 1 ifTrue: [ "This should never be true I guess"
+		^ false ].
+	retnode := returnNodes first.
+	retnode value isVariable ifFalse: [ ^ false ].
+	^ retnode value isInstanceVariable
 ]
 
 { #category : #testing }
@@ -649,6 +675,13 @@ SeekerCurrentStateInterface >> methodSelector [
 ]
 
 { #category : #testing }
+SeekerCurrentStateInterface >> nameOfImplicitReadInstanceVariable [
+	"Assumes it is a quick accessor"
+
+	^ self implicitReadInstanceVariable name
+]
+
+{ #category : #testing }
 SeekerCurrentStateInterface >> newMethod [
 
 	<qwpSubCached>
@@ -852,6 +885,14 @@ SeekerCurrentStateInterface >> updateCacheTimeKey [
 	"THIS NEEDS TO BE DEFINED. OTHERWISE THE DEBUGGER WILL CRASH WHEN UNINSTALLING THE WRAPPERS!"
 
 	^ self
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> valueOfImplicitReadInstanceVariable [
+	"Assumes it is a quick accessor"
+
+	^ self messageReceiver readSlotNamed:
+		  self nameOfImplicitReadInstanceVariable
 ]
 
 { #category : #'as yet unclassified' }

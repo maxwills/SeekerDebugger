@@ -23,7 +23,7 @@ UTTQAllWritingsOnObject class >> queryFrom: programStates forOid: aNumber [
 			  autoType newWith
 				  bytecodeIndex: state bytecodeIndex;
 				  oid: aNumber;
-				  opType:  ((state isAssignmentOfInstanceVariable) slowIfTrue: [#assignment] ifFalse:[#writtingPrimitive] );
+				  opType:  (state isAssignmentOfInstanceVariable forceTrueOrFalse ifTrue: [#assignment] ifFalse:[#writtingPrimitive] );
 				  inNode: state node parent;
 				  source: state node parent sourceCode;
 				  endWith ]
