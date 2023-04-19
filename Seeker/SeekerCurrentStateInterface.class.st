@@ -410,9 +410,11 @@ SeekerCurrentStateInterface >> isImplicitReadingOfInstanceVariable [
 	| m returnNodes retnode |
 	self isMessageSend ifFalse: [ ^ false ].
 	m := self methodAboutToExecute.
+	m ifNil: [ ^ false ].
 	m isQuick ifFalse: [ ^ false ].
 	returnNodes := m ast allChildren select: [ :n | n isReturn ].
-	returnNodes ifEmpty: [ ^false "I guess in this case self is returned"].
+	returnNodes ifEmpty: [
+		^ false "I guess in this case self is returned" ].
 	returnNodes size > 1 ifTrue: [ "This should never be true I guess"
 		^ false ].
 	retnode := returnNodes first.
