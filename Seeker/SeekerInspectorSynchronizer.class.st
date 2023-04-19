@@ -49,7 +49,7 @@ SeekerInspectorSynchronizer >> getSeekerAndOidForInspector: aStInspector [
 { #category : #initialization }
 SeekerInspectorSynchronizer >> initialize [
 
-	inspectorAndSeekerNOidsDictionary := IdentityDictionary new.
+	inspectorAndSeekerNOidsDictionary := WeakIdentityKeyDictionary new.
 	showOutOfTimeAsNil := true
 ]
 

@@ -204,7 +204,7 @@ SkExecutionMapper >> recordOnThisContext [
 	self
 		automapForCustomScenario: currentState context
 		withEndingCondition: endCondition.
-	tracer seeker inform: 'New execution parameters set.'
+	"tracer seeker inform: 'New execution parameters set.'"
 ]
 
 { #category : #'as yet unclassified' }

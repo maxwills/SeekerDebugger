@@ -215,6 +215,7 @@ SeekerDebugger >> asUIBasedSession [
 	sk2 := self class findUIDebuggerInstanceForProcess: p.
 	st := sk2 stDebugger.
 	pres := SeekerDebuggerPresenter findPresenterInstanceFor: sk2.
+	seekerDebuggerPresenter := pres.
 	"Make self not headless and replace the SeekerDebugger instantiated from opening the StDebugger"
 	self tracer headless: false.
 	pres seekerDebugger: self.
@@ -442,6 +443,7 @@ SeekerDebugger >> setSelectedContextAsStartingPoint: aContext [
 SeekerDebugger >> setStDebugger: aStDebugger andCoordinator: updateCoordinator [
 
 	tracer stDebugger: aStDebugger.
+	tracer session: aStDebugger session.
 	tracer debuggedProcess: aStDebugger interruptedProcess. "aStDebugger session interruptedProcess"
 	tracer debuggerUpdateCoordinator: updateCoordinator.
 	updateCoordinator tracer: tracer.
