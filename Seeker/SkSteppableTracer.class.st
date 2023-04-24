@@ -219,6 +219,14 @@ SkSteppableTracer >> executionProgress [
 	^ (100.0 * executedBytecode / maxExecutedBytecode) asFloat
 ]
 
+{ #category : #'as yet unclassified' }
+SkSteppableTracer >> forceRestartOnTimeTravel [
+	"Method used for dbugging purposes. In particular, used to hunt for NDS. In such case, the method should return true. 
+	Returns false otherwise"
+
+	^ false
+]
+
 { #category : #'updating - session' }
 SkSteppableTracer >> forceSessionUpdate [
 
@@ -549,29 +557,29 @@ SkSteppableTracer >> stepToEnd [
 { #category : #'as yet unclassified' }
 SkSteppableTracer >> timeTravelToBytecodeIndex: aNumber [
 
-	self doAndUpdateSessionAfter: [ 
-		aNumber = executedBytecode ifTrue: [ ^ self ].
-		self doAsUnhaltable: [ 
-			aNumber > executedBytecode
-				ifTrue: [ "no need to restart"
-					| targetTraceTime |
-					targetTraceTime := aNumber asExecutedBytecodeTraceTime.
-					self doAsUnhaltable: [ 
-						self stepBytecodeUntilConditionIsTrue: [ 
-							self traceTime @>= targetTraceTime ] ] ]
-				ifFalse: [ 
-				self timeTravelToTraceTime: aNumber asExecutedBytecodeTraceTime ] ] ]
+	self doAndUpdateSessionAfter: [ "Reverses the execution only if the target time is in the past.
+		In this case, if the target time is the same as current, we still reverse it.
+		Reversing and replaying is always useful to find NDS, as the stepnumber of events will Change. So, while chasing NDS, it is a good idea to always restartAtBytecodeOne.
+		This is a mostly a debugging decision and it is usefu"
+		(self forceRestartOnTimeTravel or: [ executedBytecode >= aNumber ])
+			ifTrue: [ self restartAtBytecodeOne ].
+		self doAsUnhaltable: [
+			self stepBytecodeUntilConditionIsTrue: [
+				executedBytecode >= aNumber ] ] ]
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #'actions api' }
 SkSteppableTracer >> timeTravelToTraceTime: aTraceTime [
+	"Advances or reverses the complete execution to the target traceTime"
 
-	"Reverses the complete execution to the target traceTime"
-
-	self doAndUpdateSessionAfter: [ 
-		self restartAtBytecodeOne.
-		self doAsUnhaltable: [ 
-			self stepBytecodeUntilConditionIsTrue: [ 
+	self doAndUpdateSessionAfter: [ "Reverses the execution only if the target time is in the past.
+		In this case, if the target time is the same as current, we still reverse it.
+		Reversing and replaying is always useful to find NDS, as the stepnumber of events will Change. So, while chasing NDS, it is a good idea to always restartAtBytecodeOne.
+		This is a mostly a debugging decision and it is usefu"
+		(self forceRestartOnTimeTravel or: [ self traceTime @>= aTraceTime ])
+			ifTrue: [ self restartAtBytecodeOne ].
+		self doAsUnhaltable: [
+			self stepBytecodeUntilConditionIsTrue: [
 				self traceTime @>= aTraceTime ] ] ]
 ]
 
