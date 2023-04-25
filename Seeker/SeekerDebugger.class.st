@@ -40,7 +40,8 @@ Class {
 		'plugins',
 		'seekerDebuggerPresenter',
 		'instanceNumber',
-		'localToExecutionTime'
+		'localToExecutionTime',
+		'deinitialized'
 	],
 	#classVars : [
 		'instanceNumberTotal'
@@ -233,6 +234,8 @@ SeekerDebugger >> currentContext [
 SeekerDebugger >> deinitialize [
 	"Sets instance variables to nil. Used to prevent further manipulations of the debugged process by this instance of the debugger, and it is used when granting ownership of the debugger process to another debugger instance"
 
+	deinitialized ifTrue: [ ^ self ].
+	deinitialized := true.
 	stDebugger := nil.
 	seekerDebuggerPresenter := nil.
 	instanceNumber := nil.
@@ -284,7 +287,7 @@ SeekerDebugger >> evaluateExpression: aString inContext: aContext throws: anErro
 
 { #category : #initialization }
 SeekerDebugger >> initialize [
-
+	deinitialized :=false.
 	self doUnsafeCode: [ 
 		[Smalltalk garbageCollectMost ] fork.
 		instanceNumberTotal ifNil: [ instanceNumberTotal := 0 ].

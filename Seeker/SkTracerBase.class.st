@@ -30,7 +30,8 @@ Class {
 		'systemCallsHandler',
 		'headless',
 		'programTimestampToLocal',
-		'localTimestampToProgram'
+		'localTimestampToProgram',
+		'deinitialized'
 	],
 	#category : #'Seeker-Components'
 }
@@ -81,6 +82,8 @@ SkTracerBase >> componentsLateInitialization [
 SkTracerBase >> deinitialize [
 
 	| deinit |
+	deinitialized ifTrue: [ ^ self ].
+	deinitialized := true.
 	deinit := [ :r |
 	          r deRef tryPerform: #deinitialize.
 	          r << nil ].
@@ -160,7 +163,7 @@ SkTracerBase >> inMouseButtonEventInstrumentationFlag: anObject [
 
 { #category : #initialization }
 SkTracerBase >> initialize [
-
+	deinitialized :=false.
 	isSessionActive := false.
 	headless := false.
 	programTimestampToLocal := Dictionary new "For the moment, this dictionary is directly handled by SeekerExecutor when needed".
