@@ -292,3 +292,11 @@ Object >> seekerCache [
 
 	^ SeekerCache seekerCacheObjectOf: self
 ]
+
+{ #category : #'*Seeker' }
+Object >> tryPerform: selector [
+
+	(self respondsTo: selector ) ifFalse: [ ^ false ].
+	self perform: selector.
+	^ true
+]

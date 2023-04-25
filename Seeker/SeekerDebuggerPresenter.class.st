@@ -99,6 +99,13 @@ SeekerDebuggerPresenter >> debuggerUpdateCoordinator: anObject [
 	debuggerUpdateCoordinator := anObject
 ]
 
+{ #category : #'as yet unclassified' }
+SeekerDebuggerPresenter >> deinitialize [
+
+	seekerDebugger := nil.
+	queriesPresenter := nil
+]
+
 { #category : #'debugger extension' }
 SeekerDebuggerPresenter >> displayOrder [
 	^self class displayOrder

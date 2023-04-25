@@ -234,10 +234,13 @@ SeekerDebugger >> deinitialize [
 	"Sets instance variables to nil. Used to prevent further manipulations of the debugged process by this instance of the debugger, and it is used when granting ownership of the debugger process to another debugger instance"
 
 	stDebugger := nil.
-	tracer := nil.
 	seekerDebuggerPresenter := nil.
 	instanceNumber := nil.
-	localToExecutionTime := nil
+	localToExecutionTime := nil.
+	debuggerUpdateCoordinator ifNotNil: [ :o | o deinitialize ].
+	tracer ifNotNil: [ :o | tracer deinitialize ].
+	debuggerUpdateCoordinator := nil.
+	tracer := nil
 ]
 
 { #category : #'as yet unclassified' }

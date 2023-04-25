@@ -73,21 +73,23 @@ SeekerInspectorSynchronizer >> invalidateInspectorFor: tracer [
 
 { #category : #'as yet unclassified' }
 SeekerInspectorSynchronizer >> searchNewInspectorsFor: tracer [
-
 	"Add entries to the inspectors dictionary if a new one is detected"
 
-	StInspector allInstances do: [ :each | 
-		(inspectorAndSeekerNOidsDictionary includesKey: each) ifFalse: [ 
+	tracer isSessionActive ifFalse: [ ^ self ].
+	StInspector allInstances do: [ :each |
+		(inspectorAndSeekerNOidsDictionary includesKey: each) ifFalse: [
 			| obj |
 			obj := each model inspectedObject.
-			obj ifNotNil: [ 
+			obj ifNotNil: [
 				| oid |
 				oid := tracer getOidOf: obj.
-				oid ifNotNil: [ 
-					inspectorAndSeekerNOidsDictionary at: each put: (SeekerAndOidPair new
-							 seeker: tracer;
-							 oid: oid;
-							 yourself) ] ] ] ]
+				oid ifNotNil: [
+					inspectorAndSeekerNOidsDictionary
+						at: each
+						put: (SeekerAndOidPair new
+								 seeker: tracer;
+								 oid: oid;
+								 yourself) ] ] ] ]
 ]
 
 { #category : #accessing }
