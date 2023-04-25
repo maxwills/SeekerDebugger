@@ -22,7 +22,10 @@ SeekerStDebuggerDebuggerActionModel >> clearDebugSession [
 	[ session interruptedProcess resume ]
 		on: Error
 		do: [ :e | "hide the error" ].
-	tracer ifNotNil: [ tracer notifySessionEnd ].
+	tracer ifNotNil: [
+		tracer notifySessionEnd.
+		tracer deinitialize.
+		tracer := nil ].
 	super clearDebugSession
 ]
 
@@ -47,6 +50,50 @@ SeekerStDebuggerDebuggerActionModel >> enabled [
 	tracer ifNotNil: [ ^ tracer isMapped ].
 
 	^ false
+]
+
+{ #category : #'debugging actions' }
+SeekerStDebuggerDebuggerActionModel >> oldStepOver: aContext [
+ 
+	self enabled
+		ifTrue: [ 
+			tracer doAndUpdateSessionAfter: [ | startingNode startingTraceTime startingContext startingStackDepth shouldStop |
+			filterStack := (self topContext method hasPragmaNamed:
+				                #debuggerCompleteToSender)
+				               ifTrue: [ false ]
+				               ifFalse: [ self class shouldFilterStack ].
+
+
+			startingNode := tracer currentState node.
+			startingContext := tracer currentContext.
+			startingStackDepth := startingContext stackDepth.
+			startingTraceTime := startingContext tracedInstructionPC
+				                     asTraceTimeReference.
+			shouldStop := false.
+			[ shouldStop ] whileFalse: [ 
+				| currentContext currentStackDepth |
+				self doStepToFirstInterestingBytecode ifFalse: [ "The end of the execution was reached" 
+					shouldStop := true ].
+
+				currentContext := currentState context.
+				currentStackDepth := currentContext stackDepth.
+				"Context returned"
+				currentStackDepth < startingStackDepth ifTrue: [ 
+					shouldStop := true ].
+				"Context jump at same depth"
+				(currentStackDepth = startingStackDepth and: [ 
+					 currentContext ~~ startingContext ]) ifTrue: [ 
+					shouldStop := true ].
+				"If we are back in the same sequence, but forward in time"
+				((startingTraceTime referencesTheLocalPast: tracer) or: [ (startingTraceTime referencesTheLocalFuture: tracer) "fix for inlined loops"]) ifTrue: [ 
+					shouldStop := true ] ].
+			currentState isInterestingInstruction ifFalse: [ 
+				self doStepToFirstInterestingBytecode ].
+			self session updateContextTo: currentState context.
+			"self session triggerEvent: #stepOver.
+			self updateTopContext" ]
+			 ]
+		ifFalse: [ ^ super stepOver: aContext ]
 ]
 
 { #category : #context }
@@ -90,74 +137,78 @@ SeekerStDebuggerDebuggerActionModel >> runToSelection: aSelectionInterval inCont
 SeekerStDebuggerDebuggerActionModel >> stepInto: aContext [
 
 	self enabled
-		ifTrue: [ 
-			filterStack := false.
+		ifTrue: [
+			tracer doAndUpdateSessionAfter: [
+				filterStack := false.
 
-			(self session isContextPostMortem: aContext) ifFalse: [ "self session interruptedProcess step: aContext."
-				self doStepToFirstInterestingBytecode.
-				self session updateContextTo: currentState context.
-				"(self session stepToFirstInterestingBytecodeIn:
+				(self session isContextPostMortem: aContext) ifFalse: [ "self session interruptedProcess step: aContext."
+					self doStepToFirstInterestingBytecode.
+					self session updateContextTo: currentState context.
+					"(self session stepToFirstInterestingBytecodeIn:
 						 self session interruptedProcess)."
 
-				self session triggerEvent: #stepInto ].
+					self session triggerEvent: #stepInto ].
 
-			self updateTopContext ]
+				self updateTopContext ] ]
 		ifFalse: [ super stepInto: aContext ]
 ]
 
 { #category : #'debugging actions' }
 SeekerStDebuggerDebuggerActionModel >> stepOver: aContext [
 
-	self enabled
-		ifTrue: [ 
-			| startingNode startingTraceTime startingContext startingStackDepth shouldStop |
-			filterStack := (self topContext method hasPragmaNamed:
-				                #debuggerCompleteToSender)
-				               ifTrue: [ false ]
-				               ifFalse: [ self class shouldFilterStack ].
-
-
-			startingNode := tracer currentState node.
-			startingContext := tracer currentContext.
-			startingStackDepth := startingContext stackDepth.
-			startingTraceTime := startingContext tracedInstructionPC
-				                     asTraceTimeReference.
-			shouldStop := false.
-			[ shouldStop ] whileFalse: [ 
-				| currentContext currentStackDepth |
-				self doStepToFirstInterestingBytecode ifFalse: [ "The end of the execution was reached" 
-					shouldStop := true ].
-
-				currentContext := currentState context.
-				currentStackDepth := currentContext stackDepth.
-				"Context returned"
-				currentStackDepth < startingStackDepth ifTrue: [ 
-					shouldStop := true ].
-				"Context jump at same depth"
-				(currentStackDepth = startingStackDepth and: [ 
-					 currentContext ~~ startingContext ]) ifTrue: [ 
-					shouldStop := true ].
-				"If we are back in the same sequence, but forward in time"
-				((startingTraceTime referencesTheLocalPast: tracer) or: [ (startingTraceTime referencesTheLocalFuture: tracer) "fix for inlined loops"]) ifTrue: [ 
-					shouldStop := true ] ].
-			currentState isInterestingInstruction ifFalse: [ 
-				self doStepToFirstInterestingBytecode ].
-			self session updateContextTo: currentState context.
-			self session triggerEvent: #stepOver.
-			self updateTopContext ]
+self enabled
+		ifTrue: [
+			tracer doAndUpdateSessionAfter: [
+				| startingContext startingStackDepth shouldStop |
+				shouldStop := false.
+				[ shouldStop ] whileFalse: [
+					| currentContext currentStackDepth |
+					self doStepToFirstInterestingBytecode ifFalse: [ "The end of the execution was reached"
+						shouldStop := true ].
+					startingContext := tracer currentContext.
+					startingStackDepth := startingContext stackDepth.
+					currentContext := currentState context.
+					currentStackDepth := currentContext stackDepth.
+					"Context returned"
+					currentStackDepth < startingStackDepth ifTrue: [
+						shouldStop := true ].
+					"StepThough"
+					(currentState context == aContext and: [
+						 currentState isInterestingInstruction ]) ifTrue: [
+						shouldStop := true ] ].
+				self session updateContextTo: currentState context
+				"self session triggerEvent: #stepOver.
+			self updateTopContext" ] ]
 		ifFalse: [ ^ super stepOver: aContext ]
 ]
 
 { #category : #'debugging actions' }
 SeekerStDebuggerDebuggerActionModel >> stepThrough: aContext [
 
-	super stepThrough: aContext
-	"self enabled ifTrue: [ 
-		tracer doAndUpdateSessionAfter: [ 
-			tracer recountExecutedBytecodes.
-			currentState aboutToSwitchContext ifFalse: [ 
-				self doStepToFirstInterestingBytecode ] ].
-		self session updateContextTo: currentState context ]"
+	self enabled
+		ifTrue: [
+			tracer doAndUpdateSessionAfter: [
+				| startingContext startingStackDepth shouldStop |
+				shouldStop := false.
+				[ shouldStop ] whileFalse: [
+					| currentContext currentStackDepth |
+					self doStepToFirstInterestingBytecode ifFalse: [ "The end of the execution was reached"
+						shouldStop := true ].
+					startingContext := tracer currentContext.
+					startingStackDepth := startingContext stackDepth.
+					currentContext := currentState context.
+					currentStackDepth := currentContext stackDepth.
+					"Context returned"
+					currentStackDepth < startingStackDepth ifTrue: [
+						shouldStop := true ].
+					"StepThough"
+					(currentState context home == aContext and: [
+						 currentState isInterestingInstruction ]) ifTrue: [
+						shouldStop := true ] ].
+				self session updateContextTo: currentState context
+				"self session triggerEvent: #stepOver.
+			self updateTopContext" ] ]
+		ifFalse: [ ^ super stepThrough: aContext ]
 ]
 
 { #category : #accessing }
