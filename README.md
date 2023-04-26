@@ -20,6 +20,7 @@ Requires the following projects (installed automatically with this Seeker Baseli
 
 - https://github.com/maxwills/auto-type
 - https://github.com/maxwills/quick-wrap
+- https://github.com/maxwills/language-extensions
 
 The baseline will:
 - Enable the debugger extension in the StDebugger UI.
