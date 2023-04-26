@@ -38,6 +38,19 @@ SkObjectsTracker >> bindComponents [
 	identityEnforcer := componentsHolder identityEnforcer
 ]
 
+{ #category : #initialization }
+SkObjectsTracker >> clearRecords [
+	"similar to reset, but ignores persistence status"
+
+	oidsDictionary removeAll.
+	nonLocalObjects := WeakIdentitySet new.
+	"persistentReverseOids should always be persistent, since it is needed as such for enforcing indentyHash"
+	instantiatedLocalObjects removeAll.
+	nonPersistentReverseOidsDictionary removeAll.
+	instantiationFlag := false.
+	persistentReverseOidsDictionary removeAll
+]
+
 { #category : #accessing }
 SkObjectsTracker >> doPostStepProcess [
 

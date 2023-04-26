@@ -60,6 +60,15 @@ SkTracerBase >> canStep [
 	^ stepper canStep
 ]
 
+{ #category : #starting }
+SkTracerBase >> clearRecords [
+
+	deinitialized ifTrue: [ ^ self ].
+	restorer reset.
+	objectsTracker clearRecords.
+	systemCallsHandler clearRecords
+]
+
 { #category : #accessing }
 SkTracerBase >> components [
 

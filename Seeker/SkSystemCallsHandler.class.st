@@ -19,6 +19,12 @@ SkSystemCallsHandler >> bindComponents [
 	currentState := componentsHolder currentState
 ]
 
+{ #category : #starting }
+SkSystemCallsHandler >> clearRecords [
+
+	returnValuesDictionary removeAll
+]
+
 { #category : #accessing }
 SkSystemCallsHandler >> enabled [
 

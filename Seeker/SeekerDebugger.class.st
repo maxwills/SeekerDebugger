@@ -225,6 +225,12 @@ SeekerDebugger >> asUIBasedSession [
 	^ self
 ]
 
+{ #category : #starting }
+SeekerDebugger >> clearRecords [
+
+	tracer clearRecords
+]
+
 { #category : #'accessing context' }
 SeekerDebugger >> currentContext [
 ^tracer currentContext
