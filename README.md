@@ -3,7 +3,8 @@
 ## Baseline
 
 Seeker: Prototype Scriptable Time-Traveling Queryable Debugger.
-Compatible with Pharo 9.0, Moose Suite 9.0, Pharo 10, Moose 10 and Pharo 11 at current date (2022-10-28).
+Compatible with Pharo 9.0, Moose Suite 9.0, Pharo 10, Moose 10 and Pharo 11 (tested on 2022-10-28). 
+Working in Pharo 12.0 (tested on 2023-04-26).
 
 Do this:
 ```Smalltalk
