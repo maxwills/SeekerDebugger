@@ -89,6 +89,12 @@ SkSteppableTracer >> clearSeekerCache [
 	SeekerCache reset
 ]
 
+{ #category : #accessing }
+SkSteppableTracer >> contextCounter [
+
+	^ contextCounter
+]
+
 { #category : #'as yet unclassified' }
 SkSteppableTracer >> currentContext [
 
@@ -100,6 +106,12 @@ SkSteppableTracer >> currentContext [
 SkSteppableTracer >> currentContext: anObject [
 
 	currentContext := anObject
+]
+
+{ #category : #accessing }
+SkSteppableTracer >> currentContextID [
+
+	^ currentContextID
 ]
 
 { #category : #'as yet unclassified' }

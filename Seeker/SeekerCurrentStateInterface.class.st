@@ -262,6 +262,18 @@ SeekerCurrentStateInterface >> context [
 	^ tracer currentContext
 ]
 
+{ #category : #'as yet unclassified' }
+SeekerCurrentStateInterface >> contextCounter [
+
+	^ tracer contextCounter
+]
+
+{ #category : #'as yet unclassified' }
+SeekerCurrentStateInterface >> contextID [
+
+	^ tracer currentContextID
+]
+
 { #category : #accessing }
 SeekerCurrentStateInterface >> contextPC [
 
