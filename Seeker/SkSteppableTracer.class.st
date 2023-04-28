@@ -48,7 +48,10 @@ Class {
 		'currentState',
 		'executionMappper',
 		'debuggedProcess',
-		'preventNextTimeLiveStateRestoration'
+		'preventNextTimeLiveStateRestoration',
+		'contextStack',
+		'contextCounter',
+		'currentContextID'
 	],
 	#category : #'Seeker-Components'
 }
@@ -252,7 +255,10 @@ SkSteppableTracer >> increaseExecutedBytecode [
 { #category : #initialization }
 SkSteppableTracer >> initialize [
 
-	SeekerSessionHelpers doCriticalInitialization: [ 
+	SeekerSessionHelpers doCriticalInitialization: [
+		contextStack := SkContextStack new.
+		contextCounter := 0.
+		currentContextID := 0.
 		executedBytecode := 0.
 		preventNextTimeLiveStateRestoration := false.
 		currentState := SeekerCurrentStateInterface new
@@ -263,7 +269,7 @@ SkSteppableTracer >> initialize [
 
 		super initialize.
 		self bindComponents.
-		currentTraceTimeReference := SkCurrentTraceTimeReference new 
+		currentTraceTimeReference := SkCurrentTraceTimeReference new
 			                             tracer: self.
 
 		maxExecutedBytecode := 1.
@@ -310,9 +316,19 @@ SkSteppableTracer >> oldStepUntilConditionIsTrue: aBlock [
 { #category : #'as yet unclassified' }
 SkSteppableTracer >> onTracedContextChanged [
 
-
-	currentContext pc = currentContext startpc ifTrue: [ 
-		"tracedContextCount := tracedContextCount + 1" ]
+	currentContext pc = currentContext startpc
+		ifTrue: [
+			contextCounter := contextCounter + 1.
+			currentContextID := contextCounter.
+			contextStack push: {
+					currentContext.
+					currentContextID } ]
+		ifFalse: [
+			| t |
+			contextStack ifEmpty: [ ^ self syncContextStack ].
+			t := contextStack top.
+			(t first == currentContext and: [ t second == currentContextID ])
+				ifFalse: [ self syncContextStack ] ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -363,7 +379,9 @@ SkSteppableTracer >> restartAtBytecodeOne [
 	self clearSeekerCache.
 	currentState resetCacheTimeKey.
 	executedBytecode := 1.
-
+	contextStack removeAll.
+	contextCounter := 0.
+	currentContextID := 1 "should trigger registering the context on next step".
 	preventNextTimeLiveStateRestoration := false.
 
 	stDebugger session restart:
@@ -371,6 +389,7 @@ SkSteppableTracer >> restartAtBytecodeOne [
 
 	currentContext := self slowCurrentContext. "session interruptedProcess suspendedContext"
 	currentState updateCacheTimeKey.
+	self syncContextStack.
 	self onTracedContextChanged.
 	self onTracedStatementChanged.
 	[Smalltalk garbageCollect "this is quite slow, but seems to be necessary to prevent some memory issues.. so I fork it"] fork 
@@ -552,6 +571,24 @@ SkSteppableTracer >> stepToEnd [
 
 	self doAndUpdateSessionAfter: [ 
 		self stepBytecodeUntilConditionIsTrue: [ false ] ]
+]
+
+{ #category : #'as yet unclassified' }
+SkSteppableTracer >> syncContextStack [
+
+	| d crContext getID |
+	d := IdentityDictionary new.
+	crContext := self currentContext.
+	getID := [ :c |
+	         d at: c ifAbsent: [ contextCounter := contextCounter + 1 ] ].
+
+	contextStack do: [ :c | d at: c first put: c second ].
+	contextStack removeAll.
+
+	crContext stack reverseDo: [ :c |
+		contextStack push: {
+				c.
+				(getID value: c) } ]
 ]
 
 { #category : #'as yet unclassified' }
