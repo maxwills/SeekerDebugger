@@ -588,3 +588,9 @@ SeekerDebuggerPresenter >> updatePresenter [
 
 			super updatePresenter ] ]
 ]
+
+{ #category : #accessing }
+SeekerDebuggerPresenter >> updateUI [
+
+	self doAndUpdateSessionAfter: [  ]
+]

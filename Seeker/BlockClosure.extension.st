@@ -1,6 +1,13 @@
 Extension { #name : #BlockClosure }
 
 { #category : #'*Seeker' }
+BlockClosure >> asProgramStates [
+	"to match the paper API"
+
+	^ (SeekerDebugger headlessDebugBlock: self) tracer newProgramStates
+]
+
+{ #category : #'*Seeker' }
 BlockClosure >> asReversibleDo: aBlock [
 	"See test for examples (see senders of this method)"
 

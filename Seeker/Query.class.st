@@ -128,6 +128,20 @@ Query class >> lastQuery [
 	^ LastQuery
 ]
 
+{ #category : #'instance creation' }
+Query class >> nestedFrom: aQuery select: aPredicateBlock collect: aProjectionBlock [
+
+	^ self new
+		  projectionFunction: (BlockComposer
+				   projectionCompositionOf: aQuery projectionFunction
+				   and: aProjectionBlock);
+		  selectionFunction: (BlockComposer
+				   selectionCompositionOf: aQuery selectionFunction
+				   and: aPredicateBlock);
+		  fromDataSource: aQuery fromDataSource;
+		  yourself
+]
+
 { #category : #'as yet unclassified' }
 Query class >> queryExecutionHistory [
 

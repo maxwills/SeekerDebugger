@@ -31,17 +31,20 @@ BlockComposer class >> isAlwaysMatchPredicate: aBlock [
 BlockComposer class >> isIdentityProjection: aBlock [
 
 	| node |
+	(aBlock isKindOf: SeekerProjectionFunction) ifTrue: [
+		^ aBlock isIdentity ].
+	#* == aBlock ifTrue: [ ^true ].
 	node := aBlock compiledBlock ast.
-	^ (node isBlock and: [ 
+	^ (node isBlock and: [
 		   node arguments size = 1 and: [ node body statements size = 1 ] ])
 		  ifFalse: [ false ]
-		  ifTrue: [ 
+		  ifTrue: [
 			  | firstStatementNode |
 			  node body statements size = 1 ifFalse: [ ^ false ].
 			  firstStatementNode := node body statements first.
 			  firstStatementNode isVariable
 				  ifFalse: [ false ]
-				  ifTrue: [ 
+				  ifTrue: [
 				  node arguments first variable = firstStatementNode variable ] ]
 ]
 
