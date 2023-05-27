@@ -236,6 +236,12 @@ SeekerDebugger >> currentContext [
 ^tracer currentContext
 ]
 
+{ #category : #accessing }
+SeekerDebugger >> currentState [
+
+	^ tracer currentState
+]
+
 { #category : #'as yet unclassified' }
 SeekerDebugger >> deinitialize [
 	"Sets instance variables to nil. Used to prevent further manipulations of the debugged process by this instance of the debugger, and it is used when granting ownership of the debugger process to another debugger instance"
@@ -521,6 +527,13 @@ SeekerDebugger >> stepOver [
 SeekerDebugger >> stepToEnd [
 
 	tracer stepToEnd
+]
+
+{ #category : #api }
+SeekerDebugger >> stepUntil: aBlock [
+"stops when block evaluates to true or the programs end"
+
+tracer stepBytecodeUntilConditionIsTrue:  aBlock 
 ]
 
 { #category : #'debugging actions' }
