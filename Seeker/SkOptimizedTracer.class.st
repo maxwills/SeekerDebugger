@@ -39,7 +39,8 @@ SkOptimizedTracer >> doPostStepProcessWithPrevNode: preProcessAstNode andPrevCon
 	cachedCurrentContext := currentContext.
 	willReturnStepFlag ifTrue: [
 		contextStack pop.
-		currentContextID := contextStack top second.
+		 
+		currentContextID := contextStack ifEmpty: [nil] ifNotEmpty: [contextStack top second].
 		].
 	contextChanged ifTrue: [ self onTracedContextChanged ] "
 	statementChanged ifTrue: [ self onTracedStatementChanged ]."
