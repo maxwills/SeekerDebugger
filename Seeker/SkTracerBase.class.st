@@ -265,7 +265,7 @@ SkTracerBase >> programTimestampToLocal [
 { #category : #starting }
 SkTracerBase >> restart [
 
-	self restartAtBytecodeOne
+	^ self subclassResponsibility 
 ]
 
 { #category : #'as yet unclassified' }

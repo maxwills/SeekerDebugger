@@ -51,7 +51,8 @@ Class {
 		'preventNextTimeLiveStateRestoration',
 		'contextStack',
 		'contextCounter',
-		'currentContextID'
+		'currentContextID',
+		'enableProcessStateReversal'
 	],
 	#category : #'Seeker-Components'
 }
@@ -221,6 +222,18 @@ SkSteppableTracer >> doesAnyContextsInTheStackStatisfies: aPredicateBlock maxDep
 ]
 
 { #category : #accessing }
+SkSteppableTracer >> enableProcessStateReversal [
+
+	^ enableProcessStateReversal
+]
+
+{ #category : #accessing }
+SkSteppableTracer >> enableProcessStateReversal: anObject [
+
+	enableProcessStateReversal := anObject
+]
+
+{ #category : #accessing }
 SkSteppableTracer >> executedBytecode [
 
 	^ executedBytecode
@@ -268,6 +281,7 @@ SkSteppableTracer >> increaseExecutedBytecode [
 SkSteppableTracer >> initialize [
 
 	SeekerSessionHelpers doCriticalInitialization: [
+		enableProcessStateReversal := true.
 		contextStack := SkContextStack new.
 		contextCounter := 0.
 		currentContextID := 0.
@@ -381,6 +395,12 @@ SkSteppableTracer >> recountExecutedBytecodes [
 ]
 
 { #category : #starting }
+SkSteppableTracer >> restart [
+
+	self restartAtBytecodeOne
+]
+
+{ #category : #starting }
 SkSteppableTracer >> restartAtBytecodeOne [
 	"Restart a record and debug session from the stored startingContextForRecord"
 
@@ -393,18 +413,22 @@ SkSteppableTracer >> restartAtBytecodeOne [
 	executedBytecode := 1.
 	contextStack removeAll.
 	contextCounter := 0.
-	currentContextID := 1 "should trigger registering the context on next step".
+	currentContextID := 1. "should trigger registering the context on next step"
 	preventNextTimeLiveStateRestoration := false.
 
-	stDebugger session restart:
-		executionMappper contextOfExecutedBytecodeOne.
+	enableProcessStateReversal ifTrue: [
+		stDebugger session restart:
+			executionMappper contextOfExecutedBytecodeOne ].
+
 
 	currentContext := self slowCurrentContext. "session interruptedProcess suspendedContext"
 	currentState updateCacheTimeKey.
 	self syncContextStack.
 	self onTracedContextChanged.
 	self onTracedStatementChanged.
-	[Smalltalk garbageCollect "this is quite slow, but seems to be necessary to prevent some memory issues.. so I fork it"] fork 
+	[
+	Smalltalk garbageCollect "this is quite slow, but seems to be necessary to prevent some memory issues.. so I fork it" ]
+		fork "the fork seems to be irrelevant, since the garbageCollect call blocks the whole systems during the slowest steps"
 ]
 
 { #category : #'as yet unclassified' }
