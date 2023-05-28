@@ -32,10 +32,10 @@ TtdValidationTest >> initializeValidationConfigs [
 { #category : #'as yet unclassified' }
 TtdValidationTest >> makeSeekerWithValidationProgramAndGlobal: global [
 
-	| program |
-	program := [ TtdValidationProgram runWithGlobal: global ].
-
-	^ SeekerDebugger headlessDebugBlock: program
+	^ SeekerDebugger
+		  headlessDebugFor: TtdValidationProgram
+		  selector: #runWithGlobal:
+		  withArgs: {global}
 ]
 
 { #category : #tests }
@@ -67,9 +67,10 @@ TtdValidationTest >> runConfig: enabledComponentsConfig [
 TtdValidationTest >> runPassFor:seeker samples: samples prefix: prefix global: global [
 	"Returns the samples taken from the run"
 
-	|  currentState  stopMakers|
+	|  currentState  stopMakers startingCtx|
 	stopMakers := self stopMarkers.
 	currentState := seeker currentState.
+	startingCtx := currentState context.
 	samples add: (TtdValidationTestSample
 			 newFrom: seeker
 			 andGlobal: global
@@ -83,7 +84,9 @@ TtdValidationTest >> runPassFor:seeker samples: samples prefix: prefix global: g
 				 newFrom: seeker
 				 andGlobal: global
 				 withLabel: prefix,'_',((stopMakers at: i) asString)) ].
-	seeker stepToEnd.
+	seeker tracer stepBytecodeUntilConditionIsTrue:[
+		currentState context == startingCtx and: [ currentState willReturn ]
+		] . 
 	"take a sample"
 	samples add: (TtdValidationTestSample
 			 newFrom: seeker

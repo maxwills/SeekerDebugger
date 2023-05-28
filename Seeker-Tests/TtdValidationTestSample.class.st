@@ -21,10 +21,14 @@ TtdValidationTestSample class >> newFrom: seeker andGlobal: g withLabel: label [
 	^ self new
 		  context: currentState context shallowCopy;
 		  pc: currentState contextPC;
-		  code: (currentState node ifNotNil:[:n|n sourceCode] ifNil: ['']);
+		  code:
+			  (currentState node ifNotNil: [ :n | n statementNode sourceCode ] ifNil: [ '' ]);
 		  step: seeker stepNumber;
 		  return: (currentState willReturn
-				   ifTrue: [ currentState methodReturnValue asString ]
+				   ifTrue: [
+					   | arr |
+					   arr := currentState methodReturnValue.
+					   '{' , arr first asString , ' . ' , arr second asString , '}' ]
 				   ifFalse: [ '' ]);
 		  global: g shallowCopy;
 		  label: label;

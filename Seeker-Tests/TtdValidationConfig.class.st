@@ -23,7 +23,7 @@ TtdValidationConfig class >> newFromArray: booleans [
 TtdValidationConfig >> applyTo: seeker [
 
 	seeker tracer enableProcessStateReversal: p1Enabled.
-	seeker tracer enableProcessStateReversal: p2Enabled.
+	seeker tracer restorer enabled: p2Enabled.
 	seeker tracer systemCallsHandler enabled: p3Enabled.
 	seeker tracer identityEnforcer enabled: p3Enabled
 ]

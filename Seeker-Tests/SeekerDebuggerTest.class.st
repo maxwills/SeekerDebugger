@@ -101,6 +101,12 @@ SeekerDebuggerTest >> testHeadlessAssignmentsQuery [
 ]
 
 { #category : #tests }
+SeekerDebuggerTest >> testHeadlessDebugForSelectorWithArgs [
+
+
+]
+
+{ #category : #tests }
 SeekerDebuggerTest >> testHeadlessForSelectorWithArgs [
 "Test that the debugged program correspond to the inside of the specified method (the context selector is the method selector for the initial and last step. We also assert its complete execution by comparing the value of local variable a defined in the method"
 	| seeker proc startingContext startingNode endNode currentState |
