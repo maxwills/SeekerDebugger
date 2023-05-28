@@ -47,7 +47,6 @@ TtdValidationTest >> runConfig: enabledComponentsConfig [
 	global val: 0.
 	seeker := self makeSeekerWithValidationProgramAndGlobal: global.
 	samples := OrderedCollection new.
-	self halt.
 	enabledComponentsConfig applyTo: seeker.
 	currentState := seeker currentState.
 	self
@@ -106,27 +105,73 @@ TtdValidationTest >> stopMarkers [
 
 { #category : #tests }
 TtdValidationTest >> testRunFullValidation [
+	"takes about 5 seconds wincluding writing to file"
 
-| configCount runResults|
+	| configCount runResults writeToCsv validationOutputFile |
+	writeToCsv := true.
+	configCount := validationConfigs size.
+	runResults := Dictionary new.
+	validationOutputFile := 'validationOutput.txt' asFileReference.
 
-configCount := validationConfigs size.
-runResults := OrderedCollection new.
+	1 to: configCount do: [ :i |
+		| config resultSamples |
+		config := validationConfigs at: i.
+		resultSamples := self runConfig: config.
+		runResults at: i put: resultSamples ].
+	writeToCsv ifFalse: [ ^ self ].
 
-1 to: configCount do: [ :i|
-	| config resultSamples| 
-	config := (validationConfigs at:i).
-	resultSamples  := 	self runConfig: config.
-	runResults add:resultSamples.
-	self halt.
-]
+	validationOutputFile writeStreamDo: [ :aStream |
+		1 to: configCount do: [ :i |
+			| config samples |
+			samples := runResults at: i.
+			config := validationConfigs at: i.
+			aStream
+				nextPutAll: 'config_' , i asString , '_' , config asString;
+				cr.
+			self writeResults: samples toCsvStream: aStream ] ]
 ]
 
 { #category : #tests }
 TtdValidationTest >> testValidationProgram [
-	"should not cause an exeception"
+	"should not cause an exeception and returns an array. Otherwise the full validation test will always fail"
 
 	| global |
 	global := TtdGlobalObject new.
 	global val: 0.
-	TtdValidationProgram runWithGlobal: global.
+	self assert: (TtdValidationProgram runWithGlobal: global) isArray
+]
+
+{ #category : #writing }
+TtdValidationTest >> writeResults: collection toCsvStream: stream [
+
+	| separator |
+	separator := $;.
+
+	stream
+		nextPutAll: 'label';
+		nextPut: separator;
+		nextPutAll: 'step';
+		nextPut: separator;
+		nextPutAll: 'code';
+		nextPut: separator;
+		nextPutAll: 'pc';
+		nextPut: separator;
+		nextPutAll: 'global';
+		nextPut: separator;
+		nextPutAll: 'return';
+		cr.
+	collection do: [ :sample |
+		stream
+			nextPutAll: sample label;
+			nextPut: separator;
+			nextPutAll: sample step asString;
+			nextPut: separator;
+			nextPutAll: sample code;
+			nextPut: separator;
+			nextPutAll: sample pc asString;
+			nextPut: separator;
+			nextPutAll: sample global asString;
+			nextPut: separator;
+			nextPutAll: sample return;
+			cr ]
 ]

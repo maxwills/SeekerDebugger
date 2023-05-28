@@ -6,7 +6,9 @@ Class {
 		'step',
 		'return',
 		'global',
-		'label'
+		'label',
+		'code',
+		'pc'
 	],
 	#category : #'Seeker-Tests-ECU'
 }
@@ -18,11 +20,27 @@ TtdValidationTestSample class >> newFrom: seeker andGlobal: g withLabel: label [
 	currentState := seeker tracer currentState.
 	^ self new
 		  context: currentState context shallowCopy;
+		  pc: currentState contextPC;
+		  code: (currentState node ifNotNil:[:n|n sourceCode] ifNil: ['']);
 		  step: seeker stepNumber;
-		  return: currentState methodReturnValue deepCopy;
+		  return: (currentState willReturn
+				   ifTrue: [ currentState methodReturnValue asString ]
+				   ifFalse: [ '' ]);
 		  global: g shallowCopy;
 		  label: label;
 		  yourself
+]
+
+{ #category : #accessing }
+TtdValidationTestSample >> code [
+
+	^ code
+]
+
+{ #category : #accessing }
+TtdValidationTestSample >> code: anObject [
+
+	code := anObject
 ]
 
 { #category : #accessing }
@@ -59,6 +77,18 @@ TtdValidationTestSample >> label [
 TtdValidationTestSample >> label: anObject [
 
 	label := anObject
+]
+
+{ #category : #accessing }
+TtdValidationTestSample >> pc [
+
+	^ pc
+]
+
+{ #category : #accessing }
+TtdValidationTestSample >> pc: anObject [
+
+	pc := anObject
 ]
 
 { #category : #accessing }

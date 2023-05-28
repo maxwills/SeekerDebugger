@@ -312,15 +312,6 @@ SeekerCurrentStateInterface >> fieldNames [
 	^ { #dynamic }
 ]
 
-{ #category : #testing }
-SeekerCurrentStateInterface >> implicitReadInstanceVariable [
-	"Assumes it is a quick accessor"
-
-	self methodAboutToExecute ast allChildren do: [ :n |
-		n isReturn ifTrue: [ ^ n value variable ] ].
-	^ nil
-]
-
 { #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> formattedStack [
 
@@ -328,6 +319,15 @@ SeekerCurrentStateInterface >> formattedStack [
 	stack := self context stack reversed.
 	stack := stack copyFrom: 2 to: stack size. "skip first context"
 	^ '/' join: (stack collect: [ :c | c compiledCode method name ])
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> implicitReadInstanceVariable [
+	"Assumes it is a quick accessor"
+
+	self methodAboutToExecute ast allChildren do: [ :n |
+		n isReturn ifTrue: [ ^ n value variable ] ].
+	^ nil
 ]
 
 { #category : #'as yet unclassified' }

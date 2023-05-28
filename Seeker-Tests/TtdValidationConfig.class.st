@@ -28,6 +28,15 @@ TtdValidationConfig >> applyTo: seeker [
 	seeker tracer identityEnforcer enabled: p3Enabled
 ]
 
+{ #category : #converting }
+TtdValidationConfig >> asString [
+
+	^ '{' , (',' join: ({
+			    p1Enabled.
+			    p2Enabled.
+			    p3Enabled } collect: [ :b | b asString ])) , '}'
+]
+
 { #category : #initialization }
 TtdValidationConfig >> initialize [
 
