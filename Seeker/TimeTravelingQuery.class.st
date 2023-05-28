@@ -27,6 +27,24 @@ TimeTravelingQuery class >> displayModel [
 	^ self subclassResponsibility
 ]
 
+{ #category : #'error handling' }
+TimeTravelingQuery class >> logError: string [
+
+	Transcript
+		show: string;
+		cr.
+	self error: string
+]
+
+{ #category : #accessing }
+TimeTravelingQuery class >> logMessage: string [
+
+	self inform: string.
+	Transcript
+		show: string;
+		cr
+]
+
 { #category : #'as yet unclassified' }
 TimeTravelingQuery class >> performWith: tracer [
 
@@ -80,16 +98,36 @@ TimeTravelingQuery class >> queryInteractivelyFrom: aDataSource [
 TimeTravelingQuery class >> runAllChecks [
 
 	<script>
-	self superclass ~= TimeTravelingQuery ifTrue: [ 
-		(self class methodDictionary includesKey: #projectionFunction) ifTrue: [ (self projectionFunction  == superclass projectionFunction ) ifTrue: [ self error: 'projectionFunction seems to be overriden by an identical one.' ] ] .
-		(self class methodDictionary includesKey: #selectionFunction) ifTrue: [ (self selectionFunction   == superclass selectionFunction ) ifTrue: [ self error: 'selectionFunction seems to be overriden by an identical one.' ] ].
-		self inform: 'Projection and selection functions apparently correct'].
+	self logMessage: 'Started checks for: ', self name.
+	self = TimeTravelingQuery ifTrue: [ ^ self ].
+	self superclass ~= TimeTravelingQuery ifTrue: [
+		(self class methodDictionary includesKey: #projectionFunction)
+			ifTrue: [
+				self projectionFunction == superclass projectionFunction ifTrue: [
+					self logError:
+						'projectionFunction seems to be overriden by an identical one.' ] ].
+		(self class methodDictionary includesKey: #selectionFunction)
+			ifTrue: [
+				self selectionFunction == superclass selectionFunction ifTrue: [
+					self logError:
+						'selectionFunction seems to be overriden by an identical one.' ] ].
+		self logMessage:
+			'Projection and selection functions apparently correct' ].
 	self checkCompatibilityOfDisplayModelAndProjection.
 	self projectionSample class superclass == AutoTypeBase
-		ifFalse: [ 
-			self error:
+		ifFalse: [
+			self logError:
 				'Projection is not returning an AutoType object. (Missing a return?)' ]
-		ifTrue: [ self inform: 'Projection function returning an AutoType' ].
+		ifTrue: [
+		self logMessage: 'Projection function returning an AutoType' ]
+]
+
+{ #category : #'as yet unclassified' }
+TimeTravelingQuery class >> runAllChecksOnAllTTQs [
+
+	<script>
+	self runAllChecks.
+	self allSubclassesDo: [ :q | q runAllChecksOnAllTTQs ]
 ]
 
 { #category : #'as yet unclassified' }

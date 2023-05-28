@@ -30,7 +30,8 @@ Class {
 		'systemCallsHandler',
 		'headless',
 		'programTimestampToLocal',
-		'localTimestampToProgram'
+		'localTimestampToProgram',
+		'deinitialized'
 	],
 	#category : #'Seeker-Components'
 }
@@ -59,6 +60,15 @@ SkTracerBase >> canStep [
 	^ stepper canStep
 ]
 
+{ #category : #starting }
+SkTracerBase >> clearRecords [
+
+	deinitialized ifTrue: [ ^ self ].
+	restorer reset.
+	objectsTracker clearRecords.
+	systemCallsHandler clearRecords
+]
+
 { #category : #accessing }
 SkTracerBase >> components [
 
@@ -75,6 +85,31 @@ SkTracerBase >> components: anObject [
 SkTracerBase >> componentsLateInitialization [
 
 	components ifNotNil: [ components do: [ :c | c lateInitialization ] ]
+]
+
+{ #category : #'as yet unclassified' }
+SkTracerBase >> deinitialize [
+
+	| deinit |
+	deinitialized ifTrue: [ ^ self ].
+	deinitialized := true.
+	deinit := [ :r |
+	          r deRef tryPerform: #deinitialize.
+	          r << nil ].
+
+	deinit value: seeker asRef.
+	deinit value: session asRef.
+	deinit value: stepper asRef.
+	deinit value: restorer asRef.
+	deinit value: identityEnforcer asRef.
+	deinit value: components asRef.
+	deinit value: objectsTracker asRef.
+	deinit value: systemCallsHandler asRef.
+
+	isSessionActive := false.
+
+	programTimestampToLocal := nil.
+	localTimestampToProgram := nil
 ]
 
 { #category : #accessing }
@@ -137,7 +172,7 @@ SkTracerBase >> inMouseButtonEventInstrumentationFlag: anObject [
 
 { #category : #initialization }
 SkTracerBase >> initialize [
-
+	deinitialized :=false.
 	isSessionActive := false.
 	headless := false.
 	programTimestampToLocal := Dictionary new "For the moment, this dictionary is directly handled by SeekerExecutor when needed".
@@ -230,7 +265,7 @@ SkTracerBase >> programTimestampToLocal [
 { #category : #starting }
 SkTracerBase >> restart [
 
-	self restartAtBytecodeOne
+	^ self subclassResponsibility 
 ]
 
 { #category : #'as yet unclassified' }

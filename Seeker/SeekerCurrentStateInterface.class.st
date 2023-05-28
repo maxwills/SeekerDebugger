@@ -262,6 +262,18 @@ SeekerCurrentStateInterface >> context [
 	^ tracer currentContext
 ]
 
+{ #category : #'as yet unclassified' }
+SeekerCurrentStateInterface >> contextCounter [
+
+	^ tracer contextCounter
+]
+
+{ #category : #'as yet unclassified' }
+SeekerCurrentStateInterface >> contextID [
+
+	^ tracer currentContextID
+]
+
 { #category : #accessing }
 SeekerCurrentStateInterface >> contextPC [
 
@@ -298,6 +310,15 @@ SeekerCurrentStateInterface >> fieldNames [
 	"A compatibility method. Just to prevent failures caused by using CSI instead of a QueryData object"
 
 	^ { #dynamic }
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> implicitReadInstanceVariable [
+	"Assumes it is a quick accessor"
+
+	self methodAboutToExecute ast allChildren do: [ :n |
+		n isReturn ifTrue: [ ^ n value variable ] ].
+	^ nil
 ]
 
 { #category : #'as yet unclassified' }
@@ -401,6 +422,25 @@ SeekerCurrentStateInterface >> isFalseIfNilSend [
 SeekerCurrentStateInterface >> isFirstBytecodeOfMethod [
 <superCached>
 	^self contextPC = self initialPC
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> isImplicitReadingOfInstanceVariable [
+	"Occurs when an optimized accessor is executed (and no context is pushed to the stack)"
+
+	| m returnNodes retnode |
+	self isMessageSend ifFalse: [ ^ false ].
+	m := self methodAboutToExecute.
+	m ifNil: [ ^ false ].
+	m isQuick ifFalse: [ ^ false ].
+	returnNodes := m ast allChildren select: [ :n | n isReturn ].
+	returnNodes ifEmpty: [
+		^ false "I guess in this case self is returned" ].
+	returnNodes size > 1 ifTrue: [ "This should never be true I guess"
+		^ false ].
+	retnode := returnNodes first.
+	retnode value isVariable ifFalse: [ ^ false ].
+	^ retnode value isInstanceVariable
 ]
 
 { #category : #testing }
@@ -657,6 +697,13 @@ SeekerCurrentStateInterface >> methodSelector [
 	^ self context selector
 ]
 
+{ #category : #testing }
+SeekerCurrentStateInterface >> nameOfImplicitReadInstanceVariable [
+	"Assumes it is a quick accessor"
+
+	^ self implicitReadInstanceVariable name
+]
+
 { #category : #accessing }
 SeekerCurrentStateInterface >> node [
 
@@ -847,6 +894,14 @@ SeekerCurrentStateInterface >> updateCacheTimeKey [
 	"THIS NEEDS TO BE DEFINED. OTHERWISE THE DEBUGGER WILL CRASH WHEN UNINSTALLING THE WRAPPERS!"
 
 	^ self
+]
+
+{ #category : #testing }
+SeekerCurrentStateInterface >> valueOfImplicitReadInstanceVariable [
+	"Assumes it is a quick accessor"
+
+	^ self messageReceiver readSlotNamed:
+		  self nameOfImplicitReadInstanceVariable
 ]
 
 { #category : #'as yet unclassified' }

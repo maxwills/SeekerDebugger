@@ -50,6 +50,13 @@ SeekerDebuggerPresenter class >> displayOrder: anInteger [
 	debuggerExtensionDisplayOrder := anInteger
 ]
 
+{ #category : #'as yet unclassified' }
+SeekerDebuggerPresenter class >> findPresenterInstanceFor: aSeekerDebugger [
+
+	^ (self allInstances select: [ :p |
+		   p seekerDebugger == aSeekerDebugger ]) lastOrNil
+]
+
 { #category : #'debugger extension' }
 SeekerDebuggerPresenter class >> showInDebugger [
 	^showDebuggerExtension ifNil: [showDebuggerExtension := false]
@@ -90,6 +97,13 @@ SeekerDebuggerPresenter >> debuggerUpdateCoordinator [
 SeekerDebuggerPresenter >> debuggerUpdateCoordinator: anObject [
 
 	debuggerUpdateCoordinator := anObject
+]
+
+{ #category : #'as yet unclassified' }
+SeekerDebuggerPresenter >> deinitialize [
+
+	seekerDebugger := nil.
+	queriesPresenter := nil
 ]
 
 { #category : #'debugger extension' }

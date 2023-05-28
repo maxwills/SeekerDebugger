@@ -17,7 +17,7 @@ UTTQAllWritings class >> queryFrom: programStates [
 		  collect: [ :state | 
 			  autoType newWith
 				  bytecodeIndex: state bytecodeIndex;
-				  opType:  ((state isAssignment) slowIfTrue: [#assignment] ifFalse:[#writtingPrimitive] );
+				  opType:  (state isAssignment forceTrueOrFalse ifTrue: [#assignment] ifFalse:[#writtingPrimitive] );
 				  inNode: state node parent;
 				  source: state node parent sourceCode;
 				  endWith ]

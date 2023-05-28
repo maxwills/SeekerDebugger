@@ -14,13 +14,6 @@ Class {
 }
 
 { #category : #'instance creation' }
-ColumnDefinition class >> new [
-
-	^ self error:
-		  'This is an abstract class. Instances of subclasses can be created using the method newForKey:'
-]
-
-{ #category : #'instance creation' }
 ColumnDefinition class >> newCollectionForKeys: aCollection [
 
 	^ aCollection collect: [ :each | self newForKey: each ]
@@ -28,9 +21,12 @@ ColumnDefinition class >> newCollectionForKeys: aCollection [
 
 { #category : #'instance creation' }
 ColumnDefinition class >> newForKey: aSymbol [
+	"This might be an overkill. The method compiled is used only for the view, and I thing that little is 'optimized' by creating this anonymous class instead of just storing the selector and call a perform primitive."
 
-	| col colClass |
-	EpMonitor disableDuring: [ 
+	"Dropped the runtime compilation approach, because there is little to gain and is hard to maintain"
+
+	| col |
+	"EpMonitor disableDuring: [
 		colClass := (self << #AnonymousColumnDefinitionX)
 			            slots: {  };
 			            tag: 'Data';
@@ -41,10 +37,11 @@ ColumnDefinition class >> newForKey: aSymbol [
 	^ anObject ' , aSymbol.
 		col := colClass basicNew
 			       initialize;
-			       yourself.
-		col privateKey: aSymbol.
-		col label: aSymbol.
-		^ col ]
+			       yourself."
+	col := self new.
+	col privateKey: aSymbol.
+	col label: aSymbol.
+	^ col "]"
 ]
 
 { #category : #'as yet unclassified' }
@@ -137,7 +134,7 @@ ColumnDefinition >> readValueIn: anObject [
 	^ anObject <key>.
 	"
 
-	^ self subclassResponsibility
+	^ anObject perform: key
 ]
 
 { #category : #styling }

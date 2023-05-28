@@ -4,6 +4,25 @@ Class {
 	#category : #'Seeker-BugCollection-Tests'
 }
 
+{ #category : #converting }
+GeneralSeekerExamples class >> asUIBasedSessionExample [
+
+	| t sk q qr |
+	t := DoubleLinkedListTest selector: #testLinksDo.
+
+	sk := SeekerDebugger
+		      headlessDebugFor: t
+		      selector: #runCase
+		      withArgs: {  }.
+	sk asUIBasedSession.
+	q := TTQAllMessageSends queryFrom: sk programStates.
+	qr := q showInSeeker.
+	"sk terminate."
+	{
+		sk.
+		q }
+]
+
 { #category : #'as yet unclassified' }
 GeneralSeekerExamples class >> markersExample [
 

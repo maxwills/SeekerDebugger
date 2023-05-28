@@ -41,6 +41,14 @@ DebuggerUpdateCoordinator >> coordinateUpdatesFor: aBlock [
 			ifTrue: [ preventUpdate := oldFlagValue ] ]
 ]
 
+{ #category : #'as yet unclassified' }
+DebuggerUpdateCoordinator >> deinitialize [
+
+	preventUpdate := true.
+	stDebugger := nil.
+	tracer := nil
+]
+
 { #category : #initialization }
 DebuggerUpdateCoordinator >> initialize [
 

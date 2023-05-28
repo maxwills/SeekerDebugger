@@ -5,7 +5,8 @@ Class {
 		'cachedCurrentContextTimeKey',
 		'cachedCurrentContext',
 		'showUnsupportedCaseWarning',
-		'unsupportedCases'
+		'unsupportedCases',
+		'willReturnStepFlag'
 	],
 	#category : #'Seeker-Components'
 }
@@ -35,9 +36,15 @@ SkOptimizedTracer >> doPostStepProcessWithPrevNode: preProcessAstNode andPrevCon
 		                    cachedCurrentStatementNode
 		                    ~~ currentStatementNode ]."
 	"Note that during the OnXChanged, the cachedValues are the ones before the change"
-	contextChanged ifTrue: [ self onTracedContextChanged ]. "
+	cachedCurrentContext := currentContext.
+	willReturnStepFlag ifTrue: [
+		contextStack pop.
+		 
+		currentContextID := contextStack ifEmpty: [nil] ifNotEmpty: [contextStack top second].
+		].
+	contextChanged ifTrue: [ self onTracedContextChanged ] "
 	statementChanged ifTrue: [ self onTracedStatementChanged ]."
-	cachedCurrentContext := currentContext
+
 	"cachedCurrentStatementNode := currentStatementNode"
 ]
 
@@ -46,12 +53,14 @@ SkOptimizedTracer >> doPreStepProcess [
 
 	showUnsupportedCaseWarning ifTrue: [
 		unsupportedCases checkCaseSupport: currentState ].
-	objectsTracker enabled ifTrue: [ objectsTracker doPreStepProcess ]
+	objectsTracker enabled ifTrue: [ objectsTracker doPreStepProcess ].
+	willReturnStepFlag := currentState willReturn.
 ]
 
 { #category : #initialization }
 SkOptimizedTracer >> initialize [
 	super initialize.
+	willReturnStepFlag :=false.
 	showUnsupportedCaseWarning := true.
 	unsupportedCases := SkUnsupportedCases new.
 ]
@@ -61,6 +70,7 @@ SkOptimizedTracer >> restartAtBytecodeOne [
 
 	cachedCurrentContextTimeKey := nil.
 	cachedCurrentContext := nil.
+	willReturnStepFlag := false.
 	^ super restartAtBytecodeOne
 ]
 

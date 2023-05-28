@@ -48,7 +48,11 @@ Class {
 		'currentState',
 		'executionMappper',
 		'debuggedProcess',
-		'preventNextTimeLiveStateRestoration'
+		'preventNextTimeLiveStateRestoration',
+		'contextStack',
+		'contextCounter',
+		'currentContextID',
+		'enableProcessStateReversal'
 	],
 	#category : #'Seeker-Components'
 }
@@ -86,6 +90,12 @@ SkSteppableTracer >> clearSeekerCache [
 	SeekerCache reset
 ]
 
+{ #category : #accessing }
+SkSteppableTracer >> contextCounter [
+
+	^ contextCounter
+]
+
 { #category : #'as yet unclassified' }
 SkSteppableTracer >> currentContext [
 
@@ -97,6 +107,12 @@ SkSteppableTracer >> currentContext [
 SkSteppableTracer >> currentContext: anObject [
 
 	currentContext := anObject
+]
+
+{ #category : #accessing }
+SkSteppableTracer >> currentContextID [
+
+	^ currentContextID
 ]
 
 { #category : #'as yet unclassified' }
@@ -157,7 +173,6 @@ SkSteppableTracer >> doAsUnhaltable: aBlock [
 
 { #category : #'as yet unclassified' }
 SkSteppableTracer >> doMappingIfCorresponds [
-
 	"Short decription: Was the StDebugger opened with the intention of using seeker? if true, map the execution"
 
 	"This method is called to perform the mapping of an execution when the StDebugger is opened. The reason is that the StDebugger can be opened in any of these scenarios
@@ -169,10 +184,13 @@ and therefore, we need to map the execution).
 Note that for the other SeekerDebugging scenarios, the StDebugger is always opened with the 
 intent of using seeker. So the process is not placed in the watchlist.
 "
-	executionMappper isTestCaseOrDoIT ifFalse: [ executionMappper quickMap "always map these" ]
+
+	executionMappper isMapped ifTrue: [ ^ self ].
+	executionMappper isTestCaseOrDoIT
+		ifFalse: [ executionMappper quickMap "always map these" ]
 		ifTrue: [ "map only in it is a watchedProcess"
-			(SeekerGlobals instance isWatchedProcess: debuggedProcess) ifTrue: [ 
-				[ executionMappper quickMap ] ensure: [ 
+			(SeekerGlobals instance isWatchedProcess: debuggedProcess) ifTrue: [
+				[ executionMappper quickMap ] ensure: [
 					SeekerGlobals instance stopWatchingProcess: debuggedProcess ] ] ]
 ]
 
@@ -210,6 +228,18 @@ SkSteppableTracer >> doesAnyContextsInTheStackStatisfies: aPredicateBlock maxDep
 ]
 
 { #category : #accessing }
+SkSteppableTracer >> enableProcessStateReversal [
+
+	^ enableProcessStateReversal
+]
+
+{ #category : #accessing }
+SkSteppableTracer >> enableProcessStateReversal: anObject [
+
+	enableProcessStateReversal := anObject
+]
+
+{ #category : #accessing }
 SkSteppableTracer >> executedBytecode [
 
 	^ executedBytecode
@@ -221,6 +251,14 @@ SkSteppableTracer >> executionProgress [
 	""
 
 	^ (100.0 * executedBytecode / maxExecutedBytecode) asFloat
+]
+
+{ #category : #'as yet unclassified' }
+SkSteppableTracer >> forceRestartOnTimeTravel [
+	"Method used for dbugging purposes. In particular, used to hunt for NDS. In such case, the method should return true. 
+	Returns false otherwise"
+
+	^ false
 ]
 
 { #category : #'updating - session' }
@@ -248,7 +286,11 @@ SkSteppableTracer >> increaseExecutedBytecode [
 { #category : #initialization }
 SkSteppableTracer >> initialize [
 
-	SeekerSessionHelpers doCriticalInitialization: [ 
+	SeekerSessionHelpers doCriticalInitialization: [
+		enableProcessStateReversal := true.
+		contextStack := SkContextStack new.
+		contextCounter := 0.
+		currentContextID := 0.
 		executedBytecode := 0.
 		preventNextTimeLiveStateRestoration := false.
 		currentState := SeekerCurrentStateInterface new
@@ -259,7 +301,7 @@ SkSteppableTracer >> initialize [
 
 		super initialize.
 		self bindComponents.
-		currentTraceTimeReference := SkCurrentTraceTimeReference new 
+		currentTraceTimeReference := SkCurrentTraceTimeReference new
 			                             tracer: self.
 
 		maxExecutedBytecode := 1.
@@ -306,9 +348,19 @@ SkSteppableTracer >> oldStepUntilConditionIsTrue: aBlock [
 { #category : #'as yet unclassified' }
 SkSteppableTracer >> onTracedContextChanged [
 
-
-	currentContext pc = currentContext startpc ifTrue: [ 
-		"tracedContextCount := tracedContextCount + 1" ]
+	currentContext pc = currentContext startpc
+		ifTrue: [
+			contextCounter := contextCounter + 1.
+			currentContextID := contextCounter.
+			contextStack push: {
+					currentContext.
+					currentContextID } ]
+		ifFalse: [
+			| t |
+			contextStack ifEmpty: [ ^ self syncContextStack ].
+			t := contextStack top.
+			(t first == currentContext and: [ t second == currentContextID ])
+				ifFalse: [ self syncContextStack ] ]
 ]
 
 { #category : #'as yet unclassified' }
@@ -349,6 +401,12 @@ SkSteppableTracer >> recountExecutedBytecodes [
 ]
 
 { #category : #starting }
+SkSteppableTracer >> restart [
+
+	self restartAtBytecodeOne
+]
+
+{ #category : #starting }
 SkSteppableTracer >> restartAtBytecodeOne [
 	"Restart a record and debug session from the stored startingContextForRecord"
 
@@ -359,17 +417,24 @@ SkSteppableTracer >> restartAtBytecodeOne [
 	self clearSeekerCache.
 	currentState resetCacheTimeKey.
 	executedBytecode := 1.
-
+	contextStack removeAll.
+	contextCounter := 0.
+	currentContextID := 1. "should trigger registering the context on next step"
 	preventNextTimeLiveStateRestoration := false.
 
-	stDebugger session restart:
-		executionMappper contextOfExecutedBytecodeOne.
+	enableProcessStateReversal ifTrue: [
+		stDebugger session restart:
+			executionMappper contextOfExecutedBytecodeOne ].
+
 
 	currentContext := self slowCurrentContext. "session interruptedProcess suspendedContext"
 	currentState updateCacheTimeKey.
+	self syncContextStack.
 	self onTracedContextChanged.
 	self onTracedStatementChanged.
-	[Smalltalk garbageCollect "this is quite slow, but seems to be necessary to prevent some memory issues.. so I fork it"] fork 
+	[
+	Smalltalk garbageCollect "this is quite slow, but seems to be necessary to prevent some memory issues.. so I fork it" ]
+		fork "the fork seems to be irrelevant, since the garbageCollect call blocks the whole systems during the slowest steps"
 ]
 
 { #category : #'as yet unclassified' }
@@ -551,31 +616,49 @@ SkSteppableTracer >> stepToEnd [
 ]
 
 { #category : #'as yet unclassified' }
-SkSteppableTracer >> timeTravelToBytecodeIndex: aNumber [
+SkSteppableTracer >> syncContextStack [
 
-	self doAndUpdateSessionAfter: [ 
-		aNumber = executedBytecode ifTrue: [ ^ self ].
-		self doAsUnhaltable: [ 
-			aNumber > executedBytecode
-				ifTrue: [ "no need to restart"
-					| targetTraceTime |
-					targetTraceTime := aNumber asExecutedBytecodeTraceTime.
-					self doAsUnhaltable: [ 
-						self stepBytecodeUntilConditionIsTrue: [ 
-							self traceTime @>= targetTraceTime ] ] ]
-				ifFalse: [ 
-				self timeTravelToTraceTime: aNumber asExecutedBytecodeTraceTime ] ] ]
+	| d crContext getID |
+	d := IdentityDictionary new.
+	crContext := self currentContext.
+	getID := [ :c |
+	         d at: c ifAbsent: [ contextCounter := contextCounter + 1 ] ].
+
+	contextStack do: [ :c | d at: c first put: c second ].
+	contextStack removeAll.
+
+	crContext stack reverseDo: [ :c |
+		contextStack push: {
+				c.
+				(getID value: c) } ]
 ]
 
 { #category : #'as yet unclassified' }
+SkSteppableTracer >> timeTravelToBytecodeIndex: aNumber [
+
+	self doAndUpdateSessionAfter: [ "Reverses the execution only if the target time is in the past.
+		In this case, if the target time is the same as current, we still reverse it.
+		Reversing and replaying is always useful to find NDS, as the stepnumber of events will Change. So, while chasing NDS, it is a good idea to always restartAtBytecodeOne.
+		This is a mostly a debugging decision and it is usefu"
+		(self forceRestartOnTimeTravel or: [ executedBytecode >= aNumber ])
+			ifTrue: [ self restartAtBytecodeOne ].
+		self doAsUnhaltable: [
+			self stepBytecodeUntilConditionIsTrue: [
+				executedBytecode >= aNumber ] ] ]
+]
+
+{ #category : #'actions api' }
 SkSteppableTracer >> timeTravelToTraceTime: aTraceTime [
+	"Advances or reverses the complete execution to the target traceTime"
 
-	"Reverses the complete execution to the target traceTime"
-
-	self doAndUpdateSessionAfter: [ 
-		self restartAtBytecodeOne.
-		self doAsUnhaltable: [ 
-			self stepBytecodeUntilConditionIsTrue: [ 
+	self doAndUpdateSessionAfter: [ "Reverses the execution only if the target time is in the past.
+		In this case, if the target time is the same as current, we still reverse it.
+		Reversing and replaying is always useful to find NDS, as the stepnumber of events will Change. So, while chasing NDS, it is a good idea to always restartAtBytecodeOne.
+		This is a mostly a debugging decision and it is usefu"
+		(self forceRestartOnTimeTravel or: [ self traceTime @>= aTraceTime ])
+			ifTrue: [ self restartAtBytecodeOne ].
+		self doAsUnhaltable: [
+			self stepBytecodeUntilConditionIsTrue: [
 				self traceTime @>= aTraceTime ] ] ]
 ]
 
