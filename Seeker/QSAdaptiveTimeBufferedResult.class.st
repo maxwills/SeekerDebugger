@@ -60,7 +60,7 @@ QSAdaptiveTimeBufferedResult >> resolve [
 			currentBuffer add: each.
 			shouldEmitBuffer ifTrue: [ 
 				bufferReadyCallback value: currentBuffer copy. "This copy might be slow. try to profile this later"
-				currentBuffer := currentBuffer removeAll ].
+				currentBuffer := currentBuffer reset ].
 			shouldEmitBuffer := false ]
 		withTimedCallback: [ shouldEmitBuffer := true ]
 		every: [ 

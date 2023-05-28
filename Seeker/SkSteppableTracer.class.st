@@ -116,6 +116,12 @@ SkSteppableTracer >> currentContextID [
 ]
 
 { #category : #'as yet unclassified' }
+SkSteppableTracer >> currentNode [
+
+	^ currentState node
+]
+
+{ #category : #'as yet unclassified' }
 SkSteppableTracer >> currentStack [
 
 	"inspect this to debug in case of Seeker failure"

@@ -322,6 +322,15 @@ SeekerCurrentStateInterface >> implicitReadInstanceVariable [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerCurrentStateInterface >> formattedStack [
+
+	| stack |
+	stack := self context stack reversed.
+	stack := stack copyFrom: 2 to: stack size. "skip first context"
+	^ '/' join: (stack collect: [ :c | c compiledCode method name ])
+]
+
+{ #category : #'as yet unclassified' }
 SeekerCurrentStateInterface >> initialPC [
 
 	<qwpSubCached>
@@ -693,20 +702,6 @@ SeekerCurrentStateInterface >> nameOfImplicitReadInstanceVariable [
 	"Assumes it is a quick accessor"
 
 	^ self implicitReadInstanceVariable name
-]
-
-{ #category : #testing }
-SeekerCurrentStateInterface >> newMethod [
-
-	<qwpSubCached>
-	^ self node isVariable
-]
-
-{ #category : #testing }
-SeekerCurrentStateInterface >> newMethodRenamedASD [
-
-	<qwpSubCached>
-	^ self node isVariable
 ]
 
 { #category : #accessing }

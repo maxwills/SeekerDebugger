@@ -16,6 +16,28 @@ FaultyCalculator class >> aMethod [
 ]
 
 { #category : #'test methods' }
+FaultyCalculator class >> aMethodCopy [
+
+	| a |
+	a :=0.
+	a := a + 1.
+	a := a + 2.
+	a := a + 3.
+	^ a
+]
+
+{ #category : #'test methods' }
+FaultyCalculator class >> aMethodCopy2 [
+
+	| b |
+	b :=10.
+	b := b+ 1.
+	b := b + 2.
+	b := b+ 3.
+	^ b
+]
+
+{ #category : #'test methods' }
 FaultyCalculator class >> aMethodForExecutionStatesDo [
 
 	<skpExecutionStatesDo: #SkESDCountBytecodes>
@@ -37,6 +59,17 @@ FaultyCalculator class >> aMethodToDebug2 [
 	<skpDebugWithSeekerIfKeysPressed>
 	1 asString.
 	^ self aMethod
+]
+
+{ #category : #'as yet unclassified' }
+FaultyCalculator class >> instrument [
+|m m2|
+	<script>
+	m:= self class methodDictionary at: #aMethodCopy.
+	m2:=self class methodDictionary at: #aMethodCopy2.
+
+	self class methodDictionary at: #aMethodCopy put: m2.
+	self class methodDictionary at: #aMethodCopy2 put: m.
 ]
 
 { #category : #'as yet unclassified' }

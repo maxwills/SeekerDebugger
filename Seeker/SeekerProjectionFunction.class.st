@@ -21,6 +21,12 @@ SeekerProjectionFunction >> initialize [
 	autoType := AutoType new
 ]
 
+{ #category : #testing }
+SeekerProjectionFunction >> isIdentity [
+
+	^ false
+]
+
 { #category : #accessing }
 SeekerProjectionFunction >> itemClass [
 
