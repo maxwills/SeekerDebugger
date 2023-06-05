@@ -1,6 +1,6 @@
 Class {
 	#name : #TtdGlobalObject,
-	#superclass : #TestCase,
+	#superclass : #Object,
 	#instVars : [
 		'val'
 	],
