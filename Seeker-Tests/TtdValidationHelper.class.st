@@ -8,34 +8,41 @@ Class {
 TtdValidationHelper class >> innerPerformTestWithSeekerTrackingIVs: testCase [
 
 	| sk |
+	[
 	sk := SeekerDebugger
 		      headlessDebugFor: testCase
 		      selector: #performTest
 		      withArgs: {  }.
-	sk stepToEnd
+	sk stepToEnd.
+	^ true ]
+		valueWithin: (Duration milliSeconds: 5000)
+		onTimeout: [ ^ false ].
+	^ true
 ]
 
 { #category : #'as yet unclassified' }
 TtdValidationHelper class >> performTestWithSeekerTrackingIVs: testCase [
 
-	| modifiedIVs extraSlots slotsOriginal |
+	| modifiedIVs extraSlots slotsOriginal finished |
 	slotsOriginal := Dictionary new.
 	extraSlots := TtdValidationMethodsHelper obtainExtraSlotsOfTestCase:
 		              testCase class.
 	extraSlots do: [ :s |
 		slotsOriginal at: s name put: (testCase readSlotNamed: s name) copy ].
 	modifiedIVs := false.
-	self innerPerformTestWithSeekerTrackingIVs: testCase.
+	finished := self innerPerformTestWithSeekerTrackingIVs: testCase.
 	extraSlots do: [ :s |
 		modifiedIVs := (testCase readSlotNamed: s name)
 		               ~= (slotsOriginal at: s name) ].
-	^ {
-		  modifiedIVs.
-		  slotsOriginal.
-		  (extraSlots collect: [ :s |
-			   {
-				   s name.
-				   (testCase readSlotNamed: s name) copy } ]) }
+	^ AutoType new newWith
+		  modifiedIVs: modifiedIVs;
+		  finished: finished;
+		  slotsOriginal: slotsOriginal;
+		  finalSlots: (extraSlots collect: [ :s |
+					   {
+						   s name.
+						   (testCase readSlotNamed: s name) copy } ]);
+		  endWith
 ]
 
 { #category : #'as yet unclassified' }
@@ -44,7 +51,7 @@ TtdValidationHelper class >> runMethodsWithSeekerFrom: aNumber to: endNumber [
 	| methods res |
 	res := OrderedCollection new.
 	methods := TtdValidationMethodsHelper loadMethodsFromFile.
-	methods := TtdValidationMethodsHelper filterOut: methods ttr: 1000.
+	"methods := TtdValidationMethodsHelper filterOut: methods ttr: 1000."
 	methods := methods sorted: [ :a :b | a name < b name ].
 	Transcript
 		show: 'Total tests: ' , methods size asString;
@@ -75,13 +82,15 @@ TtdValidationHelper class >> runTestWithSeeker: testMethod [
 	[
 	[
 	test setUp.
-	timeMS := [ changedSlots := self performTestWithSeekerTrackingIVs: test ]
+	timeMS := [
+	          changedSlots := self performTestWithSeekerTrackingIVs: test ]
 		          timeToRunWithoutGC.
 	errorFlag := false ] ensure: [ test tearDown ] ] ensure: [
 		test cleanUpInstanceVariables ] ] onErrorDo: [ errorFlag := true ].
-	^ {
-		  errorFlag.
-		  changedSlots.
-		  timeMS.
-		  testMethod }
+	^ AutoType new newWith
+		  errorFlag: errorFlag;
+		  runResults: changedSlots;
+		  timeMS: timeMS;
+		  testMethod: testMethod;
+		  endWith
 ]

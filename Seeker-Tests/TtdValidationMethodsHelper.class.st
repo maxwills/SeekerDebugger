@@ -103,7 +103,9 @@ TtdValidationMethodsHelper class >> loadMethodsFromFile [
 	lines := lines sorted: [ :a :b | a < b ].
 	methods := OrderedCollection new.
 	lines do: [ :line |
-		methods add: (OpalCompiler new source: line) evaluate ].
+		| m |
+		m := [ (OpalCompiler new source: line) evaluate ] onErrorDo: [ nil ].
+		m ifNotNil: [ methods add: m ] ].
 	^ methods
 ]
 
@@ -171,7 +173,7 @@ TtdValidationMethodsHelper class >> performTestTrackingIVs: testCase [
 	slotsOriginal := Dictionary new.
 	extraSlots := self obtainExtraSlotsOfTestCase: testCase class.
 	extraSlots do: [ :s |
-		slotsOriginal at: s name put: (testCase readSlotNamed: s name) copy ].
+		slotsOriginal at: s name put: (testCase readSlotNamed: s name) shallowCopy ].
 	modifiedIVs := false.
 	testCase performTest.
 	extraSlots do: [ :s |
