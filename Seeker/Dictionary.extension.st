@@ -1,6 +1,19 @@
 Extension { #name : #Dictionary }
 
 { #category : #'*Seeker' }
+Dictionary >> softCopy [
+
+	| d |
+	d := self class new.
+
+	self keysDo: [ :k |
+		| v |
+		v := self at: k.
+		d at: k softCopy put: v softCopy ].
+	^ d
+]
+
+{ #category : #'*Seeker' }
 Dictionary >> softEqualTo: aDictionary [
 	"Two dictionaries are equal if
 	 (a) they are the same 'kind' of thing.

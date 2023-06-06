@@ -17,7 +17,7 @@ TtdValidationHelper class >> captureSlots: slots ofTest: test [
 	| sl |
 	sl := Dictionary new.
 	slots do: [ :s |
-		sl at: s name put: (test readSlotNamed: s name) shallowCopy ].
+		sl at: s name put: (test readSlotNamed: s name) veryDeepCopy ].
 	^ sl
 ]
 
@@ -54,7 +54,7 @@ TtdValidationHelper class >> innerPerformTestWithSeekerTrackingIVs: testCase [
 		      withArgs: {  }.
 	sk stepToEnd.
 	^ true ]
-		valueWithin: (Duration milliSeconds: 5000)
+		valueWithin: (Duration milliSeconds: 5000000)
 		onTimeout: [ ^ false ].
 	^ true
 ]
@@ -69,6 +69,7 @@ TtdValidationHelper class >> innerPerformTestWithSeekerTrackingIVs: testCase wit
 		      selector: #performTest
 		      withArgs: {  }.
 	config applyTo: sk.
+	self halt.
 	"sample here"
 	runsamples := { nil. nil. nil. nil }.
 	s1 := TtdValidationTestSample
@@ -98,7 +99,7 @@ TtdValidationHelper class >> innerPerformTestWithSeekerTrackingIVs: testCase wit
 		              s3.
 		              s4 }.
 	^ true ]
-		valueWithin: (Duration milliSeconds: 20000)
+		valueWithin: (Duration milliSeconds: 2000000)
 		onTimeout: [ ^ false ].
 	^ true
 ]

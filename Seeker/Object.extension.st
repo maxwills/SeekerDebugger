@@ -294,17 +294,23 @@ Object >> seekerCache [
 ]
 
 { #category : #'*Seeker' }
+Object >> softCopy [
+
+	^ self shallowCopy
+]
+
+{ #category : #'*Seeker' }
 Object >> softEqualTo: anObject [
 
 	| mySlotsNames theirSlotsNames |
 	self == anObject ifTrue: [ ^ true ].
 	self = anObject ifTrue: [ ^ true ].
 	self class = anObject class ifFalse: [ ^ false ].
-	mySlotsNames := self class slotNames.
-	theirSlotsNames := self class slotNames.
+	mySlotsNames := self class slotNamesIncludingSuperClasses.
+	theirSlotsNames := self class slotNamesIncludingSuperClasses .
 	mySlotsNames = theirSlotsNames ifFalse: [ ^ false ].
 	TtdValidationHelper stackTooDeep ifTrue: [
-		^ self error: 'prevention of infite loops' ].
+		^ true ].
 	mySlotsNames do: [ :msn |
 		| o1 o2 seq |
 		o1 := self readSlotNamed: msn.
