@@ -80,3 +80,15 @@ TtdValidationConfig >> p3Enabled: anObject [
 
 	p3Enabled := anObject
 ]
+
+{ #category : #'as yet unclassified' }
+TtdValidationConfig >> stringNotation [
+
+	| bToIStr |
+	bToIStr := [ :b |
+	           b
+		           ifTrue: [ '1' ]
+		           ifFalse: [ '0' ] ].
+	^ '(' , (bToIStr value: p1Enabled) , (bToIStr value: p2Enabled)
+	  , (bToIStr value: p3Enabled) , ')'
+]

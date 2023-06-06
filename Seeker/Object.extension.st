@@ -294,6 +294,28 @@ Object >> seekerCache [
 ]
 
 { #category : #'*Seeker' }
+Object >> softEqualTo: anObject [
+
+	| mySlotsNames theirSlotsNames |
+	self == anObject ifTrue: [ ^ true ].
+	self = anObject ifTrue: [ ^ true ].
+	self class = anObject class ifFalse: [ ^ false ].
+	mySlotsNames := self class slotNames.
+	theirSlotsNames := self class slotNames.
+	mySlotsNames = theirSlotsNames ifFalse: [ ^ false ].
+	TtdValidationHelper stackTooDeep ifTrue: [
+		^ self error: 'prevention of infite loops' ].
+	mySlotsNames do: [ :msn |
+		| o1 o2 seq |
+		o1 := self readSlotNamed: msn.
+		o2 := anObject readSlotNamed: msn.
+		"risk of infinite recursion"
+		seq := o1 softEqualTo: o2.
+		seq ifFalse: [ ^ false ] ].
+	^ true
+]
+
+{ #category : #'*Seeker' }
 Object >> tryPerform: selector [
 
 	(self respondsTo: selector ) ifFalse: [ ^ false ].

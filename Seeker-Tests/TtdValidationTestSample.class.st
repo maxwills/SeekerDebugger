@@ -30,7 +30,7 @@ TtdValidationTestSample class >> newFrom: seeker andGlobal: g withLabel: label [
 					   arr := currentState methodReturnValue.
 					   '{' , arr first asString , ' . ' , arr second asString , '}' ]
 				   ifFalse: [ '' ]);
-		  global: g shallowCopy;
+		  global: g deepCopy;
 		  label: label;
 		  yourself
 ]

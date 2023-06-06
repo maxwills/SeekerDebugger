@@ -94,7 +94,8 @@ TtdValidationMethodsHelper class >> getTestsDefiningInstanceVariables [
 TtdValidationMethodsHelper class >> loadMethodsFromFile [
 
 	| file lines methods |
-	file := 'methods.txt' asFileReference readStream.
+	"file := 'methods.txt' asFileReference readStream."
+	file := 'methodSelection.txt' asFileReference readStream.
 	lines := OrderedCollection new.
 
 	[ file atEnd ] whileFalse: [ lines add: file nextLine ].
