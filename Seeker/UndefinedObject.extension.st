@@ -5,3 +5,9 @@ UndefinedObject >> isSessionActive [
 
 	^ false
 ]
+
+{ #category : #'*Seeker' }
+UndefinedObject >> printOn: aStream showingDecimalPlaces: aNumber [
+
+	aStream nextPutAll: '#errorPrintingUndefinedObject'
+]
