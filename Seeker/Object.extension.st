@@ -260,7 +260,7 @@ Object >> seekMe [
 
 	SeekerDebugger allInstances.
 	SeekerDebugger allInstances reverseDo: [ :s | 
-		((s tracer isNotNil and: [ s tracer isSessionActive isNotNil ]) 
+		((s tracer isNotNil and: [ s isSessionActive isNotNil ]) 
 			 and: [ s tracer isSessionActive ]) ifTrue: [ 
 			| alias |
 			alias := s tracer getOidOf: self.
@@ -280,7 +280,7 @@ Object >> seekMyOid [
 
 	SeekerDebugger allInstances.
 	SeekerDebugger allInstances reverseDo: [ :s | 
-		s tracer isSessionActive ifTrue: [ 
+		s  isSessionActive ifTrue: [ 
 			| alias |
 			alias := s tracer getOidOf: self.
 			alias ifNotNil: [ ^ alias ] ] ].

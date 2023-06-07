@@ -167,10 +167,32 @@ SeekerCurrentStateInterface class >> new [
 ]
 
 { #category : #'as yet unclassified' }
+SeekerCurrentStateInterface class >> pragmasOfAllPrimitives [
+
+	^ ((Pragma allNamed: #primitive:) select: [ :p |
+		   (p argumentAt: 1) isNumber ]) sorted: [ :a :b |
+		  (a argumentAt: 1) < (b argumentAt: 1) ]
+]
+
+{ #category : #'as yet unclassified' }
+SeekerCurrentStateInterface class >> pragmasOfNonRegisteredPrimitives [
+
+	^ self pragmasOfAllPrimitives reject: [ :p |
+		  self isWritingPrimitive: (p argumentAt: 1) ]
+]
+
+{ #category : #'as yet unclassified' }
+SeekerCurrentStateInterface class >> pragmasOfRegisteredWritingPrimitives [
+
+	^ self pragmasOfAllPrimitives select: [ :p |
+		  self isWritingPrimitive: (p argumentAt: 1) ]
+]
+
+{ #category : #'as yet unclassified' }
 SeekerCurrentStateInterface class >> writingPrimitives [
 
-	^ #( 39 61 64 69 74 144 145 166 211 615 616 617 618 619 620 621 622 623 624 625 626 627 628 629 645 646 647 648 649 650 651 652 653 654 655 656 657 658 659 105 )
-	"Originally, I wrote 549, It is not a writing primitive. Did I mispelled a writing primitive?"
+	^ #( 39 61 64 69 74 105 144 145 166 168 211 615 616 617 618 619 620 621 622 623 624 625 626 627 628 629 645 646 647 648 649 650 651 652 653 654 655 656 657 658  )
+	
 	
 ]
 

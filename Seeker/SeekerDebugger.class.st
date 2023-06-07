@@ -334,6 +334,13 @@ SeekerDebugger >> interruptedProcess [
 	^ stDebugger interruptedProcess
 ]
 
+{ #category : #testing }
+SeekerDebugger >> isSessionActive [
+
+	tracer ifNil: [ ^ false ].
+	^ tracer isSessionActive
+]
+
 { #category : #accessing }
 SeekerDebugger >> localToExecutionTime [
    "This is only used by the ECU."

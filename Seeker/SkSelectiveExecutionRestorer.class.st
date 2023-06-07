@@ -169,6 +169,9 @@ SkSelectiveExecutionRestorer class >> initializeWritingMethodsUndoDictionary [
 	"41"
 	writingMethodsUndoDictionary at: IntegerArray >> #at:put:
 		put: [ :csi | self undoBlockForAtPut: csi ].
+		"41+"
+	writingMethodsUndoDictionary at: Object >> #copyFrom:
+		put: [ :csi | self undoBlockForObjectCopyFrom: csi ].
 	"42"
 	writingMethodsUndoDictionary at: Context >> #at:put: put: [ :csi | self undoBlockForAtPut: csi ].
 	"43"
@@ -273,9 +276,7 @@ SkSelectiveExecutionRestorer class >> initializeWritingMethodsUndoDictionary [
 SkSelectiveExecutionRestorer class >> sortedWritingPrimitivesMethods [
 
 	<script>
-	((Pragma all select: [ :p | 
-		  SeekerCurrentStateInterface writingPrimitives includes: p method primitive ]) sorted: [ :a :b | 
-		 a method primitive <= b method primitive ]) inspect.
+	SeekerCurrentStateInterface pragmasOfRegisteredWritingPrimitives inspect.
 ]
 
 { #category : #'as yet unclassified' }
@@ -294,7 +295,7 @@ SkSelectiveExecutionRestorer class >> undoBlockForAtPut: csi [
 	| receiver index originalValue |
 	receiver := csi messageReceiver.
 	index := csi messageArgumentAt: 1.
-	originalValue := receiver basicAt: index.
+	originalValue := receiver at: index.
 	^ [ receiver at: index put: originalValue ]
 ]
 
@@ -553,6 +554,16 @@ SkSelectiveExecutionRestorer class >> undoBlockForObjectBasicAtPut: csi [
 ]
 
 { #category : #'as yet unclassified' }
+SkSelectiveExecutionRestorer class >> undoBlockForObjectCopyFrom: csi [
+
+	| originalValue receiver fromObj |
+	receiver := csi messageReceiver.
+	fromObj := csi messageArgumentAt: 1.
+	originalValue := receiver shallowCopy.
+	^ [ receiver copyFrom: originalValue ]
+]
+
+{ #category : #'as yet unclassified' }
 SkSelectiveExecutionRestorer class >> undoBlockForObjectInstVarAtPut: csi [
 
 	| originalValue receiver anObject index |
@@ -603,8 +614,9 @@ SkSelectiveExecutionRestorer class >> undoBlockForPvtAtPut: csi [
 SkSelectiveExecutionRestorer class >> undoBlockForReplaceFromToWithStartingAt: csi [
 
 	| originalValues arrSize receiver start stop repStart |
-	receiver basicSize = 0 ifTrue: [ ^ [ "If the size is 0 there is no replacing" ] ].
+	
 	receiver := csi messageReceiver.
+	receiver basicSize = 0 ifTrue: [ ^ [ "If the size is 0 there is no replacing" ] ].
 	start := csi messageArgumentAt: 1.
 	stop := csi messageArgumentAt: 2.
 	repStart := csi messageArgumentAt: 4.
@@ -617,7 +629,7 @@ SkSelectiveExecutionRestorer class >> undoBlockForReplaceFromToWithStartingAt: c
 		  replaceFrom: start
 		  to: stop
 		  with: originalValues
-		  startingAt: 1 ]
+		  startingAt: 1 ] 
 ]
 
 { #category : #'as yet unclassified' }
