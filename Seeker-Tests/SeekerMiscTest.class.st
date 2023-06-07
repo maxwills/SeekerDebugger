@@ -5,6 +5,30 @@ Class {
 }
 
 { #category : #tests }
+SeekerMiscTest >> testReversal1 [
+
+	| hits o1 o2 o1b o2b program |
+	hits := AIHits new.
+	o1 := hits veryDeepCopy.
+	program := [
+	           AIGraphFixture complexCycleGraph: hits.
+	           hits run ].
+	program asReversibleDo: [ :sk |
+		sk stepToEnd.
+		o2 := hits veryDeepCopy.
+		sk restart.
+		o1b := hits veryDeepCopy.
+
+		self assert: (o1 softEqualTo: hits).
+		self assert: (o1 softEqualTo: o1b).
+		self deny: (o1 softEqualTo: o2).
+		sk stepToEnd.
+		o2b := hits veryDeepCopy.
+		self assert: (o2 softEqualTo: o2b).
+		self assert: (hits softEqualTo: o2) ]
+]
+
+{ #category : #tests }
 SeekerMiscTest >> testSoftEqual1 [
 
 	| col o1 o2 |
@@ -50,9 +74,8 @@ SeekerMiscTest >> testSoftEqual3 [
 
 	| hits o1 o2 |
 	hits := AIHits new.
-	AIGraphFixture complexCycleGraph: hits.
-
 	o1 := hits veryDeepCopy.
+	AIGraphFixture complexCycleGraph: hits.
 
 	hits run.
 	o2 := hits veryDeepCopy.
