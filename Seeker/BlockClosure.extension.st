@@ -79,8 +79,18 @@ BlockClosure >> reversibleValue [
 ]
 
 { #category : #'*Seeker' }
-BlockClosure >> softEqualTo: anObject [
+BlockClosure >> softEqualTo: anObject withCache: objs [
 
+	(objs includes: self) ifTrue: [ ^ true ].
+	objs add: self.
+	self class = anObject class ifFalse: [ ^ false ].
+	^ true
+]
+
+{ #category : #'*Seeker' }
+BlockClosure >> softEqualTo: anObject withDepth: depth [
+
+	depth <= 0 ifTrue: [ ^ true ].
 	self class = anObject class ifFalse: [ ^ false ].
 	^ true
 ]
