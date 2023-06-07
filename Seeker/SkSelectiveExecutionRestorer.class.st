@@ -289,14 +289,30 @@ SkSelectiveExecutionRestorer class >> undoBlockForAtAllPut: csi [
 
 { #category : #'as yet unclassified' }
 SkSelectiveExecutionRestorer class >> undoBlockForAtPut: csi [
-
 	"SeekerCurrentStateInterface"
 
 	| receiver index originalValue |
 	receiver := csi messageReceiver.
 	index := csi messageArgumentAt: 1.
-	originalValue := receiver at: index.
-	^ [ receiver at: index put: originalValue ]
+	csi node isSuperSend
+		ifTrue: [
+			| messageReceiverClass at atPut |
+			"Need to call the correct method"
+			messageReceiverClass := receiver class superclass.
+
+			at := messageReceiverClass lookupSelector: #at:.
+			atPut := messageReceiverClass lookupSelector: #at:put:.
+			originalValue := receiver withArgs: { index } executeMethod: at.
+
+			^ [
+			  receiver
+				  withArgs: {
+						  index.
+						  originalValue }
+				  executeMethod: atPut ] ]
+		ifFalse: [ "This is the usual case"
+			originalValue := receiver at: index.
+			^ [ receiver at: index put: originalValue ] ]
 ]
 
 { #category : #'as yet unclassified' }
