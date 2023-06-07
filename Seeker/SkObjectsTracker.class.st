@@ -129,18 +129,22 @@ SkObjectsTracker >> doPreStepProcessForAssignments [
 
 { #category : #'as yet unclassified' }
 SkObjectsTracker >> doPreStepProcessForMessageSends [
-
 	"Dont register readOnly objects or strings"
 
 	| msgReceiver |
 	instantiationFlag := currentState isInstantiationMessage.
 	msgReceiver := currentState messageReceiver.
-
-	msgReceiver isNotSeekerTrackable ifTrue: [ ^ self ].
-	self
-		registerObjectInstance: currentState messageReceiver
-		withOid: tracer bytecodeIndex.
-	restorer enabled ifTrue: [ restorer doPreStepProcessForMessageSends ]
+	"a special case for strings... they cant be tracked, but we need to generate an undo block for writing primitives"
+	((msgReceiver isKindOf: String) and: [msgReceiver isReadOnlyObject not])
+		ifTrue: [ restorer enabled ifTrue: [
+				restorer doPreStepProcessForMessageSends ] ]
+		ifFalse: [
+			msgReceiver isNotSeekerTrackable ifTrue: [ ^ self ].
+			self
+				registerObjectInstance: currentState messageReceiver
+				withOid: tracer bytecodeIndex.
+			restorer enabled ifTrue: [
+				restorer doPreStepProcessForMessageSends ] ]
 ]
 
 { #category : #accessing }
