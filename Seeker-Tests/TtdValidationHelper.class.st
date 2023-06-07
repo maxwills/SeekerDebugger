@@ -69,7 +69,6 @@ TtdValidationHelper class >> innerPerformTestWithSeekerTrackingIVs: testCase wit
 		      selector: #performTest
 		      withArgs: {  }.
 	config applyTo: sk.
-	self halt.
 	"sample here"
 	runsamples := { nil. nil. nil. nil }.
 	s1 := TtdValidationTestSample
