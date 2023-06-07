@@ -6,6 +6,7 @@ Class {
 		'currentTestMethodName',
 		'runsamples',
 		'currentConfigStr',
+		'currentConfig',
 		'validationConfigs'
 	],
 	#category : #'Seeker-Tests-Validation'
@@ -110,6 +111,7 @@ TtdValidationHelper class >> performExperimentFor: method [
 	res := OrderedCollection new.
 	self initializeValidationConfigs.
 	1 to: validationConfigs size do: [ :i |
+		currentConfig := (validationConfigs at: i).
 		currentConfigStr := 'C' , i asString , ' '
 		                    , (validationConfigs at: i) stringNotation.
 		r := self
@@ -200,7 +202,12 @@ TtdValidationHelper class >> performTestWithSeekerTrackingIVs: testCase withConf
 				 stream
 					 nextPutAll: sample step asString;
 					 nextPut: separator ].
-			 stream nextPutAll: 'padding' ]).
+				stream nextPut: separator;
+				 nextPutAll: currentConfig p1Enabled asString; 
+				nextPut: separator;
+				 nextPutAll: currentConfig p2Enabled asString; 
+				nextPut: separator;
+				 nextPutAll: currentConfig p3Enabled asString]).
 	^ AutoType new newWith
 		  modifiedIVsS_E: {
 				  sameIVsStart not.
