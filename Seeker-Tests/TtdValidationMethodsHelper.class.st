@@ -17,6 +17,16 @@ TtdValidationMethodsHelper class >> filterOut: tests ttr: aNumber [
 ]
 
 { #category : #'as yet unclassified' }
+TtdValidationMethodsHelper class >> filterOutFrom: methodFile1 exclude: methodFile2 [
+
+	| methods1 methods2 result |
+	methods1 := TtdValidationMethodsHelper loadMethodsFrom: methodFile1.
+	methods2 := TtdValidationMethodsHelper loadMethodsFrom: methodFile2.
+	result := methods1 reject: [ :m | methods2 includes: m ].
+	^ result
+]
+
+{ #category : #'as yet unclassified' }
 TtdValidationMethodsHelper class >> getFinalMethodSelection [
 
 	^ self getFinalMethodSelectionUpTo: 1000.
@@ -91,11 +101,10 @@ TtdValidationMethodsHelper class >> getTestsDefiningInstanceVariables [
 ]
 
 { #category : #'as yet unclassified' }
-TtdValidationMethodsHelper class >> loadMethodsFromFile [
+TtdValidationMethodsHelper class >> loadMethodsFrom: filename [
 
 	| file lines methods |
-	"file := 'methods.txt' asFileReference readStream."
-	file := 'methodSelection.txt' asFileReference readStream.
+	file := filename asFileReference readStream.
 	lines := OrderedCollection new.
 
 	[ file atEnd ] whileFalse: [ lines add: file nextLine ].
@@ -108,6 +117,18 @@ TtdValidationMethodsHelper class >> loadMethodsFromFile [
 		m := [ (OpalCompiler new source: line) evaluate ] onErrorDo: [ nil ].
 		m ifNotNil: [ methods add: m ] ].
 	^ methods
+]
+
+{ #category : #'as yet unclassified' }
+TtdValidationMethodsHelper class >> loadMethodsFromFile [
+
+	^ self loadMethodsFrom: 'methodSelection.txt' 
+]
+
+{ #category : #'as yet unclassified' }
+TtdValidationMethodsHelper class >> loadMethodsFromPreselectionFile [
+
+	^ self loadMethodsFrom: 'methods.txt' 
 ]
 
 { #category : #accessing }

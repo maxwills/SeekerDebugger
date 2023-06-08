@@ -7,7 +7,8 @@ Class {
 		'runsamples',
 		'currentConfigStr',
 		'currentConfig',
-		'validationConfigs'
+		'validationConfigs',
+		'seekerTimeout'
 	],
 	#category : #'Seeker-Tests-Validation'
 }
@@ -46,6 +47,7 @@ TtdValidationHelper class >> initializeValidationConfigs [
 
 { #category : #'as yet unclassified' }
 TtdValidationHelper class >> innerPerformTestWithSeekerTrackingIVs: testCase [
+	"performs a tests with seeker, no config involved. used to filter out slow tests"
 
 	| sk |
 	[
@@ -55,7 +57,7 @@ TtdValidationHelper class >> innerPerformTestWithSeekerTrackingIVs: testCase [
 		      withArgs: {  }.
 	sk stepToEnd.
 	^ true ]
-		valueWithin: (Duration milliSeconds: 5000000)
+		valueWithin: (Duration milliSeconds: seekerTimeout )
 		onTimeout: [ ^ false ].
 	^ true
 ]
@@ -99,7 +101,7 @@ TtdValidationHelper class >> innerPerformTestWithSeekerTrackingIVs: testCase wit
 		              s3.
 		              s4 }.
 	^ true ]
-		valueWithin: (Duration milliSeconds: 2000000)
+		valueWithin: (Duration milliSeconds: seekerTimeout)
 		onTimeout: [ ^ false ].
 	^ true
 ]
@@ -110,8 +112,9 @@ TtdValidationHelper class >> performExperimentFor: method [
 	| res r |
 	res := OrderedCollection new.
 	self initializeValidationConfigs.
+	seekerTimeout := 20000.
 	1 to: validationConfigs size do: [ :i |
-		currentConfig := (validationConfigs at: i).
+		currentConfig := validationConfigs at: i.
 		currentConfigStr := 'C' , i asString , ' '
 		                    , (validationConfigs at: i) stringNotation.
 		r := self
@@ -141,7 +144,7 @@ TtdValidationHelper class >> performExperimentFrom: aNumber to: endNumber [
 
 { #category : #'as yet unclassified' }
 TtdValidationHelper class >> performTestWithSeekerTrackingIVs: testCase [
-
+"performs a tests with seeker, no config involved. used to filter out slow tests"
 	| modifiedIVs extraSlots slotsOriginal finished |
 	slotsOriginal := Dictionary new.
 	extraSlots := TtdValidationMethodsHelper obtainExtraSlotsOfTestCase:
@@ -219,16 +222,16 @@ TtdValidationHelper class >> performTestWithSeekerTrackingIVs: testCase withConf
 
 { #category : #'as yet unclassified' }
 TtdValidationHelper class >> runMethodsWithSeekerFrom: aNumber to: endNumber [
+	"Takes the preselection file, and run tests to asses if they are able to finish with seeker or not."
 
 	| methods res rand |
 	res := OrderedCollection new.
-	methods := TtdValidationMethodsHelper loadMethodsFromFile.
+	methods := TtdValidationMethodsHelper loadMethodsFromPreselectionFile.
 	"methods := TtdValidationMethodsHelper filterOut: methods ttr: 1000."
 	methods := methods sorted: [ :a :b | a name < b name ].
 	rand := Random new
 		        seed: 1;
 		        yourself.
-	methods := TtdValidationMethodsHelper loadMethodsFromFile.
 	methods := methods sorted: [ :a :b | rand next > 0.5 ].
 	Transcript
 		show: 'Total tests: ' , methods size asString;
@@ -242,16 +245,20 @@ TtdValidationHelper class >> runMethodsWithSeekerFrom: aNumber to: endNumber [
 		UIManager default currentWorld doOneCycleNow.
 		r := self runTestWithSeeker: m.
 		(r errorFlag not and: [ r runResults finished ]) ifTrue: [
-			TtdValidationHelper writeLine: r testMethod name ].
+			| l |
+			l := r testMethod name.
+			TtdValidationHelper writeLine: l ].
 		res add: r ].
 	^ res
 ]
 
 { #category : #'as yet unclassified' }
 TtdValidationHelper class >> runTestWithSeeker: testMethod [
+	"just runs the test with seeker. Used to filter slow tests. No sampling or config involved"
 
 	| methodClass test errorFlag changedSlots timeMS |
 	timeMS := -1.
+	seekerTimeout := 5000.
 	methodClass := testMethod methodClass.
 	changedSlots := #(  ).
 	errorFlag := true.
@@ -329,7 +336,6 @@ TtdValidationHelper class >> writeCsvLine: line [
 TtdValidationHelper class >> writeLine: line [
 
 	| aFileReference |
-	[ ^ self ] value.
 	aFileReference := 'processOutput.txt' asFileReference.
 
 	aFileReference writeStreamDo: [ :aStream |
