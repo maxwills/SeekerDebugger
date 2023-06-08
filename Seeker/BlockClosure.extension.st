@@ -35,7 +35,8 @@ BlockClosure >> defaultCase: aValuable [
 { #category : #'*Seeker' }
 BlockClosure >> lockUntilTrue [
 
-	^ self whileFalse: [ "busy wait" true ]
+	self whileFalse: [ Processor yield ]
+	
 ]
 
 { #category : #'*Seeker' }
