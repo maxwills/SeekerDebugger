@@ -305,7 +305,6 @@ TtdValidationHelper class >> runTestWithSeeker: testMethod andConfig: config [
 		                          withConfig: config ] timeToRunWithoutGC.
 	errorFlag := false ] ensure: [ test tearDown ] ] ensure: [
 		test cleanUpInstanceVariables ] ] onErrorDo: [ :e |
-		e debug.
 		errorFlag := true ].
 	^ AutoType new newWith
 		  errorFlag: errorFlag;
