@@ -108,6 +108,12 @@ Object >> doCases [
 ]
 
 { #category : #'*Seeker' }
+Object class >> globalized [
+
+	^ Smalltalk globals at: #globalizedObject ifAbsent: [ nil ]
+]
+
+{ #category : #'*Seeker' }
 Object >> isIterableDataSource [
 
 	^ false
@@ -121,6 +127,12 @@ In this case, I preffer this ugly version"
 	self class = Process ifTrue: [ ^true ]."
 	self class = ProcessorScheduler ifTrue:[^true]."
 	^ self isReadOnlyObject or: [ self isString ]
+]
+
+{ #category : #'*Seeker' }
+Object >> makeMeGlobal [
+
+	^ Smalltalk globals at: #globalizedObject put: self
 ]
 
 { #category : #'*Seeker' }
