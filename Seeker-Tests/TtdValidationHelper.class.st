@@ -284,7 +284,8 @@ TtdValidationHelper class >> runTestWithSeeker: testMethod [
 
 { #category : #'as yet unclassified' }
 TtdValidationHelper class >> runTestWithSeeker: testMethod andConfig: config [
-"Create all configs here,a and a debugger for each config"
+	"Create all configs here,a and a debugger for each config"
+
 	| methodClass test errorFlag changedSlots timeMS |
 	timeMS := -1.
 	currentTestMethodName := testMethod name.
@@ -299,10 +300,13 @@ TtdValidationHelper class >> runTestWithSeeker: testMethod andConfig: config [
 	[
 	test setUp.
 	timeMS := [
-	          changedSlots := self performTestWithSeekerTrackingIVs: test withConfig:config ]
-		          timeToRunWithoutGC.
+	          changedSlots := self
+		                          performTestWithSeekerTrackingIVs: test
+		                          withConfig: config ] timeToRunWithoutGC.
 	errorFlag := false ] ensure: [ test tearDown ] ] ensure: [
-		test cleanUpInstanceVariables ] ] onErrorDo: [ errorFlag := true ].
+		test cleanUpInstanceVariables ] ] onErrorDo: [ :e |
+		e debug.
+		errorFlag := true ].
 	^ AutoType new newWith
 		  errorFlag: errorFlag;
 		  runResults: changedSlots;
