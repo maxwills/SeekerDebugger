@@ -11,3 +11,14 @@ Delay >> busyWait [
 	[ Time microsecondClockValue < targetTime ] whileTrue: [
 		Processor yield ]
 ]
+
+{ #category : #'*Seeker' }
+Delay class >> busyWaitRandomMilliseconds [
+
+	| ms targetTime |
+	ms := SharedRandom globalGenerator nextInteger: 10.
+
+	targetTime := ms + Time millisecondClockValue.
+
+	[ Time millisecondClockValue >= targetTime ] lockUntilTrue
+]
