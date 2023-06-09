@@ -7,7 +7,8 @@ Class {
 		'returnValuesDictionary',
 		'forceInterpret',
 		'systemCalls',
-		'haltingMethods'
+		'haltingMethods',
+		'processorYieldMethod'
 	],
 	#category : #'Seeker-Components'
 }
@@ -29,6 +30,11 @@ SkSystemCallsHandler >> clearRecords [
 SkSystemCallsHandler >> enabled [
 
 	^ enabled and: [SeekerConfig default systemCallsHandlerEnabled]
+]
+
+{ #category : #'as yet unclassified' }
+SkSystemCallsHandler >> forceReturnValue: anObject [
+
 ]
 
 { #category : #'as yet unclassified' }
@@ -123,16 +129,31 @@ SkSystemCallsHandler >> handleMetaclassInstantiation: interpretationBlock [
 	^ nextContext
 ]
 
+{ #category : #'as yet unclassified' }
+SkSystemCallsHandler >> handleProcessorYield [
+	"Might leave the program in an inconsistent state for a moment, but maybe it is normal for a yield operation"
+
+	| ctx ret |
+	ctx := currentState context.
+	ctx skipOne.
+	ret := Processor yield.
+	ctx setReturnedValue: ret.
+	^ ctx
+]
+
 { #category : #testing }
 SkSystemCallsHandler >> handleSystemCall: interpretationBlock [
-
 	"if this is the first time this systemCall is executed, interpret it, and remember the return value"
 
 	| bytecodeIndex returnValue storedReturnValue hasStoredValue nextContext |
 	self isHalt ifTrue: [ ^ self handleHalts ].
-	self isAMetaclassBasicNewMethod ifTrue: [ ^self handleAMetaclassBasicNew: interpretationBlock  ].
-	self isMetaclassInstantiation ifTrue: [ ^self handleMetaclassInstantiation: interpretationBlock  ].
-	self isBehaviorInitialize ifTrue: [ ^self handleBehaviorInitialize: interpretationBlock  ].
+	self isAMetaclassBasicNewMethod ifTrue: [
+		^ self handleAMetaclassBasicNew: interpretationBlock ].
+	self isMetaclassInstantiation ifTrue: [
+		^ self handleMetaclassInstantiation: interpretationBlock ].
+	self isBehaviorInitialize ifTrue: [
+		^ self handleBehaviorInitialize: interpretationBlock ].
+	self isProcessorYield ifTrue: [ ^ self handleProcessorYield ].
 	bytecodeIndex := currentState bytecodeIndex.
 	hasStoredValue := true.
 	storedReturnValue := returnValuesDictionary
@@ -148,11 +169,9 @@ SkSystemCallsHandler >> handleSystemCall: interpretationBlock [
 				'should check if forceInterpretation is true or false here. For now, we assume it is, so the execution advances normally'.
 			"nextContext := interpretationBlock value."
 			"alternativelly, just skip the call"
-			nextContext := currentState context."interpretationBlock value."
-	"We just skip it"
-	nextContext pc: nextContext pc+1.
-			"inject the stored value in the return"
-			nextContext at: nextContext stackPtr put: storedReturnValue ].
+			nextContext := currentState context. "interpretationBlock value."
+			nextContext skipOne.
+			nextContext setReturnedValue: storedReturnValue ].
 	^ nextContext
 ]
 
@@ -162,8 +181,9 @@ SkSystemCallsHandler >> initialize [
 	super initialize.
 	forceInterpret := true.
 	returnValuesDictionary := Dictionary new.
-
+	processorYieldMethod :=ProcessorScheduler >> #yield.
 	systemCalls := IdentitySet new.
+	systemCalls add: processorYieldMethod.
 	"leave the gc out alone"
 	systemCalls add: SmalltalkImage >> #garbageCollect.
 	systemCalls add: SmalltalkImage >> #garbageCollectMost.
@@ -177,7 +197,8 @@ SkSystemCallsHandler >> initialize [
 
 	"We include all methods of WorldMorph, since they seem problematic"
 	WorldMorph methodDictionary valuesDo: [ :m | systemCalls add: m ].
-	WorldMorph class methodDictionary valuesDo: [ :m | systemCalls add: m ].
+	WorldMorph class methodDictionary valuesDo: [ :m |
+		systemCalls add: m ].
 
 	"next methods are listed as a workaround. To be properly handled in the future"
 	"Note that critical might call other system calls inside. Then, a deterministic replay should log those systems calls. However, at which timestamp? and how to enforce the system call (most likely a signal) that should happen at that point?"
@@ -219,6 +240,12 @@ SkSystemCallsHandler >> isMetaclassInstantiation [
 
 	^ currentState messageReceiver == Metaclass and: [
 		  currentState messageSelector  = #basicNew ]
+]
+
+{ #category : #testing }
+SkSystemCallsHandler >> isProcessorYield [
+
+	^ currentState methodAboutToExecute = processorYieldMethod
 ]
 
 { #category : #testing }

@@ -5,6 +5,20 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
+TtdValidationMultiHelper class >> runAProgramWithCounter: boxedCounter withIncrements: increments [
+
+	Processor yield.
+	increments timesRepeat: [
+		| temp1 |
+		temp1 := boxedCounter at: 1.
+		Processor yield.
+		Delay busyWaitRandomMilliseconds.
+		boxedCounter at: 1 put: temp1 + 1.
+].
+	Processor yield
+]
+
+{ #category : #'as yet unclassified' }
 TtdValidationMultiHelper class >> runMultithreadedProgram [
  |counter t1Finished t2Finished t3Finished thread1 thread2|
 "Create a shared counter"
@@ -89,14 +103,35 @@ Transcript show: 'Final counter value: ', counter asString; cr.
 ]
 
 { #category : #'as yet unclassified' }
-TtdValidationMultiHelper class >> runMultithreadedProgramWithCounter: boxedCounter [
+TtdValidationMultiHelper class >> runProgramWithThreads: nThreads withIncrements: increments [
 
+	| counter threadsFinished threads |
+	Transcript
+		show:
+			'Starting program with: {nThreads} and increments: {increments}'
+				autoFormat;
+		cr.
+	"Create a shared counter"
+	counter := { 0 }.
+	threadsFinished := OrderedCollection new.
+	threads := OrderedCollection new.
+	"initialize threads"
+	1 to: nThreads do: [ :i |
+		threadsFinished add: false.
+		threads add: [
+			[
+			Processor yield.
+			self runAProgramWithCounter: counter withIncrements: increments.
+			threadsFinished at: i put: true ] ] ].
+	"execute threads concurrently"
+	threads do: [ :t | t fork ].
+	"wait for threads to finish"
 	Processor yield.
-	100 timesRepeat: [
-		| temp1 |
-		temp1 := boxedCounter at: 1.
-		Delay busyWaitRandomMilliseconds.
-		boxedCounter at: 1 put: temp1 + 1.
-].
-	Processor yield
+	[ threadsFinished allSatisfy: [ :finished | finished ] ] whileFalse: [
+		Processor yield ].
+
+	Transcript
+		show: 'Shared counter value: {counter first}' autoFormat;
+		cr.
+	^ counter first
 ]

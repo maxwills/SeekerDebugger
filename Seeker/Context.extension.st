@@ -102,6 +102,18 @@ Context >> nodeForPC [
 ]
 
 { #category : #'*Seeker' }
+Context >> setReturnedValue: anObject [
+
+	self at: stackp put: anObject
+]
+
+{ #category : #'*Seeker' }
+Context >> skipOne [
+
+	pc := pc + 1
+]
+
+{ #category : #'*Seeker' }
 Context >> stackDepth [
 
 	"the size of the stack. Not named stackSize to avoid possible conflicting naming issues"
