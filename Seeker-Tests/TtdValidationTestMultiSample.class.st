@@ -5,7 +5,8 @@ Class {
 		'programStep',
 		'tcu1Step',
 		'tcu2Step',
-		'counter'
+		'counter',
+		'label'
 	],
 	#category : #'Seeker-Tests-ECU'
 }
@@ -32,6 +33,18 @@ TtdValidationTestMultiSample >> counter [
 TtdValidationTestMultiSample >> counter: anObject [
 
 	counter := anObject
+]
+
+{ #category : #accessing }
+TtdValidationTestMultiSample >> label [
+
+	^ label
+]
+
+{ #category : #accessing }
+TtdValidationTestMultiSample >> label: anObject [
+
+	label := anObject
 ]
 
 { #category : #accessing }
