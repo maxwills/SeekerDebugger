@@ -107,9 +107,9 @@ TtdValidationMultiHelper class >> runProgramWithThreads: nThreads withIncrements
 
 	| counter threadsFinished threads |
 	Transcript
-		show:
-			'Starting program with: {nThreads} and increments: {increments}'
-				autoFormat;
+		show: ('Starting program with: {1} and increments: {2}' format: {
+						 nThreads.
+						 increments });
 		cr.
 	"Create a shared counter"
 	counter := { 0 }.
@@ -119,10 +119,9 @@ TtdValidationMultiHelper class >> runProgramWithThreads: nThreads withIncrements
 	1 to: nThreads do: [ :i |
 		threadsFinished add: false.
 		threads add: [
-			[
 			Processor yield.
 			self runAProgramWithCounter: counter withIncrements: increments.
-			threadsFinished at: i put: true ] ] ].
+			threadsFinished at: i put: true ] ].
 	"execute threads concurrently"
 	threads do: [ :t | t fork ].
 	"wait for threads to finish"
@@ -131,7 +130,7 @@ TtdValidationMultiHelper class >> runProgramWithThreads: nThreads withIncrements
 		Processor yield ].
 
 	Transcript
-		show: 'Shared counter value: {counter first}' autoFormat;
+		show: ('Shared counter value: {1}' format: { counter first });
 		cr.
 	^ counter first
 ]
