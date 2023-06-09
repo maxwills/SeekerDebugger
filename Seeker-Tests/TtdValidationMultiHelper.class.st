@@ -157,7 +157,9 @@ TtdValidationMultiHelper class >> runProgramWithThreads: nThreads withIncrements
 { #category : #'as yet unclassified' }
 TtdValidationMultiHelper class >> runValidationForConfig: config [
 
-	| executor nThreads increments maxDelay counter maxStep s1 s2 s3 s4 |
+	| executor nThreads increments maxDelay counter maxStep s1 s2 s3 s4 configStr |
+	configStr := 'C' , currentConfigIndex asString , ' '
+	             , config stringNotation.
 	counter := { 0 }.
 	nThreads := 2.
 	maxStep := 1000000.
@@ -178,6 +180,7 @@ TtdValidationMultiHelper class >> runValidationForConfig: config [
 						             counter.
 						             increments.
 						             1 } ]).
+	config applyToExecutor: executor.
 	[
 	s1 := TtdValidationTestMultiSample
 		      newFrom: executor
@@ -225,7 +228,7 @@ TtdValidationMultiHelper class >> runValidationForConfig: config [
 			('{1};{2};{3};{4};{5};{6};{7}' format: {
 					 runIndex.
 					 currentConfigIndex.
-					 currentConfig asString.
+					 configStr.
 					 s counter.
 					 s programStep.
 					 s tcu1Step.
