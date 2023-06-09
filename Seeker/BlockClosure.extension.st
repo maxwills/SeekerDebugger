@@ -35,7 +35,7 @@ BlockClosure >> defaultCase: aValuable [
 { #category : #'*Seeker' }
 BlockClosure >> lockUntilTrue [
 
-	self whileFalse: [ Processor yield ]
+	self whileFalse: [ true ]
 	
 ]
 

@@ -112,6 +112,7 @@ SeekerDebugger class >> headlessDebug: aProcess offsetBytecodes: aNumber [
 	s tracer headless: true.
 	aNumber > 0 ifTrue: [ 1 to: aNumber do: [ :i | s tracer stepper basicStepBytecode ] ].
 	s quickSetup.
+	s tracer mapper recordOnThisContext.
 	^ s
 ]
 

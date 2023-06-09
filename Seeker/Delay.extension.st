@@ -13,12 +13,16 @@ Delay >> busyWait [
 ]
 
 { #category : #'*Seeker' }
-Delay class >> busyWaitRandomMilliseconds [
+Delay class >> busyWaitRandomMilliseconds: maxRandom random: rand [
 
-	| ms targetTime |
-	ms := SharedRandom globalGenerator nextInteger: 10.
+	| ms targetTime iterationCount |
+	iterationCount := 0.
+	ms := 5."rand nextInteger: maxRandom."
 
 	targetTime := ms + Time millisecondClockValue.
 
-	[ Time millisecondClockValue >= targetTime ] lockUntilTrue
+	[
+	iterationCount := iterationCount + 1.
+	Time millisecondClockValue >= targetTime or: [
+		iterationCount > 500 "to prevent locking the system" ] ] lockUntilTrue
 ]

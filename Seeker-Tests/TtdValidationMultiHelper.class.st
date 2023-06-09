@@ -1,109 +1,125 @@
 Class {
 	#name : #TtdValidationMultiHelper,
 	#superclass : #Object,
+	#classInstVars : [
+		'random',
+		'currentConfig',
+		'currentConfigIndex',
+		'runIndex',
+		'validationConfigs'
+	],
 	#category : #'Seeker-Tests-Validation'
 }
 
 { #category : #'as yet unclassified' }
-TtdValidationMultiHelper class >> runAProgramWithCounter: boxedCounter withIncrements: increments [
+TtdValidationMultiHelper class >> doValidation [
 
-	Processor yield.
+	| executor nThreads threads increments maxDelay counter |
+	counter := { 0 }.
+	nThreads := 2.
+	increments := 100.
+	maxDelay := 2.
+	('Starting {1} threads, with increments {2} and maxDelay {3}'
+		 format: {
+				 nThreads.
+				 increments.
+				 maxDelay }) traceCr.
+	threads := (1 to: nThreads) collect: [ :i |
+		           [
+		           TtdValidationMultiHelper
+			           runAProgramWithCounter: counter
+			           withIncrements: increments
+			           withMaxDelay: maxDelay ] ].
+	executor := SeekerExecutor newFor:
+		            (threads collect: [ :t |
+			             SeekerDebugger headlessDebugBlock: t ]).
+
+	[ executor stepToEnd ] ensure: [ executor terminate ].
+	('Finished with counter:{1}' format: { counter first }) traceCr
+]
+
+{ #category : #'class initialization' }
+TtdValidationMultiHelper class >> initialize [
+
+	random := Random new
+		          seed: (SharedRandom globalGenerator nextInteger: 10000);
+		          yourself
+]
+
+{ #category : #initialization }
+TtdValidationMultiHelper class >> initializeValidationConfigs [
+
+	validationConfigs := {
+		                     (TtdValidationConfigMulti newFromArray:
+			                      { true. true. true. true }).
+		                     (TtdValidationConfigMulti newFromArray:
+			                      { true. true. true. false }).
+		                     (TtdValidationConfigMulti newFromArray:
+			                      { true. true. false. true }).
+		                     (TtdValidationConfigMulti newFromArray:
+			                      { true. true. false. false }).
+		                     (TtdValidationConfigMulti newFromArray:
+			                      { true. false. true. true }).
+		                     (TtdValidationConfigMulti newFromArray:
+			                      { true. false. true. false }).
+		                     (TtdValidationConfigMulti newFromArray:
+			                      { true. false. false. true }).
+		                     (TtdValidationConfigMulti newFromArray:
+			                      { true. false. false. false }).
+		                     (TtdValidationConfigMulti newFromArray:
+			                      { false. true. true. true }).
+		                     (TtdValidationConfigMulti newFromArray:
+			                      { false. true. true. false }).
+		                     (TtdValidationConfigMulti newFromArray:
+			                      { false. true. false. true }).
+		                     (TtdValidationConfigMulti newFromArray:
+			                      { false. true. false. false }).
+		                     (TtdValidationConfigMulti newFromArray:
+			                      { false. false. true. true }).
+		                     (TtdValidationConfigMulti newFromArray:
+			                      { false. false. true. false }).
+		                     (TtdValidationConfigMulti newFromArray:
+			                      { false. false. false. true }).
+		                     (TtdValidationConfigMulti newFromArray:
+			                      { false. false. false. false }) }
+]
+
+{ #category : #'as yet unclassified' }
+TtdValidationMultiHelper class >> runAProgramWithCounter: boxedCounter withIncrements: increments withMaxDelay: ms [
+
+	"Processor yield."
 	increments timesRepeat: [
 		| temp1 |
 		temp1 := boxedCounter at: 1.
-		Processor yield.
-		Delay busyWaitRandomMilliseconds.
-		boxedCounter at: 1 put: temp1 + 1.
-].
-	Processor yield
+		"Processor yield."
+		Delay busyWaitRandomMilliseconds: ms random: random.
+		boxedCounter at: 1 put: temp1 + 1 ].
+	"Processor yield"
 ]
 
 { #category : #'as yet unclassified' }
-TtdValidationMultiHelper class >> runMultithreadedProgram [
- |counter t1Finished t2Finished t3Finished thread1 thread2|
-"Create a shared counter"
-counter := {0}.
-t1Finished := false.
-t2Finished := false.
-t3Finished := true.
-"Create two threads"
-thread1 := [ 
-	Processor yield.
-	self runMultithreadedProgramWithCounter: counter.
-	t1Finished := true.
-] fork.
+TtdValidationMultiHelper class >> runFullValidation [
 
-thread2 := [ 
-	Processor yield.
-	self runMultithreadedProgramWithCounter: counter.
-	t2Finished := true.
-] fork.
-
-"thread3 := [ 
-    100 timesRepeat: [
-        | temp |
-        temp := counter.
-        Delay randomMilliseconds busyWait.
-        counter := temp + 1.
-    ].t3Finished := true.
-] fork.
-"
-Processor yield.
-"Wait for both threads to finish"
-[ t1Finished and: [ t2Finished and:[t3Finished] ]] whileFalse: [ Processor yield.].
-
-"Print the final value of the counter"
-Transcript show: 'Final counter value: ', counter first asString; cr.
-^counter first
+	<script>
+	1 to: 100 do: [ :i |
+		runIndex := i.
+		self runOneFullValidation ]
 ]
 
 { #category : #'as yet unclassified' }
-TtdValidationMultiHelper class >> runMultithreadedProgramB [
- |counter t1Finished t2Finished t3Finished thread1 thread2|
-"Create a shared counter"
-counter := 0.
-t1Finished := false.
-t2Finished := false.
-t3Finished := true.
-"Create two threads"
-thread1 := [ 
-	
-    100 timesRepeat: [
-        | temp1 |
-        temp1 := counter.
-        Delay busyWaitRandomMilliseconds .
-        counter := temp1 + 1.
-    ].t1Finished := true.
-] fork.
+TtdValidationMultiHelper class >> runOneFullValidation [
 
-thread2 := [ 
-    100 timesRepeat: [
-        | temp2 |
-        temp2 := counter.
-        Delay busyWaitRandomMilliseconds.
-        counter := temp2 + 1.
-    ].t2Finished := true.
-] fork.
-
-"thread3 := [ 
-    100 timesRepeat: [
-        | temp |
-        temp := counter.
-        Delay randomMilliseconds busyWait.
-        counter := temp + 1.
-    ].t3Finished := true.
-] fork.
-"
-"Wait for both threads to finish"
-[ t1Finished and: [ t2Finished and:[t3Finished] ]] whileFalse: [ nil].
-
-"Print the final value of the counter"
-Transcript show: 'Final counter value: ', counter asString; cr.
-^counter 
+	<script>
+	self initializeValidationConfigs.
+	runIndex ifNil: [ runIndex := 0 ].
+	1 to: validationConfigs size do: [ :i |
+		currentConfigIndex := i.
+		currentConfig := validationConfigs at: i.
+		self runValidationForConfig: currentConfig ]
 ]
 
 { #category : #'as yet unclassified' }
-TtdValidationMultiHelper class >> runProgramWithThreads: nThreads withIncrements: increments [
+TtdValidationMultiHelper class >> runProgramWithThreads: nThreads withIncrements: increments withMaxDelay: ms [
 
 	| counter threadsFinished threads |
 	Transcript
@@ -120,7 +136,10 @@ TtdValidationMultiHelper class >> runProgramWithThreads: nThreads withIncrements
 		threadsFinished add: false.
 		threads add: [
 			Processor yield.
-			self runAProgramWithCounter: counter withIncrements: increments.
+			self
+				runAProgramWithCounter: counter
+				withIncrements: increments
+				withMaxDelay: ms.
 			threadsFinished at: i put: true ] ].
 	"execute threads concurrently"
 	threads do: [ :t | t fork ].
@@ -133,4 +152,82 @@ TtdValidationMultiHelper class >> runProgramWithThreads: nThreads withIncrements
 		show: ('Shared counter value: {1}' format: { counter first });
 		cr.
 	^ counter first
+]
+
+{ #category : #'as yet unclassified' }
+TtdValidationMultiHelper class >> runValidationForConfig: config [
+
+	| executor nThreads increments maxDelay counter maxStep s1 s2 s3 s4 |
+	counter := { 0 }.
+	nThreads := 2.
+	maxStep := 1000000.
+	increments := 1000.
+	maxDelay := 3.
+	('Starting {1} threads, with increments {2} and maxDelay {3}'
+		 format: {
+				 nThreads.
+				 increments.
+				 maxDelay }) traceCr.
+
+	executor := SeekerExecutor newFor: ((1 to: nThreads) collect: [ :i |
+			             SeekerDebugger
+				             headlessDebugFor: TtdValidationMultiHelper
+				             selector:
+				             #runAProgramWithCounter:withIncrements:withMaxDelay:
+				             withArgs: {
+						             counter.
+						             increments.
+						             1 } ]).
+	[
+	s1 := TtdValidationTestMultiSample
+		      newFrom: executor
+		      withLabel: 'o_start'
+		      withCounter: counter first.
+	maxStep timesRepeat: [ executor step ].
+	executor canStep
+		ifTrue: [
+			'Execution did not finished Aborting.' traceCr.
+			^ self ]
+		ifFalse: [
+			s2 := TtdValidationTestMultiSample
+				      newFrom: executor
+				      withLabel: 'o_end'
+				      withCounter: counter first.
+			TtdValidationMultiHelperTest writeCsvLineMultiValidation:
+				('{1};{2};{3};{4}' format: {
+						 counter first.
+						 executor programTimestamp.
+						 executor tcus first stepNumber.
+						 executor tcus second stepNumber })
+			"('Execution finished in {1} steps.' format:
+					 { executor programTimestamp }) traceCr" ].
+	executor restart.
+	s3 := TtdValidationTestMultiSample
+		      newFrom: executor
+		      withLabel: 'r_start'
+		      withCounter: counter first.
+	maxStep timesRepeat: [ executor step ].
+	executor canStep
+		ifTrue: [
+			'Execution did not finished Aborting.' traceCr.
+			^ self ]
+		ifFalse: [
+			s4 := TtdValidationTestMultiSample
+				      newFrom: executor
+				      withLabel: 'o_end'
+				      withCounter: counter first ] ] ensure: [ executor resume ].
+	{
+		s1.
+		s2.
+		s3.
+		s4 } do: [ :s |
+		TtdValidationMultiHelperTest writeCsvLineMultiValidation:
+			('{1};{2};{3};{4};{5};{6};{7}' format: {
+					 runIndex.
+					 currentConfigIndex.
+					 currentConfig asString.
+					 s counter.
+					 s programStep.
+					 s tcu1Step.
+					 s tcu2Step }) ]
 ]

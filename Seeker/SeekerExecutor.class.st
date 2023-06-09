@@ -5,7 +5,8 @@ Class {
 		'programTimestamp',
 		'tcus',
 		'tcuExecutionOrder',
-		'random'
+		'random',
+		'enableDcs'
 	],
 	#category : #'Seeker-Experimental'
 }
@@ -30,7 +31,7 @@ SeekerExecutor class >> newFor: anOrderedCollectionOfTCUs [
 SeekerExecutor >> canStep [
 
 	tcus do: [ :each | 
-		each tracer debuggedProcess isWaitingForSemaphore not and: [ 
+		"each tracer debuggedProcess isWaitingForSemaphore not"true and: [ 
 			each tracer canStep ifTrue: [ ^ true ] ] ].
 	^ false
 ]
@@ -45,7 +46,7 @@ SeekerExecutor >> chooseNextTCUIndex [
 	indices do: [ :each | 
 		| t |
 		t := tcus at: each.
-		(t tracer debuggedProcess isWaitingForSemaphore not and: [ 
+		("t tracer debuggedProcess isWaitingForSemaphore not "true and: [ 
 			 t tracer canStep ]) ifTrue: [ ^ each ] ].
 	^ 1
 ]
@@ -58,19 +59,33 @@ SeekerExecutor >> doUndoBlocks [
 	tcus do: [ :tcu |
 		| tracer timeIndexedUndoBlocks |
 		tracer := tcu tracer.
-		timeIndexedUndoBlocks := tracer restorer timeIndexedUndoBlocks.
-		timeIndexedUndoBlocks do: [:each| |tcuTime undoBlock execTime|
-			tcuTime:= each key.
-			undoBlock:= each value.
-			execTime := tcu localToExecutionTime at: tcuTime.
-			mergedUndos add: {
-					execTime.
-					undoBlock } ].
-		tcu tracer restorer timeIndexedUndoBlocks removeAll ].
+		tracer restorer enabled ifTrue: [
+			timeIndexedUndoBlocks := tracer restorer timeIndexedUndoBlocks.
+			timeIndexedUndoBlocks do: [ :each |
+				| tcuTime undoBlock execTime |
+				tcuTime := each key.
+				undoBlock := each value.
+				execTime := tcu localToExecutionTime at: tcuTime.
+				mergedUndos add: {
+						execTime.
+						undoBlock } ].
+			tcu tracer restorer timeIndexedUndoBlocks removeAll ] ].
 	mergedUndos := mergedUndos sorted: [ :a :b | "the latest first"
 		               a first > b first ].
 	mergedUndos do: [ :each |
 		each second value "executes the undo block" ]
+]
+
+{ #category : #accessing }
+SeekerExecutor >> enableDcs [
+
+	^ enableDcs
+]
+
+{ #category : #accessing }
+SeekerExecutor >> enableDcs: anObject [
+
+	enableDcs := anObject
 ]
 
 { #category : #initialization }
@@ -79,13 +94,15 @@ SeekerExecutor >> initialize [
 	tcus := OrderedCollection new.
 	programTimestamp := 0.
 	tcuExecutionOrder := Dictionary new.
-	random := SharedRandom globalGenerator
+	random := SharedRandom globalGenerator.
+	enableDcs := true
 ]
 
 { #category : #testing }
 SeekerExecutor >> isFirstPlayOfNextStep [
 
-	^ (tcuExecutionOrder includesKey: programTimestamp + 1) not
+	^ enableDcs not or: [
+		  (tcuExecutionOrder includesKey: programTimestamp + 1) not ]
 ]
 
 { #category : #accessing }
@@ -117,7 +134,13 @@ SeekerExecutor >> restart [
 
 	programTimestamp := 0.
 	self doUndoBlocks.
-	tcus do: [ :each | each tracer restartAtBytecodeOne ]
+	tcus do: [ :each |
+		each tracer restartAtBytecodeOne.
+		enableDcs ifFalse: [
+			each tracer programTimestampToLocal removeAll.
+			each tracer localTimestampToProgram removeAll.
+			each localToExecutionTime removeAll.
+			] ]
 ]
 
 { #category : #controlling }
@@ -140,8 +163,10 @@ After, it executes the tcu
 	nextTcuIndex := firstPlayOfStep
 		                ifTrue: [ self chooseNextTCUIndex ]
 		                ifFalse: [ tcuExecutionOrder at: programTimestamp ].
-	tcuExecutionOrder at: programTimestamp put: nextTcuIndex.
+	enableDcs ifTrue: [
+		tcuExecutionOrder at: programTimestamp put: nextTcuIndex ].
 	tcu := tcus at: nextTcuIndex.
+
 	tcus do: [ :eachTcu |
 		eachTcu tracer localTimestampToProgram
 			at: eachTcu tracer bytecodeIndex
@@ -152,7 +177,9 @@ After, it executes the tcu
 	tcu localToExecutionTime
 		at: tcu tracer bytecodeIndex
 		put: programTimestamp.
-	tcu stepBytecode
+
+	tcu stepBytecode.
+	^ true
 ]
 
 { #category : #api }
@@ -189,6 +216,13 @@ SeekerExecutor >> tcus [
 SeekerExecutor >> tcus: anObject [
 
 	tcus := anObject
+]
+
+{ #category : #'debugging actions' }
+SeekerExecutor >> terminate [
+	"I think this crashes sometimes. Neet to test it"
+
+	tcus do: [ :each | each terminate ]
 ]
 
 { #category : #'as yet unclassified' }

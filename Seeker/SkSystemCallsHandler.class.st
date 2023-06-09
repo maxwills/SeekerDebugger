@@ -136,8 +136,8 @@ SkSystemCallsHandler >> handleProcessorYield [
 	| ctx ret |
 	ctx := currentState context.
 	ctx skipOne.
-	ret := Processor yield.
-	ctx setReturnedValue: ret.
+	ret := nil."Processor yield.
+"	ctx setReturnedValue: ret.
 	^ ctx
 ]
 
