@@ -151,16 +151,20 @@ TtdValidationHelper class >> performExperimentFrom: aNumber to: endNumber [
 ]
 
 { #category : #'as yet unclassified' }
-TtdValidationHelper class >> performStatExperiment: nRounds [
+TtdValidationHelper class >> performStatExperiment: nRounds startingRound: number [
 
 	| methods |
 	methods := TtdValidationMethodsHelper loadMethodsFromFile.
 	expStats := OrderedCollection new.
 	expRoundIndex := 0.
-	expStats := OrderedCollection new.
+
 	1 to: nRounds do: [ :i |
-		expRoundIndex := i.
-		self performExperimentFrom: 1 to: 2"methods size" ].
+		expRoundIndex := i + number - 1.
+		expStats := OrderedCollection new.
+		self performExperimentFrom: 1 to: methods size
+		"count deterministic step end, iv start, iv end, "
+		"self writeStatsCsvLine:
+			(String streamContents: [ :stream | stream nextPutAll: i ; nextPut:$; ; ]) contents" ].
 	^ expStats
 ]
 
@@ -192,7 +196,7 @@ TtdValidationHelper class >> performTestWithSeekerTrackingIVs: testCase [
 { #category : #'as yet unclassified' }
 TtdValidationHelper class >> performTestWithSeekerTrackingIVs: testCase withConfig: config [
 
-	| extraSlots finished sameIVsStart sameIVsEnd sameStepStart sameStepEnd separator |
+	| extraSlots finished sameIVsStart sameIVsEnd sameStepStart sameStepEnd separator stat |
 	extraSlots := TtdValidationMethodsHelper obtainExtraSlotsOfTestCase:
 		              testCase class.
 	finished := self
@@ -207,16 +211,19 @@ TtdValidationHelper class >> performTestWithSeekerTrackingIVs: testCase withConf
 		                 runsamples third step.
 	sameStepEnd := runsamples second step softEqualTo:
 		               runsamples fourth step.
-	expStats add: (TtdVal1ExpStats new
-			 config: config;
-			 sameIVStart: sameIVsStart;
-			 sameIVsEnd: sameIVsEnd;
-			 sameStepStart: sameStepStart;
-			 sameStepEnd: sameStepEnd;
-			 roundIndex: expRoundIndex;
-			 configIndex: currentConfigIndex;
-			 methodIndex: testMethodIndex;
-			 yourself).
+	stat := TtdVal1ExpStats new
+		        config: config;
+		        sameIVStart: sameIVsStart;
+		        sameIVsEnd: sameIVsEnd;
+		        sameStepStart: sameStepStart;
+		        sameStepEnd: sameStepEnd;
+		        roundIndex: expRoundIndex;
+		        configIndex: currentConfigIndex;
+		        methodIndex: testMethodIndex;
+		        methodName: currentTestMethodName;
+		        yourself.
+	self writeRoundsStatsCsvLine: stat asCsvLine.
+	expStats add: stat.
 	"output to csv here"
 	separator := $;.
 	self writeCsvLine: (String streamContents: [ :stream |
@@ -254,6 +261,7 @@ TtdValidationHelper class >> performTestWithSeekerTrackingIVs: testCase withConf
 				  sameIVsEnd not };
 		  samples: runsamples shallowCopy;
 		  finished: finished;
+		  expStat: stat;
 		  endWith
 ]
 
@@ -337,12 +345,17 @@ TtdValidationHelper class >> runTestWithSeeker: testMethod andConfig: config [
 	[
 	test setUp.
 	timeMS := [
+	          [
 	          changedSlots := self
 		                          performTestWithSeekerTrackingIVs: test
 		                          withConfig: config ] timeToRunWithoutGC.
-	errorFlag := false ] ensure: [ test tearDown ] ] ensure: [
+	          errorFlag := false ] onErrorDo: [ :e |
+		          Transcript
+			          show: e asString;
+			          cr ] ] ensure: [ test tearDown ] ] ensure: [
 		test cleanUpInstanceVariables ] ] onErrorDo: [ :e |
 		errorFlag := true ].
+	changedSlots expStat valid: errorFlag not.
 	^ AutoType new newWith
 		  errorFlag: errorFlag;
 		  runResults: changedSlots;
@@ -363,7 +376,8 @@ TtdValidationHelper class >> stackTooDeep [
 TtdValidationHelper class >> writeCsvLine: line [
 
 	| aFileReference |
-	aFileReference := 'result.csv' asFileReference.
+	aFileReference := ('result_round_' , expRoundIndex asString
+	                  , '.csv') asFileReference.
 
 	aFileReference writeStreamDo: [ :aStream |
 		aStream setToEnd.
@@ -386,10 +400,23 @@ TtdValidationHelper class >> writeLine: line [
 ]
 
 { #category : #writing }
+TtdValidationHelper class >> writeRoundsStatsCsvLine: line [
+
+	| aFileReference |
+	aFileReference := 'result_rounds_stats.csv' asFileReference.
+
+	aFileReference writeStreamDo: [ :aStream |
+		aStream setToEnd.
+		aStream
+			nextPutAll: line;
+			cr ]
+]
+
+{ #category : #writing }
 TtdValidationHelper class >> writeStatsCsvLine: line [
 
 	| aFileReference |
-	aFileReference := 'result_stats.csv' asFileReference.
+	aFileReference := 'result_overall_stats.csv' asFileReference.
 
 	aFileReference writeStreamDo: [ :aStream |
 		aStream setToEnd.

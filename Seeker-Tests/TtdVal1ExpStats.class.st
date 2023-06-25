@@ -16,6 +16,33 @@ Class {
 	#category : #'Seeker-Tests-Validation'
 }
 
+{ #category : #converting }
+TtdVal1ExpStats >> asCsvLine [
+
+	| separator |
+	separator := $;.
+	^ String streamContents: [ :stream |
+		  stream
+			  nextPutAll: roundIndex asString;
+			  nextPut: separator;
+			  nextPutAll: methodIndex asString;
+			  nextPut: separator;
+			  nextPutAll: methodName;
+			  nextPut: separator;
+			  nextPutAll: configIndex asString;
+			  nextPut: separator;
+			  nextPutAll: sameStepStart asString;
+			  nextPut: separator;
+			  nextPutAll: sameStepEnd asString;
+			  nextPut: separator;
+			  nextPutAll: sameIVStart asString;
+			  nextPut: separator;
+			  nextPutAll: sameIVsEnd asString;
+			  nextPut: separator;
+			  nextPutAll: valid asString;
+			  nextPut: separator ]
+]
+
 { #category : #accessing }
 TtdVal1ExpStats >> config [
 
