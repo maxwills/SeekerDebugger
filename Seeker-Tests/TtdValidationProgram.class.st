@@ -20,7 +20,7 @@ localVar:=1.
 localVar :=localVar + 1.
 global val: global val + 1.
 self firstMarker.
-randomNumber := SharedRandom globalGenerator nextInteger:9999.
+randomNumber := SharedRandom globalGenerator nextInteger:49.
 "Stage 2: increment by random (syscall)"
 localVar:= localVar + randomNumber.
 global val: global val + randomNumber.
@@ -28,7 +28,7 @@ self secondMarker.
 "Stage 3: identity hashes nds"
 obj := Object new.
 set := IdentitySet new.
-1 to: 100 do: [ :i| set add: Object new ].
+1 to: 20 do: [ :i| set add: Object new ].
 set add: obj.
 number:=set asArray indexOf: obj.
 self thirdMarker.

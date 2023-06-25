@@ -114,7 +114,10 @@ TtdValidationMethodsHelper class >> loadMethodsFrom: filename [
 	methods := OrderedCollection new.
 	lines do: [ :line |
 		| m |
-		m := [ (OpalCompiler new source: line) evaluate ] onErrorDo: [ nil ].
+		m := [ (OpalCompiler new source: line) evaluate ] onErrorDo: [
+			     Transcript
+				     show: 'Error while loading method: ' , line;
+				     cr ].
 		m ifNotNil: [ methods add: m ] ].
 	^ methods
 ]

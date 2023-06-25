@@ -92,7 +92,7 @@ SeekerExecutor >> enableDcs: anObject [
 SeekerExecutor >> initialize [
 
 	tcus := OrderedCollection new.
-	programTimestamp := 0.
+	programTimestamp := 1.
 	tcuExecutionOrder := Dictionary new.
 	random := SharedRandom globalGenerator.
 	enableDcs := true
@@ -132,7 +132,7 @@ SeekerExecutor >> random: anObject [
 { #category : #initialization }
 SeekerExecutor >> restart [
 
-	programTimestamp := 0.
+	programTimestamp := 1.
 	self doUndoBlocks.
 	tcus do: [ :each |
 		each tracer restartAtBytecodeOne.

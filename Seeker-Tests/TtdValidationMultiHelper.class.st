@@ -196,12 +196,12 @@ TtdValidationMultiHelper class >> runValidationForConfig: config [
 				      newFrom: executor
 				      withLabel: 'o_end'
 				      withCounter: counter first.
-			TtdValidationMultiHelperTest writeCsvLineMultiValidation:
+			"TtdValidationMultiHelperTest writeCsvLineMultiValidation:
 				('{1};{2};{3};{4}' format: {
 						 counter first.
 						 executor programTimestamp.
 						 executor tcus first stepNumber.
-						 executor tcus second stepNumber })
+						 executor tcus second stepNumber })"
 			"('Execution finished in {1} steps.' format:
 					 { executor programTimestamp }) traceCr" ].
 	executor restart.

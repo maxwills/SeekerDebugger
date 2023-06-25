@@ -8,7 +8,8 @@ Class {
 		'global',
 		'label',
 		'code',
-		'pc'
+		'pc',
+		'local'
 	],
 	#category : #'Seeker-Tests-ECU'
 }
@@ -21,9 +22,13 @@ TtdValidationTestSample class >> newFrom: seeker andGlobal: g withLabel: label [
 	^ self new
 		  context: currentState context shallowCopy;
 		  pc: currentState contextPC;
-		  code:
-			  (currentState node ifNotNil: [ :n | n statementNode sourceCode ] ifNil: [ '' ]);
+		  code: (currentState node
+				   ifNotNil: [ :n | n statementNode sourceCode ]
+				   ifNil: [ '' ]);
 		  step: seeker stepNumber;
+		  local:
+			  ([ (currentState context readVariableNamed: #localVar) asString ]
+				   onErrorDo: [ :e | #NoLocalVar ]);
 		  return: (currentState willReturn
 				   ifTrue: [
 					   | arr |
@@ -81,6 +86,18 @@ TtdValidationTestSample >> label [
 TtdValidationTestSample >> label: anObject [
 
 	label := anObject
+]
+
+{ #category : #accessing }
+TtdValidationTestSample >> local [
+
+	^ local
+]
+
+{ #category : #accessing }
+TtdValidationTestSample >> local: anObject [
+
+	local := anObject
 ]
 
 { #category : #accessing }

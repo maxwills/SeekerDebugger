@@ -176,5 +176,7 @@ TtdValidationTest >> writeResults: collection toCsvStream: stream [
 			nextPutAll: sample global asString;
 			nextPut: separator;
 			nextPutAll: sample return;
+			nextPut: separator;
+			nextPutAll: sample local;
 			cr ]
 ]

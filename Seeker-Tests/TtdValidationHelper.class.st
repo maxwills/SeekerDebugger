@@ -8,7 +8,10 @@ Class {
 		'currentConfigStr',
 		'currentConfig',
 		'validationConfigs',
-		'seekerTimeout'
+		'seekerTimeout',
+		'expStats',
+		'expRoundIndex',
+		'currentConfigIndex'
 	],
 	#category : #'Seeker-Tests-Validation'
 }
@@ -111,10 +114,13 @@ TtdValidationHelper class >> performExperimentFor: method [
 
 	| res r |
 	res := OrderedCollection new.
+	expStats ifNil: [ expStats:=  OrderedCollection new].
+	expRoundIndex ifNil: [ expRoundIndex :=0 ] .
 	self initializeValidationConfigs.
 	seekerTimeout := 20000.
 	1 to: validationConfigs size do: [ :i |
 		currentConfig := validationConfigs at: i.
+		currentConfigIndex:=i.
 		currentConfigStr := 'C' , i asString , ' '
 		                    , (validationConfigs at: i) stringNotation.
 		r := self
@@ -139,7 +145,23 @@ TtdValidationHelper class >> performExperimentFrom: aNumber to: endNumber [
 		rr add: {
 				ttr.
 				res } ].
-	^ rr
+	^ {
+		  rr.
+		  expStats }
+]
+
+{ #category : #'as yet unclassified' }
+TtdValidationHelper class >> performStatExperiment: nRounds [
+
+	| methods |
+	methods := TtdValidationMethodsHelper loadMethodsFromFile.
+	expStats := OrderedCollection new.
+	expRoundIndex := 0.
+	expStats := OrderedCollection new.
+	1 to: nRounds do: [ :i |
+		expRoundIndex := i.
+		self performExperimentFrom: 1 to: 2"methods size" ].
+	^ expStats
 ]
 
 { #category : #'as yet unclassified' }
@@ -177,10 +199,24 @@ TtdValidationHelper class >> performTestWithSeekerTrackingIVs: testCase withConf
 		            innerPerformTestWithSeekerTrackingIVs: testCase
 		            withConfig: config
 		            andSlots: extraSlots.
-	sameIVsStart := runsamples first global softEqualTo: runsamples third global.
-	sameIVsEnd := runsamples second global softEqualTo: runsamples fourth global.
-	sameStepStart := runsamples first step softEqualTo: runsamples third step.
-	sameStepEnd := runsamples second step softEqualTo: runsamples fourth step.
+	sameIVsStart := runsamples first global softEqualTo:
+		                runsamples third global.
+	sameIVsEnd := runsamples second global softEqualTo:
+		              runsamples fourth global.
+	sameStepStart := runsamples first step softEqualTo:
+		                 runsamples third step.
+	sameStepEnd := runsamples second step softEqualTo:
+		               runsamples fourth step.
+	expStats add: (TtdVal1ExpStats new
+			 config: config;
+			 sameIVStart: sameIVsStart;
+			 sameIVsEnd: sameIVsEnd;
+			 sameStepStart: sameStepStart;
+			 sameStepEnd: sameStepEnd;
+			 roundIndex: expRoundIndex;
+			 configIndex: currentConfigIndex;
+			 methodIndex: testMethodIndex;
+			 yourself).
 	"output to csv here"
 	separator := $;.
 	self writeCsvLine: (String streamContents: [ :stream |
@@ -205,16 +241,17 @@ TtdValidationHelper class >> performTestWithSeekerTrackingIVs: testCase withConf
 				 stream
 					 nextPutAll: sample step asString;
 					 nextPut: separator ].
-				stream nextPut: separator;
-				 nextPutAll: currentConfig p1Enabled asString; 
-				nextPut: separator;
-				 nextPutAll: currentConfig p2Enabled asString; 
-				nextPut: separator;
-				 nextPutAll: currentConfig p3Enabled asString]).
+			 stream
+				 nextPut: separator;
+				 nextPutAll: currentConfig p1Enabled asString;
+				 nextPut: separator;
+				 nextPutAll: currentConfig p2Enabled asString;
+				 nextPut: separator;
+				 nextPutAll: currentConfig p3Enabled asString ]).
 	^ AutoType new newWith
 		  modifiedIVsS_E: {
 				  sameIVsStart not.
-				  sameIVsEnd not};
+				  sameIVsEnd not };
 		  samples: runsamples shallowCopy;
 		  finished: finished;
 		  endWith
@@ -340,6 +377,19 @@ TtdValidationHelper class >> writeLine: line [
 
 	| aFileReference |
 	aFileReference := 'processOutput.txt' asFileReference.
+
+	aFileReference writeStreamDo: [ :aStream |
+		aStream setToEnd.
+		aStream
+			nextPutAll: line;
+			cr ]
+]
+
+{ #category : #writing }
+TtdValidationHelper class >> writeStatsCsvLine: line [
+
+	| aFileReference |
+	aFileReference := 'result_stats.csv' asFileReference.
 
 	aFileReference writeStreamDo: [ :aStream |
 		aStream setToEnd.
