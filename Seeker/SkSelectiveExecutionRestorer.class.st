@@ -1,15 +1,7 @@
 "
 This class offers a selective approach to undo writing primitives.
 Where the first implementation (the prototype, general one, called SkExecutionRestorer) serialized the complete state of an object upon receiving any change,
-this implementation creates an actual undo block as narrow as possible, without affecting the other slots of the objects.
-
-## The good side: it is safer for performing reversal.
-The general implementation used the ""copy"" method to remember the state of an object. 
-Some objects are very particular in their copying process, which produced failures when restoring them (and its hard to track down why the copying problem in the first place).
-This new implementation, for each writing instruction, uses (mostly) the same writing instruction to perform the undo. So, in theory, there should be no weird behaviors.
-
-## The bad side: it is slower.
-Being more selective means more verifications and fine grained actions need to be performed.
+this implementation creates a undo block as precise as possible without affecting the other slots of the objects.
 
 "
 Class {
