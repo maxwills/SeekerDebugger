@@ -12,6 +12,43 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
+TtdValidationMultiHelper class >> busyWaitFiveMilliseconds [
+	"DELEte THIS"
+
+	| ms targetTime |
+	ms := 5.
+	targetTime := ms + Time millisecondClockValue.
+	[ Time millisecondClockValue >= targetTime ] whileFalse: [ true ]
+]
+
+{ #category : #'as yet unclassified' }
+TtdValidationMultiHelper class >> busywaitMilliseconds: ms [
+
+	| targetTime |
+	targetTime := ms + Time millisecondClockValue.
+	[ Time millisecondClockValue >= targetTime ] whileFalse: [ true ]
+]
+
+{ #category : #'as yet unclassified' }
+TtdValidationMultiHelper class >> controlRun [
+"DELETE THIS"
+	| sharedCounter program |
+	sharedCounter := 0.
+	program := [ "Program definition"
+	           1 to: 2 do: [ :i | "The two threads"
+		           [
+		           1000 timesRepeat: [ "Each thread increments the shared counter 1000 times"
+			           | temp1 |
+			           "We deliberately introduce a race condition"
+			           temp1 := sharedCounter.
+			           self busywaitMilliseconds: 5.
+			           sharedCounter := temp1 + 1 ] ] fork ].
+	           self busywaitMilliseconds: 12000.
+	           sharedCounter ].
+	^ program value "Execute the program"
+]
+
+{ #category : #'as yet unclassified' }
 TtdValidationMultiHelper class >> doValidation [
 
 	| executor nThreads threads increments maxDelay counter |
@@ -87,14 +124,11 @@ TtdValidationMultiHelper class >> initializeValidationConfigs [
 { #category : #'as yet unclassified' }
 TtdValidationMultiHelper class >> runAProgramWithCounter: boxedCounter withIncrements: increments withMaxDelay: ms [
 
-	"Processor yield."
 	increments timesRepeat: [
 		| temp1 |
 		temp1 := boxedCounter at: 1.
-		"Processor yield."
 		Delay busyWaitRandomMilliseconds: ms random: random.
 		boxedCounter at: 1 put: temp1 + 1 ].
-	"Processor yield"
 ]
 
 { #category : #'as yet unclassified' }
@@ -233,4 +267,13 @@ TtdValidationMultiHelper class >> runValidationForConfig: config [
 					 s programStep.
 					 s tcu1Step.
 					 s tcu2Step }) ]
+]
+
+{ #category : #'as yet unclassified' }
+TtdValidationMultiHelper class >> waitForThreadsToFinish [
+"DELeTE THIS"
+| ms targetTime |
+	ms := 20000.
+	targetTime := ms + Time millisecondClockValue.
+	[ Time millisecondClockValue >= targetTime ] whileFalse: [ Processor yield ]
 ]
