@@ -283,7 +283,7 @@ Object >> seekMe [
 { #category : #'*Seeker' }
 Object >> seekMyInspectors [
 
-	^ StInspector allInstances select: [ :insp | 
+	^ StInspectorPresenter allInstances select: [ :insp | 
 		  insp model inspectedObject == self ]
 ]
 

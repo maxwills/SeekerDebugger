@@ -1,4 +1,4 @@
-Extension { #name : #StInspector }
+Extension { #name : #StInspectorPresenter }
 
 { #category : #'*Seeker' }
 StInspector class >> on: aDomainObject [
