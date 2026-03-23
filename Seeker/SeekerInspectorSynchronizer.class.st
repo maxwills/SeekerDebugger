@@ -76,7 +76,7 @@ SeekerInspectorSynchronizer >> searchNewInspectorsFor: tracer [
 	"Add entries to the inspectors dictionary if a new one is detected"
 
 	tracer isSessionActive ifFalse: [ ^ self ].
-	StInspector allInstances do: [ :each |
+	StInspectorPresenter allInstances do: [ :each |
 		(inspectorAndSeekerNOidsDictionary includesKey: each) ifFalse: [
 			| obj |
 			obj := each model inspectedObject.
