@@ -1,6 +1,6 @@
 Class {
 	#name : #SeekerInspector,
-	#superclass : #StInspector,
+	#superclass : #StInspectorPresenter,
 	#instVars : [
 		'objectTid'
 	],

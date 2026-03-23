@@ -1,7 +1,7 @@
-Extension { #name : #StInspector }
+Extension { #name : #StInspectorPresenter }
 
 { #category : #'*Seeker' }
-StInspector class >> on: aDomainObject [
+StInspectorPresenter class >> on: aDomainObject [
 
 	"This makes things slot. I believe that there is an update cycle of some sort."
 
